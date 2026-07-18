@@ -87,6 +87,8 @@ Governance states may include:
 - Rejected
 - Archived
 
+Lifecycle and governance state are separate. Every material transition must record the prior state, new state, reason, evidence references, actor, timestamp, and relevant rule or workflow version. Rejection, dormancy, archival, reopening, and approval must preserve history. Approval requires explicit human action.
+
 ## 6. Two-Tier Autonomy
 
 AI may create and monitor Experimental Themes.
@@ -94,6 +96,8 @@ AI may create and monitor Experimental Themes.
 Experimental Themes may accumulate evidence, map assets, track breadth, identify leaders, and request human review.
 
 They may not affect official strategy rankings until approved by the Founder.
+
+An Approved Theme is approved for official tracking and strategy context only. It is not a buy recommendation, investment endorsement, capital-allocation decision, or declaration that the hypothesis is proven.
 
 ## 7. Weak Signal Inbox
 
@@ -129,7 +133,9 @@ The system distinguishes:
 
 Multiple links copied from one source are not independent evidence.
 
-Evidence relevance may decay. Raw evidence and history are not silently deleted.
+Evidence relevance may decay. Raw evidence and history are not silently edited in place.
+
+When legal, privacy, licensing, security, corruption, or retention requirements demand removal, evidence content may be quarantined or deleted through a controlled process that records a tombstone, reason, authorizer, timestamp, affected lineage, and downstream reprocessing requirements.
 
 Narrative, plans, and intentions require independent corroboration or observable action before gaining material influence.
 
@@ -342,3 +348,24 @@ Make hypotheses falsifiable.
 Let machines discover and organize.  
 Let humans approve and decide.  
 Learn from every important outcome without rewriting history.
+
+
+---
+
+## Amendment Record — Version 0.2
+
+**Status:** Founder-approved governance and agent-safety hardening.
+
+Version 0.2 adds:
+
+- clearer authority and approval semantics;
+- a material-change definition;
+- untrusted-content and prompt-injection controls;
+- a verification doctrine;
+- controlled evidence removal and tombstoning;
+- minimum audit requirements for lifecycle and governance transitions;
+- clarification that Approved Theme does not mean approved investment;
+- stronger repository and destructive-operation controls;
+- tooling neutrality between product architecture and the current development stack.
+
+These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope.

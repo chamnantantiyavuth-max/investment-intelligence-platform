@@ -17,6 +17,9 @@ The Constitution is the authority. These operational files translate it into wor
 - `operational/AI-GOVERNANCE.md`
 - `operational/HUMAN-REVIEW-AND-OVERRIDE.md`
 - `operational/LEARNING-AND-KNOWLEDGE-LOOP.md`
+- `operational/CHANGE-CONTROL-AND-APPROVAL.md`
+- `operational/SECURITY-AND-UNTRUSTED-CONTENT.md`
+- `operational/VERIFICATION-DOCTRINE.md`
 
 ## Planning
 
@@ -25,9 +28,16 @@ The Constitution is the authority. These operational files translate it into wor
 - `operational/DEFERRED-DECISIONS.md`
 - `operational/RISKS-AND-FAILURE-MODES.md`
 - `operational/ROADMAP.md`
+- `operational/TOOLING-EXPERIMENTS.md`
 
 ## Agent Control
 
 - `AGENTS.md`
 - `hermes/HERMES-ONBOARDING-PROMPT.md`
 - `hermes/HERMES-FIRST-PROJECT-PROMPT.md`
+
+
+## Governance History
+
+- `04-CTO-AUDIT-REPORT-v0.1.md`
+- `05-FOUNDATION-AMENDMENT-v0.2.md`

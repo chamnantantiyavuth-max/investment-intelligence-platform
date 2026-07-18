@@ -32,6 +32,15 @@ Structural Signal
 
 Evidence is retained. Current relevance changes.
 
+Raw evidence must not be silently edited in place. When legal, privacy, licensing, security, corruption, or retention requirements demand removal, the content may be quarantined or deleted through a controlled process that records:
+
+- a tombstone;
+- the reason;
+- the authorizer;
+- the timestamp;
+- affected lineage;
+- downstream invalidation and reprocessing requirements.
+
 ## Three-Year Default
 
 Unsupported narrative or intention with no measurable action within three years becomes stale by default, unless a documented long-cycle exception is approved.

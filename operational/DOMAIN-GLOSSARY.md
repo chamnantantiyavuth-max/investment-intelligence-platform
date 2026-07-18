@@ -19,7 +19,9 @@ A provisional explanation connecting drivers, evidence, and entities.
 An autonomously tracked theme that cannot affect official strategy outputs.
 
 ## Approved Theme
-A human-approved theme eligible for strategy use.
+A human-approved theme eligible for official tracking and strategy context.
+
+Approval is not a buy recommendation, investment endorsement, capital-allocation decision, or declaration that the hypothesis is proven.
 
 ## Lifecycle
 The theme's market or economic development stage.

@@ -53,3 +53,24 @@ Theme Cards contain:
 - challengers;
 - beneficiaries;
 - watchlist members.
+
+
+## Minimum Transition Audit
+
+Lifecycle and governance state remain separate.
+
+Every material transition records:
+
+- prior state;
+- new state;
+- reason;
+- evidence references;
+- actor;
+- timestamp;
+- rule or workflow version.
+
+Rejected, dormant, archived, or reopened themes retain history.
+
+Human approval is required before a theme becomes eligible for official strategy context.
+
+Theme approval is not investment approval.

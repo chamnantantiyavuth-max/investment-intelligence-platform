@@ -74,7 +74,7 @@ Use the simplest architecture that preserves domain boundaries, auditability, re
 
 The platform must be able to return zero high-priority candidates and admit when it lacks a credible explanation.
 
-## DNA-017 — Global Observation, Controlled Execution Universe
+## DNA-017 — Global Observation, Controlled Screening Universe
 
 Global evidence may form themes. V0 investable screening remains intentionally bounded to US-listed common stocks and suitable ADRs.
 
