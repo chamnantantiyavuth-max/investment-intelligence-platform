@@ -1,11 +1,13 @@
 # Traceability and Decision Register
 
 Status: Accepted Living Design Register
-Version: 0.1
+Version: 0.3 (Gate A Structurally Accepted)
 Owner: Founder
 Authority: Accepted living non-authoritative register; individual entries gain authority only through their named approval references
 Derived from: Constitution v0.3, Project Definition v0.1, and AM-V0-DESIGN-PLAN-v0.1
 Repository Acceptance: AM-V0-FIRST-TRANCHE-REPOSITORY-ACCEPTANCE-v0.1
+Normalization Rewrite: AM-V0-GATE-A-SLOT-NORMALIZATION-REWRITE-v0.1
+Structural Acceptance: AM-V0-GATE-A-STRUCTURAL-ACCEPTANCE-v0.1
 
 ## Purpose
 
@@ -24,27 +26,6 @@ Updating this register does not approve a Proposed decision. Approval requires a
 
 There is no fifth "UNRESOLVED" status. "UNRESOLVED — FOUNDER DECISION REQUIRED" is a Resolution value carried by a Proposed entry.
 
-## Entry Template
-
-Each entry must contain:
-
-| Field | Description |
-|---|---|
-| **Identifier** | Unique stable reference (e.g., DR-001, DS-XXX) |
-| **Topic** | What the decision is about |
-| **Decision Obligation Source** | The approved document explaining why the decision must exist |
-| **Rule Content Authority** | The approved source that explicitly supplies the content of the rule. If none: NONE. For governance decisions: NOT APPLICABLE — GOVERNANCE DECISION; decision authority is established by the named Approval Reference where approved |
-| **Affected Artifact(s)** | Which design file(s) this decision constrains |
-| **Status** | Proposed, Approved, Deferred, or Rejected |
-| **Resolution** | For Proposed: UNRESOLVED — FOUNDER DECISION REQUIRED, or blank if resolved in the proposal |
-| **Materiality** | Material or Non-material, with rationale |
-| **Decision Category** | Governance, Rule Slot, Cohort, Filter, Rank, Weight, Threshold, Formula, Period, Taxonomy, Eligibility, Fallback |
-| **Rationale** | Why this decision exists and what it constrains |
-| **Founder Decision Required** | Yes or No |
-| **Approval Reference** | Named approval reference (blank until approved) |
-| **Dependencies** | Which other entries this decision depends on |
-| **Verification Evidence** | How approval was verified (blank until populated) |
-
 ---
 
 ## Governance Entries
@@ -54,176 +35,270 @@ Each entry must contain:
 - **Identifier:** DR-001
 - **Topic:** Authorization to transition from Constitution and Product Definition into Alpha Momentum V0 Design
 - **Decision Obligation Source:** ROADMAP.md Phase 2; Constitution §20; Founder's Decision #2
-- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION; decision authority is established by the named Approval Reference where approved
+- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION
 - **Affected Artifact(s):** All artifacts under `design/alpha-momentum-v0/`
 - **Status:** Approved
 - **Resolution:** —
-- **Materiality:** Material — phase-governance decision authorizing a new phase and file plan
+- **Materiality:** Material — phase-governance decision
 - **Decision Category:** Governance
-- **Rationale:** The project has approved foundation documents (v0.3), approved domain specifications (v0.1), and a roadmap explicitly listing Alpha Momentum V0 Design as Phase 2. This decision authorizes the transition and the creation of design artifacts.
 - **Founder Decision Required:** Yes
 - **Approval Reference:** AM-V0-DESIGN-PLAN-v0.1
 - **Dependencies:** foundation-v0.3, project-definition-v0.1
-- **Verification Evidence:** Explicit Founder authorization message with complete start/end markers; phase transition explicitly approved; three-file first tranche independently verified; repository acceptance completed through DR-008
+- **Verification Evidence:** Explicit Founder authorization message with complete markers; phase transition explicitly approved
 
 ### DR-002 — Design Plan Approval
 
 - **Identifier:** DR-002
-- **Topic:** Approval of the AM-V0-DESIGN-PLAN-v0.1 umbrella-plan content and governance structure: file plan, scope, dependency order, gate structure, materiality policy, amendment process, and Legacy Salvage insertion window
-- **Decision Obligation Source:** Constitution v0.3; ROADMAP.md Phase 2
-- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION; decision authority is established by the named Approval Reference where approved
-- **Affected Artifact(s):** `DESIGN-PLAN.md` (the repository file is a transcription of this approved plan)
 - **Status:** Approved
-- **Resolution:** —
-- **Materiality:** Material — establishes the governance framework for the entire design phase
-- **Decision Category:** Governance
-- **Rationale:** The AM-V0-DESIGN-PLAN-v0.1 umbrella plan defines the stable governance. The repository file DESIGN-PLAN.md transcribes it. Repository-file acceptance is tracked separately (see DR-008). After explicit Founder acceptance of the repository file following independent diff review, the transcribed DESIGN-PLAN.md becomes stable and amendable only through a named amendment.
-- **Founder Decision Required:** Yes
 - **Approval Reference:** AM-V0-DESIGN-PLAN-v0.1
 - **Dependencies:** DR-001
-- **Verification Evidence:** Umbrella-plan content approved via AM-V0-DESIGN-PLAN-v0.1; repository transcription accepted through DR-008
 
 ### DR-003 — Gate A Drafting Authorization
 
 - **Identifier:** DR-003
-- **Topic:** Authorization to draft the Gate A decision-slot artifacts: RULE-PACK-AND-QUALITY-CONTRACTS.md, DATA-CONFIDENCE-AND-POINT-IN-TIME-CONTRACTS.md, PIPELINE-AND-RESEARCH-QUEUE-DESIGN.md, and updated TRACEABILITY register
-- **Decision Obligation Source:** DESIGN-PLAN.md; Constitution §13, §14; ALPHA-MOMENTUM-V0-SPEC §4, §6
-- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION; decision authority is established by the named Approval Reference where approved
-- **Affected Artifact(s):** Gate A artifacts; updated TRACEABILITY register
-- **Status:** Proposed
-- **Resolution:** UNRESOLVED — FOUNDER DECISION REQUIRED
-- **Materiality:** Material — Gate A drafting defines all Founder decisions required before deterministic V0 behavior
-- **Decision Category:** Governance
-- **Rationale:** Gate A must identify every unresolved decision slot before any behavior can be approved. It must not populate invented investment rules. Gate A completion and approval of the drafted decision-slot set will be recorded as a separate future decision.
-- **Founder Decision Required:** Yes, before Gate A drafting begins
-- **Approval Reference:** (blank pending a separate named drafting authorization)
-- **Dependencies:** DR-008 (repository acceptance)
-- **Verification Evidence:** (pending)
+- **Status:** Approved
+- **Resolution:** —
+- **Founder Decision Required:** Yes — completed
+- **Approval Reference:** AM-V0-GATE-A-DRAFTING-v0.1
+- **Verification Evidence:** Founder explicitly authorized drafting of the three Gate A decision-slot artifacts; Gate A completion remains a separate future decision
 
 ### DR-004 — Legacy Knowledge Salvage
 
 - **Identifier:** DR-004
-- **Topic:** Authorization to access legacy repository for historical Theme candidates, relationship examples, fixture realism, and failure cases
-- **Decision Obligation Source:** DESIGN-PLAN.md §9; AM-V0-DESIGN-PLAN-v0.1
-- **Rule Content Authority:** NONE — all outputs must be labeled UNTRUSTED HISTORICAL INPUT — NOT AUTHORITY
-- **Affected Artifact(s):** May inform CONTROLLED-THEME-SET.md, FIXTURE-AND-ACCEPTANCE-SCENARIOS.md
 - **Status:** Deferred
 - **Resolution:** Pending separate named read-only authorization
-- **Materiality:** Material — introduces untrusted historical input that could influence Theme selection
-- **Decision Category:** Governance
-- **Rationale:** Legacy salvage is optional and requires a separate authorization. It does not block Gate A. All outputs must be labeled UNTRUSTED HISTORICAL INPUT — NOT AUTHORITY. It may inform but not establish architecture, investment rules, weights, thresholds, benchmarks, or implementation requirements.
-- **Founder Decision Required:** Yes (separate authorization)
-- **Approval Reference:** (pending separate authorization)
-- **Dependencies:** Separate Gate A completion approval (not merely DR-003 drafting authorization)
-- **Verification Evidence:** (pending)
 
 ### DR-005 — Controlled Theme Set
 
 - **Identifier:** DR-005
-- **Topic:** Selection and approval of a controlled Theme set for V0 design and fixtures
-- **Decision Obligation Source:** ALPHA-MOMENTUM-V0-SPEC §3; Theme Model (project-definition/)
-- **Rule Content Authority:** NONE — Founder must supply Theme definitions
-- **Affected Artifact(s):** `CONTROLLED-THEME-SET.md`; FIXTURE-AND-ACCEPTANCE-SCENARIOS.md; THEME-CARD-AND-HUMAN-REVIEW-FLOW.md
 - **Status:** Proposed
 - **Resolution:** UNRESOLVED — FOUNDER DECISION REQUIRED
-- **Materiality:** Material — determines which Themes exercise V0 domain and acceptance cases
-- **Decision Category:** Governance, Eligibility
-- **Rationale:** V0 uses Founder-approved controlled themes only. Theme selection must satisfy four criteria: structural driver, identifiable beneficiaries, sufficient public-domain evidence, and domain coverage. This is a Gate B decision.
-- **Founder Decision Required:** Yes
-- **Approval Reference:** (pending — will be assigned at Gate B review)
-- **Dependencies:** Separate Gate A completion approval; optionally DR-004 (Legacy Salvage)
-- **Verification Evidence:** (pending)
+- **Approval Reference:** (pending — Gate B)
 
 ### DR-006 — Canonical Theme-Role Ownership
 
 - **Identifier:** DR-006
-- **Topic:** Whether canonical structural Theme roles (Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary) belong to Entity–Theme relationships, Candidate–Theme relationships, or a layered combination
-- **Decision Obligation Source:** CANDIDATE-AND-QUEUE-MODEL.md §3.4; DOMAIN-ARCHITECTURE.md §1.1; Constitution §5 (pending resolution)
-- **Rule Content Authority:** NONE — Founder must supply the ownership model
-- **Affected Artifact(s):** CANDIDATE-AND-QUEUE-MODEL.md; DOMAIN-ARCHITECTURE.md; future strategy modules
 - **Status:** Deferred
-- **Resolution:** Not required for V0; must be resolved before V1 or before a second strategy consumes Theme roles
-- **Materiality:** Material — affects where role data is authored, how contradictions are resolved, and which context owns role transition history
-- **Decision Category:** Governance
-- **Rationale:** V0 may use simplified Candidate–Theme test relationships without establishing permanent canonical ownership. This decision is not required for V0. If resolution requires changing an Approved Domain Specification, record UPSTREAM AMENDMENT REQUIRED and follow the authority-amendment process.
-- **Founder Decision Required:** Yes (before V1)
-- **Approval Reference:** (pending)
-- **Dependencies:** None blocking V0
-- **Verification Evidence:** (pending)
+- **Resolution:** Not required for V0; must be resolved before V1
 
 ### DR-007 — Technology Stack
 
 - **Identifier:** DR-007
-- **Topic:** Selection of programming language, frontend framework, database, cloud provider, data vendors, RAG architecture, MCP integrations, agent orchestration, and deployment topology
-- **Decision Obligation Source:** DEFERRED-DECISIONS.md; AGENTS.md ("Do not select a final technology stack")
-- **Rule Content Authority:** NONE — Founder must approve any technology selection
-- **Affected Artifact(s):** Implementation-phase artifacts (not yet created)
 - **Status:** Deferred
-- **Resolution:** Deferred until a separately approved architecture or implementation-planning decision after Gate D
-- **Materiality:** Material — determines implementation architecture, but not a design-phase decision
-- **Decision Category:** Governance
-- **Rationale:** All technology decisions are explicitly listed in DEFERRED-DECISIONS.md. The design phase must remain technology-neutral. Implementation must not invent or select a technology stack without explicit Founder approval.
-- **Founder Decision Required:** Yes (before implementation)
-- **Approval Reference:** (pending)
-- **Dependencies:** DR-001 through Gate D
-- **Verification Evidence:** (pending)
 
 ### DR-008 — First Tranche Repository Acceptance
 
 - **Identifier:** DR-008
-- **Topic:** Acceptance into the repository of README.md, DESIGN-PLAN.md, and TRACEABILITY-AND-DECISION-REGISTER.md after independent diff review
-- **Decision Obligation Source:** AM-V0-DESIGN-PLAN-v0.1 first-tranche authorization
-- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION; decision authority is established by the named Approval Reference where approved
-- **Affected Artifact(s):** `README.md`, `DESIGN-PLAN.md`, `TRACEABILITY-AND-DECISION-REGISTER.md`
+- **Status:** Approved
+- **Approval Reference:** AM-V0-FIRST-TRANCHE-REPOSITORY-ACCEPTANCE-v0.1
+
+### DR-009 — Gate A Completion and Decision-Slot Set Approval
+
+- **Identifier:** DR-009
+- **Topic:** Approval or rejection of the completeness and structure of the normalized Gate A decision-slot set — does not automatically approve the answers to individual material decision slots
+- **Decision Obligation Source:** DESIGN-PLAN.md §6 Gate A; AM-V0-GATE-A-DRAFTING-v0.1
+- **Rule Content Authority:** NOT APPLICABLE — GOVERNANCE DECISION
+- **Affected Artifact(s):** RULE-PACK-AND-QUALITY-CONTRACTS.md; DATA-CONFIDENCE-AND-POINT-IN-TIME-CONTRACTS.md; PIPELINE-AND-RESEARCH-QUEUE-DESIGN.md; TRACEABILITY-AND-DECISION-REGISTER.md
 - **Status:** Approved
 - **Resolution:** —
-- **Materiality:** Non-material repository acceptance, provided the files faithfully transcribe the approved plan and introduce no new observable behavior
+- **Materiality:** Material — determines whether the normalized decision-slot set is structurally complete; does not approve slot answers
 - **Decision Category:** Governance
-- **Rationale:** The three first-tranche files must be independently reviewed and explicitly accepted by the Founder before they become authoritative within the repository. Plan content approval (DR-002) is separate from repository-file acceptance (DR-008).
+- **Rationale:** DR-009 acknowledges that structural completeness is a separate decision from answering any specific slot. Approval confirms slots are correctly identified and scoped; it does not fill any UNRESOLVED slot
 - **Founder Decision Required:** Yes — completed
-- **Approval Reference:** AM-V0-FIRST-TRANCHE-REPOSITORY-ACCEPTANCE-v0.1
-- **Dependencies:** DR-001, DR-002, independent review
-- **Verification Evidence:** Independent focused review confirmed exact three-file scope, matching SHA-256 values, valid UTF-8, no tracked-file changes, no investment-rule content, and governance consistency; Founder explicitly accepted the repository artifacts.
+- **Approval Reference:** AM-V0-GATE-A-STRUCTURAL-ACCEPTANCE-v0.1
+- **Dependencies:** DR-003 and independent review of all Gate A artifacts
+- **Verification Evidence:** Independent review confirmed 35 normalized active slots, 8 conditional templates, complete identifier supersession, correct ownership boundaries, no prohibited investment-rule content, and exact removal of all AI-authored alternatives; Founder explicitly approved Gate A structural completeness.
 
 ---
 
-## Rule-Slot Entries
+## Normalized Active Slot Inventory
 
-No rule-slot entries have been proposed. Rule slots will be added in Gate A artifacts and registered here with their corresponding DR identifiers.
+### RULE-PACK-AND-QUALITY-CONTRACTS.md — 10 Active Slots
 
-Reserved identifier range for rule slots: DS-001 through DS-999.
+| Slot | Topic | Status |
+|---|---|---|
+| DS-301 | V0 Candidate Quality Domain Set | Proposed — UNRESOLVED |
+| DS-302 | V0 Entry Readiness Domain Set | Proposed — UNRESOLVED |
+| DS-303 | V0 Theme Quality Consumption Contract | Proposed — UNRESOLVED |
+| DS-304 | Candidate Quality Output and Summary Policy | Proposed — UNRESOLVED |
+| DS-305 | Entry Readiness Output and Summary Policy | Proposed — UNRESOLVED |
+| DS-306 | Theme Quality Output and Summary Policy (Alpha Momentum Consumption) | Proposed — UNRESOLVED |
+| DS-307 | Strategy-Relevance Policy While Preserving Separate Dimensions | Proposed — UNRESOLVED |
+| DS-308 | Theme Context Operational Classification (canonical) | Proposed — UNRESOLVED |
+| DS-309 | Operational V0 Universe Boundary | Proposed — UNRESOLVED |
+| DS-310 | Additional Alpha Momentum Eligibility Criteria | Proposed — UNRESOLVED |
+
+### DATA-CONFIDENCE-AND-POINT-IN-TIME-CONTRACTS.md — 12 Active Slots
+
+| Slot | Topic | Status |
+|---|---|---|
+| DS-401 | Freshness and Staleness | Proposed — UNRESOLVED |
+| DS-402 | Completeness and Expected-Data Contract | Proposed — UNRESOLVED |
+| DS-403 | Reliability | Proposed — UNRESOLVED |
+| DS-404 | Source Independence and Derivation Classification | Proposed — UNRESOLVED |
+| DS-405 | Conflict Detection and Preservation | Proposed — UNRESOLVED |
+| DS-406 | Missing Evidence | Proposed — UNRESOLVED |
+| DS-407 | Public-Availability Timestamp | Proposed — UNRESOLVED |
+| DS-408 | Ingestion Timestamp | Proposed — UNRESOLVED |
+| DS-409 | Effective / As-Of and Forecast-Target Periods | Proposed — UNRESOLVED |
+| DS-410 | Revision and Vintage Handling | Proposed — UNRESOLVED |
+| DS-411 | Point-in-Time Visibility | Proposed — UNRESOLVED |
+| DS-412 | Data Confidence Scope Levels and Roll-Up Policy | Proposed — UNRESOLVED |
+
+### PIPELINE-AND-RESEARCH-QUEUE-DESIGN.md — 13 Active Slots
+
+| Slot | Topic | Status |
+|---|---|---|
+| DS-501 | Operational V0 Universe Boundary in Pipeline Context | Proposed — UNRESOLVED |
+| DS-502 | Theme Context Stage Behavior | Proposed — UNRESOLVED |
+| DS-503 | Candidate Quality Assessment — Gate/Rank/Enrichment Effects | Proposed — UNRESOLVED |
+| DS-504 | Entry Readiness Assessment — Gate/Rank/Enrichment Effects | Proposed — UNRESOLVED |
+| DS-505 | Data Confidence Assessment — Gate/Warning Effects | Proposed — UNRESOLVED |
+| DS-506 | Theme-First Queue Assembly | Proposed — UNRESOLVED |
+| DS-507 | V0 Prioritization Output Form | Proposed — UNRESOLVED |
+| DS-508 | Adaptive-Capacity Decision Policy | Proposed — UNRESOLVED |
+| DS-509 | Queue Empty-State Operational Contract | Proposed — UNRESOLVED |
+| DS-510 | Explainability, Audit, and Rule-Result Lineage Contract | Proposed — UNRESOLVED |
+| DS-511 | Stock-First Discovery Path Preservation | Proposed — UNRESOLVED |
+| DS-512 | Logical Stage Dependencies and Input/Output Contracts | Proposed — UNRESOLVED |
+| DS-513 | Rule Lifecycle, Version, Authority, and Effective-Date Contract | Proposed — UNRESOLVED |
+
+**Total Active Gate A Slots: 35** (10 + 12 + 13)
 
 ---
 
-## Reference Cohort Entries
+## Template Inventory
 
-No reference cohort entries have been proposed. Reference cohorts are defined as part of Gate A rule-slot contracts.
+Templates are not active decisions. They carry TPL- identifiers. Instantiation requires a separate named authorization.
 
-Reserved identifier range for reference cohorts: RC-001 through RC-999.
+| Template ID | Purpose | Artifact | Activation Condition |
+|---|---|---|---|
+| TPL-RP-CANDIDATE-DOMAIN | Candidate Quality domain measurement contract | Rule-Pack | DS-301 includes the domain |
+| TPL-RP-ENTRY-DOMAIN | Entry Readiness domain measurement contract | Rule-Pack | DS-302 includes the domain |
+| TPL-RP-THEME-CONSUMPTION | Theme Quality per-dimension consumption contract | Rule-Pack | DS-303 identifies the dimension |
+| TPL-RP-FEATURE-CONTRACT | Feature definition contract | Rule-Pack | A domain measurement contract requires features |
+| TPL-REFERENCE-COHORT | Reference Cohort Contract | Rule-Pack | An approved relative rule requires a cohort |
+| TPL-PIPELINE-WITHIN-THEME-ORDERING | Within-Theme Candidate Ordering Policy | Pipeline | DS-507 selects ordering-dependent output form |
+| TPL-PIPELINE-THEME-LEVEL-ORDERING | Theme-Level Ordering Policy | Pipeline | DS-507 selects ordering-dependent output form requiring Theme ordering |
+| TPL-PIPELINE-TIE-BEHAVIOR | Tie Behavior Policy | Pipeline | DS-507 selects ordering form creating tie cases |
+
+**Template count: 8. None are active decisions.**
 
 ---
 
-## ADR Entries
+## Inherited Control Inventory
 
-No ADRs have been created. ADRs will be registered here when a real cross-cutting design decision arises.
+| Control | Source | Description |
+|---|---|---|
+| Higher-Authority Escalation | DESIGN-PLAN.md §13; AGENTS.md | Stop and record UPSTREAM AMENDMENT REQUIRED when a decision would change higher authority |
+| Contradiction Visibility (Presentation) | EVIDENCE-MODEL §7; Constitution §10 | Contradictions must remain visible; not silently compressed. Gate C handles human-facing display |
 
-Reserved identifier range for ADRs: ADR-001 through ADR-999.
+**Inherited control count: 2. Not unresolved slots.**
+
+---
+
+## Deferred and Future-Gate Topics
+
+### Deferred Beyond Gate A
+
+| Topic | Old ID | Rationale |
+|---|---|---|
+| Stage Execution Order and Parallelism | DS-215 (old) | Physical runtime scheduling — deferred to architecture/implementation planning |
+
+### Moved to Future Gate C (No Identifiers Assigned)
+
+| Topic | Old ID | Rationale |
+|---|---|---|
+| Theme Card and Research Queue Relationship | DS-218 (old) | Gate C artifact THEME-CARD-AND-HUMAN-REVIEW-FLOW.md |
+| Human-Facing Empty-State Presentation | (split from DS-208) | Gate C presentation |
+| Human-Facing Contradiction Visibility and Display | (split from DS-113) | Gate C presentation |
+
+---
+
+## Slot Supersession Map (DS-001 through DS-218, RC-001)
+
+| Old ID | Disposition | New Reference |
+|---|---|---|
+| DS-001 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-002 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-003 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-004 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-005 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-006 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-007 | Superseded by template | TPL-RP-CANDIDATE-DOMAIN |
+| DS-008 | Superseded by | DS-303 |
+| DS-009 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-010 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-011 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-012 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-013 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-014 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-015 | Superseded by template | TPL-RP-THEME-CONSUMPTION |
+| DS-016 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-017 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-018 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-019 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-020 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-021 | Superseded by template | TPL-RP-ENTRY-DOMAIN |
+| DS-022 | Superseded by | DS-304 |
+| DS-023 | Superseded by | DS-305 |
+| DS-024 | Superseded by | DS-306 |
+| DS-025 | Superseded by | DS-307 |
+| DS-026 | Merged into | DS-308 |
+| DS-027 | Split and superseded by | DS-309 + DS-310 |
+| DS-028 | Superseded by template | TPL-RP-FEATURE-CONTRACT |
+| RC-001 | Removed; replaced by template | TPL-REFERENCE-COHORT |
+| DS-101 | Merged into | DS-401 |
+| DS-102 | Superseded by | DS-402 |
+| DS-103 | Superseded by | DS-403 |
+| DS-104 | Merged into | DS-405 |
+| DS-105 | Merged into | DS-412 |
+| DS-106 | Superseded by | DS-406 |
+| DS-107 | Superseded by | DS-407 |
+| DS-108 | Superseded by | DS-409 |
+| DS-109 | Superseded by | DS-410 |
+| DS-110 | Merged into | DS-401 |
+| DS-111 | Superseded by | DS-411 |
+| DS-112 | Superseded by | DS-408 |
+| DS-113 | Merged into (data layer); moved to Gate C (presentation) | DS-405; Gate C (no identifier) |
+| DS-114 | Merged into | DS-412 |
+| DS-201 | Merged and superseded by | DS-501 |
+| DS-202 | Merged into | DS-308 |
+| DS-203 | Superseded by | DS-503 |
+| DS-204 | Superseded by | DS-504 |
+| DS-205 | Superseded by | DS-505 |
+| DS-206 | Superseded by | DS-506 |
+| DS-207 | Superseded by | DS-508 |
+| DS-208 | Superseded by (operational); moved to Gate C (presentation) | DS-509; Gate C (no identifier) |
+| DS-209 | Superseded by template | TPL-PIPELINE-WITHIN-THEME-ORDERING |
+| DS-210 | Superseded by template | TPL-PIPELINE-THEME-LEVEL-ORDERING |
+| DS-211 | Superseded by template | TPL-PIPELINE-TIE-BEHAVIOR |
+| DS-212 | Merged into | DS-510 |
+| DS-213 | Merged into | DS-510 |
+| DS-214 | Superseded by | DS-511 |
+| DS-215 | Deferred beyond Gate A | Architecture/implementation planning |
+| DS-216 | Absorbed into | DS-512 |
+| DS-217 | Absorbed into | DS-512 |
+| DS-218 | Moved to Gate C | No identifier assigned |
+
+**Old identifiers preserved: 60 DS + 1 RC. All mapped.**
 
 ---
 
 ## Unresolved Founder Decisions Summary
 
-The following decisions require explicit Founder resolution. This summary is derived from the register above and does not replace individual entries.
+| Ref | Topic | Status |
+|---|---|---|
+| DR-005 | Controlled Theme Set selection | Proposed — UNRESOLVED |
+| DR-006 | Canonical Theme-role ownership | Deferred |
+| DR-007 | Technology stack | Deferred |
+| DR-004 | Legacy Knowledge Salvage authorization | Deferred |
 
-| Ref | Topic | Required By | Status |
-|---|---|---|---|
-| DR-003 | Gate A Drafting Authorization | Before Gate A drafting | Proposed — UNRESOLVED |
-| DR-005 | Controlled Theme Set selection | Gate B | Proposed — UNRESOLVED |
-| DR-006 | Canonical Theme-role ownership | V1 / second strategy | Deferred |
-| DR-007 | Technology stack | After Gate D | Deferred |
-| DR-004 | Legacy Knowledge Salvage authorization | Gate B (optional) | Deferred |
+In addition, 35 active normalized decision slots (DS-301–DS-310, DS-401–DS-412, DS-501–DS-513) are registered across the three Gate A artifacts. All are Status: Proposed, Resolution: UNRESOLVED — FOUNDER DECISION REQUIRED. None propose investment-rule answers, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, queue ordering, tie-breakers, eligibility rules, aggregations, or fallbacks.
 
-No investment-rule decisions (thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, queue ordering, tie-breakers, fallbacks, scoring aggregation) have been proposed. These will be identified as decision slots in Gate A artifacts.
+8 templates (TPL-*) await conditional instantiation. 2 inherited controls apply across all artifacts. 1 topic is deferred beyond Gate A. 3 topics are moved to future Gate C without identifiers.
+
+No investment-rule decision has been approved. Gate A completion (DR-009) will confirm structural completeness; individual slot resolution requires separate Founder decisions.
 
 ---
 
@@ -232,6 +307,10 @@ No investment-rule decisions (thresholds, weights, formulas, lookbacks, benchmar
 | Date | Change | Authority |
 |---|---|---|
 | 20 July 2026 | Initial draft with governance entries DR-001 through DR-007 | AM-V0-DESIGN-PLAN-v0.1 |
-| 20 July 2026 | Micro-revision: DR-001/DR-002 verification wording corrected; DR-006 neutrality restored; DR-007 reworded; DR-008 added for repository acceptance | AM-V0-FIRST-TRANCHE-MICRO-REVISION |
-| 20 July 2026 | Final micro-revision: all entries converted to Decision Obligation Source / Rule Content Authority; DR-003 narrowed to drafting authorization only and marked UNRESOLVED; DR-004 depends on separate Gate A completion; rollback reference made immutable | AM-V0-FIRST-TRANCHE-FINAL-MICRO-REVISION |
-| 20 July 2026 | First tranche repository acceptance; README promoted to Approved Design Area Index v0.1; DESIGN-PLAN promoted to Approved Stable Design Plan v0.1; register promoted to Accepted Living Design Register v0.1; DR-008 approved | AM-V0-FIRST-TRANCHE-REPOSITORY-ACCEPTANCE-v0.1 |
+| 20 July 2026 | Micro-revision: DR-001/DR-002, DR-006 neutrality, DR-007, DR-008 added | AM-V0-FIRST-TRANCHE-MICRO-REVISION |
+| 20 July 2026 | Final micro-revision: Decision Obligation Source / Rule Content Authority conversion; DR-003 narrowed and marked UNRESOLVED | AM-V0-FIRST-TRANCHE-FINAL-MICRO-REVISION |
+| 20 July 2026 | First tranche repository acceptance; DR-008 approved | AM-V0-FIRST-TRANCHE-REPOSITORY-ACCEPTANCE-v0.1 |
+| 20 July 2026 | Gate A drafting: DR-003 approved; 60 DS + 1 RC created, all UNRESOLVED; DR-009 added | AM-V0-GATE-A-DRAFTING-v0.1 |
+| 20 July 2026 | Gate A slot normalization rewrite: 60 DS + 1 RC → 35 DS + 8 templates; new ranges DS-301+, DS-401+, DS-501+; full supersession map; DR-009 remains Proposed; all slots UNRESOLVED | AM-V0-GATE-A-SLOT-NORMALIZATION-REWRITE-v0.1 |
+| 20 July 2026 | AI-authored alternatives removed from all 35 active slots; exact replacement sentence applied | AM-V0-GATE-A-REMOVE-AI-ALTERNATIVES-v0.1 |
+| 20 July 2026 | Gate A structural completeness approved; three Gate A artifacts accepted as decision-slot structures; DR-009 approved; all 35 individual slots remain Proposed and unresolved | AM-V0-GATE-A-STRUCTURAL-ACCEPTANCE-v0.1 |
