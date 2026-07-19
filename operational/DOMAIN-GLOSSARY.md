@@ -16,18 +16,21 @@ Detected change without a credible explanation.
 A provisional explanation connecting drivers, evidence, and entities.
 
 ## Experimental Theme
-An autonomously tracked theme that cannot affect official strategy outputs.
+An experimentally governed Theme that may be monitored and accumulate evidence but cannot affect official strategy outputs. Its origin may be AI, human-assisted, or deterministic.
 
 ## Approved Theme
-A human-approved theme eligible for official tracking and strategy context.
+A human-approved Theme eligible for official strategy context. Monitoring activity is governed separately by Monitoring Status.
 
 Approval is not a buy recommendation, investment endorsement, capital-allocation decision, or declaration that the hypothesis is proven.
 
 ## Lifecycle
 The theme's market or economic development stage.
 
-## Governance State
-The theme's approval and operational status.
+## Approval Status
+The Theme's position in the approval and promotion pipeline: Detected Hypothesis, Experimental, Under Human Review, Approved, or Rejected.
+
+## Monitoring Status
+The Theme's operational monitoring state: Not Monitored, Active Monitoring, Dormant, or Archived. Monitoring Status is independent of Approval Status.
 
 ## Candidate Quality
 Quality of the company or asset, excluding entry timing.

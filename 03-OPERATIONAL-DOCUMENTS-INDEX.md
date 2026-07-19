@@ -41,3 +41,4 @@ The Constitution is the authority. These operational files translate it into wor
 
 - `04-CTO-AUDIT-REPORT-v0.1.md`
 - `05-FOUNDATION-AMENDMENT-v0.2.md`
+- `06-CONSTITUTIONAL-AMENDMENT-v0.3.md`

@@ -1,4 +1,4 @@
-# Investment Intelligence Platform Foundation v0.2
+# Investment Intelligence Platform Foundation v0.3
 
 This package contains the approved project foundation:
 
@@ -20,5 +20,6 @@ No application code or technology stack is included.
 - Foundation v0.1 — Initial approved Constitution
 - CTO Audit v0.1 — Completed
 - Foundation v0.2 — Founder-approved governance and agent-safety hardening
+- Foundation v0.3 — Founder-approved Theme governance-axis clarification (Approval Status + Monitoring Status decomposition)
 
 No application code or final technology stack has been selected.

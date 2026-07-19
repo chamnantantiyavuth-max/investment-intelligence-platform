@@ -17,9 +17,50 @@ Discover and track structural drivers across companies, industries, supply chain
 
 - lifecycle;
 - confidence;
-- governance state;
+- Approval Status;
+- Monitoring Status;
 - crowding;
 - evidence progression.
+
+## Approval Status
+
+The Theme's position in the approval and promotion pipeline.
+
+- Detected Hypothesis
+- Experimental
+- Under Human Review
+- Approved
+- Rejected
+
+## Monitoring Status
+
+The Theme's operational monitoring state. Independent of Approval Status.
+
+- Not Monitored
+- Active Monitoring
+- Dormant
+- Archived
+
+Experimental and Under Human Review Themes may have Active Monitoring. Monitoring does not grant official strategy eligibility. Approval does not automatically activate monitoring.
+
+## Valid Approval Status + Monitoring Status Combinations
+
+| Approval Status | Valid Monitoring Status values |
+|---|---|
+| Detected Hypothesis | Not Monitored |
+| Experimental | Not Monitored, Active Monitoring |
+| Under Human Review | Not Monitored, Active Monitoring |
+| Approved | Not Monitored, Active Monitoring, Dormant, Archived |
+| Rejected | Not Monitored, Archived |
+
+Default governance expectations:
+
+- A Detected Hypothesis normally begins as Not Monitored.
+- A Rejected Theme normally remains Not Monitored or Archived.
+
+A Rejected Theme must be reopened into Experimental or Under Human Review before Active Monitoring resumes.
+
+These are domain semantics, not database cardinalities.
 
 ## Discovery Paths
 
@@ -37,6 +78,10 @@ Discover and track structural drivers across companies, industries, supply chain
 
 Experimental Themes may be created and tracked automatically. They cannot alter official strategy outputs before Human Approval.
 
+Experimental Themes may originate from AI, human-assisted, or deterministic discovery.
+
+Experimental and Under Human Review Themes may have Active Monitoring without affecting official strategy rankings, filters, scores, or approved-strategy alerts.
+
 ## Research Presentation
 
 Theme Cards contain:
@@ -49,15 +94,16 @@ Theme Cards contain:
 - lifecycle;
 - confidence;
 - crowding;
+- Approval Status;
+- Monitoring Status;
 - leaders;
 - challengers;
 - beneficiaries;
 - watchlist members.
 
-
 ## Minimum Transition Audit
 
-Lifecycle and governance state remain separate.
+Lifecycle, Approval Status, and Monitoring Status remain separate axes.
 
 Every material transition records:
 
@@ -70,6 +116,8 @@ Every material transition records:
 - rule or workflow version.
 
 Rejected, dormant, archived, or reopened themes retain history.
+
+Any transition to Approved requires explicit Founder approval.
 
 Human approval is required before a theme becomes eligible for official strategy context.
 

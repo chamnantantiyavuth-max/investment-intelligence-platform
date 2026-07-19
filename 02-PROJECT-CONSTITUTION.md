@@ -1,6 +1,6 @@
 # Investment Intelligence Platform Constitution
 
-## Version 0.1 — Approved Working Constitution
+## Version 0.3 — Approved Working Constitution
 
 ### Status
 
@@ -74,30 +74,48 @@ Initial lifecycle:
 5. Crowded / Late Stage
 6. Deterioration
 
-Lifecycle, confidence, and governance status are separate dimensions.
+Lifecycle, confidence, crowding, Approval Status, and Monitoring Status are separate dimensions.
 
-Governance states may include:
+Theme governance is represented by two separate axes.
+
+**Approval Status**
 
 - Detected Hypothesis
 - Experimental
 - Under Human Review
 - Approved
-- Actively Tracked
-- Dormant
 - Rejected
+
+**Monitoring Status**
+
+- Not Monitored
+- Active Monitoring
+- Dormant
 - Archived
 
-Lifecycle and governance state are separate. Every material transition must record the prior state, new state, reason, evidence references, actor, timestamp, and relevant rule or workflow version. Rejection, dormancy, archival, reopening, and approval must preserve history. Approval requires explicit human action.
+Approval Status and Monitoring Status are independent of lifecycle, confidence, and crowding. A transition in one axis does not automatically change another axis, while valid combinations remain governed by approved domain rules.
+
+Experimental and Under Human Review Themes may be actively monitored without affecting official strategy rankings, filters, scores, or approved-strategy alerts.
+
+Approved Themes may be Not Monitored, actively monitored, dormant, or archived.
+
+Rejected Themes normally remain Not Monitored or Archived. Active Monitoring requires reopening into Experimental or Under Human Review.
+
+Archiving does not erase approval history or rejection history.
+
+Every material lifecycle, Approval Status, or Monitoring Status transition must record the prior value, new value, reason, evidence references, actor, timestamp, and relevant rule or workflow version. Rejection, dormancy, archival, reopening, and approval must preserve history. Any transition to Approved requires explicit Founder approval.
 
 ## 6. Two-Tier Autonomy
 
-AI may create and monitor Experimental Themes.
+AI may create and monitor Experimental Themes. Experimental Themes may originate from AI, human-assisted, or deterministic discovery.
 
-Experimental Themes may accumulate evidence, map assets, track breadth, identify leaders, and request human review.
+Experimental Themes may accumulate evidence, map assets, track breadth, identify leaders, and request human review. They may have Active Monitoring without affecting official strategy rankings, filters, scores, or approved-strategy alerts.
 
-They may not affect official strategy rankings until approved by the Founder.
+They may not affect official strategy rankings, filters, scores, or approved-strategy alerts until approved by the Founder.
 
-An Approved Theme is approved for official tracking and strategy context only. It is not a buy recommendation, investment endorsement, capital-allocation decision, or declaration that the hypothesis is proven.
+An Approved Theme is eligible for official strategy context. Monitoring activity is governed separately by Monitoring Status.
+
+Approval is not a buy recommendation, investment endorsement, capital-allocation decision, or declaration that the hypothesis is proven.
 
 ## 7. Weak Signal Inbox
 
@@ -369,3 +387,26 @@ Version 0.2 adds:
 - tooling neutrality between product architecture and the current development stack.
 
 These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope.
+
+---
+
+## Amendment Record — Version 0.3
+
+**Status:** Founder-approved Theme governance-axis clarification.
+
+**Amendment:** CA-v0.3-THEME-GOVERNANCE-AXES
+
+Version 0.3 decomposes the flat governance-state list into two separate axes: Approval Status (Detected Hypothesis, Experimental, Under Human Review, Approved, Rejected) and Monitoring Status (Not Monitored, Active Monitoring, Dormant, Archived).
+
+Key clarifications:
+
+- Approval Status and Monitoring Status are independent of each other and of lifecycle, confidence, and crowding.
+- Experimental and Under Human Review Themes may have Active Monitoring without affecting official strategy outputs.
+- An Approved Theme is eligible for official strategy context; monitoring activity is governed separately by Monitoring Status.
+- Any transition to Approved requires explicit Founder approval.
+- Rejected Themes normally remain Not Monitored or Archived; Active Monitoring requires reopening.
+- Archiving does not erase approval or rejection history.
+
+These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, V0 scope, or Two-Tier Autonomy.
+
+Canonical Theme-role ownership remains an unresolved Founder decision.
