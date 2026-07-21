@@ -78,8 +78,18 @@ There is no fifth "UNRESOLVED" status. "UNRESOLVED — FOUNDER DECISION REQUIRED
 ### DR-006 — Canonical Theme-Role Ownership
 
 - **Identifier:** DR-006
-- **Status:** Deferred
-- **Resolution:** Not required for V0; must be resolved before V1
+- **Topic:** Whether canonical structural Theme roles (Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary) belong to Shared Core Entity–Theme relationships, Alpha Momentum Candidate–Theme relationships, or a layered combination
+- **Decision Obligation Source:** DOMAIN-ARCHITECTURE §1.1 (\"Canonical Theme relationship ownership — pending Founder decision\"); CANDIDATE-AND-QUEUE-MODEL §3.4
+- **Rule Content Authority:** Founder-provided rule (this decision)
+- **Affected Artifact(s):** DOMAIN-ARCHITECTURE.md; CANDIDATE-AND-QUEUE-MODEL.md; RULE-PACK-AND-QUALITY-CONTRACTS.md (DS-308)
+- **Status:** Approved
+- **Resolution:** Shared Core owns canonical Entity–Theme structural roles as the authoritative baseline. Alpha Momentum consumes canonical roles and may refine or add strategy-specific context but must not silently contradict the canonical role. When Theme-level and Candidate-level classifications conflict, Theme-level (Shared Core canonical) wins — consistent with the momentum principle of not fighting the prevailing current.
+- **Materiality:** Material — determines architecture ownership of classification authority
+- **Decision Category:** Governance
+- **Founder Decision Required:** Yes — completed
+- **Approval Reference:** AM-V0-FIRST-DECISION-GROUP-v0.1
+- **Dependencies:** None
+- **Verification Evidence:** Founder explicitly approved in session; Rule: Theme-level classification wins over stock-level; Shared Core owns canonical roles; Alpha Momentum refines without contradicting
 
 ### DR-007 — Technology Stack
 
@@ -117,53 +127,53 @@ There is no fifth "UNRESOLVED" status. "UNRESOLVED — FOUNDER DECISION REQUIRED
 
 | Slot | Topic | Status |
 |---|---|---|
-| DS-301 | V0 Candidate Quality Domain Set | Proposed — UNRESOLVED |
-| DS-302 | V0 Entry Readiness Domain Set | Proposed — UNRESOLVED |
-| DS-303 | V0 Theme Quality Consumption Contract | Proposed — UNRESOLVED |
-| DS-304 | Candidate Quality Output and Summary Policy | Proposed — UNRESOLVED |
-| DS-305 | Entry Readiness Output and Summary Policy | Proposed — UNRESOLVED |
-| DS-306 | Theme Quality Output and Summary Policy (Alpha Momentum Consumption) | Proposed — UNRESOLVED |
-| DS-307 | Strategy-Relevance Policy While Preserving Separate Dimensions | Proposed — UNRESOLVED |
-| DS-308 | Theme Context Operational Classification (canonical) | Proposed — UNRESOLVED |
-| DS-309 | Operational V0 Universe Boundary | Proposed — UNRESOLVED |
-| DS-310 | Additional Alpha Momentum Eligibility Criteria | Proposed — UNRESOLVED |
+| DS-301 | V0 Candidate Quality Domain Set | Approved |
+| DS-302 | V0 Entry Readiness Domain Set | Approved |
+| DS-303 | V0 Theme Quality Consumption Contract | Approved |
+| DS-304 | Candidate Quality Output and Summary Policy | Approved |
+| DS-305 | Entry Readiness Output and Summary Policy | Approved |
+| DS-306 | Theme Quality Output and Summary Policy (Alpha Momentum Consumption) | Approved |
+| DS-307 | Strategy-Relevance Policy While Preserving Separate Dimensions | Approved |
+| DS-308 | Theme Context Operational Classification (canonical) | Approved |
+| DS-309 | Operational V0 Universe Boundary | Approved |
+| DS-310 | Additional Alpha Momentum Eligibility Criteria | Approved |
 
 ### DATA-CONFIDENCE-AND-POINT-IN-TIME-CONTRACTS.md — 12 Active Slots
 
 | Slot | Topic | Status |
 |---|---|---|
-| DS-401 | Freshness and Staleness | Proposed — UNRESOLVED |
-| DS-402 | Completeness and Expected-Data Contract | Proposed — UNRESOLVED |
-| DS-403 | Reliability | Proposed — UNRESOLVED |
-| DS-404 | Source Independence and Derivation Classification | Proposed — UNRESOLVED |
-| DS-405 | Conflict Detection and Preservation | Proposed — UNRESOLVED |
-| DS-406 | Missing Evidence | Proposed — UNRESOLVED |
-| DS-407 | Public-Availability Timestamp | Proposed — UNRESOLVED |
-| DS-408 | Ingestion Timestamp | Proposed — UNRESOLVED |
-| DS-409 | Effective / As-Of and Forecast-Target Periods | Proposed — UNRESOLVED |
-| DS-410 | Revision and Vintage Handling | Proposed — UNRESOLVED |
-| DS-411 | Point-in-Time Visibility | Proposed — UNRESOLVED |
-| DS-412 | Data Confidence Scope Levels and Roll-Up Policy | Proposed — UNRESOLVED |
+| DS-401 | Freshness and Staleness | Approved |
+| DS-402 | Completeness and Expected-Data Contract | Approved |
+| DS-403 | Reliability | Approved |
+| DS-404 | Source Independence and Derivation Classification | Approved |
+| DS-405 | Conflict Detection and Preservation | Approved |
+| DS-406 | Missing Evidence | Approved |
+| DS-407 | Public-Availability Timestamp | Approved |
+| DS-408 | Ingestion Timestamp | Approved |
+| DS-409 | Effective / As-Of and Forecast-Target Periods | Approved |
+| DS-410 | Revision and Vintage Handling | Approved |
+| DS-411 | Point-in-Time Visibility | Approved |
+| DS-412 | Data Confidence Scope Levels and Roll-Up Policy | Approved |
 
 ### PIPELINE-AND-RESEARCH-QUEUE-DESIGN.md — 13 Active Slots
 
 | Slot | Topic | Status |
 |---|---|---|
-| DS-501 | Operational V0 Universe Boundary in Pipeline Context | Proposed — UNRESOLVED |
-| DS-502 | Theme Context Stage Behavior | Proposed — UNRESOLVED |
-| DS-503 | Candidate Quality Assessment — Gate/Rank/Enrichment Effects | Proposed — UNRESOLVED |
-| DS-504 | Entry Readiness Assessment — Gate/Rank/Enrichment Effects | Proposed — UNRESOLVED |
-| DS-505 | Data Confidence Assessment — Gate/Warning Effects | Proposed — UNRESOLVED |
-| DS-506 | Theme-First Queue Assembly | Proposed — UNRESOLVED |
-| DS-507 | V0 Prioritization Output Form | Proposed — UNRESOLVED |
-| DS-508 | Adaptive-Capacity Decision Policy | Proposed — UNRESOLVED |
-| DS-509 | Queue Empty-State Operational Contract | Proposed — UNRESOLVED |
-| DS-510 | Explainability, Audit, and Rule-Result Lineage Contract | Proposed — UNRESOLVED |
-| DS-511 | Stock-First Discovery Path Preservation | Proposed — UNRESOLVED |
-| DS-512 | Logical Stage Dependencies and Input/Output Contracts | Proposed — UNRESOLVED |
-| DS-513 | Rule Lifecycle, Version, Authority, and Effective-Date Contract | Proposed — UNRESOLVED |
+| DS-501 | Operational V0 Universe Boundary in Pipeline Context | Approved |
+| DS-502 | Theme Context Stage Behavior | Approved |
+| DS-503 | Candidate Quality Assessment — Gate/Rank/Enrichment Effects | Approved |
+| DS-504 | Entry Readiness Assessment — Gate/Rank/Enrichment Effects | Approved |
+| DS-505 | Data Confidence Assessment — Gate/Warning Effects | Approved |
+| DS-506 | Theme-First Queue Assembly | Approved |
+| DS-507 | V0 Prioritization Output Form | Approved |
+| DS-508 | Adaptive-Capacity Decision Policy | Approved |
+| DS-509 | Queue Empty-State Operational Contract | Approved |
+| DS-510 | Explainability, Audit, and Rule-Result Lineage Contract | Approved |
+| DS-511 | Stock-First Discovery Path Preservation | Approved |
+| DS-512 | Logical Stage Dependencies and Input/Output Contracts | Approved |
+| DS-513 | Rule Lifecycle, Version, Authority, and Effective-Date Contract | Approved |
 
-**Total Active Gate A Slots: 35** (10 + 12 + 13)
+**Total Active Gate A Slots: 35** (10 + 12 + 13) — **All 35 Approved** 🎉
 
 ---
 
@@ -290,15 +300,18 @@ Templates are not active decisions. They carry TPL- identifiers. Instantiation r
 | Ref | Topic | Status |
 |---|---|---|
 | DR-005 | Controlled Theme Set selection | Proposed — UNRESOLVED |
-| DR-006 | Canonical Theme-role ownership | Deferred |
+| DR-006 | Canonical Theme-role ownership | Approved |
 | DR-007 | Technology stack | Deferred |
 | DR-004 | Legacy Knowledge Salvage authorization | Deferred |
 
-In addition, 35 active normalized decision slots (DS-301–DS-310, DS-401–DS-412, DS-501–DS-513) are registered across the three Gate A artifacts. All are Status: Proposed, Resolution: UNRESOLVED — FOUNDER DECISION REQUIRED. None propose investment-rule answers, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, queue ordering, tie-breakers, eligibility rules, aggregations, or fallbacks.
+In addition, of the 35 active normalized decision slots (DS-301–DS-310, DS-401–DS-412, DS-501–DS-513) registered across the three Gate A artifacts:
+- **3 are now Approved** (DS-301, DS-302, DS-303 — First Decision Group)
+- **32 remain Proposed, Resolution: UNRESOLVED — FOUNDER DECISION REQUIRED**
+- None propose investment-rule answers, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, queue ordering, tie-breakers, eligibility rules, aggregations, or fallbacks.
 
 8 templates (TPL-*) await conditional instantiation. 2 inherited controls apply across all artifacts. 1 topic is deferred beyond Gate A. 3 topics are moved to future Gate C without identifiers.
 
-No investment-rule decision has been approved. Gate A completion (DR-009) will confirm structural completeness; individual slot resolution requires separate Founder decisions.
+**🎉 GATE A COMPLETE — All 35 investment-domain decision slots are Approved.** 1 governance decision (DR-006) also Approved. 8 templates (TPL-*) await conditional instantiation; ordering templates (TPL-PIPELINE-*) remain inactive per DS-507 (unordered). 2 inherited controls apply across all artifacts. 1 topic deferred beyond Gate A. 3 topics moved to future Gate C.
 
 ---
 
@@ -314,3 +327,11 @@ No investment-rule decision has been approved. Gate A completion (DR-009) will c
 | 20 July 2026 | Gate A slot normalization rewrite: 60 DS + 1 RC → 35 DS + 8 templates; new ranges DS-301+, DS-401+, DS-501+; full supersession map; DR-009 remains Proposed; all slots UNRESOLVED | AM-V0-GATE-A-SLOT-NORMALIZATION-REWRITE-v0.1 |
 | 20 July 2026 | AI-authored alternatives removed from all 35 active slots; exact replacement sentence applied | AM-V0-GATE-A-REMOVE-AI-ALTERNATIVES-v0.1 |
 | 20 July 2026 | Gate A structural completeness approved; three Gate A artifacts accepted as decision-slot structures; DR-009 approved; all 35 individual slots remain Proposed and unresolved | AM-V0-GATE-A-STRUCTURAL-ACCEPTANCE-v0.1 |
+| 21 July 2026 | First Decision Group approved: DR-006 (Theme-role ownership), DS-301 (5 Candidate Quality domains: Relative Strength, Accumulation, Liquidity, Growth, Trend Quality), DS-302 (4 Entry Readiness domains: Base Quality, Volatility Contraction, Extension Risk, Breakout Proximity), DS-303 (Theme Quality consumption: all axes, display-only, Market Confirmation shown not filtered) | AM-V0-FIRST-DECISION-GROUP-v0.1 |
+| 21 July 2026 | Wave 2 Output Policies approved: DS-304 (Candidate Quality output: Approach B — 2 groups: Trend & Participation, Tradeability & Growth), DS-305 (Entry Readiness output: Approach B — 2 groups: Pattern Quality, Entry Timing), DS-306 (Theme Quality output: Approach B — 3 groups: Theme Structure, Evidence & Confirmation, Risk & Meta) | AM-V0-WAVE-2-OUTPUT-POLICIES-v0.1 |
+| 21 July 2026 | Wave 3a Timestamps approved: DS-407 (public-availability: fixture-defined, YYYY-MM-DD), DS-408 (ingestion: fixture-load-time, YYYY-MM-DD HH:MM:SS), DS-409 (effective period: fixture-defined, single date or range, period_type historical/forecast flag). All operational complexity deferred to V0.5. | AM-V0-WAVE-3A-TIMESTAMPS-v0.1 |
+| 21 July 2026 | Wave 3b Data Confidence dimensions approved: DS-401 (freshness: fixture-assigned + Constitution §8 3yr narrative default), DS-402 (completeness: fixture-defined expected-field templates per type), DS-403 (reliability: fixture-assigned per source, 4 levels), DS-404 (independence: fixture-assigned per record, 4 EVIDENCE-MODEL categories), DS-405 (conflicts: fixture-injected, mandatory preservation — no averaging), DS-406 (missing evidence: fixture-defined inventory per Theme/Candidate, 3 categories). All operational complexity deferred to V0.5. | AM-V0-WAVE-3B-DIMENSIONS-v0.1 |
+| 21 July 2026 | Wave 3c Data Confidence capstone approved: DS-410 (revision: EVIDENCE-MODEL §5.1 hard rules + V0 synthetic demo), DS-411 (visibility: pub_date <= eval_date, staleness is quality flag not visibility gate), DS-412 (scope: no roll-up, 3 levels independent, dimensions displayed separately). Data Confidence artifact: 12/12 complete. | AM-V0-WAVE-3C-CAPSTONE-v0.1 |
+| 21 July 2026 | Wave 4 Architecture approved: DS-307 (Strategy-Relevance: 4 dimensions side-by-side, TQ→CQ→ER→DC, no composite score), DS-308 (Theme Context: Filter — Candidate must have Theme to enter pipeline), DS-511 (Stock-First Path: extension point — Universe stage independent of Theme, Theme filter isolated to Stage 2), DS-512 (Stage I/O: linear 6-stage pipeline with explicit contracts). Rule Pack: 8/10 complete. Pipeline: 2/13 resolved. | AM-V0-WAVE-4-ARCHITECTURE-v0.1 |
+| 21 July 2026 | Wave 5 Stages approved: DS-309 (Universe: NYSE+NASDAQ+ADRs, fixture-defined), DS-310 (no additional eligibility), DS-501 (Universe stage: boundary filter pass-through), DS-502 (Theme Context stage: filter — Theme ≥ 1), DS-503 (CQ: enrichment), DS-504 (ER: enrichment), DS-505 (DC: warning). Rule Pack: 10/10 complete. Pipeline: 7/13 resolved. 6 slots remain. | AM-V0-WAVE-5-STAGES-v0.1 |
+| 21 July 2026 | 🎉 Wave 6 Queue & Governance approved — GATE A COMPLETE: DS-506 (Queue Assembly: Theme-first grouping), DS-507 (Unordered — no prioritization, templates inactive), DS-508 (Show-all — no quality threshold, adaptive = no quota), DS-509 (Empty queue = valid honest output), DS-510 (Per-run audit + per-Candidate explanation), DS-513 (Rule lifecycle: identity, version, authority, effective-date). All 35/35 slots Approved. Gate A: DONE. | AM-V0-WAVE-6-QUEUE-v0.1 |
