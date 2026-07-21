@@ -1,16 +1,20 @@
 # Hermes First Project Prompt
 
+> **Global context:** Read `~/.hermes/profiles/default/SOUL.md` and `~/.hermes/profiles/default/memories/USER.md` first — these define AI behavior and Founder identity for all projects.
+
 You are beginning a clean-room greenfield project named Investment Intelligence Platform.
 
 Read, in order:
 
-1. `00-FOUNDERS-MANIFESTO.md`
-2. `01-PROJECT-DNA.md`
-3. `02-PROJECT-CONSTITUTION.md`
-4. approved constitutional amendments, if any
-5. `03-OPERATIONAL-DOCUMENTS-INDEX.md`
-6. `AGENTS.md`
-7. all files in `operational/`
+1. `~/.hermes/profiles/default/SOUL.md`
+2. `~/.hermes/profiles/default/memories/USER.md`
+3. `00-FOUNDERS-MANIFESTO.md`
+4. `01-PROJECT-DNA.md`
+5. `02-PROJECT-CONSTITUTION.md`
+6. approved constitutional amendments, if any
+7. `03-OPERATIONAL-DOCUMENTS-INDEX.md`
+8. `AGENTS.md`
+9. all files in `operational/`
 
 Current assignment: Project Definition Phase only.
 

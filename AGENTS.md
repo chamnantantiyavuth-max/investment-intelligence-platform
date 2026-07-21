@@ -1,15 +1,21 @@
-# AGENTS.md
+# AGENTS.md — Investment Intelligence Platform
+
+> **Inherits from:** `~/.hermes/profiles/default/SOUL.md` (AI behavior) + `~/.hermes/profiles/default/memories/USER.md` (Founder profile)
+>
+> Read those first. This file contains only project-specific rules.
 
 ## Authority
 
 Read and follow, in order:
 
-1. `02-PROJECT-CONSTITUTION.md` and approved constitutional amendments
-2. `operational/FOUNDERS-DECISIONS.md`
-3. Approved domain specifications
-4. Approved ADRs
-5. Approved implementation plans
-6. AI-generated suggestions
+1. `~/.hermes/profiles/default/SOUL.md` — universal AI intellectual standards, working discipline, safety
+2. `~/.hermes/profiles/default/memories/USER.md` — Founder identity, methodology, constraints, communication preferences
+3. `02-PROJECT-CONSTITUTION.md` and approved constitutional amendments
+4. `operational/FOUNDERS-DECISIONS.md`
+5. Approved domain specifications
+6. Approved ADRs
+7. Approved implementation plans
+8. AI-generated suggestions
 
 Rules:
 
@@ -20,22 +26,9 @@ Rules:
 - Casual agreement is not approval of an unnamed material change.
 - Approval must identify the plan, artifact, amendment, state transition, or operation being approved.
 
-## User Context
-
-The Founder is the product and investment-domain owner, not a professional software engineer.
-
-Do not treat visible approval, a successful UI, or a plausible report as proof of technical correctness.
-
-Use tests, evidence, reproducibility, explicit acceptance criteria, and independent review.
-
-## Mandatory Project Rules
+## Project-Specific Mandatory Rules
 
 - Plan substantial work before implementation.
-- Challenge unsafe, contradictory, unnecessary, or prematurely complex requirements.
-- Separate facts, assumptions, hypotheses, decisions, and unresolved questions.
-- Do not invent missing domain rules.
-- Do not hide uncertainty or conflicting evidence.
-- Do not change official scoring logic without an approved, versioned material-change proposal.
 - Do not access the legacy repository unless a task authorizes an exact, narrow inspection.
 - Do not introduce broker connectivity, execution, or portfolio allocation.
 - Do not read, expose, copy, log, or commit secrets.
@@ -79,9 +72,34 @@ Before completion:
 
 ## Current Project Phase
 
-Constitution and Product Definition.
+Alpha Momentum V0 Design — Gate B: Controlled Theme Set.
 
-Do not write application code, select a final technology stack, install dependencies, create migrations, or create production integrations unless a later approved phase explicitly authorizes them.
+Current approved checkpoints:
+
+- foundation-v0.3
+- project-definition-v0.1
+- am-v0-design-plan-v0.1
+- am-v0-gate-a-structure-v0.1
+- am-v0-gate-a-complete-v0.1 (35/35 slots approved, 6 waves + DR-006, 21 July 2026)
+
+Phase governance:
+
+- The Approved Stable Design Plan v0.1 governs the current design phase.
+- Gate A is complete: all 35 decision slots approved across 6 waves.
+- DR-006 (Canonical Theme-Role Ownership) approved: Shared Core owns canonical Entity–Theme structural roles; Theme-level classification wins over stock-level.
+- 8 templates (TPL-*) await conditional instantiation in later gates.
+- DR-004 (Legacy Knowledge Salvage) remains Deferred — separate authorization required.
+- Current work is Gate B: Controlled Theme Set (`design/alpha-momentum-v0/CONTROLLED-THEME-SET.md`).
+- Gate B artifact defines Theme names, structural drivers, V0 inclusion rationale, and domain coverage per ALPHA-MOMENTUM-V0-SPEC §3.1.
+
+Current-phase restrictions:
+
+- Do not write application code, select a final technology stack, install dependencies, create migrations, or create production integrations.
+- No schema or migration.
+- Gate B drafting authorized for `design/alpha-momentum-v0/CONTROLLED-THEME-SET.md` only. Gate C remains unauthorized.
+- No Legacy or quarantine access without separate named authorization.
+- No AI-invented investment rules, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, ordering, tie behavior, aggregation, or fallback.
+- No implementation activity.
 
 ## Working Method
 
