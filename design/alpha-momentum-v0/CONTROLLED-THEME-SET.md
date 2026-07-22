@@ -255,13 +255,13 @@ Lifecycle stages are assigned at the industry level based on general market cond
 
 | Stage | Description | Themes | V0 Relevance |
 |---|---|---|---|
-| **Expansion** 🟢 | Broad adoption, multiple independent growth vectors | Semis, Cloud, Software, Semi Equipment, Drug Manufacturers General, E-commerce, AI-related | Primary hunting ground (Minervini Stage 2) |
-| **Emerging Leadership** 🟡 | Leaders and challengers distinguishable; operational evidence exists | ~55 industries including Most Healthcare, FinTech, Defense, Restaurants, Travel, Aerospace, Waste Mgmt | Secondary hunting ground — watch for Stage 2 transitions |
+| **Expansion** 🟢 | Broad adoption, multiple independent growth vectors | Semis, Cloud, Software, Semi Equipment, Drug Manufacturers General, E-commerce, AI-related | Primary hunting ground — confirmed uptrend, Stage 2 advancing |
+| **Emerging Leadership** 🟡 | Leaders and challengers distinguishable; operational evidence exists | ~55 industries including Most Healthcare, FinTech, Defense, Restaurants, Travel, Aerospace, Waste Mgmt | Secondary hunting ground — watch for uptrend transitions |
 | **Formation** 🔵 | Early indicators; structural evidence but no consensus | ~35 industries including Solar, Biotech, Health IT, Residential Construction, Clean Energy, Space, Quantum-adjacent | High potential, high uncertainty — monitor, don't chase |
 | **Crowded / Late** 🟠 | Widely recognized; limited upside surprise; crowding risk material | ~35 industries including Tobacco, Broadcasting, Paper, Telecom, Department Stores, Consumer Staples | Caution zone — limited alpha potential |
 | **Deterioration** 🔴 | Structural decline; leadership rotating or exiting | Energy (all 7 sub-industries), REIT Office, Education, Publishing, Broadcasting, Tobacco, Textile, Business Equipment | Avoid long; short candidates (Founder discretion) |
 
-> **Founder note:** Lifecycle assignments are proposed defaults based on general market conditions. The Founder may reassign any industry to a different lifecycle stage based on their market view. Per Minervini Stage 2 methodology, Deterioration (Stage 4) themes are identified for avoidance and potential short opportunity identification.
+> **Founder note:** Lifecycle assignments are proposed defaults based on general market conditions. The Founder may reassign any industry to a different lifecycle stage based on their market view. Deterioration themes are identified for avoidance and potential short opportunity identification. Momentum strategy draws on the Founder's Stage 2 uptrend approach — exact rule packs (O'Neil, Minervini) remain deferred per DESIGN-PLAN.md §11.
 
 ---
 
@@ -309,6 +309,8 @@ All 8 Theme Relationship Roles can be mapped across the 143 themes:
 
 ## 6. V0 Screening Methodology — Stock-First + Theme Enrichment
 
+> **Scope note:** This section is an informative reference summarizing the Stock-First + Theme Enrichment approach (Approach C) approved under Gate B Founder Review Q2. The canonical pipeline design and all stage-by-stage contracts are in `PIPELINE-AND-RESEARCH-QUEUE-DESIGN.md` (Gate A artifact, DS-501 through DS-513). This section does not override or duplicate Gate A pipeline authority.
+
 **Founder Decision:** Q2 — Industry size normalization resolved via Approach C.
 
 ### 6.1 Principle
@@ -326,9 +328,9 @@ Pass 1: Stock-Level Screening (Theme-Agnostic)
   │   → Absolute quality thresholds:         │
   │     • RS Rating (deferred)               │
   │     • EPS growth trajectory (deferred)   │
-  │     • Volume / liquidity minimum         │
-  │     • Price structure (Stage 2)          │
-  │   → Result: ~200-400 qualified stocks    │
+  │     • Volume / liquidity minimum (deferred)│
+  │     • Price structure — Stage 2 (deferred) │
+  │   → Result: N qualified candidates (notional — no target range) |
   └─────────────────────────────────────────┘
                     ↓
 Pass 2: Theme Enrichment (Map to Context)
