@@ -1,0 +1,115 @@
+{# ── Alpha Momentum V0 — Reusable Jinja2 Macros ── #}
+
+{# Lifecycle dot + label #}
+{% macro lifecycle_badge(lifecycle, class_map) -%}
+  {% set cls = class_map.get(lifecycle, '') %}
+  <span class="lc-{{ cls }}">
+    <span class="lifecycle-dot"></span>{{ lifecycle }}
+  </span>
+{%- endmacro %}
+
+{# Leadership badge #}
+{% macro leadership_badge(state, class_map) -%}
+  {% set cls = class_map.get(state, 'deteriorating') %}
+  <span class="badge badge-{{ cls }}">{{ state }}</span>
+{%- endmacro %}
+
+{# Confidence indicator #}
+{% macro confidence_label(level) -%}
+  {% set l = level.lower() %}
+  <span class="confidence-{{ l }}">{{ level }}</span>
+{%- endmacro %}
+
+{# Override badge #}
+{% macro override_badge() -%}
+  <span class="badge badge-override" style="margin-left:6px;font-size:9px;">OVERRIDE</span>
+{%- endmacro %}
+
+{# Metric card #}
+{% macro metric_card(num, label, color='') -%}
+  <div class="metric-card">
+    <div class="num"{% if color %} style="color:{{ color }}"{% endif %}>{{ num }}</div>
+    <div class="lbl">{{ label }}</div>
+  </div>
+{%- endmacro %}
+
+{# Evidence list section #}
+{% macro evidence_section(title, icon, items, type_class, id_prefix) -%}
+  <div class="section{% if type_class == 'contradicting' %} danger-border{% endif %}">
+    <h2>{{ icon }} {{ title }}</h2>
+    {% if items %}
+    <ul class="evidence-list">
+      {% for ev in items %}
+      <li class="ev-{{ type_class }}">
+        {% if ev.type %}<strong>{{ ev.type }}</strong> — {% endif %}{{ ev.content }}
+        <span style="color:var(--text-tertiary);font-size:11px;">[{{ ev.id }}]</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+      {% if type_class == 'supporting' %}No supporting evidence recorded.
+      {% elif type_class == 'contradicting' %}No contradicting evidence identified.
+      {% else %}No missing evidence identified.
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{# Candidate table row #}
+{% macro candidate_row(c) -%}
+  <tr>
+    <td>
+      <strong class="ticker">{{ c.ticker }}</strong>
+      {% if c.override %}{{ override_badge() }}{% endif %}
+    </td>
+    <td>
+      {{ c.primary_role }}
+      {% if c.secondary_roles and c.secondary_roles|length > 0 %}
+        <span style="font-size:10px;color:var(--text-tertiary);">+ {{ c.secondary_roles|join(', ') }}</span>
+      {% endif %}
+    </td>
+    <td>{{ leadership_badge(c.leadership_state, c._leadership_class_map) }}</td>
+    <td style="font-size:12px;">{{ c.cq_short }}</td>
+    <td style="font-size:12px;">{{ c.er_short }}</td>
+    <td style="font-size:12px;">{{ c.dc_warning | safe }}</td>
+    <td>{{ c.research_state }}</td>
+  </tr>
+{%- endmacro %}
+
+{# Candidate table #}
+{% macro candidate_table(candidates, leadership_map) -%}
+  {% if candidates %}
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Role</th>
+        <th>Leadership</th>
+        <th>CQ</th>
+        <th>ER</th>
+        <th>DC</th>
+        <th>Research</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in candidates %}
+        {% set _ = c.update({'_leadership_class_map': leadership_map}) %}
+        {{ candidate_row(c) }}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No qualified candidates — theme is monitored but no actionable setups at this time.</div>
+  {% endif %}
+{%- endmacro %}
+
+{# Key tickers list #}
+{% macro key_tickers(tickers) -%}
+  <p style="font-size:13px;color:var(--text-secondary);font-family:var(--font-mono);font-size:12px;">
+    {% for t in tickers %}
+      <span style="background:var(--bg-surface-alt);padding:2px 8px;border-radius:4px;margin-right:4px;">{{ t }}</span>
+    {% endfor %}
+  </p>
+{%- endmacro %}

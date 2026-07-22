@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Alpha Momentum V0{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Design System: Claude warm minimalism ── */
+  /* Palette: Claude chat UI — warm beige, terracotta accent, near-black text */
+  :root {
+    --bg-page:        #fbfaf7;
+    --bg-surface:     #f3f0e9;
+    --bg-surface-alt: #e9e5da;
+    --bg-hover:       #ded9cc;
+    --bg-header:      #191919;
+    --text-primary:   #191919;
+    --text-secondary: #666155;
+    --text-tertiary:  #8a8577;
+    --text-inverse:   #fbfaf7;
+    --accent:         #cc5a37;
+    --accent-hover:   #b84a2b;
+    --accent-light:   #f5ebe4;
+    --accent-amber:   #d97706;
+    --success:        #3b7a4e;
+    --success-bg:     #edf5ef;
+    --warning:        #b8860b;
+    --warning-bg:     #fcf5ea;
+    --danger:         #c6453d;
+    --danger-bg:      #fbeed;
+    --info:           #4a6fa5;
+    --info-bg:        #edf2f8;
+    --border:         #e6e2d8;
+    --border-strong:  #d4cfc6;
+    --shadow-sm:      0 1px 2px rgba(0,0,0,0.04);
+    --shadow-xs:      0 1px 2px rgba(0,0,0,0.03);
+    --radius-sm:      8px;
+    --radius-md:      12px;
+    --radius-lg:      16px;
+    --radius-xl:      20px;
+    --font-headline:  'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-body:      'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono:      'JetBrains Mono', 'Consolas', monospace;
+    --max-width:      1100px;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Not-Live Banner ── */
+  .not-live-banner {
+    background: var(--bg-header);
+    color: var(--text-inverse);
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .not-live-banner .accent-dot {
+    color: var(--accent);
+    margin: 0 4px;
+  }
+
+  /* ── Page Container ── */
+  .page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .page-header h1 {
+    font-family: var(--font-headline);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-bottom: 0.25rem;
+  }
+  .page-header .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* ── Metrics Row ── */
+  .metrics-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .metric-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 110px;
+    flex: 1;
+    transition: box-shadow 0.15s;
+  }
+  .metric-card:hover { box-shadow: var(--shadow-sm); }
+  .metric-card .num {
+    font-family: var(--font-headline);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .metric-card .lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* ── Section / Card ── */
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-xs);
+  }
+  .section h2 {
+    font-family: var(--font-headline);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section.danger-border { border-left: 3px solid var(--danger); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    background: var(--bg-surface-alt);
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-strong);
+  }
+  td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-surface-alt); }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .badge-leader      { background: var(--success-bg); color: var(--success); }
+  .badge-challenger  { background: var(--warning-bg); color: var(--warning); }
+  .badge-former      { background: var(--danger-bg); color: var(--danger); }
+  .badge-deteriorating { background: var(--danger-bg); color: var(--danger); }
+  .badge-override    { background: var(--accent); color: #fff; }
+
+  /* ── Lifecycle Colors ── */
+  .lifecycle-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .lc-expansion     { color: var(--success); } .lc-expansion .lifecycle-dot { background: var(--success); }
+  .lc-emerging      { color: var(--warning); } .lc-emerging .lifecycle-dot  { background: var(--warning); }
+  .lc-formation     { color: var(--info); }    .lc-formation .lifecycle-dot { background: var(--info); }
+  .lc-crowded       { color: #E0883E; }       .lc-crowded .lifecycle-dot   { background: #E0883E; }
+  .lc-deterioration { color: var(--danger); }  .lc-deterioration .lifecycle-dot { background: var(--danger); }
+
+  /* ── Stats Grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .stat-item {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+  }
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+  .stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 3px;
+    color: var(--text-primary);
+  }
+  .confidence-high   { color: var(--success); }
+  .confidence-medium { color: var(--warning); }
+  .confidence-low    { color: var(--danger); }
+
+  /* ── Evidence Lists ── */
+  .evidence-list { list-style: none; }
+  .evidence-list li {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .evidence-list li:last-child { border-bottom: none; }
+  .ev-supporting::before   { content: "✓ "; color: var(--success); font-weight: 700; }
+  .ev-contradicting::before { content: "✗ "; color: var(--danger); font-weight: 700; }
+  .ev-missing::before      { content: "? "; color: var(--warning); font-weight: 700; }
+
+  /* ── Empty State ── */
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-tertiary);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* ── Links ── */
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+  /* ── Pipeline Stages ── */
+  .stages { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border); }
+  .stages h3 {
+    font-family: var(--font-headline);
+    font-size: 16px;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+  }
+  .stage-stepper {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .stage-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .stage-step .step-num {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 11px;
+  }
+
+  /* ── Audit Footer ── */
+  .audit-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+
+  /* ── Ticker Monospace ── */
+  .ticker { font-family: var(--font-mono); font-weight: 500; color: var(--text-primary); }
+
+  /* ── Theme Card Specific ── */
+  .card { max-width: 900px; margin: 0 auto; }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb { font-size: 12px; color: var(--text-tertiary); margin-bottom: 1rem; }
+  .breadcrumb a { color: var(--text-secondary); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .page { padding: 1.5rem 1rem 3rem; }
+    .page-header h1 { font-size: 24px; }
+    .metrics-row { gap: 0.5rem; }
+    .metric-card { padding: 0.75rem 1rem; }
+    .metric-card .num { font-size: 22px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    table { font-size: 11px; }
+    th, td { padding: 6px 8px; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    .not-live-banner { background: #000 !important; -webkit-print-color-adjust: exact; }
+    body { font-size: 11px; }
+    .section { break-inside: avoid; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="not-live-banner">⚠️ NOT LIVE DATA — FOR V0 TESTING ONLY<span class="accent-dot">●</span>{{ fixture_category }}</div>
+
+{% block content %}{% endblock %}
+
+<div class="audit-footer">
+  Pipeline: {{ pipeline_version }} · Run: {{ run_id }} · Point-in-Time: {{ point_in_time }} · {{ fixture_category }}
+</div>
+</body>
+</html>

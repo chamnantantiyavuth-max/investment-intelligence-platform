@@ -11,9 +11,12 @@ The project intentionally does not yet select:
 - data vendors;
 - RAG architecture;
 - MCP integrations;
-- agent orchestration;
+- agent orchestration framework;
+- agent topology (number and assignment of specialized agents);
 - exact score weights;
-- production scheduling;
+- O'Neil / Minervini rule packs, formulas, windows, thresholds, and pattern definitions;
 - final UI design;
 - deployment topology;
-- broker integration.
+- broker integration;
+- model / provider selection for AI workflows;
+- Valuation Context weighting and interpretation.

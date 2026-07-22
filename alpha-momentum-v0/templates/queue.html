@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "macros.html" import metric_card, lifecycle_badge, confidence_label, candidate_table, leadership_badge with context %}
+
+{% block title %}Research Queue | Alpha Momentum V0{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header">
+    <h1>Research Queue</h1>
+    <div class="subtitle">Alpha Momentum V0 — Theme-first research queue</div>
+  </div>
+
+  <!-- Metrics Summary -->
+  <div class="metrics-row">
+    {{ metric_card(theme_count, 'Themes', 'var(--info)') }}
+    {{ metric_card(total_candidates, 'Candidates', 'var(--success)') }}
+    {{ metric_card(empty_theme_count, 'Empty Themes', empty_theme_count > 0 and 'var(--warning)' or 'var(--text-tertiary)') }}
+  </div>
+
+  {% if total_candidates == 0 %}
+  <div class="section">
+    <div class="empty-state">No candidates meet current quality thresholds across any monitored theme.</div>
+    <p style="text-align:center;color:var(--text-tertiary);font-size:13px;margin-top:0.5rem;">{{ theme_count }} themes monitored</p>
+  </div>
+  {% endif %}
+
+  <!-- Queue Items by Theme -->
+  {% for tid, tdata in queue %}
+  {% set theme = tdata.theme %}
+  {% set has_candidates = tdata.candidates|length > 0 %}
+  <div class="section"{% if not has_candidates %} style="opacity:0.6;"{% endif %}>
+    <h2 style="display:flex;align-items:center;gap:8px;border-bottom:none;margin-bottom:4px;padding-bottom:0;">
+      {{ lifecycle_badge(theme.lifecycle, lifecycle_classes) }}
+      {{ theme.name }}
+    </h2>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);">
+      {{ theme.sector }} → {{ theme.industry }} · {{ theme.lifecycle }} · {{ confidence_label(theme.confidence) }} confidence · {{ tdata.candidates|length }} candidates ·
+      <a href="theme_cards/theme_{{ tid }}.html">Full Theme Card →</a>
+    </div>
+
+    {{ candidate_table(tdata.candidates, leadership_classes) }}
+  </div>
+  {% endfor %}
+
+  <!-- Pipeline Stages -->
+  <div class="stages">
+    <h3>Pipeline Stages</h3>
+    <div class="stage-stepper">
+      {% for s in stages %}
+      <div class="stage-step">
+        <span class="step-num">{{ s.stage_id }}</span>
+        <span>{{ s.stage }}</span>
+        <span style="color:var(--text-tertiary);font-size:10px;margin-left:auto;">{{ s.output_count or s.passed_count or s.dimensions_assessed or s.total_candidates or '—' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

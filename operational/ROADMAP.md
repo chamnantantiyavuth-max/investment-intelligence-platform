@@ -41,8 +41,11 @@ Outcomes, postmortems, approved lessons, and narrative export.
 ## Phase 7 — Close System Definition and Vertical Slice
 Macro, ETF, commodity, suitability, opportunity, and capital-lock-up risk.
 
-## Phase 8 — Global Expansion
+## Phase 8 — Fundamental & Opportunity Intelligence
+Fundamental workbench: Macro, Industry, Product, Company, Earnings, and Valuation Context analysis. Full integration with Shared Intelligence Core, Independent Challenge, and Synthesis.
+
+## Phase 9 — Global Expansion
 Additional markets, languages, assets, and scheduling.
 
-## Phase 9 — Deep Research Handoff
+## Phase 10 — Deep Research Handoff
 Company Intelligence Workbench and return of outcomes and lessons.

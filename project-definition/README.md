@@ -17,11 +17,12 @@ The six substantive documents in this directory are **Approved Domain Specificat
 
 | Layer | Location | Status |
 |---|---|---|
-| Constitution + Amendments | `02-PROJECT-CONSTITUTION.md`, `05-FOUNDATION-AMENDMENT-v0.2.md`, `06-CONSTITUTIONAL-AMENDMENT-v0.3.md` | Approved (v0.3) |
-| Founder's Decisions | `operational/FOUNDERS-DECISIONS.md` | Approved |
+| Constitution + Amendments | `02-PROJECT-CONSTITUTION.md`, `05-FOUNDATION-AMENDMENT-v0.2.md`, `06-CONSTITUTIONAL-AMENDMENT-v0.3.md` | Approved (v0.4) |
+| Founder's Decisions | `operational/FOUNDERS-DECISIONS.md` | Approved (#1-24) |
 | Operational Policies | `operational/*.md` | Approved |
 | **Project Definition Index** | `project-definition/README.md` | **Approved (v0.1)** |
 | **Approved Domain Specifications** | `project-definition/DOMAIN-ARCHITECTURE.md`, `project-definition/THEME-MODEL.md`, `project-definition/EVIDENCE-MODEL.md`, `project-definition/CANDIDATE-AND-QUEUE-MODEL.md`, `project-definition/HUMAN-REVIEW-AND-LEARNING-MODEL.md`, `project-definition/ALPHA-MOMENTUM-V0-SPEC.md` | **Approved (v0.1)** |
+| **Approved Operating Model** | `project-definition/INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md` | **Approved (v0.1)** |
 | ADRs | (not yet created) | Future |
 | Implementation Plans | (not yet created) | Future |
 
@@ -38,6 +39,7 @@ The Constitution is the authority. These documents derive from it without alteri
 | 5 | `CANDIDATE-AND-QUEUE-MODEL.md` | Candidate entity, four quality dimensions, three candidate axes, Theme-first Research Queue |
 | 6 | `HUMAN-REVIEW-AND-LEARNING-MODEL.md` | Human Override entity, Learning contracts (Decision, Outcome, Postmortem, Lesson) |
 | 7 | `ALPHA-MOMENTUM-V0-SPEC.md` | V0 specification: controlled universe, theme selection criteria, screening pipeline, acceptance criteria |
+| 8 | `INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md` | Dual intelligence operating model: Fundamental & Opportunity + Momentum & Market Leadership paths, Shared Core, Independent Challenge, Founder Decision Gate |
 
 ## Version Boundaries
 

@@ -64,7 +64,7 @@ Whether canonical structural Theme roles (Direct Beneficiary, Enabler, Bottlenec
 
 ### 1.2 Alpha Momentum
 
-**First implementation vertical slice** (Constitution §3, §13; Founder's Decision #2).
+**First implementation vertical slice** (Constitution §3, §13; Founder's Decision #2). Active path: Momentum & Market Leadership Intelligence per INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md.
 
 Owns:
 
@@ -89,7 +89,11 @@ Consumes from Shared Core:
 
 ### 1.3 Close System
 
-**Second strategy world** (Constitution §15). Defined later (Phase 7+). Not detailed in these Project Definition documents beyond boundary marking.
+**Second strategy world** (Constitution §15; INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md). Defined later (Phase 7+).
+
+### 1.4 Fundamental & Opportunity Intelligence (V1+)
+
+**Future intelligence path** (INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md §5). Defined later (Phase 8). Covers Macro, Industry, Product, Company, Earnings & Change Analysis, and Valuation Context. Not active in V0. Not detailed in these Project Definition documents beyond boundary marking.
 
 Future design must distinguish:
 

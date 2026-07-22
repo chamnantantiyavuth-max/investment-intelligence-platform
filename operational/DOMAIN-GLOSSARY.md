@@ -49,3 +49,18 @@ A human decision that differs from system assessment while preserving machine di
 
 ## Approved Knowledge
 A reviewed lesson eligible to inform official rules or playbooks.
+
+## Research Orchestrator
+The platform capability that coordinates evidence acquisition, deterministic computation, AI interpretation, challenge, synthesis, and Founder review across intelligence paths.
+
+## Independent Challenge
+A platform capability, separate from primary analysis, that identifies contradictory evidence, fragile assumptions, and risks. It may recommend more research but may not independently authorize or reject an investment.
+
+## Synthesis & Decision Support
+The platform capability that preserves separate views for Theme Quality, Candidate Quality, Entry Readiness, Data Confidence, supporting evidence, contradicting evidence, assumptions, and unresolved questions — without compressing into one opaque score.
+
+## Founder Decision Gate
+The final human authorization point within the platform. AI proposes; the Founder authorizes material investment-intelligence states. Approval inside the platform does not authorize capital allocation or execution.
+
+## External Integration Boundary
+The formal boundary separating the Investment Intelligence Platform from downstream systems (Capital Command, Trading / Execution Systems). The platform produces intelligence packages; external systems consume them.

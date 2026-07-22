@@ -26,4 +26,7 @@
 - final scoring weights;
 - final technology stack;
 - production autonomous scanning;
-- deep company research for every candidate.
+- deep company research for every candidate;
+- Capital Command integration (external system);
+- Trading / Execution Systems (external system);
+- Fundamental & Opportunity Intelligence workbench (V1+).

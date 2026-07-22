@@ -367,6 +367,68 @@ Let machines discover and organize.
 Let humans approve and decide.  
 Learn from every important outcome without rewriting history.
 
+## 23. AI Operating Constitution
+
+### 23.1 Purpose
+
+AI may operate as an embedded intelligence capability inside approved product workflows. The platform shall preserve a clear separation among:
+
+1. deterministic computation and authoritative system state;
+2. AI-assisted interpretation and reasoning;
+3. human-authorized decisions.
+
+No implementation may collapse these three responsibilities into a single opaque AI-controlled process.
+
+### 23.2 Three-Layer Authority Model
+
+**Deterministic Core** — authoritative for functions requiring reproducibility, exact calculation, rule enforcement, validation, state transitions, access control, and auditability. A language model shall not be treated as the authoritative calculator, database, rules engine, permission system, or source of governance truth.
+
+**AI Intelligence Layer** — may perform interpretation, synthesis, comparison, classification, hypothesis generation, explanation, critique, and natural-language interaction. AI output remains non-authoritative until processed according to its required validation and review status.
+
+**Founder Approval Layer** — the Founder retains final authority for material investment judgment, approval, rejection, promotion, override, and strategy use. AI may recommend, warn, challenge, prioritize, summarize, or draft. AI may not independently approve investments, authorize capital allocation, place or direct trades, alter approved policy, silently convert uncertainty into fact, or represent an unreviewed hypothesis as approved knowledge.
+
+### 23.3 Application Function Classification
+
+Each material product function shall be classified as Deterministic, AI-Assisted, Hybrid, or Human-Authorized. Its contract shall identify authoritative inputs, deterministic calculations, AI responsibilities, validation requirements, required evidence, approval requirements, failure behavior, persisted outputs, and audit requirements.
+
+Where a workflow combines software and AI, deterministic operations shall remain separate from AI interpretation. AI shall not silently substitute its own calculations for deterministic outputs.
+
+### 23.4 Evidence and Epistemic Status
+
+Every material AI-generated output shall preserve its epistemic status. AI extraction, classification, inference, hypothesis, interpretation, and recommendation shall not automatically become an Observed Fact. Material AI output shall include or link to source references, as-of time, workflow version, model provenance, uncertainty representation, review status, and lineage.
+
+### 23.5 Specialized Agents and Delegation
+
+The platform may use specialized AI agents where specialization provides justified value. A logical responsibility does not automatically require a separately deployed agent. A specialized agent may be created only when it requires materially different evidence, reasoning, permissions, or provides real value through independent evaluation or parallel execution.
+
+Every material agent shall define: purpose, authority boundary, permitted evidence, prohibited actions, input/output contracts, deterministic dependencies, provenance, validation, failure behavior, escalation, and review requirements.
+
+Delegation from one AI agent does not create additional authority. AI-to-AI delegation shall not bypass human approval gates, promote unreviewed output into authoritative state, or conceal the origin of an output. Where multiple agents contribute to one output, the system shall preserve sufficient lineage to identify which agent produced each material contribution and where agents agreed or disagreed.
+
+### 23.6 Reproducibility and Versioning
+
+Material AI workflows shall be versioned. The platform shall preserve sufficient provenance to explain what information was available, which deterministic rules were applied, which AI workflow was used, what output was produced, who reviewed or approved it, and what later changed.
+
+### 23.7 Failure and Degraded Operation
+
+AI unavailability shall not corrupt authoritative system state. Every material AI-assisted function shall define a failure mode: retry, queue for later processing, fall back, return an incomplete result, require manual review, or disable only the affected intelligence function. Where feasible, deterministic and recordkeeping functions shall remain operable without AI.
+
+### 23.8 Privacy and Data Boundaries
+
+AI workflows shall receive only information permitted by approved data, privacy, licensing, and security policies. Sensitive, private, broker, portfolio, or proprietary information shall not be sent to an external model merely because the platform can technically do so.
+
+### 23.9 Correction Doctrine
+
+Material AI-generated records shall not be silently overwritten to hide prior error. Corrections shall preserve the original record, correction reason, replacement output, actor, timestamp, and relevant workflow version. Where an AI output influenced a human decision, later correction of the AI output shall not erase the historical decision context.
+
+### 23.10 Constitutional Summary
+
+> Data and deterministic calculations establish reproducible system truth.  
+> AI interprets, synthesizes, challenges, and assists.  
+> The Founder authorizes material investment decisions.
+
+AI shall remain an accountable intelligence layer rather than an unbounded source of truth or authority.
+
 
 ---
 
@@ -410,3 +472,23 @@ Key clarifications:
 These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, V0 scope, or Two-Tier Autonomy.
 
 Canonical Theme-role ownership remains an unresolved Founder decision.
+
+---
+
+## Amendment Record — Version 0.4
+
+**Status:** Founder-approved AI Operating Constitution.
+
+**Amendment:** CA-v0.4-AI-OPERATING-CONSTITUTION
+
+Version 0.4 adds §23 AI Operating Constitution, establishing:
+
+- Three-Layer Authority Model (Deterministic Core / AI Intelligence / Founder Approval)
+- Application Function Classification (Deterministic, AI-Assisted, Hybrid, Human-Authorized)
+- Evidence and Epistemic Status preservation for AI-generated outputs
+- Specialized Agents and Delegation governance (contracts, authority boundaries, lineage)
+- Reproducibility, Failure, Privacy, and Correction Doctrine for AI workflows
+
+**Approval:** IIP-AI-OPERATING-CONSTITUTION-v0.2 (Founder Decision #23, 22 July 2026)
+
+These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope. They govern how AI may be embedded in product workflows after the platform becomes an application.
