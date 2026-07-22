@@ -166,6 +166,71 @@ These axes operate at different scopes (Candidate–Theme vs. Candidate–Strate
 - Transitions must be audited.
 - Archived Candidates retain history and may be reactivated.
 
+### 3.3.1 Thesis Narrative and Conviction
+
+A Candidate carries an investment thesis — a structured narrative explaining why the Candidate merits consideration, not merely a score or ranking.
+
+**Thesis fields:**
+
+| Field | Description |
+|---|---|
+| **thesis_summary** | A concise narrative summary of the investment thesis: what the opportunity is, what must go right, and why now. Written as prose, not a checklist. |
+| **conviction_rationale** | Why the AI or Founder has this level of conviction. What evidence, pattern, or reasoning supports the confidence level. |
+| **conviction_level** | A qualitative indicator, not a numeric score: `Low`, `Moderate`, `High`, or `Maximum`. Conviction reflects the strength and convergence of supporting evidence combined with thesis clarity and risk awareness. |
+| **key_risks** | What could cause the thesis to fail. Each risk should be specific, falsifiable, and linked to a Q-condition where applicable. |
+
+**Constraints:**
+
+- thesis_summary and conviction_rationale must be human-readable narratives, not codes or scores.
+- conviction_level is not computed from a formula — it is an AI-assisted qualitative judgment subject to Founder review.
+- key_risks should include both thesis-specific risks and broader market/external risks where material.
+- Changes to thesis narrative must be versioned and preserve the prior thesis for comparison.
+
+### 3.3.2 Thesis Lifecycle
+
+A Candidate's thesis evolves as new evidence arrives. The platform tracks thesis status independently from Research State and Leadership State.
+
+**Thesis Status values:**
+
+| Value | Description |
+|---|---|
+| **Proposed** | A thesis has been drafted but not yet reviewed or validated against current evidence |
+| **Under Review** | The thesis is being actively evaluated against new evidence, earnings, or market developments |
+| **Confirmed** | Recent evidence (earnings, news, price action, macro data) strengthens or directly supports the thesis |
+| **Weakened** | New evidence contradicts or undermines elements of the thesis without fully invalidating it |
+| **Invalidated** | The thesis is no longer supported by evidence and the Candidate should be removed or archived |
+| **Waiting** | The thesis is formed but awaiting a specific information event (earnings release, regulatory decision, product launch) before status can advance |
+
+**Constraints:**
+
+- Thesis Status is assessed per Candidate–Strategy context.
+- Every thesis status transition records: prior status, new status, triggering evidence or event, reasoning, actor, and timestamp.
+- A thesis may cycle: Confirmed → Weakened → Confirmed as conflicting evidence arrives and resolves.
+- Invalidated theses are archived with full history preserved. They may be reopened only with new material evidence and explicit Founder approval.
+- A "Waiting" thesis must specify what event or information it awaits (the entry trigger).
+
+### 3.3.3 Entry Trigger and Watchlist Gate
+
+Candidates on the Watchlist do not enter the active Research Queue automatically. They wait for an entry trigger — a specific information event, not a price level.
+
+**Entry Trigger fields:**
+
+| Field | Description |
+|---|---|
+| **entry_trigger** | A concrete, falsifiable condition describing what information event would cause the Candidate to be promoted to active research. Examples: "Q2 earnings confirm >20% revenue growth," "ADR approval announced," "DOJ antitrust ruling published." The trigger describes information, not price. |
+| **trigger_status** | `Waiting` — trigger condition not yet met; `Triggered` — the specified information event has occurred and the Candidate should be promoted; `Expired` — the trigger window passed without the event occurring; `Dismissed` — the trigger was explicitly removed by Founder |
+
+**Constraints:**
+
+- An entry trigger is an information condition, not a price target, moving-average crossover, or technical signal. Price and technical data inform other pipeline stages; the entry trigger gates Watchlist → Active Research promotion based on information confirmation.
+- When trigger_status becomes `Triggered`, the Candidate is promoted to active research in the next pipeline run.
+- Expired triggers may be renewed with a new information condition and Founder approval.
+- The trigger model enables event-driven pipeline execution: when an information event occurs that matches a waiting trigger, the pipeline may rerun assessment for that Candidate specifically rather than waiting for the next scheduled run.
+
+**Relationship to Q-Conditions (future):**
+
+Entry triggers describe what information causes entry into active research. Q-conditions (exit conditions — deferred for future specification) describe what information would cause exit from a position. Both are information-gated, not price-gated.
+
 ### 3.4 Open Decision: Canonical Theme Role Ownership
 
 **Founder decision required — not yet resolved:** Whether canonical structural Theme roles (Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary) belong to:
@@ -216,12 +281,16 @@ Capacity is determined by the number of candidates that meet the strategy's qual
 ## 5. Version Boundaries for Candidate and Queue Capabilities
 
 | Capability | V0 | V0.5 | V1 | V1.5 | Later |
-|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 | Candidate entity with four quality dimensions | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Three candidate axes (role, leadership, research) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Thesis Narrative and Conviction (thesis_summary, conviction_rationale, conviction_level, key_risks) | — | — | ✅ | ✅ | ✅ |
+| Thesis Lifecycle (thesis_status: Proposed → Confirmed/Weakened/Invalidated) | — | — | ✅ | ✅ | ✅ |
+| Entry Trigger and Watchlist Gate (entry_trigger, trigger_status) | — | — | ✅ | ✅ | ✅ |
 | Theme-first Research Queue with adaptive capacity | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Synthetic candidate data | ✅ | — | — | — | — |
 | Real EOD candidate data | — | ✅ | ✅ | ✅ | ✅ |
 | Experimental theme candidates (separated from official) | — | — | ✅ | ✅ | ✅ |
 | AI-driven candidate discovery within themes | — | — | — | ✅ | ✅ |
+| Event-driven pipeline (trigger-based rerun) | — | — | — | ✅ | ✅ |
 | Deep Research handoff | — | — | — | — | ✅ |

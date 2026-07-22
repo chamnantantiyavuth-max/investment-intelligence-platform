@@ -29,6 +29,7 @@ Records that capture or represent observable phenomena, source content, or deriv
 | 4 | **Normalized Fact** | A fact transformed to a standard representation | Normalization pipeline |
 | 5 | **Derived Metric** | A computed value from one or more facts | Feature computation |
 | 6 | **Statistical Signal** | A statistically identified pattern or anomaly | Signal detection |
+| 7 | **Founder Knowledge Record** | Knowledge, insight, pattern recognition, or investment reasoning explicitly recorded by the Founder. Sources include: Obsidian vault notes, trading journals, meeting notes, investment diaries, post-trade reflections, and strategy documents. Unlike external source records, Founder Knowledge Records carry the Founder's own interpretation, priorities, and philosophy. | Founder-authored content ingestion |
 
 **AI-derived records:** AI Extraction and AI Classification are explicit subtypes of Claim, not Observed Facts. Their lineage must record model, version, prompt version, input references, confidence, and review status (per AI Governance operational file).
 
@@ -200,10 +201,11 @@ Data Confidence applies at multiple levels: individual evidence records, aggrega
 ## 10. Version Boundaries for Evidence Capabilities
 
 | Capability | V0 | V0.5 | V1 | V1.5 | Later |
-|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|
 | Evidence and observation record model | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Epistemic and governance record model | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Source registry (synthetic sources only) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Founder Knowledge Record ingestion (Obsidian, journals, diaries) | — | — | ✅ | ✅ | ✅ |
 | Raw evidence preservation and immutability | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Tombstoning process | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Provenance metadata (full set) | ✅ | ✅ | ✅ | ✅ | ✅ |

@@ -122,3 +122,57 @@ Any transition to Approved requires explicit Founder approval.
 Human approval is required before a theme becomes eligible for official strategy context.
 
 Theme approval is not investment approval.
+
+## Coverage Gap Detection (Blind Spot Discovery)
+
+The platform shall proactively identify what the Founder may have overlooked — candidates, risks, or themes that are present in the evidence but absent from the Watchlist or active monitoring.
+
+### Detection Triggers
+
+Coverage gap detection runs:
+
+- After every material pipeline run
+- When a new Theme is approved (cross-reference against existing Watchlist)
+- When an existing Theme shows strengthening evidence but no corresponding Watchlist additions
+- When a sector or industry shows leadership breadth but the Watchlist has thin or zero coverage
+
+### Gap Types
+
+| Gap Type | Description | Action |
+|---|---|---|
+| **Theme Coverage Gap** | An Approved Theme with strong evidence but zero or thin Candidate coverage in the Watchlist | Surface to Founder: "This theme is strengthening but you have no candidates tracking it." |
+| **Candidate Blind Spot** | A Candidate that repeatedly appears in evidence across multiple approved themes but is absent from the Watchlist | Surface to Founder with evidence summary and thesis prompt |
+| **Sector Blind Spot** | A sector or industry with improving breadth, relative strength, or fundamental momentum but no approved Theme or Watchlist coverage | Propose a new Experimental Theme or prompt Founder review |
+| **Risk Blind Spot** | A risk factor (regulatory, competitive, macro) that appears in evidence across multiple Candidates or Themes but is not tracked in any thesis's key_risks | Add to relevant theses or surface as a cross-cutting concern |
+
+### Rules
+
+- Coverage gap detection is AI-assisted discovery, not automated decision-making. Gaps are surfaced for Founder review, never silently acted upon.
+- Gap detection must reference specific evidence, not vague impressions.
+- A detected gap does not create an obligation to act — the Founder may consciously choose to leave a gap uncovered.
+- Gap detection results are included in the self-reflection log for traceability.
+
+## Emergent Rule Discovery
+
+As the AI operates across multiple pipeline runs, reviews self-reflection logs, and observes patterns in thesis outcomes, it may identify recurring heuristics, decision patterns, or potential rules that are not yet codified in any approved strategy document.
+
+### Proposal Channel
+
+The AI may propose an emergent rule through a structured proposal:
+
+| Field | Description |
+|---|---|
+| **proposed_rule** | The rule or heuristic in plain language (e.g., "Trim any position exceeding 11% of portfolio to fund new high-conviction candidates") |
+| **originating_pattern** | What recurring observation, mistake, or success prompted this proposal. Reference specific runs, theses, or outcomes. |
+| **evidence** | Supporting evidence from pipeline history, self-reflection logs, or thesis outcomes |
+| **counterevidence** | Known cases where the rule would have produced a worse outcome |
+| **scope** | What contexts the rule applies to (specific strategy, all strategies, specific market regime) |
+| **interaction** | How the rule interacts with existing approved rules — does it extend, constrain, or conflict? |
+
+### Rules
+
+- Emergent rules are proposals, not authority. They have no effect until Founder approves them.
+- Proposals enter the same change-control pipeline as other amendments: draft → review → Founder approval → codification.
+- The AI must not silently apply an emergent rule before approval.
+- Rejected proposals are archived with rationale; they may be resubmitted if new evidence emerges.
+- Emergent rule proposals are distinct from Weak Signal anomalies: anomalies are unexplained observations; emergent rules are proposed codifications of observed patterns.

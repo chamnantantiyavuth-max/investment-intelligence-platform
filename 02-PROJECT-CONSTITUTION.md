@@ -417,6 +417,16 @@ AI unavailability shall not corrupt authoritative system state. Every material A
 
 AI workflows shall receive only information permitted by approved data, privacy, licensing, and security policies. Sensitive, private, broker, portfolio, or proprietary information shall not be sent to an external model merely because the platform can technically do so.
 
+### 23.8.1 Blind Portfolio Rule
+
+An AI agent or workflow that produces investment recommendations, candidate assessments, thesis evaluations, or portfolio-level analysis shall not receive the Founder's actual portfolio holdings, position sizes, cost basis, transaction history, or account-level data as input, unless explicitly authorized for a specific bounded purpose.
+
+Portfolio context provided to AI workflows shall be limited to what is explicitly and specifically approved for that workflow. A workflow that requires portfolio-aware behavior must declare: the specific portfolio data it requires, why the data is necessary, and what structural guard prevents the AI from merely confirming existing positions rather than performing independent analysis.
+
+The default in any AI-assisted investment workflow shall be portfolio-blind operation. This rule exists to prevent AI from functioning as an echo chamber that reinforces existing positions instead of discovering what the Founder has overlooked.
+
+The Founder may authorize a specific workflow to receive bounded portfolio data for a specific non-recommendation purpose (such as risk monitoring, position-size compliance checking, or post-trade analysis). Such authorization must be explicit, scoped, and recorded.
+
 ### 23.9 Correction Doctrine
 
 Material AI-generated records shall not be silently overwritten to hide prior error. Corrections shall preserve the original record, correction reason, replacement output, actor, timestamp, and relevant workflow version. Where an AI output influenced a human decision, later correction of the AI output shall not erase the historical decision context.
@@ -492,3 +502,22 @@ Version 0.4 adds §23 AI Operating Constitution, establishing:
 **Approval:** IIP-AI-OPERATING-CONSTITUTION-v0.2 (Founder Decision #23, 22 July 2026)
 
 These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope. They govern how AI may be embedded in product workflows after the platform becomes an application.
+
+---
+
+## Amendment Record — Version 0.5
+
+**Status:** Founder-approved Blind Portfolio Rule.
+
+**Amendment:** CA-v0.5-BLIND-PORTFOLIO-RULE
+
+Version 0.5 adds §23.8.1 Blind Portfolio Rule, establishing:
+
+- AI agents producing investment recommendations shall operate portfolio-blind by default
+- Portfolio data shall not be provided to AI workflows unless explicitly authorized for a specific bounded purpose
+- Any portfolio-aware workflow must declare required data, necessity, and anti-echo-chamber guards
+- The rule exists to prevent AI from reinforcing existing positions instead of independent discovery
+
+**Approval:** FD #25 (Nick Intelligence Integration, 22 July 2026)
+
+These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope. They govern what information AI workflows may receive.
