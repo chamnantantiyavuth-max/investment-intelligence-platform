@@ -309,23 +309,35 @@ Gate C drafting authorized under Founder Decision #19. Slots assigned identifier
 
 ---
 
-## Unresolved Founder Decisions Summary
+## Decision Status Summary (Current — 22 July 2026)
 
 | Ref | Topic | Status |
 |---|---|---|
-| DR-005 | Controlled Theme Set selection | Proposed — UNRESOLVED |
-| DR-006 | Canonical Theme-role ownership | Approved |
-| DR-007 | Technology stack | Deferred |
 | DR-004 | Legacy Knowledge Salvage authorization | Deferred |
+| DR-005 | Controlled Theme Set | ✅ Approved — Gate B Complete (143 themes, v1.0) |
+| DR-006 | Canonical Theme-role ownership | ✅ Approved — Gate A |
+| DR-007 | Technology stack | Deferred |
 
-In addition, of the 35 active normalized decision slots (DS-301–DS-310, DS-401–DS-412, DS-501–DS-513) registered across the three Gate A artifacts:
-- **3 are now Approved** (DS-301, DS-302, DS-303 — First Decision Group)
-- **32 remain Proposed, Resolution: UNRESOLVED — FOUNDER DECISION REQUIRED**
-- None propose investment-rule answers, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, queue ordering, tie-breakers, eligibility rules, aggregations, or fallbacks.
+### Active Decision Slots
 
-8 templates (TPL-*) await conditional instantiation. 2 inherited controls apply across all artifacts. 1 topic is deferred beyond Gate A. 3 topics are moved to future Gate C without identifiers.
+| Range | Count | Status |
+|---|---|---|
+| DS-301–DS-310 (Candidate, Theme, Entry Quality) | 10 slots | ✅ All Approved — Gate A Waves 1–5 |
+| DS-401–DS-412 (Data Confidence + Point-in-Time) | 12 slots | ✅ All Approved — Gate A Waves 3a–c |
+| DS-501–DS-513 (Pipeline + Queue + Rule Lifecycle) | 13 slots | ✅ All Approved — Gate A Waves 4–6 |
+| **Gate A Total** | **35/35** | **All Approved** |
+| HC-01–HC-07 (Human Review + Presentation) | 7 slots | ✅ All Approved — Gate C |
+| **Active Total** | **42/42** | **All Approved** |
 
-**🎉 GATE A COMPLETE — All 35 investment-domain decision slots are Approved.** 1 governance decision (DR-006) also Approved. 8 templates (TPL-*) await conditional instantiation; ordering templates (TPL-PIPELINE-*) remain inactive per DS-507 (unordered). 2 inherited controls apply across all artifacts. 1 topic deferred beyond Gate A. 3 topics moved to future Gate C.
+### Templates and Deferred
+
+| Item | Status | Impact on V0 |
+|---|---|---|
+| 8 TPL-* templates | Awaiting conditional instantiation | None — inactive per DS-507 (unordered); future-only |
+| DR-004 (Legacy Salvage) | Deferred | None — separate authorization required |
+| DR-007 (Technology Stack) | Deferred | None — deferred to implementation phase |
+
+**🎉 GATES A–C COMPLETE — All 42 active decision slots Approved. Gate D verification in progress. No unresolved decisions affect V0 output.**
 
 ---
 
