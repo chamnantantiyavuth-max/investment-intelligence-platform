@@ -53,7 +53,10 @@ This README is a design-area index. It contains no investment rules.
 | `README.md` | Approved Design Area Index v0.1 |
 | `DESIGN-PLAN.md` | Approved Stable Design Plan v0.1 |
 | `TRACEABILITY-AND-DECISION-REGISTER.md` | Accepted Living Design Register v0.1 |
-| All other artifacts | Not yet created or authorized for drafting |
+| `THEME-CARD-AND-HUMAN-REVIEW-FLOW.md` | Approved v1.0 (Gate C Complete) |
+| `FIXTURE-AND-ACCEPTANCE-SCENARIOS.md` | Approved v1.0 (Gate C Complete) |
+| `CONTROLLED-THEME-SET.md` | Approved v1.0 (Gate B Complete) |
+| `ADRs/` | Not yet created |
 
 ## Reading Order
 

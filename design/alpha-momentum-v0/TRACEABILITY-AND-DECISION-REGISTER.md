@@ -215,13 +215,27 @@ Templates are not active decisions. They carry TPL- identifiers. Instantiation r
 |---|---|---|
 | Stage Execution Order and Parallelism | DS-215 (old) | Physical runtime scheduling — deferred to architecture/implementation planning |
 
-### Moved to Future Gate C (No Identifiers Assigned)
+### Gate C Decision Slots (Assigned 22 July 2026)
 
-| Topic | Old ID | Rationale |
-|---|---|---|
-| Theme Card and Research Queue Relationship | DS-218 (old) | Gate C artifact THEME-CARD-AND-HUMAN-REVIEW-FLOW.md |
-| Human-Facing Empty-State Presentation | (split from DS-208) | Gate C presentation |
-| Human-Facing Contradiction Visibility and Display | (split from DS-113) | Gate C presentation |
+Gate C drafting authorized under Founder Decision #19. Slots assigned identifiers from HC range (Human-Computer / presentation contracts).
+
+| ID | Topic | Decision Obligation Source | Affected Artifact | Status | Materiality |
+|---|---|---|---|---|---|
+| HC-01 | Queue-level Theme Ordering | SPEC §5.2 (Research Queue), DESIGN-PLAN §4 Gate C | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (V0 fixed order presentation default; permanent ordering deferred) |
+| HC-02 | Candidate Ordering Within Theme | SPEC §5.2, DESIGN-PLAN §4 Gate C | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (V0 lifecycle-prioritized grouping default; permanent ordering deferred) |
+| HC-03 | Near-Miss Display | (split from DS-208), DESIGN-PLAN §4 Gate C | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (optional; if shown, must not confuse with qualified) |
+| HC-04 | Empty-State Wording | (split from DS-208), DNA-016, Founder Decision #9 | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (exact wording; Honest Empty behavior already approved) |
+| HC-05 | Override Indicator Style | HUMAN-REVIEW-AND-LEARNING-MODEL §2, DESIGN-PLAN §4 Gate C | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (visual treatment; override semantics already approved) |
+| HC-06 | Condensed vs. Full Theme Card Toggle | DESIGN-PLAN §4 Gate C | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Non-material (interaction pattern; content visibility already approved) |
+| HC-07 | Contradicting Evidence Default Visibility | (split from DS-113), Constitution §10-11, EVIDENCE-MODEL §7 | THEME-CARD-AND-HUMAN-REVIEW-FLOW.md | ✅ Approved | Material (affects human-review visibility of contradictions; approved: visible by default) |
+
+### Moved to Future Gate C — Now Assigned
+
+| Topic | Old ID | Gate C ID | Resolution |
+|---|---|---|---|
+| Theme Card and Research Queue Relationship | DS-218 (old) | HC-01, HC-02 | Gate C artifact THEME-CARD-AND-HUMAN-REVIEW-FLOW.md |
+| Human-Facing Empty-State Presentation | (split from DS-208) | HC-03, HC-04 | Gate C presentation |
+| Human-Facing Contradiction Visibility and Display | (split from DS-113) | HC-07 | Gate C presentation — default: visible, not hidden |
 
 ---
 

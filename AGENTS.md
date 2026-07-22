@@ -91,12 +91,16 @@ Phase governance:
 - DR-004 (Legacy Knowledge Salvage) remains Deferred — separate authorization required.
 - Current work is Gate B: Controlled Theme Set (`design/alpha-momentum-v0/CONTROLLED-THEME-SET.md`).
 - Gate B artifact defines Theme names, structural drivers, V0 inclusion rationale, and domain coverage per ALPHA-MOMENTUM-V0-SPEC §3.1.
+- Gate B is complete: Controlled Theme Set v1.0 approved (143 themes, DR-005, 22 July 2026).
+- Gate C is complete: Theme Card v1.0 + Fixtures v1.0 approved (7 HC slots, 20 acceptance scenarios, all 10 ACs covered, 22 July 2026).
+- Current work is Gate D: Design Completion and Implementation Readiness. Gate D drafting not yet authorized.
+- Gate D remains unauthorized.
 
 Current-phase restrictions:
 
 - Do not write application code, select a final technology stack, install dependencies, create migrations, or create production integrations.
 - No schema or migration.
-- Gate B drafting authorized for `design/alpha-momentum-v0/CONTROLLED-THEME-SET.md` only. Gate C remains unauthorized.
+- Gate C drafting authorized for `design/alpha-momentum-v0/THEME-CARD-AND-HUMAN-REVIEW-FLOW.md`, `design/alpha-momentum-v0/FIXTURE-AND-ACCEPTANCE-SCENARIOS.md`, any required ADRs, and TRACEABILITY register update. Gate D remains unauthorized.
 - No Legacy or quarantine access without separate named authorization.
 - No AI-invented investment rules, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, ordering, tie behavior, aggregation, or fallback.
 - No implementation activity.
