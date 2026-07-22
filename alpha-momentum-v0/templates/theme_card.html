@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theme Card — {{ theme.name }} | Alpha Momentum V0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Inter, system-ui, -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; padding: 2rem; font-size: 13px; }
+  .not-live { background: #da3633; color: #fff; text-align: center; padding: 6px 12px; font-weight: 700; font-size: 11px; border-radius: 4px; margin-bottom: 1.5rem; }
+  .card { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 24px; color: #58a6ff; margin-bottom: 0.25rem; }
+  .subtitle { color: #8b949e; margin-bottom: 1.5rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+  .stat { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 10px 14px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; color: #8b949e; letter-spacing: 0.5px; }
+  .stat-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .expansion { color: #3fb950; } .emerging { color: #d29922; } .formation { color: #58a6ff; }
+  .crowded { color: #f0883e; } .deterioration { color: #da3633; }
+  .section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem; }
+  .section h2 { font-size: 15px; color: #f0f6fc; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #21262d; }
+  .evidence-list { list-style: none; }
+  .evidence-list li { padding: 6px 0; border-bottom: 1px solid #21262d; font-size: 12px; }
+  .evidence-list li:last-child { border-bottom: none; }
+  .supporting::before { content: "✅ "; } .contradicting::before { content: "❌ "; } .missing::before { content: "❓ "; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 8px 10px; background: #21262d; color: #8b949e; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #21262d; }
+  tr:hover td { background: #1c2128; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .badge-leader { background: #1f3a2e; color: #3fb950; } .badge-challenger { background: #2b2a1a; color: #d29922; }
+  .badge-former { background: #3a1f1f; color: #da3633; } .badge-deteriorating { background: #3a1f1f; color: #da3633; }
+  .override-banner { background: #2b1a1a; border: 1px solid #da3633; border-radius: 6px; padding: 12px 16px; margin: 10px 0; }
+  .override-banner h3 { color: #da3633; font-size: 13px; margin-bottom: 6px; }
+  .override-banner p { font-size: 11px; margin: 3px 0; color: #c9d1d9; }
+  .override-badge { background: #da3633; color: #fff; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 6px; }
+  .empty-state { text-align: center; padding: 2rem; color: #8b949e; font-style: italic; }
+  .audit { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #30363d; font-size: 10px; color: #484f58; }
+  .confidence-high { color: #3fb950; } .confidence-medium { color: #d29922; } .confidence-low { color: #da3633; }
+</style>
+</head>
+<body>
+<div class="not-live">⚠️ NOT LIVE DATA — FOR V0 TESTING ONLY — {{ fixture_category }}</div>
+
+<div class="card">
+  <h1>{{ theme.name }}</h1>
+  <div class="subtitle">{{ theme.sector }} → {{ theme.industry }} · TH-{{ theme.id.split('-')[1] }} · {{ theme.stocks_in_industry }} stocks</div>
+
+  <div class="grid">
+    <div class="stat"><div class="stat-label">Lifecycle</div><div class="stat-value {{ lifecycle_class }}">{{ theme.lifecycle }}</div></div>
+    <div class="stat"><div class="stat-label">Approval Status</div><div class="stat-value">{{ theme.approval_status }}</div></div>
+    <div class="stat"><div class="stat-label">Monitoring</div><div class="stat-value">{{ theme.monitoring_status }}</div></div>
+    <div class="stat"><div class="stat-label">Confidence</div><div class="stat-value confidence-{{ theme.confidence.lower() }}">{{ theme.confidence }}</div></div>
+    <div class="stat"><div class="stat-label">Candidates</div><div class="stat-value">{{ candidates|length }} qualified</div></div>
+  </div>
+
+  <!-- WHY NOW -->
+  <div class="section">
+    <h2>📝 Why Now</h2>
+    <p style="font-size:13px; line-height:1.6;">{{ theme.why_now }}</p>
+  </div>
+
+  <!-- SUPPORTING EVIDENCE -->
+  <div class="section">
+    <h2>✅ Supporting Evidence</h2>
+    <ul class="evidence-list">
+      {% for ev in supporting_evidence %}
+      <li class="supporting"><strong>{{ ev.type }}</strong> — {{ ev.content }} <span style="color:#484f58">[{{ ev.id }}]</span></li>
+      {% endfor %}
+      {% if not supporting_evidence %}
+      <li class="empty-state">No supporting evidence recorded.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- CONTRADICTING EVIDENCE -->
+  <div class="section" style="border-color: #da3633;">
+    <h2>❌ Contradicting Evidence</h2>
+    <ul class="evidence-list">
+      {% for ev in contradicting_evidence %}
+      <li class="contradicting"><strong>{{ ev.type }}</strong> — {{ ev.content }} <span style="color:#484f58">[{{ ev.id }}]</span></li>
+      {% endfor %}
+      {% if not contradicting_evidence %}
+      <li class="empty-state">No contradicting evidence identified.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- MISSING EVIDENCE -->
+  <div class="section">
+    <h2>❓ Missing Evidence</h2>
+    <ul class="evidence-list">
+      {% for ev in missing_evidence %}
+      <li class="missing">{{ ev.content }} <span style="color:#484f58">[{{ ev.id }}]</span></li>
+      {% endfor %}
+      {% if not missing_evidence %}
+      <li class="empty-state">No missing evidence identified.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- ALTERNATIVE EXPLANATIONS -->
+  {% if alternative %}
+  <div class="section">
+    <h2>🧠 Alternative Explanations</h2>
+    <p style="font-size:12px;">{{ alternative }}</p>
+  </div>
+  {% endif %}
+
+  <!-- CANDIDATE SUMMARY TABLE -->
+  <div class="section">
+    <h2>📋 Candidates ({{ candidates|length }})</h2>
+    {% if candidates %}
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th><th>Role</th><th>Leadership</th>
+          <th>CQ</th><th>ER</th><th>DC</th><th>Research</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in candidates %}
+        <tr>
+          <td><strong style="color:#58a6ff;">{{ c.ticker }}</strong>{% if c.override %} <span class="override-badge">OVERRIDE</span>{% endif %}</td>
+          <td>{{ c.primary_role }}{% if c.secondary_roles %} + {{ c.secondary_roles|join(', ') }}{% endif %}</td>
+          <td><span class="badge badge-{{ c.leadership_class }}">{{ c.leadership_state }}</span></td>
+          <td>{{ c.cq_short }}</td>
+          <td>{{ c.er_short }}</td>
+          <td>{{ c.dc_warning | safe }}</td>
+          <td>{{ c.research_state }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">No qualified candidates — theme is monitored but no actionable setups at this time.</div>
+    {% endif %}
+  </div>
+
+  <!-- KEY TICKERS -->
+  <div class="section">
+    <h2>💎 Key Tickers</h2>
+    <p style="font-size:12px; color:#8b949e;">{{ theme.key_tickers | join(', ') }}</p>
+  </div>
+
+  <!-- AUDIT -->
+  <div class="audit">
+    Pipeline: {{ pipeline_version }} · Run: {{ run_id }} · Point-in-Time: {{ point_in_time }} · {{ fixture_category }}
+  </div>
+</div>
+</body>
+</html>

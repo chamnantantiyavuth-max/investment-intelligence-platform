@@ -93,8 +93,10 @@ Phase governance:
 - Gate B artifact defines Theme names, structural drivers, V0 inclusion rationale, and domain coverage per ALPHA-MOMENTUM-V0-SPEC §3.1.
 - Gate B is complete: Controlled Theme Set v1.0 approved (143 themes, DR-005, 22 July 2026).
 - Gate C is complete: Theme Card v1.0 + Fixtures v1.0 approved (7 HC slots, 20 acceptance scenarios, all 10 ACs covered, 22 July 2026).
-- Current work is Gate D: Design Completion and Implementation Readiness — verification in progress. No implementation until Gate D passes and Founder approves Phase 3 transition.
-- Gate D remains unauthorized.
+- Gate D: Complete — independent audit passed (4 findings resolved, 22 July 2026).
+- Current work is Phase 3: Alpha Momentum V0 Implementation.
+- Provisional technology: Python + pandas + Jinja2 (CLI + HTML reports). Not claimed as final stack selection.
+- All implementation activity now authorized within V0 scope per approved design artifacts.
 
 Current-phase restrictions:
 
