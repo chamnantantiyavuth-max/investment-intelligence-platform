@@ -192,18 +192,29 @@ def stage_data_confidence(candidates):
 LIFECYCLE_ORDER = {"Expansion": 1, "Emerging Leadership": 2, "Formation": 3, "Crowded / Late": 4, "Deterioration": 5}
 
 def stage_queue(candidates, candidate_theme, themes, theme_map):
-    """Assemble the Research Queue — Theme-first with V0 ordering."""
-    # Group candidates by theme
-    queue_themes = {}
+    """Assemble the Research Queue — Theme-first with V0 ordering. Includes empty themes."""
+    # Build candidate-theme index
+    ct_by_theme = {}
     for ct in candidate_theme:
         tid = ct["theme_id"]
-        cid = ct["candidate_id"]
-        if tid not in queue_themes:
-            queue_themes[tid] = {"theme": theme_map.get(tid, {}), "candidates": []}
-        if cid in candidates:
-            cdata = dict(candidates[cid])
-            cdata["_ct_relationship"] = ct
-            queue_themes[tid]["candidates"].append(cdata)
+        if tid not in ct_by_theme:
+            ct_by_theme[tid] = []
+        ct_by_theme[tid].append(ct)
+
+    # Populate all themes (including empty ones)
+    queue_themes = {}
+    all_theme_ids = {t["id"] for t in themes}
+    for tid in all_theme_ids:
+        queue_themes[tid] = {"theme": theme_map.get(tid, {}), "candidates": []}
+
+    # Fill candidates for themes that have them
+    for tid, ct_list in ct_by_theme.items():
+        for ct in ct_list:
+            cid = ct["candidate_id"]
+            if cid in candidates:
+                cdata = dict(candidates[cid])
+                cdata["_ct_relationship"] = ct
+                queue_themes[tid]["candidates"].append(cdata)
 
     # Sort themes: sector → industry (V0 HC-01)
     sorted_themes = sorted(queue_themes.items(), key=lambda x: (

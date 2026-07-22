@@ -39,6 +39,14 @@ EVIDENCE = [
     {"id": "EV-011", "type": "Claim",       "content": "Solar project ROI compressed at sustained 5%+ interest rates — industry reports", "source": "SRC-SYN-009", "pub_ts": "2024-06-01T08:00:00Z", "effective": "2024-Q2", "relationship": "contradicting", "theme": "TH-010", "candidate": None},
     {"id": "EV-012", "type": "Missing",     "content": "Missing: solar project ROI at sustained 5%+ interest rates by region", "source": None, "pub_ts": None, "effective": None, "relationship": "missing", "theme": "TH-010", "candidate": None},
     {"id": "EV-013", "type": "Missing",     "content": "Missing: utility-scale battery storage cost trajectory 2025-2030", "source": None, "pub_ts": None, "effective": None, "relationship": "missing", "theme": "TH-010", "candidate": None},
+    # ── TH-020 Cloud Infrastructure ──
+    {"id": "EV-014", "type": "Observed Fact", "content": "Global cloud infra spending: $78B in Q1 2024, +21% YoY (Synergy Research)", "source": "SRC-SYN-010", "pub_ts": "2024-04-30T08:00:00Z", "effective": "2024-Q1", "relationship": "supporting", "theme": "TH-020", "candidate": None},
+    {"id": "EV-015", "type": "Claim",       "content": "Enterprise AI adoption may shift compute from public cloud to on-prem/edge for latency and cost reasons", "source": "SRC-SYN-011", "pub_ts": "2024-06-01T08:00:00Z", "effective": "2024-Q2", "relationship": "contradicting", "theme": "TH-020", "candidate": None},
+    {"id": "EV-016", "type": "Missing",     "content": "Missing: enterprise workload migration completion rate by industry vertical", "source": None, "pub_ts": None, "effective": None, "relationship": "missing", "theme": "TH-020", "candidate": None},
+    # ── TH-030 Cybersecurity ──
+    {"id": "EV-017", "type": "Observed Fact", "content": "Ransomware attacks: 4,611 incidents in 2023, +73% YoY (Verizon DBIR 2024)", "source": "SRC-SYN-012", "pub_ts": "2024-05-01T08:00:00Z", "effective": "2023-FY", "relationship": "supporting", "theme": "TH-030", "candidate": None},
+    {"id": "EV-018", "type": "Claim",       "content": "Cybersecurity spending may face budget fatigue — CISO survey shows tool consolidation trend", "source": "SRC-SYN-013", "pub_ts": "2024-06-01T08:00:00Z", "effective": "2024-Q2", "relationship": "contradicting", "theme": "TH-030", "candidate": None},
+    {"id": "EV-019", "type": "Missing",     "content": "Missing: AI-driven attack volume projection vs AI-defense capability gap analysis", "source": None, "pub_ts": None, "effective": None, "relationship": "missing", "theme": "TH-030", "candidate": None},
 ]
 
 # ═══════════════════════════════════════════════════════════
@@ -118,6 +126,38 @@ THEMES = [
         ],
         "stocks_in_industry": 22,
         "key_tickers": ["ENPH", "FSLR", "SEDG", "RUN", "CSIQ", "ARRY"],
+    },
+    {
+        "id": "TH-020", "name": "Cloud Infrastructure", "sector": "Technology", "industry": "Cloud & Data Centers",
+        "lifecycle": "Emerging Leadership", "approval_status": "Approved", "monitoring_status": "Active Monitoring",
+        "why_now": "Hyperscaler capex at record levels ($200B+ forecast 2025). Enterprise cloud migration still in early innings (< 40% workloads). AI inference driving new data center demand layer.",
+        "confidence": "Medium",
+        "lifecycle_transitions": [],
+        "approval_transitions": [
+            {"prior": "Detected Hypothesis", "new": "Under Human Review", "reason": "Initial theme proposal", "actor": "Founder", "timestamp": "2024-03-01T10:00:00Z", "version": "v0.1.0"},
+            {"prior": "Under Human Review", "new": "Approved", "reason": "Structural cloud migration trend confirmed — identifiable suppliers", "actor": "Founder", "timestamp": "2024-06-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "monitoring_transitions": [
+            {"prior": "Not Monitored", "new": "Active Monitoring", "reason": "Theme approved — begin active tracking", "actor": "Founder", "timestamp": "2024-06-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "stocks_in_industry": 55,
+        "key_tickers": ["AMZN", "MSFT", "GOOGL", "ORCL", "SMCI", "DELL"],
+    },
+    {
+        "id": "TH-030", "name": "Cybersecurity", "sector": "Technology", "industry": "Cybersecurity",
+        "lifecycle": "Formation", "approval_status": "Approved", "monitoring_status": "Active Monitoring",
+        "why_now": "Ransomware attack frequency +73% YoY. SEC disclosure rules now mandate material incident reporting within 4 days. Zero-trust architecture becoming enterprise standard.",
+        "confidence": "Low",
+        "lifecycle_transitions": [],
+        "approval_transitions": [
+            {"prior": "Detected Hypothesis", "new": "Under Human Review", "reason": "Initial theme proposal", "actor": "Founder", "timestamp": "2024-04-01T10:00:00Z", "version": "v0.1.0"},
+            {"prior": "Under Human Review", "new": "Approved", "reason": "Structural threat escalation driver; identifiable beneficiaries across endpoint, network, and cloud security", "actor": "Founder", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "monitoring_transitions": [
+            {"prior": "Not Monitored", "new": "Active Monitoring", "reason": "Theme approved — begin active tracking", "actor": "Founder", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "stocks_in_industry": 48,
+        "key_tickers": ["CRWD", "PANW", "ZS", "FTNT", "OKTA", "NET"],
     },
 ]
 
@@ -250,6 +290,13 @@ CANDIDATE_THEME = [
         "leadership_transitions": [],
         "evidence_refs": ["EV-010"],
     },
+    {
+        "id": "CTR-006", "candidate_id": "CAND-001", "theme_id": "TH-020",
+        "primary_role": "Enabler", "secondary_roles": [],
+        "leadership_state": "Confirmed Leader",
+        "leadership_transitions": [],
+        "evidence_refs": ["EV-014"],
+    },
 ]
 
 # ═══════════════════════════════════════════════════════════
@@ -278,6 +325,8 @@ ALTERNATIVE_EXPLANATIONS = {
     "TH-004": "Alternative: AI infrastructure buildout may be a short-term inventory cycle rather than structural shift. Cloud providers may overbuild then pause (2018 pattern repeat).",
     "TH-014": None,
     "TH-010": "Alternative: Solar demand may be primarily policy-driven (IRA) rather than economic — policy change risk is material.",
+    "TH-020": "Alternative: Cloud growth may already be priced in — hyperscaler multiples at decade highs. AI inference efficiency improvements could reduce total compute demand per query.",
+    "TH-030": "Alternative: Cybersecurity spending growth may decelerate as AI-automated defense reduces per-seat pricing. Platform consolidation (fewer vendors) could compress total addressable market growth.",
 }
 
 # ═══════════════════════════════════════════════════════════
