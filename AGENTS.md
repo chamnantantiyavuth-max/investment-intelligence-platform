@@ -26,6 +26,19 @@ Rules:
 - Casual agreement is not approval of an unnamed material change.
 - Approval must identify the plan, artifact, amendment, state transition, or operation being approved.
 
+## Workflow Governance
+
+Auto-load `project-workflow` skill for ALL tasks. Mode selection:
+
+| Mode | Use for | Steps |
+|---|---|---|
+| 🟢 **Quick** | typo, docs, CSS, log statements, single-file non-financial edits | Inspect → Change → Verify → Commit |
+| 🔴 **Critical** | architecture, financial logic, new features, multi-file changes | Full phases (-1→7) |
+
+**Auto-detect rule:** "if unsure → Quick → escalate to Critical if smoke test fails"
+
+Critical Mode gates (2R, 5, 7) are MANDATORY for any task touching financial logic, architecture, or new features.
+
 ## Project-Specific Mandatory Rules
 
 - Plan substantial work before implementation.
@@ -72,7 +85,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 3 Complete: Alpha Momentum V0 Implementation. Next: Phase 4 (Real EOD Data) or Phase 7 (Close System).
+Phase 3 Complete: Alpha Momentum V0 Implementation. Next: Phase 5 (Theme Intelligence V1 — pending authorization).
 
 Current approved checkpoints:
 
@@ -87,6 +100,9 @@ Current approved checkpoints:
 - am-v0-gate-c-complete (7 HC slots, 20 acceptance scenarios, 10 ACs, 22 July 2026)
 - am-v0-gate-d-complete (independent audit passed, 4 findings resolved, 22 July 2026)
 - am-v0-phase-3-complete (end-to-end vertical slice: 6-stage pipeline, 3 themes, 5 candidates, Claude-inspired UI, all 10 ACs, 22 July 2026)
+- am-v0-phase-4-complete (Real EOD data via yfinance, source_adapter.py, 22 July 2026)
+- fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
+- wf-phase-2r-in-progress (Architecture Review Gate — 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; Phase 5 code quarantined; 23 July 2026)
 
 Phase governance:
 

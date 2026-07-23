@@ -42,13 +42,16 @@ The Shared Core is a shared platform area composed of bounded modules. Each modu
 - Shared infrastructure ensures reproducibility; strategy-owned definitions ensure domain relevance.
 - A feature may be promoted to Shared Core only when multiple strategies require the identical computation with identical semantics.
 
-**Canonical Theme relationship ownership — pending Founder decision:**
+**Canonical Theme relationship ownership — RESOLVED (FD #26, 23 July 2026):**
 
-Whether canonical structural Theme roles (Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary) belong to Entity–Theme relationships, Candidate–Theme relationships, or a layered combination is an **open Founder decision** (see CANDIDATE-AND-QUEUE-MODEL §3.4).
+Canonical structural Theme roles (Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary) belong to **Entity–Theme relationships**, owned by Shared Core as the authoritative baseline.
 
-- **Recommendation:** A layered model where Shared Core maintains canonical Entity–Theme structural roles as the authoritative baseline, and strategy-specific Candidate–Theme relationships may refine or add context without silently contradicting the canonical role.
-- **V0 approach:** V0 may use simplified Candidate–Theme test relationships without establishing permanent canonical ownership. The decision must be resolved before V1 or before a second strategy consumes Theme roles.
-- This remains unresolved in Project Definition v0.1 and requires a separate explicit Founder decision.
+- Shared Core maintains the canonical Entity–Theme structural role as the single source of truth.
+- A strategy may enrich with additional context but **must not silently contradict** the canonical role.
+- If a strategy believes the canonical role is incorrect, it must surface the conflict through the Independent Challenge mechanism — not override it silently.
+- Candidate–Theme relationships inherit the canonical Entity–Theme role as their default, with strategy-specific enrichment layered on top.
+
+**Resolution:** Founder Decision #26 (23 July 2026). This replaces the previous open question and the "layered model" recommendation.
 
 **Additionally universal:**
 
@@ -132,7 +135,7 @@ Asset / Instrument
 Candidate
 
 Evidence and Themes may relate to Entity, Asset, Candidate, and Candidate–Theme relationships.
-Canonical Theme-role ownership (Entity–Theme vs. Candidate–Theme) remains a pending Founder decision.
+Canonical Theme-role ownership is RESOLVED: Entity–Theme relationships owned by Shared Core (FD #26, 23 July 2026).
 
 ─── Domain Relationships ───
 
@@ -202,7 +205,7 @@ Candidates are linked to Themes through **Candidate–Theme relationships**. Thi
 
 A Candidate may relate to multiple Themes with different roles and leadership states in each.
 
-Canonical structural Theme role ownership is a pending Founder decision (see CANDIDATE-AND-QUEUE-MODEL §3.4). V0 may use simplified Candidate–Theme relationships for demonstration without establishing permanent canonical ownership.
+Canonical structural Theme role ownership is RESOLVED: Entity–Theme relationships owned by Shared Core. Candidate–Theme relationships inherit canonical role as default, with strategy-specific enrichment (FD #26, 23 July 2026).
 
 ### 4.3 Candidate → Research Queue
 

@@ -330,7 +330,10 @@ ALTERNATIVE_EXPLANATIONS = {
 }
 
 # ═══════════════════════════════════════════════════════════
-# EXPERIMENTAL THEMES (approval_status="Experimental")
+# ⚠️ EXPERIMENTAL THEMES (approval_status="Experimental")
+# ⚠️ QUARANTINED per Phase 2R Review (23 Jul 2026)
+# ⚠️ Phase 5 is NOT AUTHORIZED — preview data only
+# ⚠️ Do NOT integrate into main pipeline until Phase 5 FD exists
 # ═══════════════════════════════════════════════════════════
 # AI-created themes tracked separately from official Approved themes.
 # They may have Active Monitoring but CANNOT affect official strategy outputs.
@@ -368,7 +371,7 @@ EXPERIMENTAL_THEMES = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# EXPERIMENTAL CANDIDATES
+# ⚠️ EXPERIMENTAL CANDIDATES — QUARANTINED (23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 EXPERIMENTAL_CANDIDATES = [
     {
@@ -433,7 +436,7 @@ EXPERIMENTAL_EVIDENCE = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# WEAK SIGNAL INBOX — ANOMALIES
+# ⚠️ WEAK SIGNAL INBOX — ANOMALIES — QUARANTINED (23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 # Unexplained observations that don't yet fit any approved theme.
 # Anomalies are facts or patterns — not yet hypotheses or themes.
@@ -481,7 +484,7 @@ ANOMALIES = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# WEAK SIGNAL INBOX — THEME HYPOTHESES
+# ⚠️ WEAK SIGNAL INBOX — THEME HYPOTHESES — QUARANTINED (23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 # Early-stage theme proposals that have not yet advanced to
 # Experimental or Approved status. These are ideas, not themes.

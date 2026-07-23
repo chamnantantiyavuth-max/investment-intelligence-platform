@@ -3,7 +3,7 @@ Alpha Momentum V0 — HTML Display Layer
 Renders Theme Cards, Research Queue, and Candidate Detail using Jinja2.
 Per THEME-CARD-AND-HUMAN-REVIEW-FLOW.md and FIXTURE-AND-ACCEPTANCE-SCENARIOS.md.
 
-V0.3: Experimental themes + weak signal inbox.
+V0.4: Phase 5 experimental code quarantined per Phase 2R review (23 Jul 2026).
 """
 import os
 import json
@@ -141,7 +141,7 @@ def render_queue(pipeline_result, output_dir=None):
     queue = pipeline_result["queue"]
     stages = pipeline_result.get("stages", [])
     overrides_set = {ov["candidate_id"] for ov in pipeline_result.get("overrides", [])}
-    experimental = pipeline_result.get("experimental", {})
+    # ⚠️ experimental queue rendering QUARANTINED (23 Jul 2026 — Phase 2R)
 
     queue_display = []
     for tid, tdata in queue:
@@ -151,15 +151,8 @@ def render_queue(pipeline_result, output_dir=None):
     total_candidates = sum(len(td["candidates"]) for _, td in queue_display)
     empty_theme_count = sum(1 for _, td in queue_display if len(td["candidates"]) == 0)
 
-    exp_queue_display = []
-    exp_total = 0
-    exp_empty = 0
-    if experimental.get("has_data"):
-        for tid, tdata in experimental["queue"]:
-            candidates_display = _enrich_candidates(tdata["candidates"], set())
-            exp_queue_display.append((tid, {"theme": tdata["theme"], "candidates": candidates_display}))
-        exp_total = sum(len(td["candidates"]) for _, td in exp_queue_display)
-        exp_empty = sum(1 for _, td in exp_queue_display if len(td["candidates"]) == 0)
+    # ⚠️ experimental queue display QUARANTINED (23 Jul 2026 — Phase 2R)
+    # Moved to experimental/display.py — see experimental/README.md
 
     template = env.get_template("queue.html")
     html = template.render(
@@ -168,10 +161,6 @@ def render_queue(pipeline_result, output_dir=None):
         total_candidates=total_candidates,
         empty_theme_count=empty_theme_count,
         stages=stages,
-        experimental_queue=exp_queue_display,
-        experimental_has_data=experimental.get("has_data", False),
-        experimental_total=exp_total,
-        experimental_empty=exp_empty,
         lifecycle_classes=LIFECYCLE_CLASSES,
         leadership_classes=LEADERSHIP_CLASSES,
         pipeline_version=pipeline_result["pipeline_version"],
@@ -186,41 +175,16 @@ def render_queue(pipeline_result, output_dir=None):
     return path
 
 
-# ── Weak Signal Inbox ──
-
-def render_inbox(pipeline_result, output_dir=None):
-    """Render the Weak Signal Inbox HTML using Jinja2 template."""
-    if output_dir is None:
-        output_dir = OUTPUT_DIR
-    os.makedirs(output_dir, exist_ok=True)
-
-    anomalies = pipeline_result.get("inbox_anomalies", [])
-    hypotheses = pipeline_result.get("inbox_hypotheses", [])
-
-    template = env.get_template("inbox.html")
-    html = template.render(
-        anomalies=anomalies,
-        hypotheses=hypotheses,
-        pipeline_version=pipeline_result["pipeline_version"],
-        run_id=pipeline_result["run_id"],
-        point_in_time=pipeline_result["point_in_time"],
-        fixture_category=FIXTURE_CATEGORY,
-    )
-
-    path = os.path.join(output_dir, "inbox.html")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(html)
-    return path
-
-
 # ── Render All ──
 
 def render_all(pipeline_result):
-    """Render all outputs: queue + theme cards (approved + experimental) + inbox + JSON."""
+    """Render all outputs: queue + theme cards (approved only) + JSON.
+    ⚠️ Experimental rendering QUARANTINED (23 Jul 2026 — Phase 2R).
+    See experimental/display.py for inbox + experimental theme cards."""
     queue_path = render_queue(pipeline_result)
     card_paths = render_theme_cards(pipeline_result)
-    exp_card_paths = render_theme_cards(pipeline_result, is_experimental=True)
-    inbox_path = render_inbox(pipeline_result)
+    # ⚠️ exp_card_paths = render_theme_cards(pipeline_result, is_experimental=True)  # QUARANTINED
+    # ⚠️ inbox_path = render_inbox(pipeline_result)  # QUARANTINED
 
     json_path = os.path.join(OUTPUT_DIR, "pipeline_result.json")
     with open(json_path, "w", encoding="utf-8") as f:
@@ -229,7 +193,7 @@ def render_all(pipeline_result):
     return {
         "queue": queue_path,
         "theme_cards": card_paths,
-        "experimental_theme_cards": exp_card_paths,
-        "inbox": inbox_path,
+        # ⚠️ "experimental_theme_cards": exp_card_paths,  # QUARANTINED
+        # ⚠️ "inbox": inbox_path,  # QUARANTINED
         "json": json_path,
     }

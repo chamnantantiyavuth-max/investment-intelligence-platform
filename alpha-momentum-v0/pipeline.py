@@ -7,12 +7,10 @@ No investment thresholds, weights, or formulas.
 from fixtures import (
     THEMES, EVIDENCE, ENTITIES, ASSETS, CANDIDATES,
     CANDIDATE_THEME, HUMAN_OVERRIDES, ALTERNATIVE_EXPLANATIONS,
-    ANOMALIES, INBOX_HYPOTHESES,
-    EXPERIMENTAL_THEMES, EXPERIMENTAL_CANDIDATES,
-    EXPERIMENTAL_CANDIDATE_THEME, EXPERIMENTAL_EVIDENCE,
-    EXPERIMENTAL_ASSETS,
     PIPELINE_CONFIG, FIXTURE_CATEGORY,
 )
+# ⚠️ Phase 5 data (ANOMALIES, INBOX_HYPOTHESES, EXPERIMENTAL_*)
+#   MOVED to experimental/pipeline.py — structural quarantine (23 Jul 2026)
 from datetime import datetime
 
 # ── Stage 0: Run metadata ─────────────────────────────────
@@ -293,51 +291,7 @@ def run_pipeline():
         "evidence": EVIDENCE,
         "overrides": HUMAN_OVERRIDES,
         "alternative_explanations": ALTERNATIVE_EXPLANATIONS,
-        "inbox_anomalies": ANOMALIES,
-        "inbox_hypotheses": INBOX_HYPOTHESES,
-        "experimental": run_experimental_pipeline(),
+        # ⚠️ Phase 5 quarantined (23 Jul 2026) — experimental/ directory
     }
     return pipeline_result
 
-
-def run_experimental_pipeline():
-    """Run the pipeline for Experimental themes only. Reuses same stage logic.
-    Returns dict with stages, queue, evidence — separate from main pipeline."""
-    if not EXPERIMENTAL_THEMES:
-        return {"stages": [], "queue": [], "evidence": [], "has_data": False, "message": "No experimental themes defined"}
-
-    theme_map = {t["id"]: t for t in EXPERIMENTAL_THEMES}
-    stages = []
-    candidates = {}
-
-    # S1: Universe (experimental candidates)
-    s1, candidates = stage_universe(EXPERIMENTAL_ASSETS, EXPERIMENTAL_CANDIDATES)
-    stages.append(s1)
-
-    # S2: Theme Context
-    s2, candidates = stage_theme_context(candidates, EXPERIMENTAL_CANDIDATE_THEME, EXPERIMENTAL_THEMES)
-    stages.append(s2)
-
-    # S3: Candidate Quality
-    s3, candidates = stage_candidate_quality(candidates)
-    stages.append(s3)
-
-    # S4: Entry Readiness
-    s4, candidates = stage_entry_readiness(candidates)
-    stages.append(s4)
-
-    # S5: Data Confidence
-    s5, candidates = stage_data_confidence(candidates)
-    stages.append(s5)
-
-    # S6: Queue
-    s6, queue = stage_queue(candidates, EXPERIMENTAL_CANDIDATE_THEME, EXPERIMENTAL_THEMES, theme_map)
-    stages.append(s6)
-
-    return {
-        "stages": stages,
-        "queue": queue,
-        "evidence": EXPERIMENTAL_EVIDENCE,
-        "has_data": True,
-        "message": f"{len(EXPERIMENTAL_THEMES)} themes, {len(EXPERIMENTAL_CANDIDATES)} candidates",
-    }

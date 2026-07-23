@@ -49,25 +49,8 @@ def main():
     if total == 0:
         print("  ⚠️  EMPTY QUEUE — Honest Empty State (DNA-016)")
 
-    # Inbox summary
-    anomalies = result.get("inbox_anomalies", [])
-    hypotheses = result.get("inbox_hypotheses", [])
-    print()
-    print("Weak Signal Inbox:")
-    print("-" * 40)
-    print(f"  Anomalies:            {len(anomalies)}")
-    print(f"  Theme Hypotheses:     {len(hypotheses)}")
-
-    # Experimental summary
-    experimental = result.get("experimental", {})
-    if experimental.get("has_data"):
-        exp_queue = experimental.get("queue", [])
-        exp_total = sum(len(td["candidates"]) for _, td in exp_queue)
-        print()
-        print("Experimental Queue:")
-        print("-" * 40)
-        print(f"  Experimental themes:  {len(exp_queue)}")
-        print(f"  Exp. candidates:      {exp_total}")
+    # ⚠️ Phase 5 CLI output QUARANTINED (23 Jul 2026 — Phase 2R)
+    # Inbox + Experimental summary moved to experimental/display.py
 
     # Render outputs
     print()

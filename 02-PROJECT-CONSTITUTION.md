@@ -1,6 +1,6 @@
 # Investment Intelligence Platform Constitution
 
-## Version 0.3 — Approved Working Constitution
+## Version 0.4 — Approved Working Constitution
 
 ### Status
 
