@@ -44,18 +44,9 @@ Source adapters, raw preservation, normalization, freshness, reconciliation.
 - run_real.py entry point (system Python 3.14 due to numpy compat)
 - run.py = synthetic fixtures
 
-## Phase 5 — Theme Intelligence V1
+Phase 5 — Theme Intelligence V1
 Weak Signal Inbox, anomalies, Theme Hypotheses, Experimental Theme Radar.
-**Status: NOT YET AUTHORIZED**
-
-⚠️ Phase 5 is NOT authorized. No Founder Decision exists for Phase 5.
-⚠️ Preview fixtures exist in fixtures.py (EXPERIMENTAL_*, ANOMALIES, INBOX_HYPOTHESES) — quarantined per Phase 2R Architecture Review (23 July 2026).
-⚠️ See alpha-momentum-v0/experimental/README.md for quarantine details.
-
-Required before Phase 5 begins:
-- Formal Phase 5 authorization via Founder Decision
-- Architecture re-design (experimental pipeline must separate from approved pipeline — Constitution §23.3)
-- AI epistemic status contracts (§23.4)
+**Status: AUTHORIZED** — FD #27, 23 July 2026
 
 ## Phase 6 — Learning Loop
 Outcomes, postmortems, approved lessons, narrative export.

@@ -47,6 +47,9 @@ EVIDENCE = [
     {"id": "EV-017", "type": "Observed Fact", "content": "Ransomware attacks: 4,611 incidents in 2023, +73% YoY (Verizon DBIR 2024)", "source": "SRC-SYN-012", "pub_ts": "2024-05-01T08:00:00Z", "effective": "2023-FY", "relationship": "supporting", "theme": "TH-030", "candidate": None},
     {"id": "EV-018", "type": "Claim",       "content": "Cybersecurity spending may face budget fatigue — CISO survey shows tool consolidation trend", "source": "SRC-SYN-013", "pub_ts": "2024-06-01T08:00:00Z", "effective": "2024-Q2", "relationship": "contradicting", "theme": "TH-030", "candidate": None},
     {"id": "EV-019", "type": "Missing",     "content": "Missing: AI-driven attack volume projection vs AI-defense capability gap analysis", "source": None, "pub_ts": None, "effective": None, "relationship": "missing", "theme": "TH-030", "candidate": None},
+    # ── Founder Knowledge Records (type 7, per FD #25 Nick #5) ──
+    {"id": "EV-FK-001", "type": "Founder Knowledge", "content": "Founder Obsidian note (2024-06-28): 'Semiconductor cycle feels different this time. Not just demand pull — structural shift. Every hyperscaler committing to custom silicon. NVDA ecosystem lock-in deepening.' Thematic alignment: TH-004.", "source": "Founder Obsidian Vault", "pub_ts": "2024-06-28T08:00:00Z", "effective": "2024-Q2", "relationship": "supporting", "theme": "TH-004", "candidate": "NVDA"},
+    {"id": "EV-FK-002", "type": "Founder Knowledge", "content": "Founder journal entry (2024-07-01): 'Medical device theme feels crowded — ABT, MDT, BSX already dominant. But robotic surgery (ISRG) still underpenetrated in Asia — 5% of procedures vs 20% in US. That gap is the opportunity.' Thematic alignment: TH-014.", "source": "Founder Journal", "pub_ts": "2024-07-01T08:00:00Z", "effective": "2024-Q2", "relationship": "supporting", "theme": "TH-014", "candidate": None},
 ]
 
 # ═══════════════════════════════════════════════════════════
@@ -182,6 +185,13 @@ CANDIDATES = [
         "research_transitions": [
             {"prior": "Watchlist", "new": "Priority Research", "actor": "Founder", "timestamp": "2024-06-01T10:00:00Z", "rationale": "Strong fundamentals + breakout proximity"},
         ],
+        "thesis_summary": "NVDA is the dominant beneficiary of the AI compute buildout. Its CUDA ecosystem creates a deep competitive moat that extends beyond hardware into software, frameworks, and developer mindshare. As AI models scale, demand for NVDA's data center GPUs grows exponentially — far outpacing traditional semiconductor cycles.",
+        "conviction_rationale": "Revenue growth of 427% YoY in data center segment is unprecedented in semiconductor history. Every hyperscaler (MSFT, GOOG, AMZN, META) has committed to multi-year AI capex cycles. NVDA's next-gen Blackwell platform has pre-orders exceeding Hopper's lifetime. The ecosystem lock-in (CUDA, cuDNN, TensorRT) means enterprise AI workloads are structurally tied to NVDA hardware.",
+        "conviction_level": "High",
+        "key_risks": ["Hyperscaler custom silicon (Google TPU, Amazon Trainium, Microsoft Maia) may reduce dependency over 3-5 years", "AI inference efficiency improvements (EV-005) could reduce GPU demand per query", "Geopolitical risk: US-China chip export restrictions may curtail 20-25% of data center revenue"],
+        "thesis_status": "Confirmed",
+        "entry_trigger": "Already in Stage 2 advance — thesis confirmation, not entry, is the active question. Monitor for: (1) gross margin compression below 70%, (2) two consecutive quarters of <20% sequential data center growth, (3) major customer announces in-house GPU production.",
+        "trigger_status": "Watch — Confirmed thesis, monitor invalidation signals",
     },
     {
         "id": "CAND-002", "asset_id": "AST-002", "entity_id": "ENT-002", "ticker": "INTC",
@@ -198,6 +208,13 @@ CANDIDATES = [
         "data_confidence": {"freshness": "Current — 8/8 fields", "completeness": "Complete — 8/8 expected", "reliability": "High — Verified filings", "conflicts": "None", "missing_data": "None"},
         "research_state": "Watchlist",
         "research_transitions": [],
+        "thesis_summary": "Intel is a semiconductor turnaround thesis built on three pillars: (1) CHIPS Act domestic manufacturing funding, (2) IFS (Intel Foundry Services) opening a new revenue stream, (3) eventual process node parity with TSMC. This is a multi-year structural transformation — not a momentum play.",
+        "conviction_rationale": "CHIPS Act provides $8.5B direct funding — a structural floor. IFS has announced customers (Microsoft, Amazon, Qualcomm) but revenue contribution remains negligible. Process node roadmap (18A by 2025) is credible but unproven. The thesis depends on execution that has not yet been demonstrated.",
+        "conviction_level": "Low",
+        "key_risks": ["Process node delays — Intel has a history of roadmap slippage", "IFS customers may be exploratory, not committed — no long-term contracts announced", "Legacy x86 business declining faster than new businesses can offset", "TSMC's process lead may extend further — making IFS economically uncompetitive"],
+        "thesis_status": "Under Review",
+        "entry_trigger": "Q4 2024 earnings must show: (1) IFS revenue > $500M with at least one named long-term customer, (2) 18A process node on track for 2025 launch, (3) legacy business revenue decline <5% QoQ. Thesis enters active research only when these three conditions are jointly met.",
+        "trigger_status": "Waiting",
     },
     {
         "id": "CAND-003", "asset_id": "AST-003", "entity_id": "ENT-003", "ticker": "AMD",
@@ -214,6 +231,13 @@ CANDIDATES = [
         "data_confidence": {"freshness": "Current — 8/8 fields", "completeness": "Complete — 8/8 expected", "reliability": "High — Verified filings", "conflicts": "None", "missing_data": "None"},
         "research_state": "Watchlist",
         "research_transitions": [],
+        "thesis_summary": "AMD is the second beneficiary of the AI compute buildout — capturing market share in both data center GPU (MI300X) and server CPU (EPYC). While NVDA dominates training, AMD is well-positioned for the inference market where cost-per-query matters more than peak performance. The thesis is: AI inference becomes the larger market, and AMD captures a meaningful share.",
+        "conviction_rationale": "Data center revenue +80% YoY confirms the AI tailwind is real for AMD, not just NVDA. MI300X has competitive inference performance at lower cost. EPYC server CPU share now exceeds 30% — structural shift from Intel. However, AMD's software ecosystem (ROCm) is 3-5 years behind CUDA — this is the key constraint on GPU market share growth.",
+        "conviction_level": "Moderate",
+        "key_risks": ["ROCm ecosystem gap vs CUDA — enterprise AI developers overwhelmingly prefer CUDA", "NVDA Blackwell may extend the performance gap further", "INTC foundry turnaround could create a third credible player, fragmenting the non-NVDA share", "AMD's MI300X supply is constrained by TSMC CoWoS capacity — growth may be supply-limited, not demand-limited"],
+        "thesis_status": "Confirmed",
+        "entry_trigger": "Entry readiness is Near (Stage 2, constructive base, tightening VCP). Thesis is confirmed — monitor for: (1) MI300X revenue exceeding $4B annual run rate, (2) major enterprise AI customer win on ROCm, (3) Instinct roadmap showing competitive performance vs Blackwell. Any of these three events would trigger active research promotion.",
+        "trigger_status": "Watch — Confirmed thesis, near entry, monitor for catalyst",
     },
     {
         "id": "CAND-004", "asset_id": "AST-004", "entity_id": "ENT-004", "ticker": "MDT",
@@ -230,6 +254,13 @@ CANDIDATES = [
         "data_confidence": {"freshness": "Current — 7/8 fields", "completeness": "Incomplete — 7/8 expected", "reliability": "High — Verified filings", "conflicts": "None", "missing_data": "Missing: competitive landscape update Q2 2024"},
         "research_state": "Watchlist",
         "research_transitions": [],
+        "thesis_summary": "Medtronic benefits from the structural aging demographic tailwind (65+ growing 10,000/day in US). As the largest pure-play medical device company, MDT has broad exposure across cardiac, neuro, surgical, and diabetes. Post-COVID procedure volume normalization is the near-term driver; robotics (Hugo RAS) and diabetes (MiniMed 780G) are the long-term growth vectors.",
+        "conviction_rationale": "Revenue +5.2% YoY — steady but not exciting. Procedure volumes are normalizing post-COVID. However, GLP-1 drugs (EV-008) introduce a new risk vector — if obesity-related surgeries decline, MDT's bariatric and orthopedic segments face headwinds. Robotics pipeline (Hugo RAS) is promising but regulatory timeline uncertain. Thesis is structurally sound but lacks urgency.",
+        "conviction_level": "Moderate",
+        "key_risks": ["GLP-1 drugs reducing demand for bariatric, orthopedic, and cardiovascular surgical interventions (EV-008, EV-009)", "Hugo RAS regulatory approval delayed — no clear US timeline", "Diabetes segment competitive pressure from Tandem, Insulet, Dexcom", "China volume-based procurement expanding to medical devices — margin compression risk"],
+        "thesis_status": "Confirmed",
+        "entry_trigger": "Entry readiness is Far (Stage 3 topping, extended from base). Monitor for: (1) Hugo RAS FDA submission or CE Mark expansion, (2) two consecutive quarters of >8% organic revenue growth, (3) GLP-1 impact study showing <5% surgical volume decline in MDT's exposed segments. Entry only when price structure transitions to Stage 1 or Stage 2.",
+        "trigger_status": "Waiting",
     },
     {
         "id": "CAND-005", "asset_id": "AST-005", "entity_id": "ENT-005", "ticker": "FSLR",
@@ -246,6 +277,13 @@ CANDIDATES = [
         "data_confidence": {"freshness": "Stale — 3/8 fields > 90 days", "completeness": "Incomplete — 3/8 expected", "reliability": "Medium — mixed sources", "conflicts": "None", "missing_data": "Missing: 5 fields (ROI, cost trajectory, competitive pricing, policy impact, margin forecast)"},
         "research_state": "Watchlist",
         "research_transitions": [],
+        "thesis_summary": "First Solar is a domestic solar manufacturing thesis — benefiting from IRA tax credits, utility-scale demand, and a 78 GW backlog. Unlike Chinese solar manufacturers facing tariff headwinds, FSLR's US-based manufacturing gives it a structural cost advantage under current policy. The thesis is: US solar manufacturing renaissance creates a protected moat for FSLR.",
+        "conviction_rationale": "78 GW backlog is the strongest demand signal in solar — but the stock is not participating (Stage 1 basing, RS lagging). This divergence (AN-004) suggests the market is pricing in: (1) IRA repeal or modification risk if political landscape changes, (2) sustained high interest rates compressing solar project ROI (EV-011), (3) Chinese oversupply eventually finding ways around tariffs. The policy moat is real but fragile.",
+        "conviction_level": "Low",
+        "key_risks": ["IRA modification or repeal — solar manufacturing credits are politically vulnerable", "Sustained 5%+ interest rates — solar project ROI compressed (EV-011, EV-012)", "Chinese manufacturers (LONGi, Jinko, Trina) building capacity in Southeast Asia and Mexico to bypass tariffs", "Utility-scale interconnection queue delays — 2+ year wait times in many ISOs", "Battery storage cost trajectory uncertain (EV-013) — solar+storage economics depend on storage costs declining"],
+        "thesis_status": "Under Review",
+        "entry_trigger": "Entry readiness is Far (Stage 1 basing, insufficient duration, no VCP). Monitor for: (1) ENPH and SEDG leadership signals reverse and FSLR begins outperforming, (2) interest rate cuts announced or solar project ROI modeling shows viability at current rates, (3) FSLR price structure transitions to Stage 2 with constructive base. Thesis not actionable until trigger conditions met.",
+        "trigger_status": "Waiting",
     },
 ]
 
@@ -331,9 +369,9 @@ ALTERNATIVE_EXPLANATIONS = {
 
 # ═══════════════════════════════════════════════════════════
 # ⚠️ EXPERIMENTAL THEMES (approval_status="Experimental")
-# ⚠️ QUARANTINED per Phase 2R Review (23 Jul 2026)
-# ⚠️ Phase 5 is NOT AUTHORIZED — preview data only
-# ⚠️ Do NOT integrate into main pipeline until Phase 5 FD exists
+# Phase 5 AUTHORIZED (FD #27, 23 Jul 2026) — under re-architecture
+# Hard guard: must NOT reuse identical deterministic logic as approved pipeline
+# Hard guard: must NOT alter official filters, rankings, or approved-strategy alerts
 # ═══════════════════════════════════════════════════════════
 # AI-created themes tracked separately from official Approved themes.
 # They may have Active Monitoring but CANNOT affect official strategy outputs.
@@ -371,7 +409,7 @@ EXPERIMENTAL_THEMES = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# ⚠️ EXPERIMENTAL CANDIDATES — QUARANTINED (23 Jul 2026)
+# ⚠️ EXPERIMENTAL CANDIDATES — Phase 5 active (FD #27, 23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 EXPERIMENTAL_CANDIDATES = [
     {
@@ -436,7 +474,7 @@ EXPERIMENTAL_EVIDENCE = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# ⚠️ WEAK SIGNAL INBOX — ANOMALIES — QUARANTINED (23 Jul 2026)
+# ⚠️ WEAK SIGNAL INBOX — ANOMALIES — Phase 5 active (FD #27, 23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 # Unexplained observations that don't yet fit any approved theme.
 # Anomalies are facts or patterns — not yet hypotheses or themes.
@@ -484,7 +522,7 @@ ANOMALIES = [
 ]
 
 # ═══════════════════════════════════════════════════════════
-# ⚠️ WEAK SIGNAL INBOX — THEME HYPOTHESES — QUARANTINED (23 Jul 2026)
+# ⚠️ WEAK SIGNAL INBOX — THEME HYPOTHESES — Phase 5 active (FD #27, 23 Jul 2026)
 # ═══════════════════════════════════════════════════════════
 # Early-stage theme proposals that have not yet advanced to
 # Experimental or Approved status. These are ideas, not themes.
