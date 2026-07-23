@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% from "macros.html" import metric_card with context %}
+
+{% block title %}Weak Signal Inbox | Alpha Momentum V0{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header">
+    <h1>📡 Weak Signal Inbox</h1>
+    <div class="subtitle">Unexplained anomalies and early-stage theme hypotheses — signals that have not yet advanced to theme status</div>
+  </div>
+
+  <!-- Summary Metrics -->
+  <div class="metrics-row">
+    {{ metric_card(anomalies|length, 'Anomalies', 'var(--warning)') }}
+    {{ metric_card(hypotheses|length, 'Hypotheses', 'var(--info)') }}
+    {{ metric_card(anomalies|selectattr('status','equalto','Unexplained')|list|length, 'Unexplained', 'var(--danger)') }}
+  </div>
+
+  <div style="padding: 0.75rem 1rem; background: var(--accent-light); border-radius: var(--radius-sm); margin-bottom: 2rem; font-size: 13px; color: var(--text-secondary);">
+    💡 <strong>Purpose:</strong> This inbox collects observations and ideas that do not yet have a theme assigned. Anomalies are unexplained market data patterns. Hypotheses are early-stage theme proposals. Both await Founder review — nothing here affects the official Research Queue.
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- ANOMALIES -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>🔍 Unexplained Anomalies</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:1rem;">Market observations that do not fit the current theme framework. These are facts or patterns — not interpretations. Each anomaly references specific tickers and related themes.</p>
+
+    {% if anomalies %}
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      {% for an in anomalies %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius-sm);padding:1rem 1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+          <div>
+            <strong style="font-size:14px;color:var(--text-primary);">{{ an.id }}</strong>
+            <span class="badge" style="margin-left:8px;background:var(--warning-bg);color:var(--warning);">{{ an.type }}</span>
+            <span class="badge" style="margin-left:4px;background:var(--danger-bg);color:var(--danger);">{{ an.status }}</span>
+          </div>
+          <span style="font-size:10px;color:var(--text-tertiary);">First observed: {{ an.first_observed }}</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:0.5rem;">{{ an.description }}</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:11px;color:var(--text-tertiary);">
+          {% if an.related_theme %}
+          <span>📌 Theme: <strong style="color:var(--text-secondary);">{{ an.related_theme }}</strong></span>
+          {% endif %}
+          {% if an.related_tickers %}
+          <span>🎯 Tickers: 
+            {% for t in an.related_tickers %}
+            <span class="ticker">{{ t }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </span>
+          {% endif %}
+        </div>
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:0.35rem;">{{ an.source }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No unexplained anomalies at this time.</div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- HYPOTHESES -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>💡 Theme Hypotheses</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:1rem;">Early-stage theme proposals that have not yet advanced to Experimental or Approved status. Each hypothesis identifies a structural driver, why-now catalyst, and potential beneficiaries — but requires Founder review before becoming a theme.</p>
+
+    {% if hypotheses %}
+    <div style="display:flex;flex-direction:column;gap:1.25rem;">
+      {% for hy in hypotheses %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-left:3px solid var(--info);border-radius:var(--radius-sm);padding:1.25rem;">
+        
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem;">
+          <div>
+            <strong style="font-size:15px;color:var(--text-primary);">{{ hy.id }}: {{ hy.title }}</strong>
+            <span class="badge" style="margin-left:8px;background:var(--info-bg);color:var(--info);">{{ hy.status }}</span>
+          </div>
+          <span style="font-size:10px;color:var(--text-tertiary);">Proposed: {{ hy.proposed_date }}</span>
+        </div>
+
+        <!-- Driver -->
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:3px;">Structural Driver</div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">{{ hy.proposed_driver }}</p>
+        </div>
+
+        <!-- Why Now -->
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:3px;">Why Now</div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">{{ hy.why_now }}</p>
+        </div>
+
+        <!-- Meta grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:3px;">Potential Candidates</div>
+            <p style="font-size:12px;">
+              {% for c in hy.potential_candidates %}
+              <span class="ticker">{{ c }}</span>{% if not loop.last %}, {% endif %}
+              {% endfor %}
+            </p>
+          </div>
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:3px;">Relationship to Existing</div>
+            <p style="font-size:12px;color:var(--text-secondary);">{{ hy.relationship_to_existing }}</p>
+          </div>
+        </div>
+
+        <!-- Key Unknowns -->
+        {% if hy.key_unknowns %}
+        <div style="background:var(--warning-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.75rem 1rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:4px;">⚠️ Key Unknowns</div>
+          <ul style="list-style:none;font-size:12px;color:var(--text-secondary);margin:0;padding:0;">
+            {% for uk in hy.key_unknowns %}
+            <li style="padding:2px 0;">• {{ uk }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No theme hypotheses at this time.</div>
+    {% endif %}
+  </div>
+
+  <!-- Navigation -->
+  <div style="text-align:center;margin-top:2rem;">
+    <a href="queue.html" style="font-size:13px;">← Back to Research Queue</a>
+  </div>
+
+</div>
+{% endblock %}

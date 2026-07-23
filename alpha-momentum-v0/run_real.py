@@ -100,6 +100,7 @@ def run():
 
     print(f"\nOutput Files:")
     print(f"  queue: {outputs['queue']}")
+    print(f"  inbox: {outputs.get('inbox', 'N/A')}")
     print(f"  theme_cards: {len(outputs['theme_cards'])} files")
     for p in outputs["theme_cards"]:
         print(f"    → {p}")

@@ -7,6 +7,7 @@ No investment thresholds, weights, or formulas.
 from fixtures import (
     THEMES, EVIDENCE, ENTITIES, ASSETS, CANDIDATES,
     CANDIDATE_THEME, HUMAN_OVERRIDES, ALTERNATIVE_EXPLANATIONS,
+    ANOMALIES, INBOX_HYPOTHESES,
     PIPELINE_CONFIG, FIXTURE_CATEGORY,
 )
 from datetime import datetime
@@ -289,5 +290,7 @@ def run_pipeline():
         "evidence": EVIDENCE,
         "overrides": HUMAN_OVERRIDES,
         "alternative_explanations": ALTERNATIVE_EXPLANATIONS,
+        "inbox_anomalies": ANOMALIES,
+        "inbox_hypotheses": INBOX_HYPOTHESES,
     }
     return pipeline_result

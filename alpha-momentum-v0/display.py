@@ -165,9 +165,10 @@ def render_queue(pipeline_result, output_dir=None):
 
 
 def render_all(pipeline_result):
-    """Render all outputs: queue + theme cards + JSON export."""
+    """Render all outputs: queue + theme cards + inbox + JSON export."""
     queue_path = render_queue(pipeline_result)
     card_paths = render_theme_cards(pipeline_result)
+    inbox_path = render_inbox(pipeline_result)
 
     # JSON export for reproducibility verification (AC-2, AC-7)
     json_path = os.path.join(OUTPUT_DIR, "pipeline_result.json")
@@ -177,5 +178,31 @@ def render_all(pipeline_result):
     return {
         "queue": queue_path,
         "theme_cards": card_paths,
+        "inbox": inbox_path,
         "json": json_path,
     }
+
+
+def render_inbox(pipeline_result, output_dir=None):
+    """Render the Weak Signal Inbox HTML using Jinja2 template."""
+    if output_dir is None:
+        output_dir = OUTPUT_DIR
+    os.makedirs(output_dir, exist_ok=True)
+
+    anomalies = pipeline_result.get("inbox_anomalies", [])
+    hypotheses = pipeline_result.get("inbox_hypotheses", [])
+
+    template = env.get_template("inbox.html")
+    html = template.render(
+        anomalies=anomalies,
+        hypotheses=hypotheses,
+        pipeline_version=pipeline_result["pipeline_version"],
+        run_id=pipeline_result["run_id"],
+        point_in_time=pipeline_result["point_in_time"],
+        fixture_category=FIXTURE_CATEGORY,
+    )
+
+    path = os.path.join(output_dir, "inbox.html")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    return path

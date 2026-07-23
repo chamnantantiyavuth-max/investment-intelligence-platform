@@ -49,6 +49,15 @@ def main():
     if total == 0:
         print("  ⚠️  EMPTY QUEUE — Honest Empty State (DNA-016)")
 
+    # Inbox summary
+    anomalies = result.get("inbox_anomalies", [])
+    hypotheses = result.get("inbox_hypotheses", [])
+    print()
+    print("Weak Signal Inbox:")
+    print("-" * 40)
+    print(f"  Anomalies:            {len(anomalies)}")
+    print(f"  Theme Hypotheses:     {len(hypotheses)}")
+
     # Render outputs
     print()
     print("Rendering HTML...")

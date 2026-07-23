@@ -330,6 +330,110 @@ ALTERNATIVE_EXPLANATIONS = {
 }
 
 # ═══════════════════════════════════════════════════════════
+# WEAK SIGNAL INBOX — ANOMALIES
+# ═══════════════════════════════════════════════════════════
+# Unexplained observations that don't yet fit any approved theme.
+# Anomalies are facts or patterns — not yet hypotheses or themes.
+ANOMALIES = [
+    {
+        "id": "AN-001",
+        "type": "Sector Divergence",
+        "description": "Healthcare sector RS ranking rose from #8 to #3 in 6 weeks while medical device theme (TH-014) remains Emerging Leadership without corresponding candidate additions. Sector breadth suggests broader participation beyond devices — biotech and services showing independent strength.",
+        "first_observed": "2024-06-15",
+        "related_theme": "TH-014",
+        "related_tickers": ["ISRG", "SYK", "BSX", "VRTX", "REGN"],
+        "status": "Unexplained",
+        "source": "Price-based observation — V0 synthetic",
+    },
+    {
+        "id": "AN-002",
+        "type": "Single-Stock Outlier",
+        "description": "AVGO (Broadcom) price +38% YTD with RS in top 5% of market — but AVGO is in TH-004 (Semiconductors) only as a key_ticker, not as a tracked Candidate. AVGO's AI networking revenue ($3B+ quarterly) suggests a distinct AI-networking sub-theme that TH-004 may not fully capture.",
+        "first_observed": "2024-06-20",
+        "related_theme": "TH-004",
+        "related_tickers": ["AVGO", "MRVL", "ANET"],
+        "status": "Unexplained",
+        "source": "Price-based observation — V0 synthetic",
+    },
+    {
+        "id": "AN-003",
+        "type": "Volume Anomaly",
+        "description": "Unusually high institutional volume (2.5x 90-day avg) in CRWD, PANW, and ZS during market down days — potential accumulation signal in TH-030 (Cybersecurity) even while theme confidence remains Low. Contradicts the 'budget fatigue' contradicting evidence (EV-018).",
+        "first_observed": "2024-06-25",
+        "related_theme": "TH-030",
+        "related_tickers": ["CRWD", "PANW", "ZS"],
+        "status": "Unexplained",
+        "source": "Price-based observation — V0 synthetic",
+    },
+    {
+        "id": "AN-004",
+        "type": "Missing Correlation",
+        "description": "Solar ETF (TAN) +12% in 4 weeks but FSLR (CAND-005) remains Stage 1 Basing and has not participated. ENPH and SEDG leading the move instead. FSLR's key_ticker status in TH-010 may be masking better-positioned candidates.",
+        "first_observed": "2024-07-01",
+        "related_theme": "TH-010",
+        "related_tickers": ["FSLR", "ENPH", "SEDG", "TAN"],
+        "status": "Unexplained",
+        "source": "Price-based observation — V0 synthetic",
+    },
+]
+
+# ═══════════════════════════════════════════════════════════
+# WEAK SIGNAL INBOX — THEME HYPOTHESES
+# ═══════════════════════════════════════════════════════════
+# Early-stage theme proposals that have not yet advanced to
+# Experimental or Approved status. These are ideas, not themes.
+INBOX_HYPOTHESES = [
+    {
+        "id": "HY-001",
+        "title": "AI Edge Computing",
+        "proposed_driver": "Enterprise AI inference workloads shifting from centralized cloud to edge/on-premise for latency, cost, and data sovereignty reasons. Hyperscaler edge offerings expanding. Inference-at-edge requires different hardware (smaller models, lower power) than training — creating a distinct beneficiary set from cloud infrastructure (TH-020).",
+        "why_now": "Apple Intelligence on-device processing, Microsoft Copilot+ PCs with NPUs, and AWS Outposts expansion all signaling edge-first AI deployment in 2024-2025. Inference efficiency gains (EV-005 notes 50-90% reduction per query) may paradoxically increase total edge AI demand via Jevons paradox — cheaper inference → more use cases → more total compute.",
+        "potential_candidates": ["QCOM", "ARM", "INTC", "AMD", "DELL", "HPQ"],
+        "potential_theme_industry": "Edge Computing / AI Hardware",
+        "relationship_to_existing": "Overlaps with TH-004 (Semiconductors — hardware suppliers) and TH-020 (Cloud — competition/alternative to centralized cloud). Distinct in focus on inference-at-edge rather than training-at-datacenter.",
+        "key_unknowns": [
+            "Edge AI chip TAM projections vary by 10x across analyst estimates",
+            "Unclear whether on-device processing reduces or increases total semiconductor demand",
+            "Regulatory: EU AI Act may impose edge-specific compliance costs",
+        ],
+        "proposed_date": "2024-07-01",
+        "status": "Hypothesis — awaiting Founder review",
+    },
+    {
+        "id": "HY-002",
+        "title": "Water Infrastructure & Scarcity",
+        "proposed_driver": "Global freshwater demand projected to exceed supply by 40% by 2030 (UN). Aging US water infrastructure (EPA estimate: $744B needed over 20 years). Semiconductor manufacturing is water-intensive — CHIPS Act fabs in Arizona face water availability constraints, forcing investment in water recycling and desalination at the industrial level.",
+        "why_now": "2024 Arizona water rulings limiting new industrial usage. TSMC Phoenix fab water recycling investment = leading indicator. Municipal water utilities issuing record rate-increase requests. Infrastructure bill water funding starting to flow to projects.",
+        "potential_candidates": ["AWK", "XYL", "WTRG", "PNR", "BMI", "VLTO"],
+        "potential_theme_industry": "Water Infrastructure",
+        "relationship_to_existing": "No overlap with existing approved themes. New structural driver — distinct from renewable energy (TH-010 Solar). Water infrastructure has different capex cycle, regulatory structure, and beneficiary set.",
+        "key_unknowns": [
+            "Water utility rate cases take 12-18 months — revenue visibility is delayed",
+            "Industrial water recycling market is fragmented — no pure-play public companies at scale",
+            "Municipal procurement cycles are slow; revenue growth may not match urgency narrative",
+        ],
+        "proposed_date": "2024-07-01",
+        "status": "Hypothesis — awaiting Founder review",
+    },
+    {
+        "id": "HY-003",
+        "title": "Robotics & Autonomous Systems",
+        "proposed_driver": "AI foundation models enabling step-change in robot perception and manipulation. Humanoid robot pilots at Amazon, BMW, and Figure.ai moving from R&D to limited production in 2024-2025. Warehouse automation ROI improved by AI vision systems. Surgical robotics (ISRG da Vinci 5) expanding procedure types. Labor shortage in manufacturing and logistics (3.8% US unemployment) creates structural demand pull.",
+        "why_now": "Tesla Optimus Gen 2 demonstrated improved dexterity (June 2024). NVIDIA Omniverse + GR00T foundation model for humanoid robots announced. Amazon deploying Agility Robotics Digit in fulfillment centers. ISRG da Vinci 5 launched Q2 2024 with 10,000+ system installed base.",
+        "potential_candidates": ["ISRG", "TSLA", "TER", "ZBRA", "ROK", "PATH"],
+        "potential_theme_industry": "Robotics & Automation",
+        "relationship_to_existing": "Overlaps with TH-014 (Medical Devices — surgical robotics via ISRG) and TH-004 (Semiconductors — compute suppliers). Distinct in focus on physical automation rather than pure compute or medical.",
+        "key_unknowns": [
+            "Humanoid robot unit economics unproven at scale — current cost > $100K/unit",
+            "Tesla as robotics play conflates EV business risk with robotics optionality",
+            "Regulatory framework for autonomous systems in public spaces does not yet exist",
+        ],
+        "proposed_date": "2024-07-01",
+        "status": "Hypothesis — awaiting Founder review",
+    },
+]
+
+# ═══════════════════════════════════════════════════════════
 # PIPELINE CONFIG (provisional — no investment rules invented)
 # ═══════════════════════════════════════════════════════════
 PIPELINE_CONFIG = {
