@@ -43,6 +43,48 @@
   </div>
   {% endfor %}
 
+  <!-- ═══════════════════════════════════════ -->
+  <!-- EXPERIMENTAL RESEARCH QUEUE -->
+  <!-- ═══════════════════════════════════════ -->
+  {% if experimental_has_data %}
+  <div style="margin:2.5rem 0 1rem;padding-top:2rem;border-top:2px dashed var(--border-strong);">
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;">
+      <h1 style="font-family:var(--font-headline);font-size:24px;font-weight:600;margin:0;">🧪 Experimental Research Queue</h1>
+    </div>
+
+    <div style="padding:0.75rem 1rem;background:var(--info-bg);border-left:3px solid var(--info);border-radius:var(--radius-sm);margin-bottom:1.5rem;font-size:13px;color:var(--text-secondary);">
+      ⚠️ <strong>Experimental themes are AI-created and have NOT been approved by the Founder.</strong> They are tracked separately with Active Monitoring but do NOT affect official strategy filters, rankings, scores, or approved-strategy alerts. These themes may be promoted to Approved status by Founder review, or archived.
+    </div>
+
+    <div class="metrics-row">
+      {{ metric_card(experimental_queue|length, 'Exp. Themes', 'var(--info)') }}
+      {{ metric_card(experimental_total, 'Exp. Candidates', 'var(--text-secondary)') }}
+    </div>
+
+    {% if experimental_queue|length == 0 %}
+    <div class="section"><div class="empty-state">No experimental themes at this time.</div></div>
+    {% endif %}
+
+    {% for tid, tdata in experimental_queue %}
+    {% set theme = tdata.theme %}
+    {% set has_candidates = tdata.candidates|length > 0 %}
+    <div class="section" style="border-left:3px dashed var(--info);{% if not has_candidates %} opacity:0.6;{% endif %}">
+      <h2 style="display:flex;align-items:center;gap:8px;border-bottom:none;margin-bottom:4px;padding-bottom:0;">
+        {{ lifecycle_badge(theme.lifecycle, lifecycle_classes) }}
+        {{ theme.name }}
+        <span class="badge" style="margin-left:4px;background:var(--info-bg);color:var(--info);">🧪 Experimental</span>
+      </h2>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border);">
+        {{ theme.sector }} → {{ theme.industry }} · {{ theme.lifecycle }} · {{ confidence_label(theme.confidence) }} confidence · {{ tdata.candidates|length }} candidates ·
+        <a href="theme_cards/theme_{{ tid }}.html">Full Theme Card →</a>
+      </div>
+
+      {{ candidate_table(tdata.candidates, leadership_classes) }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- Pipeline Stages -->
   <div class="stages">
     <h3>Pipeline Stages</h3>

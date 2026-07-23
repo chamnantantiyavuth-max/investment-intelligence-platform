@@ -330,6 +330,109 @@ ALTERNATIVE_EXPLANATIONS = {
 }
 
 # ═══════════════════════════════════════════════════════════
+# EXPERIMENTAL THEMES (approval_status="Experimental")
+# ═══════════════════════════════════════════════════════════
+# AI-created themes tracked separately from official Approved themes.
+# They may have Active Monitoring but CANNOT affect official strategy outputs.
+EXPERIMENTAL_THEMES = [
+    {
+        "id": "TH-EXP-001", "name": "Quantum Computing Commercialization", "sector": "Technology", "industry": "Quantum Computing",
+        "lifecycle": "Formation", "approval_status": "Experimental", "monitoring_status": "Active Monitoring",
+        "why_now": "IBM Quantum Heron processor (1,121 qubits) and Google Willow chip demonstrating error correction at scale. DARPA US2QC program selecting vendors for utility-scale quantum by 2029. NIST post-quantum cryptography standards finalized — driving enterprise urgency.",
+        "confidence": "Low",
+        "lifecycle_transitions": [],
+        "approval_transitions": [
+            {"prior": "Detected Hypothesis", "new": "Experimental", "reason": "AI-detected signal: multiple quantum milestones in Q2 2024 (IBM, Google, DARPA) suggest acceleration", "actor": "AI System", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "monitoring_transitions": [
+            {"prior": "Not Monitored", "new": "Active Monitoring", "reason": "Experimental theme — active monitoring for signal validation", "actor": "AI System", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "stocks_in_industry": 12,
+        "key_tickers": ["IBM", "IONQ", "QBTS", "RGTI", "HON", "MSFT"],
+    },
+    {
+        "id": "TH-EXP-002", "name": "Nuclear Energy Renaissance", "sector": "Energy", "industry": "Nuclear",
+        "lifecycle": "Formation", "approval_status": "Experimental", "monitoring_status": "Active Monitoring",
+        "why_now": "AI data center power demand projections (50-100 GW new capacity needed by 2030) forcing hyperscalers to evaluate nuclear. Microsoft PPA with Helion (fusion, 2028 target). Vogtle 3+4 completions (first new US reactors in 30 years). NRC streamlining SMR licensing. Uranium spot at $90+/lb — 16-year high.",
+        "confidence": "Low",
+        "lifecycle_transitions": [],
+        "approval_transitions": [
+            {"prior": "Detected Hypothesis", "new": "Experimental", "reason": "AI-detected signal: hyperscaler nuclear PPAs + uranium price + regulatory shift pattern", "actor": "AI System", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "monitoring_transitions": [
+            {"prior": "Not Monitored", "new": "Active Monitoring", "reason": "Experimental theme — active monitoring for signal validation", "actor": "AI System", "timestamp": "2024-07-01T10:00:00Z", "version": "v0.1.0"},
+        ],
+        "stocks_in_industry": 22,
+        "key_tickers": ["CEG", "BWXT", "CCJ", "UEC", "LEU", "SMR"],
+    },
+]
+
+# ═══════════════════════════════════════════════════════════
+# EXPERIMENTAL CANDIDATES
+# ═══════════════════════════════════════════════════════════
+EXPERIMENTAL_CANDIDATES = [
+    {
+        "id": "CAND-EXP-001", "asset_id": "AST-EXP-001", "entity_id": "ENT-EXP-001", "ticker": "IONQ",
+        "candidate_quality": {
+            "fundamentals": "Pre-Revenue", "growth": "Not Yet", "liquidity": "Adequate",
+            "relative_strength": "Neutral", "trend_quality": "Choppy", "accumulation": "Neutral",
+            "industry_leadership": "Emerging Challenger",
+        },
+        "entry_readiness": {
+            "price_structure": "Stage 1 — Basing", "base_quality": "Early — insufficient duration",
+            "breakout_proximity": "Far", "volume_behavior": "Low",
+            "volatility_contraction": "None", "extension_risk": "Low",
+        },
+        "data_confidence": {"freshness": "Current — 6/8 fields", "completeness": "Incomplete — early-stage company", "reliability": "Low — pre-revenue, limited history", "conflicts": "None", "missing_data": "Missing: earnings track record, institutional ownership history"},
+        "research_state": "Watchlist",
+        "research_transitions": [],
+    },
+    {
+        "id": "CAND-EXP-002", "asset_id": "AST-EXP-002", "entity_id": "ENT-EXP-002", "ticker": "CEG",
+        "candidate_quality": {
+            "fundamentals": "Strong", "growth": "Accelerating", "liquidity": "High",
+            "relative_strength": "Leading", "trend_quality": "Smooth", "accumulation": "Confirmed",
+            "industry_leadership": "Confirmed Leader",
+        },
+        "entry_readiness": {
+            "price_structure": "Stage 2 — Advancing", "base_quality": "Constructive",
+            "breakout_proximity": "In Progress", "volume_behavior": "Accumulation",
+            "volatility_contraction": "Tightening", "extension_risk": "Moderate",
+        },
+        "data_confidence": {"freshness": "Current — 8/8 fields", "completeness": "Complete", "reliability": "High — regulated utility, audited financials", "conflicts": "None", "missing_data": "None"},
+        "research_state": "Watchlist",
+        "research_transitions": [],
+    },
+]
+
+# Experimental entity + asset stubs (minimal — for pipeline compatibility)
+EXPERIMENTAL_ENTITIES = [
+    {"id": "ENT-EXP-001", "name": "IonQ, Inc.",             "sector": "Technology", "industry": "Quantum Computing", "fixture_type": "Historical identifier, synthetic data"},
+    {"id": "ENT-EXP-002", "name": "Constellation Energy",   "sector": "Energy",     "industry": "Nuclear",           "fixture_type": "Historical identifier, synthetic data"},
+]
+
+EXPERIMENTAL_ASSETS = [
+    {"id": "AST-EXP-001", "ticker": "IONQ", "entity_id": "ENT-EXP-001", "exchange": "NYSE", "asset_type": "Common Stock"},
+    {"id": "AST-EXP-002", "ticker": "CEG",  "entity_id": "ENT-EXP-002", "exchange": "NASDAQ", "asset_type": "Common Stock"},
+]
+
+EXPERIMENTAL_CANDIDATE_THEME = [
+    {"id": "CTR-EXP-001", "candidate_id": "CAND-EXP-001", "theme_id": "TH-EXP-001",
+     "primary_role": "Direct Beneficiary", "secondary_roles": [],
+     "leadership_state": "Emerging Challenger", "leadership_transitions": [], "evidence_refs": []},
+    {"id": "CTR-EXP-002", "candidate_id": "CAND-EXP-002", "theme_id": "TH-EXP-002",
+     "primary_role": "Direct Beneficiary", "secondary_roles": ["Enabler"],
+     "leadership_state": "Confirmed Leader", "leadership_transitions": [], "evidence_refs": []},
+]
+
+EXPERIMENTAL_EVIDENCE = [
+    {"id": "EV-EXP-001", "type": "Observed Fact", "content": "IBM Quantum Heron: 1,121 qubits demonstrated, gate fidelity 99.8%", "source": "SRC-SYN-EXP-001", "pub_ts": "2024-05-15T08:00:00Z", "effective": "2024-Q2", "relationship": "supporting", "theme": "TH-EXP-001", "candidate": "IONQ"},
+    {"id": "EV-EXP-002", "type": "Claim", "content": "NISQ-era quantum may never achieve practical advantage over classical GPU clusters for ML workloads", "source": "SRC-SYN-EXP-002", "pub_ts": "2024-06-01T08:00:00Z", "effective": "2024-Q2", "relationship": "contradicting", "theme": "TH-EXP-001", "candidate": None},
+    {"id": "EV-EXP-003", "type": "Observed Fact", "content": "Microsoft signed PPA with Helion Energy for fusion power starting 2028 — first-ever fusion PPA", "source": "SRC-SYN-EXP-003", "pub_ts": "2024-05-10T08:00:00Z", "effective": "2024-Q2", "relationship": "supporting", "theme": "TH-EXP-002", "candidate": "CEG"},
+    {"id": "EV-EXP-004", "type": "Claim", "content": "Small modular reactor (SMR) economics remain unproven at scale — NuScale project cancellation (2023) raises viability questions", "source": "SRC-SYN-EXP-004", "pub_ts": "2024-04-15T08:00:00Z", "effective": "2024-Q1", "relationship": "contradicting", "theme": "TH-EXP-002", "candidate": None},
+]
+
+# ═══════════════════════════════════════════════════════════
 # WEAK SIGNAL INBOX — ANOMALIES
 # ═══════════════════════════════════════════════════════════
 # Unexplained observations that don't yet fit any approved theme.

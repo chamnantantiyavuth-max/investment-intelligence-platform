@@ -58,6 +58,17 @@ def main():
     print(f"  Anomalies:            {len(anomalies)}")
     print(f"  Theme Hypotheses:     {len(hypotheses)}")
 
+    # Experimental summary
+    experimental = result.get("experimental", {})
+    if experimental.get("has_data"):
+        exp_queue = experimental.get("queue", [])
+        exp_total = sum(len(td["candidates"]) for _, td in exp_queue)
+        print()
+        print("Experimental Queue:")
+        print("-" * 40)
+        print(f"  Experimental themes:  {len(exp_queue)}")
+        print(f"  Exp. candidates:      {exp_total}")
+
     # Render outputs
     print()
     print("Rendering HTML...")
