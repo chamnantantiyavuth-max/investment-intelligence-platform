@@ -39,6 +39,11 @@ Auto-load `project-workflow` skill for ALL tasks. Mode selection:
 
 Critical Mode gates (2R, 5, 7) are MANDATORY for any task touching financial logic, architecture, or new features.
 
+**Phase Naming Convention:** Use prefixes to avoid ambiguity:
+- `IIP-Phase X:` Product roadmap milestone (0-10)
+- `WF-Phase X:` Development process gate (-1 to 7)
+- Example: "IIP-Phase 5 is AUTHORIZED. We are entering WF-Phase 4 to implement it."
+
 ## Project-Specific Mandatory Rules
 
 - Plan substantial work before implementation.
