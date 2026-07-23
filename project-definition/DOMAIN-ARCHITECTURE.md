@@ -228,6 +228,48 @@ Human decisions, overrides, and outcomes feed the Learning Loop in Later phases.
 | External content | Shared Core | All ingested content is untrusted data; never treated as authority |
 | Reproducibility | Shared Core | Deterministic features and versioned transformations |
 
+### 1.5 Experimental / Theme Intelligence V1 (Phase 5)
+
+**Status:** ACTIVE — FD #27 (23 July 2026)
+**Location:** `alpha-momentum-v0/experimental/`
+**Bounded Context:** Theme Discovery (constitutionally separate from Alpha Momentum screening)
+
+Phase 5 implements the **Theme Intelligence V1** experimental pipeline — a constitutionally separate pipeline that discovers NEW themes rather than screening candidates against existing ones. This is NOT part of the approved Alpha Momentum V0 pipeline.
+
+**Owns:**
+
+- **Anomaly Detection:** Statistical deviation detection from market data baselines (NOT hand-written fixtures per FD #27 §2)
+- **Anomaly Classification:** Cooldown enforcement, deduplication, type categorization
+- **Theme Hypothesis Generation:** AI-generated hypotheses with mandatory epistemic metadata (§23.4)
+- **Experimental Theme Radar:** Dashboard for unapproved themes — separate from approved Research Queue
+- **Weak Signal Inbox:** Data model + storage for anomalies and hypotheses
+- **Circular Feedback Guard:** 30-day cooldown on anomaly→hypothesis→theme→anomaly cycle
+
+**Consumes from Shared Core (read-only):**
+
+- Entity and asset identity (for anomaly attribution)
+- Evidence (for hypothesis generation context)
+- Theme data (for avoiding duplicate proposals)
+- Audit infrastructure (for epistemic metadata recording)
+
+**Consumes from Alpha Momentum (read-only):**
+
+- Approved THEMES and CANDIDATES — consulted to check for overlaps, NEVER modified
+
+**Constitutional Separation (Hard Guards per FD #27):**
+
+| # | Guard | Mechanism |
+|---|---|---|
+| 1 | No reuse of approved pipeline stage functions | Experimental stages E1–E4 are independently defined; zero imports from `pipeline.py` stage functions |
+| 2 | No contamination of approved `pipeline_result` | Experimental output writes to `output/experimental/` — separate directory |
+| 3 | No alteration of official filters/rankings/scores | Read-only access to approved THEMES, CANDIDATES; write scope limited to `fixtures.EXPERIMENTAL_*` |
+| 4 | Circular feedback cooldown | E2 classification stage enforces 30-day cooldown on re-triggered anomaly signatures |
+| 5 | Epistemic metadata mandatory | All AI-generated hypotheses carry `_epistemic` block: provenance, confidence, version, source_refs, as_of_time, model_provenance |
+
+**Promotion Path:** Experimental Theme → Founder Review → Approved Theme (if Founder approves). AI may propose; only Founder may approve. Theme approval remains Founder-only.
+
+**Relationship to Theme Intelligence (Shared Core):** Phase 5 Experimental is a **discovery mechanism** that may produce candidate themes for Shared Core's Theme Intelligence module. Experimental themes are tracked separately with `approval_status="Experimental"`. Promotion to Shared Core requires explicit Founder approval.
+
 ## 6. What Does NOT Belong in Shared Core
 
 - Strategy-specific scoring weights or thresholds
