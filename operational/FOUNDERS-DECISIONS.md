@@ -48,3 +48,11 @@ These decisions are approved constitutional constraints.
 33. GAP-005 Resolution — Hyperscaler Capex Risk: Founder approved adding "hyperscaler capex growth deceleration below 20% YoY" to key_risks for NVDA (CAND-001) and AMD (CAND-003). Both candidates' investment theses depend on sustained 30%+ annual AI capex growth. Enterprise AI ROI remains unproven at scale — if it fails to materialize, capex cycles may revert to historical patterns. AVGO (CAND-009) also references this risk in its own key_risks. All 5 coverage gaps from 2024-07-01 now resolved. 24 July 2026.
 
 34. ERP-001 Approved — Sector Concentration Monitor: Founder approved ERP-001 as constitutional rule. When any sector exceeds 70% of total candidates AND pipeline phase >= Phase 8, surface Sector Concentration Warning in pipeline output. Never block, filter, or re-rank. Deploy Phase 8+. Not actionable at V0 (90% Tech is by design). 24 July 2026.
+
+35. ERP-002 Approved — Empty Theme Timer: Founder approved ERP-002. When a theme has approval_status="Approved", monitoring_status="Active Monitoring", candidate_count=0, AND days_since_last_candidate_change > 30, auto-flag as "Aging Empty Theme" (severity: High) in Coverage Gap Report. Never auto-add, auto-archive, or auto-demote. 24 July 2026.
+
+36. ERP-003 Approved — Anomaly-to-Candidate Escalation Signal: Founder approved ERP-003. When 2+ anomalies reference the same ticker within 90 days AND ticker is NOT currently a Candidate, surface as "Emergent Candidate Signal" (severity: Medium). Never auto-promote — Founder decision required. Gap detector updated: filter only tickers with 2+ anomaly refs (noise reduced 40%). 24 July 2026.
+
+37. ERP-004 Approved — Conviction-Research State Alignment: Founder approved ERP-004. High conviction + Confirmed thesis → recommend Priority Research (advisory, not automatic, per FD #13). Low conviction → must have explicit entry_trigger with measurable conditions + trigger_status="Waiting". 24 July 2026.
+
+38. ERP-005 Approved — Self-Reflection Log Trigger Criteria: Founder approved ERP-005. Generate SRL when: (1) candidate count changes, (2) thesis_status or conviction_level changes, (3) Founder review session occurs, (4) coverage gap is resolved. Do NOT generate for routine daily runs with zero changes or docs-only edits. 24 July 2026.
