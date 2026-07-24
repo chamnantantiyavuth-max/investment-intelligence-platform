@@ -10,7 +10,7 @@ Gaps are surfaced, never silently acted upon. Founder decides disposition.
 import os, json, datetime
 from pathlib import Path
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 GAPS_DIR = os.path.join(REPO_ROOT, "operational", "coverage-gaps")
 os.makedirs(GAPS_DIR, exist_ok=True)
 

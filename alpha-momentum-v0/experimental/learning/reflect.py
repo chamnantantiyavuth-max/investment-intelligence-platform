@@ -11,7 +11,7 @@ import os, json, datetime
 from pathlib import Path
 
 # ── Paths ────────────────────────────────────────────────────
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 LOGS_DIR = os.path.join(REPO_ROOT, "operational", "self-reflection-logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
