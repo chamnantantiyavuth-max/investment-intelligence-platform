@@ -351,6 +351,11 @@ def run_pipeline():
     # ── ERP-004 (FD #37): Conviction-Research State Alignment ──
     alignment_messages = _check_conviction_alignment(queue)
 
+    # ── Phase 7 (FD #39): Q-Conditions + Watchlist Lifecycle ──
+    from q_conditions import enrich_queue_with_q_conditions, generate_q_conditions_report
+    queue = enrich_queue_with_q_conditions(queue)
+    q_report = generate_q_conditions_report(queue)
+
     pipeline_result = {
         "run_id": RUN_ID,
         "pipeline_version": PIPELINE_VERSION,
@@ -363,6 +368,7 @@ def run_pipeline():
         "overrides": HUMAN_OVERRIDES,
         "alternative_explanations": ALTERNATIVE_EXPLANATIONS,
         "messages": alignment_messages,  # ERP-004 advisory messages
+        "q_conditions": q_report,        # Phase 7: exit signals + lifecycle
         # ⚠️ Phase 5 quarantined (23 Jul 2026) — experimental/ directory
     }
     return pipeline_result
