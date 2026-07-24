@@ -133,12 +133,21 @@ def render_theme_cards_experimental(experimental_result, output_dir=None):
 
 def render_radar(experimental_result, output_dir=None):
     """Render Experimental Theme Radar HTML.
-    T4 (experimental/radar.py) will provide the full dashboard.
-    For T0 architecture: renders a minimal radar page.
+    Delegates to experimental/radar.py for the actual rendering.
+    T4 (experimental/radar.py) provides the full dashboard.
 
     Output to output/experimental/radar.html.
     ⚠️ CONSTITUTIONAL GUARD: Does NOT import from display.py
     """
+    # T4 radar.py has the authoritative render_radar implementation
+    # Delegate to it if available; otherwise fall back to inline rendering
+    try:
+        from experimental.radar import render_radar as _radar_render
+        return _radar_render(experimental_result, output_dir=output_dir)
+    except ImportError:
+        pass
+
+    # Fallback: inline rendering (before T4 implementation)
     if output_dir is None:
         output_dir = EXPERIMENTAL_OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
@@ -146,29 +155,21 @@ def render_radar(experimental_result, output_dir=None):
     anomalies = experimental_result.get("anomalies", [])
     hypotheses = experimental_result.get("hypotheses", [])
     experimental_themes = experimental_result.get("experimental_themes", [])
-    review_queue = experimental_result.get("review_queue", {})
     stages = experimental_result.get("stages", [])
 
-    # Count by type
     anomaly_types = {}
     for an in anomalies:
         t = an.get("type", "Other")
         anomaly_types[t] = anomaly_types.get(t, 0) + 1
 
-    # Check if radar template exists; if not, generate inline
-    radar_template_path = os.path.join(TEMPLATE_DIR, "radar.html")
-    if os.path.exists(radar_template_path):
-        template = env.get_template("radar.html")
-    else:
-        # Use inline minimal rendering (T4 will create proper template)
-        html = _render_radar_inline(
-            anomalies=anomalies,
-            hypotheses=hypotheses,
-            experimental_themes=experimental_themes,
-            anomaly_types=anomaly_types,
-            stages=stages,
-            result=experimental_result,
-        )
+    html = _render_radar_inline(
+        anomalies=anomalies,
+        hypotheses=hypotheses,
+        experimental_themes=experimental_themes,
+        anomaly_types=anomaly_types,
+        stages=stages,
+        result=experimental_result,
+    )
 
     path = os.path.join(output_dir, "radar.html")
     with open(path, "w", encoding="utf-8") as f:
