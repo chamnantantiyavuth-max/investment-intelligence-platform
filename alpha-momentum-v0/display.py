@@ -11,10 +11,15 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from fixtures import FIXTURE_CATEGORY
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
+SHARED_TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "shared", "templates")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=select_autoescape(["html"]))
+# Multi-loader: shared templates first (for base.html), local overrides second
+env = Environment(
+    loader=FileSystemLoader([SHARED_TEMPLATE_DIR, TEMPLATE_DIR]),
+    autoescape=select_autoescape(["html"]),
+)
 
 LIFECYCLE_CLASSES = {
     "Expansion": "expansion",

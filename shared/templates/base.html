@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Investment Intelligence Platform{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     Investment Intelligence Platform — Unified Design System v1.0
+     Per design-system/investment-intelligence-platform/MASTER.md
+     Pattern: Data-Dense Dashboard · Founder Preferences
+     ═══════════════════════════════════════════════════════════ */
+
+  :root {
+    --bg-page:       #f5f6f8;
+    --bg-card:       #ffffff;
+    --bg-sidebar:    #0f1117;
+    --bg-hover:      #f9fafb;
+    --bg-muted:      #f3f4f6;
+    --bg-surface:    #ffffff;  /* compat alias */
+    --bg-surface-alt:#f3f4f6;  /* compat alias */
+
+    --text-primary:  #1a1a2e;
+    --text-secondary:#6b7280;
+    --text-tertiary: #9ca3af;
+    --text-inverse:  #ffffff;
+
+    --positive:      #10b981;
+    --positive-bg:   #d1fae5;
+    --negative:      #ec4899;
+    --negative-bg:   #fce7f3;
+    --warning:       #f59e0b;
+    --warning-bg:    #fef3c7;
+    --info:          #3b82f6;
+    --info-bg:       #dbeafe;
+
+    /* compat aliases — old template names still work */
+    --success:       var(--positive);
+    --success-bg:    var(--positive-bg);
+    --danger:        var(--negative);
+    --danger-bg:     var(--negative-bg);
+    --accent:        var(--info);
+    --accent-hover:  #2563eb;
+    --accent-light:  var(--info-bg);
+    --accent-amber:  var(--warning);
+
+    --border:        #e5e7eb;
+    --border-strong: #d1d5db;
+
+    --radius-sm:     8px;
+    --radius-md:     12px;
+    --radius-lg:     16px;
+    --radius-full:   9999px;
+
+    --shadow-card:   0 1px 3px rgba(0,0,0,0.06);
+    --shadow-hover:  0 4px 12px rgba(0,0,0,0.08);
+
+    --font-body:     'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono:     'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+
+    --max-width:     1200px;
+    --transition:    150ms ease;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Banner ── */
+  .banner {
+    background: var(--bg-sidebar);
+    color: var(--text-inverse);
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .banner .dot { margin: 0 6px; }
+  .banner .dot.positive { color: var(--positive); }
+  .banner .dot.negative { color: var(--negative); }
+
+  /* ── Page Container ── */
+  .page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .page-header .subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* ── Section Header ── */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 32px 0 16px;
+    color: var(--text-primary);
+  }
+
+  /* ── Metric Cards ── */
+  .metrics-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 120px;
+    flex: 1;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--transition);
+  }
+  .metric-card:hover { box-shadow: var(--shadow-hover); }
+  .metric-card .num {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .metric-card .lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  /* ── Summary Stats Grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+  }
+  .stat-box .stat-num { font-size: 26px; font-weight: 800; }
+  .stat-box .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; font-weight: 600; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-header h3 { font-size: 16px; font-weight: 700; }
+  .card-header .sub { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--bg-sidebar);
+    color: var(--text-inverse);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-hover); }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .badge-high, .badge-positive    { background: var(--positive-bg); color: #065f46; }
+  .badge-moderate, .badge-warning { background: var(--warning-bg); color: #92400e; }
+  .badge-low, .badge-negative     { background: var(--negative-bg); color: #9d174d; }
+  .badge-info                      { background: var(--info-bg); color: #1e40af; }
+  .badge-neutral                   { background: var(--bg-muted); color: var(--text-secondary); }
+  .badge-max                       { background: #ede9fe; color: #5b21b6; }
+  .badge-pass                      { background: var(--positive-bg); color: #065f46; }
+  .badge-fail                      { background: var(--negative-bg); color: #9d174d; }
+
+  /* ── Color Utilities ── */
+  .text-positive { color: var(--positive); font-weight: 600; }
+  .text-negative { color: var(--negative); font-weight: 600; }
+  .text-warning  { color: var(--warning); font-weight: 600; }
+  .text-muted    { color: var(--text-secondary); }
+
+  /* ── Ticker ── */
+  .ticker { font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); }
+  .ticker-link { color: var(--info); text-decoration: none; font-family: var(--font-mono); font-weight: 600; }
+  .ticker-link:hover { text-decoration: underline; }
+
+  /* ── Lists ── */
+  .info-list { list-style: none; }
+  .info-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .info-list li:last-child { border-bottom: none; }
+  .info-list .supporting::before   { content: "▲ "; color: var(--positive); font-weight: 700; font-size: 11px; }
+  .info-list .contradicting::before { content: "▼ "; color: var(--negative); font-weight: 700; font-size: 11px; }
+  .info-list .neutral::before      { content: "— "; color: var(--text-tertiary); }
+
+  /* ── Recommendation Banners ── */
+  .rec-banner {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .rec-banner.present  { background: var(--positive-bg); color: #065f46; }
+  .rec-banner.research { background: var(--warning-bg); color: #92400e; }
+  .rec-banner.watch    { background: var(--info-bg); color: #1e40af; }
+  .rec-banner.monitor  { background: var(--bg-muted); color: var(--text-secondary); }
+
+  /* ── Grid Layouts ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  /* ── Footer ── */
+  .audit-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .page { padding: 20px 16px 32px; }
+    .page-header h1 { font-size: 22px; }
+    .metrics-row { gap: 8px; }
+    .metric-card { padding: 12px 14px; }
+    .metric-card .num { font-size: 22px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    th, td { padding: 8px 10px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media print {
+    .banner { background: #000 !important; -webkit-print-color-adjust: exact; }
+    body { font-size: 11px; }
+    .card { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="banner">
+  ⚠️ NOT LIVE DATA — FOR V0 TESTING ONLY<span class="dot positive">●</span>{{ fixture_category }}
+</div>
+
+{% block content %}{% endblock %}
+
+<div class="audit-footer">
+  {{ pipeline_name }} · Pipeline: {{ pipeline_version }} · Run: {{ run_id }} · Point-in-Time: {{ point_in_time }} · {{ fixture_category }}
+</div>
+</body>
+</html>

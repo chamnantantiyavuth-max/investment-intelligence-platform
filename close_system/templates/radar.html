@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Close System Product Radar — {{ run_id }}{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header">
+    <h1>🎯 Close System Product Radar</h1>
+    <div class="subtitle">Spec: {{ spec_ref }} · {{ point_in_time }}</div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-num">{{ total_products }}</div><div class="stat-label">Total Products</div></div>
+    <div class="stat-box"><div class="stat-num text-positive">{{ eligible }}</div><div class="stat-label">Eligible</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--positive)">{{ present_count }}</div><div class="stat-label">Present to Founder</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--warning)">{{ research_count }}</div><div class="stat-label">Deep Research</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--info)">{{ watchlist_count }}</div><div class="stat-label">Radar Watchlist</div></div>
+    <div class="stat-box"><div class="stat-num text-muted">{{ monitor_count }}</div><div class="stat-label">Monitor / Wait</div></div>
+  </div>
+
+  <!-- Radar Table -->
+  <div class="section-title">📋 Product Radar</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>P1 P2 P3</th>
+        <th>Discount</th>
+        <th>Layers</th>
+        <th>Recommendation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      {% set rec_cls = p.recommendation.split(' ')[0] if ' ' in p.recommendation else p.recommendation.split(' — ')[0] if ' — ' in p.recommendation else p.recommendation %}
+      <tr>
+        <td><span class="ticker">{{ p.ticker }}</span><br><span class="text-muted" style="font-size:12px;">{{ p.name }}</span></td>
+        <td>{{ p.category }}</td>
+        <td style="font-weight:600;">${{ p.current_price }}</td>
+        <td>
+          <span class="badge {{ 'badge-pass' if p.p1_pass else 'badge-fail' }}">{{ '✓' if p.p1_pass else '✗' }}</span>
+          <span class="badge {{ 'badge-pass' if p.p2_pass else 'badge-fail' }}">{{ '✓' if p.p2_pass else '✗' }}</span>
+          <span class="badge {{ 'badge-pass' if p.p3_pass else 'badge-fail' }}">{{ '✓' if p.p3_pass else '✗' }}</span>
+        </td>
+        <td>
+          {% set depth = p.discount_depth %}
+          <span style="font-weight:600;{% if depth == 'Maximum' %}color:#8b5cf6;{% elif depth == 'Strong' %}color:var(--negative);{% elif depth == 'Moderate' %}color:var(--warning);{% endif %}">{{ depth }}</span>
+        </td>
+        <td>
+          {% for i in range(p.layers_aligned) %}<span style="color:var(--positive);font-weight:700;">●</span>{% endfor %}
+          {% for i in range(p.layers_contradicting) %}<span style="color:var(--negative);font-weight:700;">●</span>{% endfor %}
+          {% for i in range(5 - p.layers_aligned - p.layers_contradicting) %}<span style="color:var(--border);">●</span>{% endfor %}
+          <span class="badge badge-{{ p.conviction.lower() }}">{{ p.conviction }}</span>
+        </td>
+        <td><span class="rec-banner {{ rec_cls.lower()[:6] }}" style="padding:4px 10px;font-size:12px;">{{ p.recommendation }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Synthesis Cards -->
+  <div class="section-title">🔍 Synthesis Cards</div>
+  {% for p in products %}
+  {% set rec_key = p.recommendation.split(' ')[0] if ' ' in p.recommendation else '' %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ p.ticker }} <span style="font-weight:400;color:var(--text-secondary);font-size:14px;">— {{ p.name }}</span></h3>
+        <div style="margin-top:6px;">
+          <span class="badge badge-{{ p.conviction.lower() }}">{{ p.conviction }} Conviction</span>
+          <span class="badge badge-info" style="margin-left:6px;">{{ p.category }}</span>
+          <span class="badge badge-neutral" style="margin-left:6px;">{{ p.status }}</span>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px;font-weight:700;color:{% if p.conviction == 'High' %}var(--positive){% elif p.conviction == 'Moderate' %}var(--warning){% else %}var(--text-secondary){% endif %};">{{ p.layers_aligned }}/5 Layers</div>
+        <div style="font-size:13px;color:var(--text-secondary);">${{ p.current_price }} {{ p.currency }}</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">🎯 Discount Assessment (P2)</h4>
+        <p style="font-size:13px;margin-bottom:6px;"><strong>Type:</strong> {{ p.discount_type }} · <strong>Depth:</strong> <span style="color:{% if p.discount_depth == 'Maximum' %}#8b5cf6{% elif p.discount_depth == 'Strong' %}var(--negative){% elif p.discount_depth == 'Moderate' %}var(--warning){% else %}var(--text-secondary){% endif %};font-weight:600;">{{ p.discount_depth }}</span></p>
+        {% if p.target_discount_entry %}<p style="font-size:13px;margin-bottom:6px;"><strong>Target Entry:</strong> {{ p.target_discount_entry }}</p>{% endif %}
+        <ul class="info-list" style="font-size:12px;">
+          {% for key, val in p.discount_detail.items() %}
+          {% if key != 'signal' %}<li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ val }}</li>{% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">📊 Demand Assessment (P3)</h4>
+        <p style="font-size:13px;margin-bottom:6px;"><strong>Type:</strong> {{ p.demand_type }}</p>
+        <ul class="info-list" style="font-size:12px;">
+          {% for key, val in p.demand_detail.items() %}
+          <li><strong>{{ key.replace('_', ' ').title() }}:</strong> {{ val }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Layer Table -->
+    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">🔬 5-Layer Cross-Synthesis</h4>
+    <table style="box-shadow:none;border:1px solid var(--border);">
+      <thead><tr><th>Layer</th><th>Signal</th><th>Evidence</th></tr></thead>
+      <tbody>
+        {% for lid, label, ldata in p.layer_rows %}
+        <tr>
+          <td style="font-weight:500;">{{ label }}</td>
+          <td class="{% if ldata.signal == 'supporting' %}text-positive{% elif ldata.signal == 'contradicting' %}text-negative{% else %}text-muted{% endif %}">
+            {% if ldata.signal == 'supporting' %}▲{% elif ldata.signal == 'contradicting' %}▼{% else %}—{% endif %} {{ ldata.signal.title() }}
+          </td>
+          <td>{{ ldata.note }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Key Risks -->
+    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">⚠️ Key Risks</h4>
+    <ul class="info-list" style="font-size:13px;">
+      {% for risk in p.key_risks %}<li>{{ risk }}</li>{% endfor %}
+    </ul>
+
+    <!-- Recommendation -->
+    {% set rec_banner_cls = 'present' if 'Present' in p.recommendation else 'research' if 'Research' in p.recommendation else 'watch' if 'Watchlist' in p.recommendation else 'monitor' %}
+    <div class="rec-banner {{ rec_banner_cls }}">{{ p.recommendation }}: {{ p.recommendation_rationale }}</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text-tertiary);">P1: {{ p.p1_rationale[:180] }}{% if p.p1_rationale|length > 180 %}...{% endif %}</div>
+  </div>
+  {% endfor %}
+
+</div>
+{% endblock %}
