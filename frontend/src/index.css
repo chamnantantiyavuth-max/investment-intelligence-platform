@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+@layer base {
+  :root {
+    /* IIP Design System mapped to shadcn CSS variables */
+    --background: 220 14% 96%;          /* #f5f6f8 page bg */
+    --foreground: 234 33% 13%;          /* #1a1a2e primary text */
+    --card: 0 0% 100%;                  /* #ffffff white card */
+    --card-foreground: 234 33% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 234 33% 13%;
+    --primary: 160 84% 39%;             /* #10b981 mint green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 234 33% 13%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 215 14% 46%;    /* #6b7280 secondary text */
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 330 82% 52%;          /* #ec4899 pink */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 88%;              /* #e5e7eb */
+    --input: 220 14% 88%;
+    --ring: 160 84% 39%;
+    --radius: 0.75rem;                   /* 12px IIP card radius */
+
+    /* Chart colors */
+    --chart-1: 217 91% 60%;             /* #3b82f6 info blue */
+    --chart-2: 38 92% 50%;              /* #f59e0b warning amber */
+    --chart-3: 160 84% 39%;             /* mint green */
+    --chart-4: 330 82% 52%;             /* pink */
+    --chart-5: 220 14% 60%;
+
+    /* Sidebar — IIP dark sidebar #0f1117 */
+    --sidebar-background: 222 14% 6%;    /* #0f1117 */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 160 84% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 14% 12%;
+    --sidebar-ring: 160 84% 39%;
+
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
