@@ -46,29 +46,40 @@ def detect_coverage_gaps(pipeline_result: dict, exp_result: dict = None,
             })
 
     # ── Type 2: Candidate Blind Spot ──
-    # Candidate appearing in anomalies/hypotheses but not in Watchlist
+    # Candidate appearing in anomalies/hypotheses but not in Watchlist.
+    # PHASE 6B FILTER (FD #36 ERP-003): Only flag when 2+ anomalies reference
+    # the same ticker (converging signal) OR the hypothesis is active.
     if exp_result:
         all_tickers_in_watchlist = set()
         for _, tdata in queue:
             for c in tdata.get("candidates", []):
                 all_tickers_in_watchlist.add(c.get("ticker", ""))
 
-        # Check anomalies for tickers not in watchlist
+        # Count anomaly references per ticker
+        anomaly_refs = {}
         for an in exp_result.get("anomalies", []):
             for t in an.get("related_tickers", []):
-                if t not in all_tickers_in_watchlist:
-                    gaps.append({
-                        "gap_type": "Candidate Blind Spot",
-                        "severity": "Low",
-                        "ticker": t,
-                        "description": f"{t} appears in anomaly {an.get('id','')} ({an.get('type','')}) but is not tracked in any Watchlist.",
-                        "appears_in": [an.get("related_theme", "")],
-                        "recommendation": f"Evaluate {t} as potential Candidate for {an.get('related_theme','relevant theme')}.",
-                        "evidence_refs": [an.get("id", "")],
-                    })
-                    all_tickers_in_watchlist.add(t)  # prevent duplicates
+                if t not in anomaly_refs:
+                    anomaly_refs[t] = []
+                anomaly_refs[t].append(an)
 
-        # Check hypotheses for tickers not in watchlist
+        # Only flag tickers referenced by 2+ anomalies (converging signal — ERP-003)
+        for ticker, refs in anomaly_refs.items():
+            if ticker not in all_tickers_in_watchlist and len(refs) >= 2:
+                anomalies_str = ", ".join(sorted(set(a.get("id", "") for a in refs)))
+                themes = sorted(set(a.get("related_theme", "") for a in refs if a.get("related_theme")))
+                gaps.append({
+                    "gap_type": "Candidate Blind Spot",
+                    "severity": "Medium",
+                    "ticker": ticker,
+                    "description": f"{ticker} referenced by {len(refs)} anomalies ({anomalies_str}) — converging signal, not tracked in any Watchlist.",
+                    "appears_in": themes,
+                    "recommendation": f"Evaluate {ticker} as potential Candidate for {themes[0] if themes else 'relevant theme'} — {len(refs)} anomalies agree.",
+                    "evidence_refs": [a.get("id", "") for a in refs],
+                })
+                all_tickers_in_watchlist.add(ticker)
+
+        # Check hypotheses for tickers not in watchlist (unchanged — hypotheses are intentional proposals)
         for hy in exp_result.get("hypotheses", []):
             for t in hy.get("potential_candidates", []):
                 if t not in all_tickers_in_watchlist:
@@ -106,18 +117,28 @@ def detect_coverage_gaps(pipeline_result: dict, exp_result: dict = None,
                 })
 
     # ── Type 4: Risk Blind Spot ──
-    # Risk factor in evidence not tracked in any thesis key_risks
-    all_tracked_risks = set()
+    # Risk factor in evidence not tracked in any thesis key_risks.
+    # PHASE 6B FIX: Use word-overlap matching (>=4 shared words) instead of
+    # exact string prefix — many risks are semantically equivalent but
+    # worded differently in evidence vs key_risks.
+    all_tracked_risk_words = []
     for _, tdata in queue:
         for c in tdata.get("candidates", []):
             for risk in c.get("key_risks", []):
-                all_tracked_risks.add(risk[:80])  # first 80 chars as signature
+                all_tracked_risk_words.append(set(risk.lower().split()))
 
     evidence = pipeline_result.get("evidence", [])
     contradicting = [ev for ev in evidence if ev.get("relationship") == "contradicting"]
     for ev in contradicting:
-        risk_sig = ev.get("content", "")[:80]
-        if risk_sig not in all_tracked_risks:
+        ev_words = set(ev.get("content", "").lower().split())
+        # Check word overlap with any existing risk (>=4 shared non-trivial words)
+        matched = False
+        for risk_wset in all_tracked_risk_words:
+            overlap = len(ev_words & risk_wset)
+            if overlap >= 4:
+                matched = True
+                break
+        if not matched:
             gaps.append({
                 "gap_type": "Risk Blind Spot",
                 "severity": "High",
@@ -126,7 +147,6 @@ def detect_coverage_gaps(pipeline_result: dict, exp_result: dict = None,
                 "recommendation": f"Add this risk to key_risks for all candidates in {ev.get('theme','')}.",
                 "evidence_refs": [ev.get("id", "")],
             })
-            all_tracked_risks.add(risk_sig)
 
     return gaps
 

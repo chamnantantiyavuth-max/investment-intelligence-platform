@@ -75,11 +75,11 @@
 
 ## Founder Decisions Required
 
-- [ ] **GAP-001:** Add 1-2 cybersecurity Candidates (CRWD and/or PANW) to TH-030 Watchlist?
-- [ ] **GAP-002:** Add 1 cloud infra Direct Beneficiary (SMCI or DELL) to TH-020 Watchlist?
-- [ ] **GAP-003:** Promote AVGO to Candidate in TH-004?
-- [ ] **GAP-004:** Acknowledge Financials sector gap as conscious — or propose Experimental Theme?
-- [ ] **GAP-005:** Add "hyperscaler capex deceleration" to key_risks for NVDA/AMD?
+- [x] **GAP-001:** Add 1-2 cybersecurity Candidates (CRWD and/or PANW) to TH-030 Watchlist? → ✅ **APPROVED — FD #29.** Both CRWD (CAND-006) and PANW (CAND-007) added as Direct Beneficiaries to TH-030. 24 July 2026.
+- [x] **GAP-002:** Add 1 cloud infra Direct Beneficiary (SMCI or DELL) to TH-020 Watchlist? → ✅ **APPROVED — FD #30.** SMCI (CAND-008) added as Direct Beneficiary to TH-020. DELL rejected. 24 July 2026.
+- [x] **GAP-003:** Promote AVGO to Candidate in TH-004? → ✅ **APPROVED — FD #31.** AVGO (CAND-009) added as Direct Beneficiary + Enabler, Priority Research, High conviction. 24 July 2026.
+- [x] **GAP-004:** Acknowledge Financials sector gap as conscious — or propose Experimental Theme? → ✅ **CONSCIOUS GAP — FD #32.** V0 scoped to Tech + Healthcare. Deferred to Phase 7/8. 24 July 2026.
+- [x] **GAP-005:** Add "hyperscaler capex deceleration" to key_risks for NVDA/AMD? → ✅ **APPROVED — FD #33.** Capex deceleration risk added to NVDA (CAND-001), AMD (CAND-003), and AVGO (CAND-009). 24 July 2026.
 
 ---
 
