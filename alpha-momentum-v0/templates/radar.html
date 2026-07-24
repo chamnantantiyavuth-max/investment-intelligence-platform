@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% from "macros.html" import metric_card, lifecycle_badge, confidence_label with context %}
+
+{% block title %}📡 Experimental Theme Radar | Alpha Momentum V0{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header">
+    <h1>📡 Experimental Theme Radar</h1>
+    <div class="subtitle">Unapproved themes, hypotheses, and anomalies — separate from approved Research Queue. Founder-only review per FD #27 §5.</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Experimental Themes OFF Banner (Default) -->
+  <!-- ═══════════════════════════════════════ -->
+  <div style="padding:0.75rem 1rem;background:var(--bg-surface-alt);border:1px solid var(--border);border-left:3px solid var(--text-tertiary);border-radius:var(--radius-sm);margin-bottom:2rem;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;">
+      <input type="radio" name="exp_themes_toggle" value="off" checked disabled
+             style="accent-color:var(--text-tertiary);width:16px;height:16px;cursor:not-allowed;">
+      <span style="font-weight:600;color:var(--text-primary);">⚪ Experimental Themes OFF</span>
+    </label>
+    <label style="display:flex;align-items:center;gap:8px;cursor:not-allowed;user-select:none;opacity:0.4;">
+      <input type="radio" name="exp_themes_toggle" value="on" disabled
+             style="accent-color:var(--accent);width:16px;height:16px;cursor:not-allowed;">
+      <span>🧪 Experimental Themes ON</span>
+    </label>
+    <span style="font-size:11px;color:var(--text-tertiary);margin-left:auto;">
+      Default state per FD #27 — toggle disabled in V0. Nothing here affects the official Research Queue.
+    </span>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Summary Metrics -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="metrics-row">
+    {{ metric_card(anomaly_count, 'Anomalies', 'var(--warning)') }}
+    {{ metric_card(hypothesis_count, 'Hypotheses', 'var(--info)') }}
+    {{ metric_card(experimental_theme_count, 'Experimental Themes', 'var(--accent)') }}
+    {{ metric_card(hypotheses_pending|length, 'Pending Review', 'var(--accent-amber)') }}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Experimental Pipeline Stages -->
+  <!-- ═══════════════════════════════════════ -->
+  {% if stages %}
+  <div class="section">
+    <h2>🔄 Experimental Pipeline Stages</h2>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+      {% for s in stages %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.75rem 1rem;flex:1;min-width:180px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+          <span style="font-family:var(--font-mono);color:var(--accent);">{{ s.id }}</span>
+          : {{ s.name }}
+        </div>
+        {% if s.metrics %}
+        <div style="font-size:11px;color:var(--text-tertiary);">
+          {% for k, v in s.metrics.items() %}
+          <span style="display:inline-block;margin-right:8px;">{{ k.replace('_', ' ') }}: <strong style="color:var(--text-secondary);">{{ v }}</strong></span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if s.rule %}
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;font-style:italic;">{{ s.rule }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Anomalies by Type -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>🔍 Anomalies ({{ anomaly_count }} detected)</h2>
+    <div style="margin-bottom:1rem;">
+      {% for atype, count in anomaly_types.items() %}
+      <span class="badge" style="background:{{ anomaly_type_colors.get(atype, 'var(--text-tertiary)') }}22;color:{{ anomaly_type_colors.get(atype, 'var(--text-tertiary)') }};margin-right:6px;">
+        {{ atype }}: {{ count }}
+      </span>
+      {% else %}
+      <span class="badge" style="background:var(--bg-surface-alt);color:var(--text-tertiary);">No anomalies detected</span>
+      {% endfor %}
+    </div>
+
+    {% if anomalies %}
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      {% for an in anomalies %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-left:3px solid {{ anomaly_type_colors.get(an.type, 'var(--warning)') }};border-radius:var(--radius-sm);padding:0.75rem 1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.35rem;">
+          <div>
+            <strong style="font-size:13px;color:var(--text-primary);">{{ an.id }}</strong>
+            <span class="badge" style="background:{{ anomaly_type_colors.get(an.type, 'var(--warning-bg)') }};color:{{ anomaly_type_colors.get(an.type, 'var(--warning)') }};margin-left:6px;">{{ an.type }}</span>
+            <span class="badge" style="background:var(--danger-bg);color:var(--danger);margin-left:4px;">{{ an.status }}</span>
+          </div>
+          <span style="font-size:10px;color:var(--text-tertiary);">{{ an.first_observed }}</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:0.35rem;">{{ an.description }}</p>
+        {% if an.related_tickers %}
+        <div style="font-size:11px;color:var(--text-tertiary);">
+          <span>🎯 Tickers: </span>
+          {% for t in an.related_tickers %}
+          <span class="ticker" style="font-size:10px;">{{ t }}</span>{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div style="font-size:10px;color:var(--text-tertiary);margin-top:0.25rem;">{{ an.source }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No anomalies detected. Run the experimental pipeline to scan for market data deviations.</div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Theme Hypotheses -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>💡 Theme Hypotheses ({{ hypotheses_pending|length }} pending Founder review)</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:1rem;">
+      Early-stage theme proposals from anomaly pattern recognition. Each carries epistemic metadata (§23.4).
+      Founder review required before promotion to Experimental theme status.
+    </p>
+
+    {% if hypotheses %}
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      {% for hy in hypotheses %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-left:3px solid var(--info);border-radius:var(--radius-sm);padding:1rem 1.25rem;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+          <div>
+            <strong style="font-size:14px;color:var(--text-primary);">{{ hy.id }}: {{ hy.title }}</strong>
+            <span class="badge" style="background:var(--info-bg);color:var(--info);margin-left:6px;">{{ hy.status }}</span>
+          </div>
+          <span style="font-size:10px;color:var(--text-tertiary);">Proposed: {{ hy.proposed_date }}</span>
+        </div>
+
+        <!-- Driver -->
+        <div style="margin-bottom:0.5rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:2px;">Structural Driver</div>
+          <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ hy.proposed_driver }}</p>
+        </div>
+
+        <!-- Why Now -->
+        <div style="margin-bottom:0.5rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:2px;">Why Now</div>
+          <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ hy.why_now }}</p>
+        </div>
+
+        <!-- Candidates -->
+        {% if hy.potential_candidates %}
+        <div style="margin-bottom:0.5rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:2px;">Potential Candidates</div>
+          <div style="font-size:12px;">
+            {% for c in hy.potential_candidates %}
+            <span class="ticker" style="font-size:11px;">{{ c }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Key Unknowns -->
+        {% if hy.key_unknowns %}
+        <div style="background:var(--warning-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem 0.75rem;margin-bottom:0.5rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--warning);margin-bottom:3px;">⚠️ Key Unknowns</div>
+          <ul style="list-style:none;font-size:11px;color:var(--text-secondary);margin:0;padding:0;">
+            {% for uk in hy.key_unknowns %}
+            <li style="padding:1px 0;">• {{ uk }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Epistemic Metadata -->
+        {% if hy._epistemic %}
+        <div style="font-size:10px;color:var(--text-tertiary);border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.5rem;">
+          📋 <strong>Epistemic:</strong>
+          {{ hy._epistemic.get('provenance', '') }} ·
+          Confidence: <span style="color:{{ confidence_colors.get(hy._epistemic.get('confidence_level', ''), 'var(--text-tertiary)') }};">{{ hy._epistemic.get('confidence_level', '') }}</span> ·
+          v{{ hy._epistemic.get('version', '') }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No theme hypotheses at this time. Anomalies must be detected first.</div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Experimental Themes -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>🧪 Experimental Themes ({{ experimental_theme_count }})</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:1rem;">
+      AI-detected themes awaiting Founder approval. These have been promoted from hypothesis status
+      but do not affect the official Research Queue until Founder-approved (FD #27 §5).
+    </p>
+
+    {% if experimental_themes %}
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      {% for t in experimental_themes %}
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:1rem 1.25rem;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;">
+          <div>
+            <strong style="font-size:14px;color:var(--text-primary);">{{ t.id }}: {{ t.name }}</strong>
+            <span class="badge" style="background:var(--accent-light);color:var(--accent);margin-left:6px;">{{ t.approval_status }}</span>
+            {% if t.lifecycle %}
+            <span style="margin-left:6px;">
+              <span class="lifecycle-dot" style="background:{{ 'var(--success)' if t.lifecycle == 'Expansion' else 'var(--warning)' if t.lifecycle == 'Emerging Leadership' else 'var(--info)' if t.lifecycle == 'Formation' else 'var(--danger)' }};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>
+              <span style="font-size:11px;color:var(--text-secondary);">{{ t.lifecycle }}</span>
+            </span>
+            {% endif %}
+          </div>
+          <span style="font-size:10px;color:var(--text-tertiary);">
+            Confidence: <strong style="color:{{ confidence_colors.get(t.confidence, 'var(--text-secondary)') }};">{{ t.confidence }}</strong>
+          </span>
+        </div>
+
+        <!-- Why Now -->
+        <div style="margin-bottom:0.5rem;">
+          <p style="font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ t.why_now }}</p>
+        </div>
+
+        <!-- Meta grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;margin-bottom:0.5rem;">
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);">Sector</div>
+            <div style="font-size:12px;font-weight:500;">{{ t.sector }}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);">Industry</div>
+            <div style="font-size:12px;font-weight:500;">{{ t.industry }}</div>
+          </div>
+          {% if t.stocks_in_industry %}
+          <div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);">Stocks in Industry</div>
+            <div style="font-size:12px;font-weight:500;">{{ t.stocks_in_industry }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Key Tickers -->
+        {% if t.key_tickers %}
+        <div style="margin-bottom:0.25rem;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:2px;">Key Tickers</div>
+          <div style="font-size:12px;">
+            {% for kt in t.key_tickers %}
+            <span class="ticker" style="font-size:11px;">{{ kt }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No experimental themes yet. Promote hypotheses from the queue below.</div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Actions: Propose Theme & Promote to Review -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>⚡ Radar Actions</h2>
+    <p style="color:var(--text-secondary);font-size:13px;margin-bottom:1rem;">
+      Trigger the hypothesis engine or promote an item to the Founder Decision Queue.
+    </p>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+      <button disabled style="
+        background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);
+        padding:0.6rem 1.25rem;font-family:var(--font-body);font-size:13px;font-weight:600;
+        cursor:not-allowed;opacity:0.65;letter-spacing:0.3px;
+      ">
+        🧪 Propose Theme
+      </button>
+      <span style="font-size:11px;color:var(--text-tertiary);align-self:center;">
+        Triggers hypothesis engine on current anomaly patterns. Disabled in V0 — will be available with real-time anomaly detection.
+      </span>
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.75rem;">
+      <button disabled style="
+        background:var(--info);color:#fff;border:none;border-radius:var(--radius-sm);
+        padding:0.6rem 1.25rem;font-family:var(--font-body);font-size:13px;font-weight:600;
+        cursor:not-allowed;opacity:0.65;letter-spacing:0.3px;
+      ">
+        📤 Promote to Review
+      </button>
+      <span style="font-size:11px;color:var(--text-tertiary);align-self:center;">
+        Sends selected hypothesis to Founder Decision Queue. Disabled in V0 — Founder approval gate is manual (FD #27 §5).
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Review Queue Summary -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="section">
+    <h2>📋 Founder Review Queue Summary</h2>
+    {% if review_queue_hypotheses or review_queue_themes %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:4px;">Hypotheses for Review</div>
+        <div style="font-family:var(--font-headline);font-size:24px;font-weight:700;color:var(--info);">
+          {{ review_queue_hypotheses|length }}
+        </div>
+        {% if review_queue_hypotheses[:5] %}
+        <ul style="list-style:none;font-size:11px;color:var(--text-secondary);margin-top:0.5rem;padding:0;">
+          {% for h in review_queue_hypotheses[:5] %}
+          <li style="padding:2px 0;">• {{ h.get('id', '') }}: {{ h.get('title', '')[:60] }}{% if h.get('title','')|length > 60 %}…{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      <div style="background:var(--bg-page);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-tertiary);margin-bottom:4px;">Experimental Themes Awaiting</div>
+        <div style="font-family:var(--font-headline);font-size:24px;font-weight:700;color:var(--accent);">
+          {{ review_queue_themes|length }}
+        </div>
+        {% if review_queue_themes[:5] %}
+        <ul style="list-style:none;font-size:11px;color:var(--text-secondary);margin-top:0.5rem;padding:0;">
+          {% for t in review_queue_themes[:5] %}
+          <li style="padding:2px 0;">• {{ t.get('id', '') }}: {{ t.get('name', '')[:60] }}{% if t.get('name','')|length > 60 %}…{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state">Founder Review Queue is empty. Run the experimental pipeline to generate review items.</div>
+    {% endif %}
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Navigation -->
+  <!-- ═══════════════════════════════════════ -->
+  <div style="text-align:center;margin-top:2rem;">
+    <a href="../queue.html" style="font-size:13px;">← Back to Approved Research Queue</a>
+    <span style="color:var(--text-tertiary);margin:0 8px;">·</span>
+    <a href="inbox.html" style="font-size:13px;">📡 Weak Signal Inbox →</a>
+  </div>
+
+</div>
+{% endblock %}
