@@ -90,7 +90,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 3 Complete: Alpha Momentum V0 Implementation. Next: Phase 5 (Theme Intelligence V1 — pending authorization).
+Phase 6B Complete: GAP Resolution + Emergent Rules. Next: Phase 7 (Close System — deferred) or Phase 8 (Fundamental & Opportunity — deferred).
 
 Current approved checkpoints:
 
@@ -99,15 +99,17 @@ Current approved checkpoints:
 - project-definition-v0.1 (7 approved domain specifications, 19 July 2026)
 - operating-model-v0.1 (Dual Intelligence Operating Model, FD #24, 22 July 2026)
 - am-v0-design-plan-v0.1
-- am-v0-gate-a-structure-v0.1
 - am-v0-gate-a-complete-v0.1 (35/35 slots approved, 6 waves + DR-006, 21 July 2026)
 - am-v0-gate-b-complete (143 themes, DR-005, 22 July 2026)
 - am-v0-gate-c-complete (7 HC slots, 20 acceptance scenarios, 10 ACs, 22 July 2026)
 - am-v0-gate-d-complete (independent audit passed, 4 findings resolved, 22 July 2026)
-- am-v0-phase-3-complete (end-to-end vertical slice: 6-stage pipeline, 3 themes, 5 candidates, Claude-inspired UI, all 10 ACs, 22 July 2026)
+- am-v0-phase-3-complete (end-to-end vertical slice: 6-stage pipeline, 10 ACs, 22 July 2026)
 - am-v0-phase-4-complete (Real EOD data via yfinance, source_adapter.py, 22 July 2026)
+- phase-5-authorized (Theme Intelligence V1: Weak Signal Inbox, Anomaly Detection, Hypothesis Engine, Experimental Radar; FD #27, 23 July 2026)
+- phase-6-authorized (Learning Loop V1: Self-Reflection Log, Coverage Gap Detection, Obsidian Integration; FD #28, 24 July 2026)
+- phase-6b-complete (GAP-001 through GAP-005 resolved; ERP-001 through ERP-005 approved + implemented; FD #29-38, 24 July 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
-- wf-phase-2r-in-progress (Architecture Review Gate — 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; Phase 5 code quarantined; 23 July 2026)
+- wf-phase-2r-in-progress (Architecture Review Gate — 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
 Phase governance:
 
@@ -119,7 +121,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-24 approved.
+- Founder Decisions #1-38 approved.
 
 Current-phase restrictions:
 

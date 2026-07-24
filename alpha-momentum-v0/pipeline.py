@@ -247,6 +247,74 @@ def stage_queue(candidates, candidate_theme, themes, theme_map):
 
 
 # ═══════════════════════════════════════════════════════════
+# ERP-004 (FD #37): Conviction-Research State Alignment
+# ═══════════════════════════════════════════════════════════
+
+def _check_conviction_alignment(queue):
+    """Check conviction-research state alignment per ERP-004 (FD #37).
+
+    - High conviction + Confirmed → recommend Priority Research (advisory, NOT automatic)
+    - Low conviction → must have entry_trigger with measurable conditions + trigger_status='Waiting'
+    Returns list of advisory message dicts.
+    """
+    messages = []
+    for _, tdata in queue:
+        for c in tdata.get("candidates", []):
+            conviction = c.get("conviction_level", "")
+            research = c.get("research_state", "")
+            thesis = c.get("thesis_status", "")
+            ticker = c.get("ticker", c.get("id", "?"))
+            entry_trigger = c.get("entry_trigger", {})
+            # entry_trigger may be a descriptive string (V0) or a dict (future)
+            if isinstance(entry_trigger, str):
+                has_trigger = bool(entry_trigger.strip())
+                trigger_status = "Waiting"  # string-based triggers are informational only
+                has_conditions = True  # string contains conditions
+            else:
+                has_trigger = bool(entry_trigger)
+                trigger_status = entry_trigger.get("trigger_status", "")
+                has_conditions = bool(entry_trigger.get("conditions"))
+
+            # Rule 1: High conviction + Confirmed → recommend Priority Research
+            if conviction == "High" and thesis == "Confirmed" and research != "Priority Research":
+                messages.append({
+                    "type": "ERP-004 Advisory — Conviction Alignment",
+                    "candidate": ticker,
+                    "severity": "Info",
+                    "message": (
+                        f"{ticker}: High conviction + Confirmed thesis → "
+                        f"recommend Priority Research. Current: {research}. "
+                        f"Advisory only — Founder decision required per FD #13."
+                    ),
+                })
+
+            # Rule 2: Low conviction → must have entry_trigger + Waiting
+            if conviction == "Low":
+                if not has_trigger or not has_conditions:
+                    messages.append({
+                        "type": "ERP-004 Warning — Missing Entry Trigger",
+                        "candidate": ticker,
+                        "severity": "Warning",
+                        "message": (
+                            f"{ticker}: Low conviction → must have explicit entry_trigger "
+                            f"with measurable conditions. Current: missing or empty."
+                        ),
+                    })
+                elif trigger_status != "Waiting":
+                    messages.append({
+                        "type": "ERP-004 Warning — Trigger Status",
+                        "candidate": ticker,
+                        "severity": "Warning",
+                        "message": (
+                            f"{ticker}: Low conviction → trigger_status should be 'Waiting'. "
+                            f"Current: '{trigger_status}'."
+                        ),
+                    })
+
+    return messages
+
+
+# ═══════════════════════════════════════════════════════════
 # PIPELINE RUNNER
 # ═══════════════════════════════════════════════════════════
 
@@ -280,6 +348,9 @@ def run_pipeline():
     s6, queue = stage_queue(candidates, CANDIDATE_THEME, THEMES, theme_map)
     stages.append(s6)
 
+    # ── ERP-004 (FD #37): Conviction-Research State Alignment ──
+    alignment_messages = _check_conviction_alignment(queue)
+
     pipeline_result = {
         "run_id": RUN_ID,
         "pipeline_version": PIPELINE_VERSION,
@@ -291,7 +362,7 @@ def run_pipeline():
         "evidence": EVIDENCE,
         "overrides": HUMAN_OVERRIDES,
         "alternative_explanations": ALTERNATIVE_EXPLANATIONS,
+        "messages": alignment_messages,  # ERP-004 advisory messages
         # ⚠️ Phase 5 quarantined (23 Jul 2026) — experimental/ directory
     }
     return pipeline_result
-

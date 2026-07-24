@@ -27,37 +27,82 @@ def detect_coverage_gaps(pipeline_result: dict, exp_result: dict = None,
     gaps = []
 
     # ── Type 1: Theme Coverage Gap ──
-    # Approved theme with evidence but zero candidates
+    # Approved theme with evidence but zero candidates.
+    # ERP-002 (FD #35): If empty > 30 days → Aging Empty Theme (High severity).
     queue = pipeline_result.get("queue", [])
+    today = datetime.date.today()
     for tid, tdata in queue:
         candidates = tdata.get("candidates", [])
         theme = tdata.get("theme", {})
         if len(candidates) == 0:
-            gaps.append({
-                "gap_type": "Theme Coverage Gap",
-                "severity": "Medium",
-                "theme_id": tid,
-                "theme_name": theme.get("name", tid),
-                "description": f"Theme {tid} ({theme.get('name','')}) has zero candidates in Watchlist despite being Approved and under Active Monitoring.",
-                "current_coverage": 0,
-                "evidence_strength": _assess_evidence_strength(tid, pipeline_result),
-                "recommendation": f"Add at least 1 candidate to {tid} Watchlist or downgrade monitoring to Passive.",
-                "evidence_refs": _get_evidence_refs(tid, pipeline_result),
-            })
+            approval = theme.get("approval_status", "")
+            monitoring = theme.get("monitoring_status", "")
 
-    # ── Type 2: Candidate Blind Spot ──
+            # ERP-002: Check if this is an aging empty theme
+            is_aging = False
+            days_empty = None
+            last_change_str = theme.get("last_candidate_change", "")
+            if last_change_str:
+                try:
+                    last_change = datetime.date.fromisoformat(last_change_str)
+                    days_empty = (today - last_change).days
+                except (ValueError, TypeError):
+                    days_empty = None
+
+            if (approval == "Approved" and monitoring == "Active Monitoring"
+                    and days_empty is not None and days_empty > 30):
+                is_aging = True
+
+            if is_aging:
+                gaps.append({
+                    "gap_type": "Aging Empty Theme",
+                    "severity": "High",
+                    "theme_id": tid,
+                    "theme_name": theme.get("name", tid),
+                    "description": f"Theme {tid} ({theme.get('name','')}) has been Approved + Active Monitoring with ZERO candidates for {days_empty} days. Requires Founder attention.",
+                    "current_coverage": 0,
+                    "days_empty": days_empty,
+                    "evidence_strength": _assess_evidence_strength(tid, pipeline_result),
+                    "recommendation": f"Either add at least 1 candidate to {tid} Watchlist or downgrade monitoring_status to Dormant.",
+                    "evidence_refs": _get_evidence_refs(tid, pipeline_result),
+                })
+            else:
+                gaps.append({
+                    "gap_type": "Theme Coverage Gap",
+                    "severity": "Medium",
+                    "theme_id": tid,
+                    "theme_name": theme.get("name", tid),
+                    "description": f"Theme {tid} ({theme.get('name','')}) has zero candidates in Watchlist despite being Approved and under Active Monitoring.",
+                    "current_coverage": 0,
+                    "evidence_strength": _assess_evidence_strength(tid, pipeline_result),
+                    "recommendation": f"Add at least 1 candidate to {tid} Watchlist or downgrade monitoring to Passive.",
+                    "evidence_refs": _get_evidence_refs(tid, pipeline_result),
+                })
+
+    # ── Type 2: Candidate Blind Spot / Emergent Candidate Signal ──
     # Candidate appearing in anomalies/hypotheses but not in Watchlist.
     # PHASE 6B FILTER (FD #36 ERP-003): Only flag when 2+ anomalies reference
-    # the same ticker (converging signal) OR the hypothesis is active.
+    # the same ticker within 90 days (converging signal) OR the hypothesis is active.
     if exp_result:
         all_tickers_in_watchlist = set()
         for _, tdata in queue:
             for c in tdata.get("candidates", []):
                 all_tickers_in_watchlist.add(c.get("ticker", ""))
 
-        # Count anomaly references per ticker
+        # Count anomaly references per ticker, filtering to last 90 days
+        today = datetime.date.today()
+        cutoff_date = today - datetime.timedelta(days=90)
         anomaly_refs = {}
         for an in exp_result.get("anomalies", []):
+            # Check if anomaly is within 90-day window
+            an_date_str = an.get("first_observed", "")
+            try:
+                an_date = datetime.date.fromisoformat(an_date_str[:10])
+            except (ValueError, TypeError):
+                an_date = today  # if no date, assume recent
+            if an_date < cutoff_date:
+                continue  # too old — skip
+
             for t in an.get("related_tickers", []):
                 if t not in anomaly_refs:
                     anomaly_refs[t] = []
@@ -69,12 +114,12 @@ def detect_coverage_gaps(pipeline_result: dict, exp_result: dict = None,
                 anomalies_str = ", ".join(sorted(set(a.get("id", "") for a in refs)))
                 themes = sorted(set(a.get("related_theme", "") for a in refs if a.get("related_theme")))
                 gaps.append({
-                    "gap_type": "Candidate Blind Spot",
+                    "gap_type": "Emergent Candidate Signal",
                     "severity": "Medium",
                     "ticker": ticker,
-                    "description": f"{ticker} referenced by {len(refs)} anomalies ({anomalies_str}) — converging signal, not tracked in any Watchlist.",
+                    "description": f"{ticker} referenced by {len(refs)} anomalies within 90 days ({anomalies_str}) — converging signal, not tracked in any Watchlist. ERP-003: never auto-promote. Founder decision required.",
                     "appears_in": themes,
-                    "recommendation": f"Evaluate {ticker} as potential Candidate for {themes[0] if themes else 'relevant theme'} — {len(refs)} anomalies agree.",
+                    "recommendation": f"Evaluate {ticker} as potential Candidate for {themes[0] if themes else 'relevant theme'} — {len(refs)} anomalies agree within 90-day window.",
                     "evidence_refs": [a.get("id", "") for a in refs],
                 })
                 all_tickers_in_watchlist.add(ticker)

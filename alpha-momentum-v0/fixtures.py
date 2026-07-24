@@ -103,6 +103,7 @@ THEMES = [
         ],
         "stocks_in_industry": 71,
         "key_tickers": ["NVDA", "AMD", "AVGO", "QCOM", "INTC", "TXN"],
+        "last_candidate_change": "2024-07-24",
     },
     {
         "id": "TH-014", "name": "Medical Devices", "sector": "Healthcare", "industry": "Medical Devices",
@@ -121,6 +122,7 @@ THEMES = [
         ],
         "stocks_in_industry": 139,
         "key_tickers": ["ABT", "MDT", "BSX", "SYK", "ISRG", "EW"],
+        "last_candidate_change": "2024-07-01",
     },
     {
         "id": "TH-010", "name": "Solar", "sector": "Technology", "industry": "Solar",
@@ -137,6 +139,7 @@ THEMES = [
         ],
         "stocks_in_industry": 22,
         "key_tickers": ["ENPH", "FSLR", "SEDG", "RUN", "CSIQ", "ARRY"],
+        "last_candidate_change": "2024-07-01",
     },
     {
         "id": "TH-020", "name": "Cloud Infrastructure", "sector": "Technology", "industry": "Cloud & Data Centers",
@@ -153,6 +156,7 @@ THEMES = [
         ],
         "stocks_in_industry": 55,
         "key_tickers": ["AMZN", "MSFT", "GOOGL", "ORCL", "SMCI", "DELL"],
+        "last_candidate_change": "2024-07-24",
     },
     {
         "id": "TH-030", "name": "Cybersecurity", "sector": "Technology", "industry": "Cybersecurity",
@@ -169,6 +173,7 @@ THEMES = [
         ],
         "stocks_in_industry": 48,
         "key_tickers": ["CRWD", "PANW", "ZS", "FTNT", "OKTA", "NET"],
+        "last_candidate_change": "2024-07-24",
     },
 ]
 

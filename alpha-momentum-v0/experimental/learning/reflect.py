@@ -6,8 +6,11 @@ Generates structured 7-section markdown after every material pipeline run.
 Per LEARNING-AND-KNOWLEDGE-LOOP.md + self-reflection-template.md.
 
 AI-generated drafts — Founder-reviewed before becoming official knowledge.
+
+ERP-005 (FD #38): SRL trigger criteria — generate ONLY on material changes,
+NOT on routine daily runs or docs-only edits.
 """
-import os, json, datetime
+import os, json, datetime, re
 from pathlib import Path
 
 # ── Paths ────────────────────────────────────────────────────
@@ -110,8 +113,95 @@ def _detect_blind_spots(pipeline_result: dict, gaps: list = None) -> list:
     return blind_spots
 
 
+# ═══════════════════════════════════════════════════════════════
+# ERP-005 (FD #38): SRL Trigger Criteria
+# ═══════════════════════════════════════════════════════════════
+
+def should_generate_srl(pipeline_result: dict, prior_state: dict = None,
+                         trigger_context: str = None) -> tuple:
+    """Determine if SRL should be generated per ERP-005 trigger criteria.
+
+    Triggers (any one = generate):
+      (1) Candidate count changed vs prior state
+      (2) Thesis status or conviction level changed
+      (3) Founder review session occurred (trigger_context='founder_review')
+      (4) Coverage gap was resolved (trigger_context='gap_resolved')
+
+    Suppressed:
+      - Routine daily runs with zero changes
+      - Docs-only edits (trigger_context='docs_only')
+
+    Returns (should_generate: bool, reason: str).
+    """
+    # Docs-only edits → suppress
+    if trigger_context == "docs_only":
+        return False, "ERP-005: docs-only edit — SRL suppressed"
+
+    # Founder review or gap resolution → always generate
+    if trigger_context in ("founder_review", "gap_resolved"):
+        return True, f"ERP-005 trigger: {trigger_context}"
+
+    # Check for candidate count changes
+    current_count = sum(len(td.get("candidates", []))
+                        for _, td in pipeline_result.get("queue", []))
+    if prior_state:
+        prior_count = prior_state.get("candidate_count", -1)
+        if prior_count >= 0 and current_count != prior_count:
+            return True, (
+                f"ERP-005 trigger (1): candidate count changed "
+                f"({prior_count} → {current_count})"
+            )
+
+        # Check thesis/conviction changes
+        prior_theses = prior_state.get("thesis_snapshot", {})
+        current_theses = _snapshot_theses(pipeline_result)
+        if prior_theses != current_theses:
+            changed = []
+            for tid, info in current_theses.items():
+                prior_info = prior_theses.get(tid, {})
+                if prior_info != info:
+                    changed.append(tid)
+            return True, (
+                f"ERP-005 trigger (2): thesis/conviction changed for {changed}"
+            )
+
+    # No changes detected → check if this is a routine run
+    if trigger_context == "routine_daily":
+        return False, "ERP-005: routine daily run with zero changes — SRL suppressed"
+
+    # First run or no prior state → generate (initial baseline)
+    return True, "ERP-005: first run or no prior state — generating baseline SRL"
+
+
+def _snapshot_theses(pipeline_result: dict) -> dict:
+    """Take a snapshot of current thesis states for change detection."""
+    snapshot = {}
+    for _, tdata in pipeline_result.get("queue", []):
+        for c in tdata.get("candidates", []):
+            tid = c.get("ticker", c.get("id", "?"))
+            snapshot[tid] = {
+                "thesis_status": c.get("thesis_status", ""),
+                "conviction_level": c.get("conviction_level", ""),
+            }
+    return snapshot
+
+
+def build_prior_state(pipeline_result: dict) -> dict:
+    """Build a prior state dict for the next run to compare against."""
+    queue = pipeline_result.get("queue", [])
+    return {
+        "candidate_count": sum(len(td.get("candidates", [])) for _, td in queue),
+        "thesis_snapshot": _snapshot_theses(pipeline_result),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════
+# SRL Generator
+# ═══════════════════════════════════════════════════════════════
+
 def generate_self_reflection(pipeline_result: dict, exp_result: dict = None,
-                              prior_log: str = None, run_id: str = None) -> str:
+                              prior_log: str = None, run_id: str = None,
+                              trigger_reason: str = None) -> str:
     """Generate a 7-section self-reflection log in markdown.
 
     Args:
@@ -119,6 +209,7 @@ def generate_self_reflection(pipeline_result: dict, exp_result: dict = None,
         exp_result: Experimental pipeline output (optional, from experimental.pipeline)
         prior_log: Path to most recent prior self-reflection log
         run_id: Run identifier (defaults to pipeline_result['run_id'])
+        trigger_reason: ERP-005 trigger reason string
 
     Returns:
         Path to the generated markdown file.
@@ -153,6 +244,7 @@ def generate_self_reflection(pipeline_result: dict, exp_result: dict = None,
 **Pipeline Version:** {pipeline_version}
 **Point-in-Time:** {point_in_time}
 **Prior Log:** {prior_ref}
+**ERP-005 Trigger:** {trigger_reason or 'Not specified'}
 
 ---
 
@@ -219,6 +311,7 @@ def generate_self_reflection(pipeline_result: dict, exp_result: dict = None,
         md += "- No blind spots identified in this run.\n"
 
     md += f"""
+
 ---
 
 *Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | AI Intelligence Layer (§23) | Draft — not official knowledge until Founder reviews*
