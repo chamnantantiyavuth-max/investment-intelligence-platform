@@ -5,7 +5,7 @@
 **Owner:** Founder
 **Authority:** Approved Domain Specification subordinate to the Constitution and Founder's Decisions
 **Derived from:** Investment Intelligence Platform Constitution v0.3 §2, §15; ROADMAP.md Phase 7
-**Approval:** TBD (Founder review pending)
+**Approval:** PD-v0.1-CLOSE-SYSTEM-PRODUCT-RADAR (Founder Decision #39, 25 July 2026)
 
 ---
 
@@ -367,9 +367,9 @@ Both perspectives are valid — they answer different questions for different ho
 
 | Phase | Scope |
 |---|---|
-| **Phase 7 (current)** | Domain model specification — this document. No code. |
-| **Phase 8+** | Synthetic fixtures, product radar pipeline (V0 vertical slice) |
-| **Later phases** | Real data integration, automated detection, HTML display |
+| **Phase 7 (active)** | Domain model specification (this document) + synthetic fixtures + P1-P3 eligibility pipeline + synthesis template. Spec + Code — same pattern as Alpha Momentum V0. |
+| **Phase 8+** | Real macro/policy/cost data pipelines, automated cost proximity, S/D model integration, HTML display |
+| **Later phases** | Hidden signal detection, automated cross-layer conviction scoring, Alpha Momentum integration |
 
 ---
 
