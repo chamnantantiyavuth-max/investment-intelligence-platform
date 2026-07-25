@@ -23,11 +23,12 @@ def classify_moat(company: dict) -> dict:
     """Classify a company's moat across all dimensions.
 
     Returns a structured moat assessment dict.
+    Gracefully handles None values from yfinance/real data sources.
     """
-    moat_types = company.get("moat_types", [])
-    width = company.get("moat_width", "None")
-    depth = company.get("moat_depth", "Shallow")
-    trend = company.get("moat_trend", "Stable")
+    moat_types = company.get("moat_types") or []
+    width = company.get("moat_width") or "None"
+    depth = company.get("moat_depth") or "Shallow"
+    trend = company.get("moat_trend") or "Stable"
 
     # Validate width/depth against types
     if not moat_types:

@@ -481,7 +481,7 @@ Key clarifications:
 
 These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, V0 scope, or Two-Tier Autonomy.
 
-Canonical Theme-role ownership remains an unresolved Founder decision.
+Canonical Theme-role ownership resolved by FD #26 (23 July 2026): Shared Core owns canonical Entity–Theme structural roles; Theme-level classification wins over stock-level.
 
 ---
 

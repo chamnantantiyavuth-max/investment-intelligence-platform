@@ -153,9 +153,23 @@ def render_research_package(pkg: dict) -> str:
     </div>"""
 
 
-def render_full_report(packages: list[dict], json_path: str = None) -> str:
-    """Render all Research Packages as a complete HTML page."""
+def render_full_report(packages: list[dict], json_path: str = None, source: str = "SYNTHETIC") -> str:
+    """Render all Research Packages as a complete HTML page.
+
+    Args:
+        packages: List of Research Package dicts from pipeline.
+        json_path: Optional path to save JSON output.
+        source: Data source label — "SYNTHETIC" or "REAL EOD".
+    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    is_real = source == "REAL EOD"
+    watermark_text = "REAL EOD — YAHOO FINANCE" if is_real else "SYNTHETIC — NOT LIVE DATA"
+    version_label = "Phase 9 · FD #41" if is_real else "Phase 8 Spike · FD #40"
+    disclaimer_text = (
+        "REAL EOD DATA — YAHOO FINANCE. FOR V0 DEVELOPMENT ONLY. NOT INVESTMENT ADVICE.<br>"
+        if is_real else
+        "SYNTHETIC FIXTURES — FOR V0 TESTING ONLY. NOT LIVE DATA. NOT INVESTMENT ADVICE.<br>"
+    )
 
     # Save JSON
     if json_path:
@@ -353,11 +367,11 @@ def render_full_report(packages: list[dict], json_path: str = None) -> str:
 </style>
 </head>
 <body>
-<div class="watermark">SYNTHETIC — NOT LIVE DATA</div>
+<div class="watermark">{watermark_text}</div>
 
 <div class="report-header">
     <h1>Fundamental & Opportunity Intelligence — Research Packages</h1>
-    <div class="meta">Pipeline v0.1.0 · {now} · Phase 8 Spike · FD #40</div>
+    <div class="meta">Pipeline v0.2.0 · {now} · {version_label}</div>
 </div>
 
 <div class="summary-bar">
@@ -384,8 +398,8 @@ def render_full_report(packages: list[dict], json_path: str = None) -> str:
 </div>
 
 <div class="disclaimer">
-    SYNTHETIC FIXTURES — FOR V0 TESTING ONLY. NOT LIVE DATA. NOT INVESTMENT ADVICE.<br>
-    Fundamental & Opportunity Intelligence v0.1 · FD #40 · Phase 8 Spike
+    {disclaimer_text}
+    Fundamental & Opportunity Intelligence v0.2 · {version_label}
 </div>
 
 </body>

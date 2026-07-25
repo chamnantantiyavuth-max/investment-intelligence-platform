@@ -20,13 +20,17 @@ from earnings_quality import assess_earnings_quality
 from value_trap import is_unusually_cheap, run_value_trap_check
 
 
-def run_pipeline() -> list[dict]:
+def run_pipeline(companies: list[dict] = None) -> list[dict]:
     """Run the full 6-stage Fundamental & Opportunity pipeline.
+
+    Args:
+        companies: Optional list of company dicts. If None, uses FIXTURES.
 
     Returns a list of Research Packages, one per company.
     """
+    source = companies if companies is not None else FIXTURES
     packages = []
-    for company in FIXTURES:
+    for company in source:
         pkg = build_research_package(company)
         packages.append(pkg)
     return packages

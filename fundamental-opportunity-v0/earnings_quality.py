@@ -79,8 +79,18 @@ def _determine_rating(revenue_q, margin_q, fcf_conv, one_time, buyback_impact,
 def _build_narrative(rating, company):
     """Generate human-readable earnings quality narrative."""
     name = company.get("name", company.get("id", "?"))
-    surprise = company.get("surprise_direction", "Meet")
-    mag = company.get("surprise_magnitude_pct", 0)
+    surprise = company.get("surprise_direction") or "Unknown"
+    mag = company.get("surprise_magnitude_pct") or 0
+
+    # Graceful fallback when analyst fields are unavailable (e.g. yfinance data)
+    if not surprise or surprise == "Unknown" or mag == 0:
+        templates_no_data = {
+            "HIGH": f"{name} shows strong financial quality indicators (high margins, strong FCF conversion) — earnings quality appears HIGH.",
+            "MEDIUM": f"{name} shows mixed financial quality signals — earnings quality rated MEDIUM.",
+            "LOW": f"{name} shows weak financial quality indicators — earnings quality rated LOW.",
+            "COSMETIC": f"{name} shows cosmetic earnings patterns — reported numbers may overstate economic reality.",
+        }
+        return templates_no_data.get(rating, templates_no_data["MEDIUM"])
 
     templates = {
         "HIGH": f"{name} delivered high-quality earnings: {surprise.lower()} by {abs(mag):.1f}%, driven by organic revenue growth with strong FCF conversion and no one-time distortions.",

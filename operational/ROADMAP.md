@@ -61,9 +61,15 @@ Macro, ETF, commodity, suitability, opportunity, capital-lock-up risk.
 Fundamental workbench: Macro, Industry, Product, Company, Earnings, Valuation Context.
 **Status: Deferred** (V1+)
 
-## Phase 9 — Global Expansion
-Additional markets, languages, assets, scheduling.
-**Status: Deferred**
+## Phase 9 — Real Data Integration
+Feed yfinance real financial data into Fundamental & Opportunity pipeline.
+**Status: AUTHORIZED** — FD #41, 26 July 2026
+
+- source_adapter.py: yfinance → company dict + 24h JSON cache
+- pipeline.py: accepts optional companies param (None = fixtures)
+- run.py --real: real data mode
+- Display: dynamic watermark (SYNTHETIC vs REAL EOD)
+- Tickers: AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA, JNJ (8)
 
 ## Phase 10 — Deep Research Handoff
 Company Intelligence Workbench, return of outcomes and lessons.
