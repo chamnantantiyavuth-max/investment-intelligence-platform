@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phase 8 — Fundamental & Opportunity Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: white; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #34d399; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container { background: rgba(15, 23, 42, 0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1000px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 2rem; }
+    .card { background: rgba(15, 23, 42, 0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; } .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; } .card-dot.rose { background: #fb7185; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Phase 8 — Fundamental & Opportunity Intelligence V1</h1>
+      </div>
+      <p class="subtitle">Hybrid Architecture: Separate Pipeline + Shared Core + React Frontend · FD #40</p>
+    </div>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1100 720">
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ============================================================ -->
+        <!-- FRONTEND LAYER -->
+        <!-- ============================================================ -->
+        <rect x="30" y="40" width="1040" height="160" rx="12" fill="rgba(8, 51, 68, 0.08)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="50" y="62" fill="#22d3ee" font-size="10" font-weight="600">Frontend — React 19 + shadcn/ui + TanStack Query</text>
+
+        <!-- Dashboard -->
+        <rect x="60" y="80" width="180" height="55" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="150" y="102" fill="white" font-size="11" font-weight="600" text-anchor="middle">Strategy Control Center</text>
+        <text x="150" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">+ Fundamental card</text>
+
+        <!-- FO Queue -->
+        <rect x="270" y="80" width="190" height="55" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="365" y="102" fill="white" font-size="11" font-weight="600" text-anchor="middle">Fundamental Queue</text>
+        <text x="365" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">Research Packages list</text>
+
+        <!-- FO Detail -->
+        <rect x="490" y="80" width="190" height="55" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="585" y="102" fill="white" font-size="11" font-weight="600" text-anchor="middle">Package Detail</text>
+        <text x="585" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">13-section view</text>
+
+        <!-- Cheap & Quality -->
+        <rect x="710" y="80" width="190" height="55" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="805" y="102" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cheap & Quality</text>
+        <text x="805" y="118" fill="#94a3b8" font-size="9" text-anchor="middle">Value Trap survivors</text>
+
+        <!-- Sidebar -->
+        <rect x="60" y="145" width="840" height="42" rx="6" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+        <text x="480" y="163" fill="#22d3ee" font-size="9" text-anchor="middle">AppSidebar: +3 nav items (Fundamental Queue · Package Detail · Cheap & Quality) · IIP tokens (#0f1117 dark sidebar)</text>
+
+        <!-- ============================================================ -->
+        <!-- BACKEND LAYER -->
+        <!-- ============================================================ -->
+        <rect x="30" y="230" width="1040" height="90" rx="12" fill="rgba(6, 78, 59, 0.06)" stroke="#34d399" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="50" y="252" fill="#34d399" font-size="10" font-weight="600">Backend — FastAPI (extends existing)</text>
+
+        <rect x="60" y="268" width="220" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="170" y="285" fill="white" font-size="10" font-weight="600" text-anchor="middle">GET /api/fo-queue</text>
+        <text x="170" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">ResearchPackageSummary[]</text>
+
+        <rect x="310" y="268" width="220" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="420" y="285" fill="white" font-size="10" font-weight="600" text-anchor="middle">GET /api/fo-package/{id}</text>
+        <text x="420" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">Full 13-section ResearchPackage</text>
+
+        <rect x="560" y="268" width="220" height="40" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="670" y="285" fill="white" font-size="10" font-weight="600" text-anchor="middle">GET /api/fo-cheap-quality</text>
+        <text x="670" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">CheapQualityItem[]</text>
+
+        <!-- ============================================================ -->
+        <!-- PIPELINE LAYER -->
+        <!-- ============================================================ -->
+        <rect x="30" y="350" width="1040" height="200" rx="12" fill="rgba(76, 29, 149, 0.05)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="50" y="372" fill="#a78bfa" font-size="10" font-weight="600">Pipeline — fundamental-opportunity-v0/ (6-stage)</text>
+
+        <!-- S1 -->
+        <rect x="60" y="390" width="145" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="132" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S1: Macro</text>
+        <text x="132" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Regime + Sector</text>
+
+        <!-- S2 -->
+        <rect x="225" y="390" width="145" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="297" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S2: Industry</text>
+        <text x="297" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Position + Health</text>
+
+        <!-- S3 -->
+        <rect x="390" y="390" width="145" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="462" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S3: Product</text>
+        <text x="462" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Investability</text>
+
+        <!-- S4 -->
+        <rect x="555" y="390" width="145" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="627" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S4: Company ★</text>
+        <text x="627" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Moat + Financial</text>
+
+        <!-- S5 -->
+        <rect x="720" y="390" width="160" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="800" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S5: Earnings</text>
+        <text x="800" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Quality + Impact</text>
+
+        <!-- S6 -->
+        <rect x="900" y="390" width="145" height="48" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="972" y="410" fill="white" font-size="10" font-weight="600" text-anchor="middle">S6: Valuation</text>
+        <text x="972" y="426" fill="#94a3b8" font-size="8" text-anchor="middle">Trap Detection</text>
+
+        <!-- Stage arrows -->
+        <line x1="205" y1="414" x2="223" y2="414" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="370" y1="414" x2="388" y2="414" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="535" y1="414" x2="553" y2="414" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="700" y1="414" x2="718" y2="414" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="880" y1="414" x2="898" y2="414" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Core modules row -->
+        <rect x="60" y="455" width="310" height="42" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="215" y="472" fill="white" font-size="10" font-weight="600" text-anchor="middle">moat.py</text>
+        <text x="215" y="487" fill="#94a3b8" font-size="8" text-anchor="middle">6 types · Width/Depth/Trend · Moat×Conviction</text>
+
+        <rect x="390" y="455" width="310" height="42" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="545" y="472" fill="white" font-size="10" font-weight="600" text-anchor="middle">earnings_quality.py</text>
+        <text x="545" y="487" fill="#94a3b8" font-size="8" text-anchor="middle">HIGH/MEDIUM/LOW/COSMETIC · FCF conversion</text>
+
+        <rect x="720" y="455" width="325" height="42" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="882" y="472" fill="white" font-size="10" font-weight="600" text-anchor="middle">value_trap.py</text>
+        <text x="882" y="487" fill="#94a3b8" font-size="8" text-anchor="middle">5-question check · 0-5 scoring · Trap/NOT_A_TRAP</text>
+
+        <!-- Pipeline → Core dependency -->
+        <line x1="627" y1="438" x2="627" y2="453" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="637" y="448" fill="#fb7185" font-size="7">uses</text>
+
+        <!-- ============================================================ -->
+        <!-- SHARED CORE -->
+        <!-- ============================================================ -->
+        <rect x="30" y="520" width="1040" height="80" rx="12" fill="rgba(251, 191, 36, 0.05)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="50" y="542" fill="#fbbf24" font-size="10" font-weight="600">Shared Core — Reused from Alpha Momentum V0</text>
+
+        <rect x="60" y="555" width="220" height="35" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="170" y="570" fill="white" font-size="10" font-weight="600" text-anchor="middle">shared/base.html</text>
+        <text x="170" y="583" fill="#94a3b8" font-size="8" text-anchor="middle">IIP tokens · Inter · #f5f6f8</text>
+
+        <rect x="310" y="555" width="220" height="35" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="420" y="570" fill="white" font-size="10" font-weight="600" text-anchor="middle">AM V0 fixtures pattern</text>
+        <text x="420" y="583" fill="#94a3b8" font-size="8" text-anchor="middle">Synthetic data conventions</text>
+
+        <rect x="560" y="555" width="220" height="35" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="670" y="570" fill="white" font-size="10" font-weight="600" text-anchor="middle">AM V0 display pattern</text>
+        <text x="670" y="583" fill="#94a3b8" font-size="8" text-anchor="middle">HTML render structure</text>
+
+        <rect x="810" y="555" width="220" height="35" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="920" y="570" fill="white" font-size="10" font-weight="600" text-anchor="middle">Frontend components</text>
+        <text x="920" y="583" fill="#94a3b8" font-size="8" text-anchor="middle">MetricCard · Badge · Table · Tabs</text>
+
+        <!-- ============================================================ -->
+        <!-- DATA FLOW ARROWS -->
+        <!-- ============================================================ -->
+        <!-- Pipeline → Backend -->
+        <path d="M 550 490 L 550 505 Q 550 515 540 515 L 230 515 Q 220 515 220 505 L 220 310" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <text x="560" y="508" fill="#34d399" font-size="8">run_pipeline() → JSON → API</text>
+
+        <!-- Backend → Frontend -->
+        <line x1="500" y1="280" x2="500" y2="240" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <text x="510" y="264" fill="#22d3ee" font-size="8">JSON response</text>
+
+        <!-- Shared → Pipeline -->
+        <line x1="170" y1="555" x2="170" y2="499" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <text x="180" y="530" fill="#fbbf24" font-size="7">reuse</text>
+
+        <!-- ============================================================ -->
+        <!-- LEGEND -->
+        <!-- ============================================================ -->
+        <text x="50" y="630" fill="white" font-size="10" font-weight="600">Legend</text>
+
+        <rect x="50" y="642" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="72" y="650" fill="#94a3b8" font-size="8">Frontend (React)</text>
+
+        <rect x="200" y="642" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="222" y="650" fill="#94a3b8" font-size="8">Backend (FastAPI)</text>
+
+        <rect x="380" y="642" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="402" y="650" fill="#94a3b8" font-size="8">Pipeline (Python)</text>
+
+        <rect x="540" y="642" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="562" y="650" fill="#94a3b8" font-size="8">Core Logic</text>
+
+        <rect x="660" y="642" width="16" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="682" y="650" fill="#94a3b8" font-size="8">Shared Core</text>
+
+        <line x1="790" y1="647" x2="806" y2="647" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <text x="812" y="650" fill="#94a3b8" font-size="8">Data Flow</text>
+
+        <rect x="900" y="642" width="16" height="10" rx="2" fill="transparent" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="922" y="650" fill="#94a3b8" font-size="8">Layer Boundary</text>
+
+        <!-- ============================================================ -->
+        <!-- OUTPUT -->
+        <!-- ============================================================ -->
+        <rect x="330" y="670" width="440" height="35" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="550" y="685" fill="#94a3b8" font-size="10" text-anchor="middle">Output: research_packages.html + pipeline_result.json</text>
+        <text x="550" y="699" fill="#475569" font-size="8" text-anchor="middle">SYNTHETIC FIXTURES — NOT LIVE DATA · Watermark on all output</text>
+      </svg>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>6-Stage Pipeline</h3>
+        </div>
+        <ul>
+          <li>• S1: Macro Analysis — Regime classification</li>
+          <li>• S2: Industry Analysis — Sector health</li>
+          <li>• S3: Product Analysis — Investability</li>
+          <li>• S4: Company Analysis ★ — Moat + Financial</li>
+          <li>• S5: Earnings & Change — Quality rating</li>
+          <li>• S6: Valuation Context — Value Trap Detector</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>3 New Frontend Pages</h3>
+        </div>
+        <ul>
+          <li>• Fundamental Queue — Research Packages table</li>
+          <li>• Package Detail — 13-section full view</li>
+          <li>• Cheap & Quality — Value Trap survivors</li>
+          <li>• Dashboard — +Fundamental summary card</li>
+          <li>• Sidebar — +3 nav items, IIP dark theme</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>Key Design Decisions</h3>
+        </div>
+        <ul>
+          <li>• Hybrid: separate pipeline, shared modules</li>
+          <li>• V1: synthetic fixtures only (8-10 companies)</li>
+          <li>• Moat: 6 types · Width/Depth · Conviction cap</li>
+          <li>• Earnings Quality: explicit dimension</li>
+          <li>• Value Trap: 5-question deterministic check</li>
+          <li>• No new dependencies — reuses existing stack</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">
+      Phase 8 Architecture · FD #40 · WF-Phase 2 · Investment Intelligence Platform · 25 July 2026
+    </p>
+  </div>
+</body>
+</html>
