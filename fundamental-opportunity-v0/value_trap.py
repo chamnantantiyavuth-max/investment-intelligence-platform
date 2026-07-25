@@ -14,8 +14,8 @@ def is_unusually_cheap(company: dict) -> bool:
     """
     pe_ttm = company.get("pe_ttm", 0)
     pe_5y = company.get("pe_5y_avg", pe_ttm)
-    if pe_5y == 0:
-        return False
+    if pe_5y == 0 or pe_ttm == 0:
+        return False  # insufficient data
     return pe_ttm < pe_5y * 0.70  # >30% below 5Y avg = unusually cheap
 
 

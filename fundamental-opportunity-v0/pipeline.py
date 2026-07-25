@@ -33,8 +33,12 @@ def run_pipeline() -> list[dict]:
 
 
 def build_research_package(company: dict) -> dict:
-    """Build a complete 13-section Research Package for one company."""
-    tid = company["id"]
+    """Build a complete 13-section Research Package for one company.
+
+    Gracefully handles missing fields — uses defaults rather than crashing.
+    """
+    tid = company.get("id", "UNKNOWN")
+    name = company.get("name", tid)
 
     # ── S1: Macro Analysis ──
     macro = {
