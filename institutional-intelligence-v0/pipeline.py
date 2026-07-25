@@ -14,6 +14,7 @@ from analyzer import (
     score_signal,
     detect_sector_flows,
 )
+from cusip_mapper import enrich_holdings
 
 
 def run_pipeline(filings: list[dict] = None) -> dict:
@@ -32,6 +33,15 @@ def run_pipeline(filings: list[dict] = None) -> dict:
     source = filings if filings is not None else FIXTURES
     if not source:
         return {"signals": [], "summary": {}, "meta": {"version": "v0.1.0", "error": "No data"}}
+
+    # Enrich holdings with ticker mapping (for real 13F data which has CUSIP but no ticker)
+    for filing in source:
+        if filing.get("holdings") and filing["holdings"] and "ticker" not in filing["holdings"][0]:
+            filing["holdings"] = enrich_holdings(filing["holdings"])
+        # Ensure all holdings have ticker
+        for h in filing.get("holdings", []):
+            if "ticker" not in h:
+                h["ticker"] = h.get("cusip", "UNKNOWN")
 
     # ── Group filings by fund CIK + quarter ──
     filing_map: dict[str, dict] = {}  # key: cik_quarter

@@ -3,12 +3,13 @@ Institutional Intelligence V0 — Run Entry Point
 
 Usage:
     python run.py                        # synthetic fixtures
+    python run.py --real                 # real 13F from SEC EDGAR
+    python run.py --real --funds 5       # first 5 watchlist funds
     python run.py --ticker AAPL          # filter by ticker
     python run.py --fund 0001067983      # filter by fund CIK
     python run.py --top 5                # top N signals only
 
-SYNTHETIC FIXTURES — FOR V0 TESTING ONLY.
-FD #42 · Phase 10 · 26 July 2026
+Phase 10.5 · FD #42 · 26 July 2026
 """
 import sys
 import os
@@ -23,6 +24,9 @@ from watchlist import summary as watchlist_summary
 
 def main():
     parser = argparse.ArgumentParser(description="Institutional Intelligence V0 — Pipeline Runner")
+    parser.add_argument("--real", action="store_true", help="Fetch real 13F from SEC EDGAR (default: synthetic fixtures)")
+    parser.add_argument("--refresh", action="store_true", help="Force re-fetch, ignore cache (requires --real)")
+    parser.add_argument("--funds", type=int, default=None, help="Limit to first N watchlist funds (requires --real)")
     parser.add_argument("--ticker", type=str, default=None, help="Filter signals by ticker")
     parser.add_argument("--fund", type=str, default=None, help="Filter signals by fund CIK")
     parser.add_argument("--top", type=int, default=20, help="Show top N signals (default: 20)")
@@ -38,13 +42,25 @@ def main():
         print(watchlist_summary())
         return
 
+    data_source = "SYNTHETIC"
+    filings = None
+
+    if args.real:
+        from fetcher import fetch_all_watchlist
+        print("Fetching real 13F data from SEC EDGAR...")
+        filings = fetch_all_watchlist(force_refresh=args.refresh, max_funds=args.funds)
+        data_source = "REAL 13F"
+        print(f"  {len(filings)} funds fetched\n")
+    else:
+        data_source = "SYNTHETIC"
+
     print("=" * 60)
     print("Institutional Intelligence V0 — Pipeline")
-    print("Pipeline v0.1.0 · Phase 10 · FD #42")
-    print("SYNTHETIC FIXTURES — NOT LIVE DATA")
+    print(f"Pipeline v0.1.0 · Phase 10.5 · FD #42")
+    print(f"DATA: {data_source}")
     print("=" * 60)
 
-    result = run_pipeline()
+    result = run_pipeline(filings=filings)
     signals = result["signals"]
 
     # Apply filters
@@ -62,6 +78,7 @@ def main():
     result["signals"] = signals
     result["summary"]["total_signals"] = len(signals)
     result["summary"]["top_signals"] = signals[:args.top]
+    result["meta"]["data_source"] = data_source
 
     # Display
     for s in signals[:args.top]:
