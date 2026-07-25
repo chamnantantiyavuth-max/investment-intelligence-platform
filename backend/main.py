@@ -1,7 +1,7 @@
 """FastAPI application entry point."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api import am_routes, cs_routes
+from backend.api import am_routes, cs_routes, fo_routes
 from backend.schemas.responses import DashboardSummary
 
 app = FastAPI(title="IIP API", version="0.1.0")
@@ -16,6 +16,7 @@ app.add_middleware(
 
 app.include_router(am_routes.router)
 app.include_router(cs_routes.router)
+app.include_router(fo_routes.router)
 
 
 @app.get("/api/health")

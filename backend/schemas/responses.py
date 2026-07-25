@@ -1,5 +1,6 @@
 """Pydantic response schemas for API endpoints."""
 from __future__ import annotations
+from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
 
@@ -35,3 +36,59 @@ class ThemeSummary(BaseModel):
 
 class AMQueueResponse(BaseModel):
     themes: list[ThemeSummary]
+
+
+# ── Fundamental & Opportunity Intelligence (Phase 8) ──
+
+class MoatType(str, Enum):
+    """Moat width classification per §3.4.1."""
+    WIDE = "Wide"
+    NARROW = "Narrow"
+    NONE = "None"
+
+
+class ResearchPackageSummary(BaseModel):
+    """Lightweight summary for queue listing (10 fields)."""
+    id: str
+    name: str
+    sector: str
+    industry: str
+    moat_width: str
+    moat_depth: str
+    moat_trend: str
+    earnings_quality: str
+    conviction: str
+    value_trap_verdict: str
+
+
+class ResearchPackageDetail(BaseModel):
+    """Full research package with all summary fields + 13 content sections.
+
+    Standalone model (not inheriting from summary) to avoid field type
+    conflicts — e.g., summary uses ``conviction: str`` (level only) while
+    detail uses ``conviction: dict`` (full conviction object).
+    """
+    id: str
+    name: str
+    sector: str
+    industry: str
+    moat_width: str
+    moat_depth: str
+    moat_trend: str
+    earnings_quality: str
+    conviction: dict
+    value_trap_verdict: str
+    generated_at: str
+    spec_ref: str
+    thesis_summary: str
+    thesis_lifecycle: str
+    macro_context: dict
+    industry_assessment: dict
+    company_assessment: dict
+    earnings_trajectory: dict
+    valuation_context: dict
+    key_risks: list
+    independent_challenge: list
+    supporting_evidence: list
+    contradicting_evidence: list
+    open_questions: list
