@@ -4,6 +4,9 @@ import DashboardPage from "@/pages/DashboardPage"
 import AMQueuePage from "@/pages/AMQueuePage"
 import AMThemeCardPage from "@/pages/AMThemeCardPage"
 import CSRadarPage from "@/pages/CSRadarPage"
+import FundamentalQueuePage from "@/pages/FundamentalQueuePage"
+import FundamentalDetailPage from "@/pages/FundamentalDetailPage"
+import CheapQualityPage from "@/pages/CheapQualityPage"
 import WeakSignalInboxPage from "@/pages/WeakSignalInboxPage"
 import NotFoundPage from "@/pages/NotFoundPage"
 
@@ -16,6 +19,9 @@ export default function App() {
           <Route path="am-queue" element={<AMQueuePage />} />
           <Route path="am-theme/:id" element={<AMThemeCardPage />} />
           <Route path="cs-radar" element={<CSRadarPage />} />
+          <Route path="fundamental" element={<FundamentalQueuePage />} />
+          <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
+          <Route path="cheap-quality" element={<CheapQualityPage />} />
           <Route path="weak-signals" element={<WeakSignalInboxPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

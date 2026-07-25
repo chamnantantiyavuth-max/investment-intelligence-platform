@@ -10,13 +10,15 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, TrendingUp, Shield, Radio } from "lucide-react"
+import { LayoutDashboard, TrendingUp, Shield, Radio, DollarSign, Building2 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 const navItems = [
   { title: "Strategy Control Center", url: "/", icon: LayoutDashboard },
   { title: "Alpha Momentum Queue", url: "/am-queue", icon: TrendingUp },
   { title: "Close System Radar", url: "/cs-radar", icon: Shield },
+  { title: "Fundamental Queue", url: "/fundamental", icon: Building2 },
+  { title: "Cheap & Quality", url: "/cheap-quality", icon: DollarSign },
   { title: "Weak Signal Inbox", url: "/weak-signals", icon: Radio },
 ]
 

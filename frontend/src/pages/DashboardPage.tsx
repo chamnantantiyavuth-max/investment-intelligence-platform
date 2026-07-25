@@ -1,7 +1,7 @@
 import { MetricCard } from "@/components/MetricCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, TrendingUp, Shield } from "lucide-react"
+import { ArrowRight, TrendingUp, Shield, Building2 } from "lucide-react"
 import { Link } from "react-router-dom"
 
 export default function DashboardPage() {
@@ -16,7 +16,7 @@ export default function DashboardPage() {
         <MetricCard label="Queue Size" value={5} trend="flat" trendLabel="no change" />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
@@ -64,6 +64,31 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Regime: Risk-On · Structural Decay: Low</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="size-5 text-[#8b5cf6]" />
+              <CardTitle className="text-base">Fundamental & Opportunity</CardTitle>
+            </div>
+            <Button variant="ghost" size="xs" render={<Link to="/fundamental" />}>
+              View <ArrowRight className="ml-1 size-3" />
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs uppercase text-muted-foreground">Companies</span>
+                <p className="text-2xl font-bold">8</p>
+              </div>
+              <div>
+                <span className="text-xs uppercase text-muted-foreground">Wide Moat</span>
+                <p className="text-2xl font-bold">5</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Cheap & Quality: 1 · Value Traps: 2</p>
           </CardContent>
         </Card>
       </div>
