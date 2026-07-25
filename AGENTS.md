@@ -90,7 +90,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 authorized (Fundamental & Opportunity Intelligence V1 — FD #40).
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40).
 
 Current approved checkpoints:
 
@@ -110,6 +110,7 @@ Current approved checkpoints:
 - phase-6b-complete (GAP-001 through GAP-005 resolved; ERP-001 through ERP-005 approved + implemented; FD #29-38, 24 July 2026)
 - phase-7-complete (Close System V0: Product Radar + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend; FD #39, 25 July 2026)
 - phase-8-authorized (Fundamental & Opportunity Intelligence V1: 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector; FD #40, 25 July 2026)
+- phase-8-complete (Fundamental & Opportunity Intelligence V1: 8 companies, 6-stage pipeline, 26 tests, API + Frontend; 7 commits, 28 files, ~3,600 lines; 25 July 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
