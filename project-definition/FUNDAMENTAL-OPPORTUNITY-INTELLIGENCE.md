@@ -181,8 +181,52 @@ Close System scans products for the 3 eligibility criteria (P1-P3). Fundamental 
 
 **Key Questions — Business Model:**
 - How does the company make money? Is the unit economics attractive and improving?
-- What is the moat — network effects, switching costs, scale economies, brand, regulatory barrier, IP?
-- Is the moat widening or narrowing? What would it take for a competitor to breach it?
+- **Moat Classification** — which of the 6 moat types apply? At what strength?
+
+### 3.4.1 Moat Classification System
+
+Every company assessment must classify competitive advantage across 6 moat types, then assess width, depth, and trend.
+
+**Six Moat Types:**
+
+| # | Moat Type | Description | Example |
+|---|-----------|-------------|---------|
+| 1 | **Share of Mind** | Brand dominance — customer thinks of this brand first in category | Apple, Nike, Coca-Cola |
+| 2 | **Network Effect** | Value increases as more users join the network | Visa, Meta, Microsoft (LinkedIn) |
+| 3 | **High Switching Cost** | Customer faces material cost/time/risk to switch away | Oracle, SAP, Salesforce |
+| 4 | **Cost Advantage** | Sustainably lower cost structure than competitors | Costco, Walmart, TSMC |
+| 5 | **Intangible Assets** | Patents, regulatory licenses, proprietary data, IP | ASML, Pfizer, Moody's |
+| 6 | **Efficient Scale** | Natural monopoly/oligopoly — market size supports few players | Utilities, Railroads, Airports |
+
+**Moat Width:**
+
+| Width | Criteria |
+|---|---|
+| **Wide** | Multiple moat types, global coverage, structural advantage |
+| **Narrow** | Single moat type, limited scope, contestable |
+| **None** | No structural competitive advantage identified |
+
+**Moat Depth:**
+
+| Depth | Criteria |
+|---|---|
+| **Deep** | 10+ year durability — competitor would need decade+ to breach |
+| **Moderate** | 3-10 year durability — defendable but requires continued investment |
+| **Shallow** | <3 year durability — easily replicable, temporary advantage |
+
+**Moat Trend:** Stable / Widening / Narrowing
+
+**Moat × Conviction Table:**
+
+| Width | Depth | Conviction Cap |
+|---|---|---|
+| Wide + Deep | → | Maximum conviction eligible |
+| Wide + Moderate/Shallow | → | High conviction cap |
+| Narrow + Deep | → | High conviction cap (niche dominance) |
+| Narrow + Moderate/Shallow | → | Moderate conviction cap |
+| None | → | Requires extraordinary earnings growth to compensate |
+
+**Aggregation:** Companies with multiple moat types score higher — the moats compound. A company with Share of Mind + Switching Cost + Cost Advantage is stronger than one with any single moat type.
 
 **Key Questions — Financial Quality:**
 - Is the balance sheet strong enough to survive a downturn without dilution or distress?
@@ -240,6 +284,37 @@ This is the **highest-frequency** sub-domain — it reacts to discrete informati
 | **Invalidates** | Core thesis assumption broken by new information | Archive thesis; remove from active consideration |
 | **Insufficient** | Not enough new information to change thesis status | Maintain; note what to watch next quarter |
 
+### 3.5.1 Earnings Quality — Explicit Dimension
+
+Every earnings event must be assessed for quality — not just whether the company beat or missed. Quality determines whether the beat/miss is sustainable.
+
+**Quality Rating Scale:**
+
+| Rating | Criteria | Conviction Impact |
+|---|---|---|
+| **HIGH** | Revenue-driven growth, margin expansion, high FCF conversion (>1.0x EPS), no material one-time items, organic demand driver | Strengthens thesis |
+| **MEDIUM** | Mixed sources — some organic growth plus some financial engineering (buybacks, cost-cutting), moderate FCF conversion | Neutral — wait for next quarter |
+| **LOW** | Cost-cutting driven, declining revenue, unsustainable margin improvement, low FCF conversion | Weakens thesis |
+| **COSMETIC** | Share buybacks masking EPS decline, one-time gains, accounting changes, non-recurring revenue | Red flag — investigate before acting on numbers |
+
+**Quality Assessment Structure (per earnings event):**
+
+```
+Earnings Event: AAPL Q3 2024
+├── Surprise Direction: BEAT (+4.2%)
+├── Surprise Magnitude: +4.2% vs consensus EPS $1.35
+├── Quality Rating: HIGH
+│   ├── Revenue Quality: HIGH — Services revenue +14% YoY (organic growth driver)
+│   ├── Margin Quality: HIGH — Gross margin expanded 180bp (mix shift to services)
+│   ├── Cash Conversion: HIGH — FCF/EPS ratio 1.15x (real earnings, not accounting)
+│   ├── One-Time Items: NONE — no significant adjustments needed
+│   └── Share Count Impact: LOW — buybacks added +0.3% to EPS (minimal)
+├── Guidance: Raised FY revenue +$0.5B (organic demand, not cost-cutting)
+└── Thesis Impact: CONFIRMS — Services moat widening, margin expansion on track
+```
+
+**Integration:** Surprise Direction + Magnitude = quantitative. Quality Rating = qualitative. Thesis Impact = connects earnings event back to fundamental thesis.
+
 **Output:** Earnings event summary + thesis impact assessment + revision tracker. Feeds into Independent Challenge.
 
 ---
@@ -273,6 +348,55 @@ This is the **highest-frequency** sub-domain — it reacts to discrete informati
 **Rationale:** The best companies often appear "expensive" on conventional metrics because the market correctly anticipates durable growth. Conversely, cheap companies are often cheap for good reasons (structural decline, poor management, broken business model). Valuation provides context for position sizing (in Capital Command) and conviction calibration — it does not replace business quality analysis.
 
 **Output:** Valuation context dashboard — multiple views, no single conclusion. The Founder interprets.
+
+### 3.6.1 Valuation Priorities (Founder-Ordered)
+
+Valuation is non-dominant and non-veto per Operating Model §5.6. The platform prioritizes:
+
+| Priority | View | Purpose |
+|---|---|---|
+| 1 | **Cheap vs Own History** | P/E, P/B, EV/EBITDA vs 5Y/10Y average — is the company cheaper than its own past? |
+| 2 | **Unusually Cheap Flag** | Alert when valuation falls below -2σ of historical range |
+| 3 | Peer comparison | Rank vs industry, sector, market |
+| 4 | Implied growth (reverse DCF) | What growth rate does current price assume? |
+
+### 3.6.2 Value Trap Detector
+
+**Trigger:** "Unusually Cheap" flag fires when valuation is below -2σ of own history.
+
+**MANDATORY 5-Question Check (every flagged candidate):**
+
+| # | Question | What to Look For |
+|---|---|---|
+| Q1 | Earnings still growing? | Revenue + EPS trajectory — flat or declining = red flag |
+| Q2 | Industry growing or declining? | Structural decline vs cyclical dip — TAM direction matters |
+| Q3 | Moat intact or eroding? | Refer to §3.4.1 Moat Classification — is the moat still there? |
+| Q4 | Management credible? | Missed guidance pattern, CEO turnover, broken promises |
+| Q5 | Cheap for a GOOD reason? | After Q1-Q4: is the low valuation justified by real problems? |
+
+**Value Trap Scoring:**
+
+| Score | Meaning | Action |
+|---|---|---|
+| 5/5 Pass | NOT a value trap — genuinely cheap, business intact | 🟢 Add to "Cheap & Quality" watchlist |
+| 3-4/5 Pass | Mixed — some concerns but not trap-level | 🟡 Flag for deeper research |
+| 1-2/5 Pass | Likely value trap — structural problems masked by low multiple | 🔴 Do not add; document why |
+| 0/5 Pass | Definite value trap — cheap for obvious, terminal reasons | 🔴 Archive with trap evidence |
+
+**"Cheap & Quality" Watchlist:** Separate from Momentum watchlist. Tracks companies that are unusually cheap relative to own history AND pass Value Trap detection. Founder may use for opportunistic entry when momentum thesis aligns.
+
+```
+Unusually Cheap Flag: INTC P/E 14x vs 5Y avg 22x (-2.1σ)
+    ↓
+Value Trap Check:
+├── Q1: Earnings still growing? → ❌ Revenue -8% YoY, EPS -35%
+├── Q2: Industry growing or declining? → ❌ PC TAM flat, x86 share loss to ARM
+├── Q3: Moat intact or eroding? → ❌ Process leadership lost to TSMC, Apple defected
+├── Q4: Management credible? → ⚠️ 4th CEO in 6 years, missed foundry targets
+└── Q5: Cheap for a GOOD reason? → ✅ YES — structural decline, not cyclical dip
+    ↓
+VERDICT: VALUE TRAP (0/5) — cheap for legitimate reasons. Do NOT add.
+```
 
 ---
 
