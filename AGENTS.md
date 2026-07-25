@@ -90,7 +90,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 6B Complete: GAP Resolution + Emergent Rules. Phase 7 authorized (Close System V0 — Spec + Code). Phase 8 (Fundamental & Opportunity — deferred).
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 (Fundamental & Opportunity — deferred).
 
 Current approved checkpoints:
 
@@ -108,9 +108,9 @@ Current approved checkpoints:
 - phase-5-authorized (Theme Intelligence V1: Weak Signal Inbox, Anomaly Detection, Hypothesis Engine, Experimental Radar; FD #27, 23 July 2026)
 - phase-6-authorized (Learning Loop V1: Self-Reflection Log, Coverage Gap Detection, Obsidian Integration; FD #28, 24 July 2026)
 - phase-6b-complete (GAP-001 through GAP-005 resolved; ERP-001 through ERP-005 approved + implemented; FD #29-38, 24 July 2026)
-- phase-7-authorized (Close System V0: Product Radar + Q-Conditions + O'Neil/Minervini Rule Pack; Spec+Code; FD #39, 25 July 2026)
+- phase-7-complete (Close System V0: Product Radar + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend; FD #39, 25 July 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
-- wf-phase-2r-in-progress (Architecture Review Gate — 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
+- wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
 Phase governance:
 
