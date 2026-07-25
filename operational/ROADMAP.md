@@ -71,6 +71,14 @@ Feed yfinance real financial data into Fundamental & Opportunity pipeline.
 - Display: dynamic watermark (SYNTHETIC vs REAL EOD)
 - Tickers: AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA, JNJ (8)
 
-## Phase 10 — Deep Research Handoff
-Company Intelligence Workbench, return of outcomes and lessons.
-**Status: Deferred**
+## Phase 10 — Institutional Intelligence
+Track hedge fund & institutional investor 13F filings, concentration ratios, and conviction signals.
+**Status: AUTHORIZED** — FD #42, 26 July 2026
+
+- SEC 13F filings → InstitutionalSignal output
+- Concentration Ratio → Conviction (Max/High/Moderate/Low/Minimal)
+- Action Detection (NEW/ADD/REDUCE/EXIT/MAINTAIN)
+- Super-Investor Watchlist (~60 funds, 5 categories)
+- Feeds: AM (conviction boost), FO (Hidden Signals), Theme (sector rotation), CS (macro positioning)
+
+## Phase 11 — Deep Research Handoff

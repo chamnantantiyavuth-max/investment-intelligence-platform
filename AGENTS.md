@@ -112,6 +112,7 @@ Current approved checkpoints:
 - phase-8-authorized (Fundamental & Opportunity Intelligence V1: 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector; FD #40, 25 July 2026)
 - phase-8-complete (Fundamental & Opportunity Intelligence V1: 8 companies, 6-stage pipeline, 26 tests, API + Frontend; 8 commits, 28 files, ~3,600 lines; 25 July 2026)
 - phase-9-authorized (Real Data Integration: yfinance → Fundamental Pipeline, source_adapter.py, --real flag, dynamic watermark; FD #41, 26 July 2026)
+- phase-10-authorized (Institutional Intelligence V1: 13F filings, concentration ratio, conviction signals, super-investor watchlist; FD #42, 26 July 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
@@ -125,7 +126,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-41 approved.
+- Founder Decisions #1-42 approved.
 
 Current-phase restrictions:
 
