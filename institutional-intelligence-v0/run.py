@@ -9,7 +9,7 @@ Usage:
     python run.py --fund 0001067983      # filter by fund CIK
     python run.py --top 5                # top N signals only
 
-Phase 10.5 · FD #42 · 26 July 2026
+Phase 10 + 10.5 · FD #42 · 26 July 2026
 """
 import sys
 import os
@@ -56,7 +56,7 @@ def main():
 
     print("=" * 60)
     print("Institutional Intelligence V0 — Pipeline")
-    print(f"Pipeline v0.1.0 · Phase 10.5 · FD #42")
+    print(f"Pipeline v0.1.0 · Phase 10 + 10.5 · FD #42")
     print(f"DATA: {data_source}")
     print("=" * 60)
 

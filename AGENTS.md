@@ -152,3 +152,21 @@ For substantial tasks:
 8. Implement only after approval.
 9. Verify under `operational/VERIFICATION-DOCTRINE.md`.
 10. Report deviations, limitations, and unresolved issues.
+
+## Complete Loop Protocol
+
+```bash
+cd "C:\Users\Admin\Desktop\Antigravity\investment-intelligence-platform"
+hermes --profile iip
+```
+
+1. **อ่าน AGENTS.md** — authority, workflow, current phase
+2. **อ่าน SESSION_CLOSEOUT.md** — last verified state, pending items
+3. **Verify state** — `hermes profile list`, `git status`, phase state
+4. **Present to Founder** — verified state + pending
+5. **Work** — record FDs immediately
+6. **Close** — write new SESSION_CLOSEOUT.md
+
+```
+START → AGENTS.md → SESSION_CLOSEOUT.md → Verify → Present → Execute → CLOSEOUT ↩
+```

@@ -123,8 +123,8 @@ def render_html(result: dict) -> str:
 </table>
 
 <div class="disclaimer">
-    SYNTHETIC 13F FIXTURES — FOR V0 TESTING ONLY. NOT LIVE DATA. NOT INVESTMENT ADVICE.<br>
-    Institutional Intelligence v0.1 · FD #42 · Phase 10<br>
+    {meta.get('data_source', 'SYNTHETIC')} · FOR V0 DEVELOPMENT ONLY. NOT LIVE DATA. NOT INVESTMENT ADVICE.<br>
+    Institutional Intelligence v0.1 · FD #42 · Phase 10 + 10.5<br>
     13F data has ~45-day lag. Concentration is a proxy for conviction — not a guarantee of future performance.
 </div>
 </body>

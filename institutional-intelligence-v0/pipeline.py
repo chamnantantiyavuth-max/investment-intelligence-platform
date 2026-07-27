@@ -2,8 +2,8 @@
 Institutional Intelligence V0 — Pipeline
 6-stage: Load → Match → Detect → Score → Rank → Output
 
-SYNTHETIC FIXTURES — FOR V0 TESTING ONLY.
-FD #42 · Phase 10 · 26 July 2026
+Dual-mode: synthetic fixtures (default) or real 13F data (--real flag).
+FD #42 · Phase 10 + 10.5 · 26 July 2026
 """
 
 from collections import defaultdict
