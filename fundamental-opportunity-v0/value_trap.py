@@ -19,6 +19,58 @@ def is_unusually_cheap(company: dict) -> bool:
     return pe_ttm < pe_5y * 0.70  # >30% below 5Y avg = unusually cheap
 
 
+def run_profit_rate_trend(company: dict) -> dict:
+    """Q0: Check if profit rate (ROIC) is declining despite revenue growth.
+
+    Per FD #43. Empirical signal: ROIC decline vs 5Y average,
+    flagged when combined with positive revenue growth (Growth Trap pattern).
+
+    Returns dict with trend analysis. Triggers when ROIC declines >=20% from 5Y avg
+    while revenue is still growing (the dangerous combination).
+    """
+    roic_current = company.get("roic_current", 0)
+    roic_5y = company.get("roic_5y", roic_current)
+    revenue_growth = company.get("revenue_growth_3y", 0)
+    invested_capital = company.get("invested_capital", 0)
+
+    if roic_5y == 0 or roic_current == 0:
+        return {"triggered": False, "reason": "Insufficient ROIC data"}
+
+    decline_pct = (roic_5y - roic_current) / roic_5y
+    revenue_growing = revenue_growth > 0.03
+
+    triggered = decline_pct >= 0.20 and revenue_growing
+
+    verdict = "NO_DECLINE"
+    detail = f"ROIC stable: {roic_current:.1%} vs 5Y avg {roic_5y:.1%}"
+
+    if triggered:
+        verdict = "GROWTH_TRAP"
+        detail = (
+            f"⚠️ Profit Rate Decline: ROIC dropped {decline_pct:.0%} from 5Y avg "
+            f"({roic_5y:.1%} → {roic_current:.1%}) despite revenue growing "
+            f"{revenue_growth:+.0%} 3Y CAGR. Invested capital: ${invested_capital:.0f}B. "
+            f"Classic Growth Trap — adding capacity but earning less on each dollar invested."
+        )
+    elif decline_pct >= 0.10:
+        verdict = "MODERATE_DECLINE"
+        detail = (
+            f"ROIC declining {decline_pct:.0%} ({roic_5y:.1%} → {roic_current:.1%}). "
+            f"Revenue growth: {revenue_growth:+.0%}. Monitor closely."
+        )
+
+    return {
+        "triggered": triggered,
+        "verdict": verdict,
+        "roic_current": roic_current,
+        "roic_5y": roic_5y,
+        "decline_pct": decline_pct,
+        "revenue_growth_3y": revenue_growth,
+        "invested_capital": invested_capital,
+        "detail": detail,
+    }
+
+
 def run_value_trap_check(company: dict, moat_assessment: dict) -> dict:
     """Run the 5-question Value Trap check.
 

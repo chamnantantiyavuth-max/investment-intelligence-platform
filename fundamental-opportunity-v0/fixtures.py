@@ -52,6 +52,10 @@ FIXTURES = [
         "scenario_base": 185,
         "scenario_bear": 140,
         "current_price": 190,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 200,  # billions, total assets - current liabilities
+        "roic_current": 0.35,    # operating income / invested capital
+        "roic_5y": 0.40,          # 5-year avg — slight decline from peak
         # ── Management ──
         "ceo_tenure_years": 13,
         "management_credibility": "HIGH",
@@ -103,6 +107,10 @@ FIXTURES = [
         "scenario_base": 22,
         "scenario_bear": 12,
         "current_price": 22,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 150,  # billions — massive foundry capex
+        "roic_current": 0.02,    # terrible — margin collapse
+        "roic_5y": 0.08,          # 5Y avg — was much better before decline
         # ── Management ──
         "ceo_tenure_years": 3,
         "management_credibility": "LOW",
@@ -154,6 +162,10 @@ FIXTURES = [
         "scenario_base": 520,
         "scenario_bear": 380,
         "current_price": 520,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 40,   # billions — asset-light membership model
+        "roic_current": 0.22,    # strong despite low margin (membership fees = pure profit)
+        "roic_5y": 0.20,          # stable — moat widening
         # ── Management ──
         "ceo_tenure_years": 12,
         "management_credibility": "HIGH",
@@ -205,6 +217,10 @@ FIXTURES = [
         "scenario_base": 255,
         "scenario_bear": 180,
         "current_price": 255,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 60,   # billions
+        "roic_current": 0.15,    # improving as margins expand
+        "roic_5y": 0.12,          # was lower during growth phase
         # ── Management ──
         "ceo_tenure_years": 24,  # Marc Benioff, founder
         "management_credibility": "HIGH",
@@ -251,6 +267,10 @@ FIXTURES = [
         "scenario_base": 32,
         "scenario_bear": 18,
         "current_price": 32,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 20,   # billions
+        "roic_current": 0.06,    # declining — legal settlement masking decline
+        "roic_5y": 0.12,          # was much higher — clear downward trend
         # ── Management ──
         "ceo_tenure_years": 2,
         "management_credibility": "LOW",
@@ -300,6 +320,10 @@ FIXTURES = [
         "scenario_base": 415,
         "scenario_bear": 320,
         "current_price": 415,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 200,  # billions — Azure/AI capex heavy but high returns
+        "roic_current": 0.42,    # excellent — cloud + AI margins expanding
+        "roic_5y": 0.35,          # improving trend
         "ceo_tenure_years": 10,
         "management_credibility": "HIGH",
         "insider_activity": "CEO sold shares per 10b5-1 plan — routine diversification",
@@ -346,6 +370,10 @@ FIXTURES = [
         "scenario_base": 160,
         "scenario_bear": 130,
         "current_price": 160,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 100,  # billions — pharma R&D intensive
+        "roic_current": 0.18,    # steady — patent cliff risk ahead
+        "roic_5y": 0.20,          # slight decline
         "ceo_tenure_years": 2,
         "management_credibility": "HIGH",
         "insider_activity": "New CEO from internal promotion — continuity signal",
@@ -390,6 +418,10 @@ FIXTURES = [
         "scenario_base": 105,
         "scenario_bear": 70,
         "current_price": 105,
+        # ── Profit Rate Trend (FD #43) ──
+        "invested_capital": 80,   # billions — legacy liabilities winding down
+        "roic_current": 0.08,    # improving post-breakup
+        "roic_5y": 0.05,          # was worse — positive trend reversal
         "ceo_tenure_years": 5,
         "management_credibility": "MEDIUM",
         "insider_activity": "CEO bought $2M in shares post-breakup — modest confidence signal",

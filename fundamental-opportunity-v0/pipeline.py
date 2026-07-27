@@ -17,7 +17,8 @@ from datetime import datetime
 from fixtures import FIXTURES, MACRO_REGIME
 from moat import classify_moat, moat_conviction_cap, moat_strength_score, moat_narrative
 from earnings_quality import assess_earnings_quality
-from value_trap import is_unusually_cheap, run_value_trap_check
+from value_trap import is_unusually_cheap, run_value_trap_check, run_profit_rate_trend
+from narrative_gap import run_narrative_gap
 
 
 def run_pipeline(companies: list[dict] = None) -> list[dict]:
@@ -108,6 +109,8 @@ def build_research_package(company: dict) -> dict:
     }
     unusually_cheap = is_unusually_cheap(company)
     value_trap = run_value_trap_check(company, moat) if unusually_cheap else {"triggered": False}
+    profit_rate_trend = run_profit_rate_trend(company)
+    narrative_gap = run_narrative_gap(company)
 
     # ── Key Risks ──
     key_risks = _identify_key_risks(company, moat, earnings_quality)
@@ -141,6 +144,8 @@ def build_research_package(company: dict) -> dict:
             **valuation,
             "unusually_cheap": unusually_cheap,
             "value_trap": value_trap,
+            "profit_rate_trend": profit_rate_trend,
+            "narrative_gap": narrative_gap,
         },
         "key_risks": key_risks,
         "independent_challenge": _independent_challenge(company, moat, earnings_quality),
