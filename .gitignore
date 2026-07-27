@@ -18,5 +18,6 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+nul
 output/
 data/cache/*.json
