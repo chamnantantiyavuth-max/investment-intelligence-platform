@@ -5,6 +5,8 @@ Per FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1 (FD #40)
 5-question check triggered when valuation is "Unusually Cheap" (-2σ below own history).
 """
 
+from fixtures import MACRO_REGIME
+
 
 def is_unusually_cheap(company: dict) -> bool:
     """Check if company's valuation is unusually cheap vs own history.
@@ -125,7 +127,6 @@ def _check_earnings_growth(company: dict) -> dict:
 
 def _check_industry_health(company: dict) -> dict:
     """Q2: Is the industry growing or declining?"""
-    from fixtures import MACRO_REGIME
     sector = company.get("sector", "Unknown")
     implication = MACRO_REGIME["sector_implications"].get(sector, "Unknown")
 

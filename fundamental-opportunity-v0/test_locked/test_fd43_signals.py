@@ -2,9 +2,21 @@
 Locked acceptance tests — Profit Rate Trend & Narrative Gap (FD #43)
 Per project-workflow v3.0: locked tests = spec-as-code, immutable by subagents.
 """
+import sys, os
+
+# Fix combined-test collision: institutional also has pipeline.py.
+# Ensure the fundamental pipeline is loaded for these tests.
+_fo_dir = os.path.join(os.path.dirname(__file__), "..")
+if "pipeline" in sys.modules and "institutional" in sys.modules["pipeline"].__file__:
+    del sys.modules["pipeline"]
+# Re-ensure fundamental directory is first in path
+if _fo_dir not in sys.path:
+    sys.path.insert(0, _fo_dir)
+
 import pytest
 from value_trap import run_profit_rate_trend
 from narrative_gap import run_narrative_gap, compute_fair_value
+from pipeline import run_pipeline
 
 
 # ── Profit Rate Trend (Q0 Value Trap pre-check) ──
@@ -177,7 +189,6 @@ class TestPipelineIntegration:
 
     def test_every_package_has_profit_rate_trend(self):
         """All 8 fixture companies produce profit_rate_trend in valuation_context."""
-        from pipeline import run_pipeline
         packages = run_pipeline()
         assert len(packages) == 8
         for pkg in packages:
@@ -188,7 +199,6 @@ class TestPipelineIntegration:
 
     def test_every_package_has_narrative_gap(self):
         """All 8 fixture companies produce narrative_gap in valuation_context."""
-        from pipeline import run_pipeline
         packages = run_pipeline()
         for pkg in packages:
             ng = pkg["valuation_context"]["narrative_gap"]
@@ -197,7 +207,6 @@ class TestPipelineIntegration:
 
     def test_intel_is_not_growth_trap_despite_roic_decline(self):
         """INTC: ROIC dropped 75% but revenue is NEGATIVE → NOT a growth trap."""
-        from pipeline import run_pipeline
         packages = run_pipeline()
         intc = [p for p in packages if p["id"] == "INTC"][0]
         prt = intc["valuation_context"]["profit_rate_trend"]
@@ -207,7 +216,6 @@ class TestPipelineIntegration:
 
     def test_costco_narrative_gap_elevated(self):
         """COST: P/E 42 vs industry 14.5 → narrative gap should be elevated."""
-        from pipeline import run_pipeline
         packages = run_pipeline()
         cost = [p for p in packages if p["id"] == "COST"][0]
         ng = cost["valuation_context"]["narrative_gap"]
