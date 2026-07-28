@@ -1,7 +1,7 @@
 # Open Questions
 
-- Exact O'Neil rule packs
-- Exact Minervini rules and exceptions
+- Exact O'Neil rule packs → ~~spec delivered~~ (Phase 7, FD #39)
+- Exact Minervini rules and exceptions → ~~spec delivered~~ (Phase 7, FD #39)
 - Approved Momentum Masters references
 - Final Candidate Quality dimensions
 - Final Theme Quality dimensions
@@ -16,4 +16,4 @@
 - Outcome definitions
 - Obsidian export format
 - Deep Research handoff contract
-- Close System domain model
+- Close System domain model → ~~resolved~~ (Phase 7, FD #39)

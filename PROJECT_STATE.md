@@ -7,7 +7,7 @@
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered.
 - Workflow gate: `WF-Phase 2R` complete; all Critical Mode phases passed.
 - Latest FD: `FD #43` — Marx-inspired signals (Profit Rate Trend + Narrative vs Reality Gap), Option B, 28 July 2026.
-- Tests: 226/226 all passing (pytest collected 226 tests across AM experimental, FO, II, and locked suites).
+- Tests: 251/251 all passing (pytest collected 251 tests across AM experimental, CS, FO, II, and locked suites).
 
 ## Open constraints
 
