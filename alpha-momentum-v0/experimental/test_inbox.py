@@ -10,11 +10,31 @@ Run: python -m pytest alpha-momentum-v0/experimental/test_inbox.py -v
 import os
 import sys
 
+# Fix combined-test collision: same-named module (fixtures) in
+# fundamental-opportunity-v0, institutional-intelligence-v0, and alpha-momentum-v0.
+# Clear stale cached modules so the AM one loads correctly.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AM_V0_DIR = os.path.join(REPO_ROOT, "alpha-momentum-v0")
+for _mod in ("fixtures",):
+    if _mod in sys.modules:
+        _cached = sys.modules[_mod]
+        if hasattr(_cached, "__file__") and _cached.__file__:
+            if "alpha-momentum-v0" not in _cached.__file__:
+                del sys.modules[_mod]
 sys.path.insert(0, AM_V0_DIR)
 
 import pytest
+
+
+def _import_am_fixtures():
+    """Import AM fixtures, clearing stale cache from other modules."""
+    if 'fixtures' in sys.modules:
+        cached = sys.modules['fixtures']
+        if hasattr(cached, '__file__') and cached.__file__:
+            if 'alpha-momentum-v0' not in cached.__file__:
+                del sys.modules['fixtures']
+    import fixtures
+    return fixtures
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -241,7 +261,7 @@ class TestSeparationGuards:
 
     def test_inbox_module_does_not_mutate_fixtures(self):
         """Inbox functions must not mutate fixtures.THEMES or CANDIDATES (FD #27)."""
-        import fixtures as f
+        f = _import_am_fixtures()
 
         themes_before = len(f.THEMES)
         candidates_before = len(f.CANDIDATES)

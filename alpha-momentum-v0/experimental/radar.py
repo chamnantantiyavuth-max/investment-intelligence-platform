@@ -37,12 +37,16 @@ from fixtures import FIXTURE_CATEGORY
 # ── Paths — experimental scope ONLY ──────────────────────────
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(MODULE_DIR)
-TEMPLATE_DIR = os.path.join(REPO_ROOT, "templates")
+PROJECT_ROOT = os.path.dirname(REPO_ROOT)
+TEMPLATE_DIRS = [
+    os.path.join(REPO_ROOT, "templates"),             # alpha-momentum-v0/templates (radar.html)
+    os.path.join(PROJECT_ROOT, "shared", "templates"),  # shared/templates (base.html)
+]
 EXPERIMENTAL_OUTPUT_DIR = os.path.join(REPO_ROOT, "output", "experimental")
 os.makedirs(EXPERIMENTAL_OUTPUT_DIR, exist_ok=True)
 
 env = Environment(
-    loader=FileSystemLoader(TEMPLATE_DIR),
+    loader=FileSystemLoader(TEMPLATE_DIRS),
     autoescape=select_autoescape(["html"]),
 )
 
