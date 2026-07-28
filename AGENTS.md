@@ -1,6 +1,6 @@
 # AGENTS.md — Investment Intelligence Platform
 
-> **Inherits from:** `~/.hermes/profiles/default/SOUL.md` (AI behavior) + `~/.hermes/profiles/default/memories/USER.md` (Founder profile)
+> **Inherits from:** `~/.hermes/profiles/iip/SOUL.md` (AI behavior) + `~/.hermes/profiles/iip/memories/USER.md` (Founder profile)
 >
 > Read those first. This file contains only project-specific rules.
 
@@ -25,6 +25,25 @@ Rules:
 - AI-generated suggestions never override approved documents.
 - Casual agreement is not approval of an unnamed material change.
 - Approval must identify the plan, artifact, amendment, state transition, or operation being approved.
+
+## Domain Guardrail
+
+ก่อนตอบคำถามเกี่ยวกับ domain logic หรือ behavior ของ module ใด ๆ
+→ อ่าน spec จริงจาก `project-definition/` หรือ `PROJECT_BIBLE` ก่อนตอบ
+ห้าม deduce จากชื่อ module, FD summary, หรือ memory — ต้องอ่านจาก source เท่านั้น
+
+### Domain Index
+
+อ่าน spec module ก่อนตอบคำถาม domain logic:
+- Shared Intelligence Core → `project-definition/DOMAIN-ARCHITECTURE.md` §1.1
+- Alpha Momentum (screen+rank) → `project-definition/ALPHA-MOMENTUM-V0-SPEC.md`
+- Close System (risk+Q-conditions) → `project-definition/CLOSE-SYSTEM-PRODUCT-RADAR.md`
+- Fundamental & Opportunity (Moat+ValueTrap) → `project-definition/FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md`
+- Theme Intelligence → `project-definition/THEME-MODEL.md`
+- Evidence Model → `project-definition/EVIDENCE-MODEL.md`
+- Candidate & Queue → `project-definition/CANDIDATE-AND-QUEUE-MODEL.md`
+- Operating Model → `project-definition/INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md`
+- Human Review & Learning → `project-definition/HUMAN-REVIEW-AND-LEARNING-MODEL.md`
 
 ## Workflow Governance
 
@@ -90,7 +109,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40).
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended).
 
 Current approved checkpoints:
 
@@ -110,9 +129,11 @@ Current approved checkpoints:
 - phase-6b-complete (GAP-001 through GAP-005 resolved; ERP-001 through ERP-005 approved + implemented; FD #29-38, 24 July 2026)
 - phase-7-complete (Close System V0: Product Radar + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend; FD #39, 25 July 2026)
 - phase-8-authorized (Fundamental & Opportunity Intelligence V1: 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector; FD #40, 25 July 2026)
-- phase-8-complete (Fundamental & Opportunity Intelligence V1: 8 companies, 6-stage pipeline, 26 tests, API + Frontend; 8 commits, 28 files, ~3,600 lines; 25 July 2026)
-- phase-9-authorized (Real Data Integration: yfinance → Fundamental Pipeline, source_adapter.py, --real flag, dynamic watermark; FD #41, 26 July 2026)
-- phase-10-authorized (Institutional Intelligence V1: 13F filings, concentration ratio, conviction signals, super-investor watchlist; FD #42, 26 July 2026)
+- phase-8-complete (Fundamental & Opportunity Intelligence V1: 8 companies, 6-stage pipeline, 42 tests, API + Frontend; 8 commits, 28 files, ~3,600 lines; 25 July 2026)
+- phase-9-complete (Real Data Integration: yfinance → Fundamental Pipeline, source_adapter.py, --real flag, dynamic watermark; FD #41, 26 July 2026)
+- phase-10-complete (Institutional Intelligence V1: 13F filings, concentration ratio, conviction signals, super-investor watchlist; FD #42, 26 July 2026)
+- phase-10.5-complete (Real 13F data via SEC EDGAR — fetcher.py + cusip_mapper.py; FD #42 amended, 28 July 2026)
+- fd-43-approved (Profit Rate Trend + Narrative vs Reality Gap — Option B, Marx-inspired signals; 28 July 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
@@ -126,7 +147,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-42 approved.
+- Founder Decisions #1-43 approved.
 
 Current-phase restrictions:
 

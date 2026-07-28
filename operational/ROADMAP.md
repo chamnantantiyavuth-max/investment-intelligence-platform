@@ -46,24 +46,24 @@ Source adapters, raw preservation, normalization, freshness, reconciliation.
 
 Phase 5 — Theme Intelligence V1
 Weak Signal Inbox, anomalies, Theme Hypotheses, Experimental Theme Radar.
-**Status: AUTHORIZED** — FD #27, 23 July 2026
+**Status: Complete** — FD #27, 23 July 2026
 
 ## Phase 6 — Learning Loop
 Outcomes, postmortems, approved lessons, narrative export.
-**Status: Deferred**
+**Status: Complete** — FD #28, 24 July 2026
 
 ## Phase 7 — Close System Definition and Vertical Slice
 Macro, ETF, commodity, suitability, opportunity, capital-lock-up risk.
-**Status: Deferred**
-- Q-Conditions (exit rules) deferred to this phase
+**Status: Complete** — FD #39, 25 July 2026
+- Q-Conditions (exit rules) + O'Neil/Minervini Rule Pack spec delivered
 
 ## Phase 8 — Fundamental & Opportunity Intelligence
 Fundamental workbench: Macro, Industry, Product, Company, Earnings, Valuation Context.
-**Status: Deferred** (V1+)
+**Status: Complete** — FD #40, 25 July 2026
 
 ## Phase 9 — Real Data Integration
 Feed yfinance real financial data into Fundamental & Opportunity pipeline.
-**Status: AUTHORIZED** — FD #41, 26 July 2026
+**Status: Complete** — FD #41, 26 July 2026
 
 - source_adapter.py: yfinance → company dict + 24h JSON cache
 - pipeline.py: accepts optional companies param (None = fixtures)
@@ -73,7 +73,7 @@ Feed yfinance real financial data into Fundamental & Opportunity pipeline.
 
 ## Phase 10 — Institutional Intelligence
 Track hedge fund & institutional investor 13F filings, concentration ratios, and conviction signals.
-**Status: AUTHORIZED** — FD #42, 26 July 2026
+**Status: Complete** — FD #42, 26 July 2026; Phase 10.5 real 13F via SEC EDGAR (FD #42 amended, 28 July 2026)
 
 - SEC 13F filings → InstitutionalSignal output
 - Concentration Ratio → Conviction (Max/High/Moderate/Low/Minimal)

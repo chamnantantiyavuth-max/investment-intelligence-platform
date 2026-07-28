@@ -53,7 +53,7 @@ hermes --profile iip
 
 ### Loop Protocol:
 1. อ่าน AGENTS.md
-2. อ่าน PROJECT_STATE.md
+2. อ่าน PROJECT_STATE.md (🎯 phase, next action)
 3. อ่านไฟล์นี้ (SESSION_CLOSEOUT.md)
 3. Verify: `hermes profile list`, `git status`, phase state
 4. Founders asks for next phase or specific task

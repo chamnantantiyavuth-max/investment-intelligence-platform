@@ -63,4 +63,4 @@ The Constitution is the authority. These documents derive from it without alteri
 - This README is an approved index and authority map. It is not an independent Domain Specification and does not override the Constitution, Founder's Decisions, or the constituent Approved Domain Specifications.
 - The six substantive documents in this directory are Approved Domain Specifications v0.1, subordinate to the Constitution and Founder's Decisions.
 - Omission in a specification does not cancel a higher-authority requirement.
-- Canonical Theme-role ownership remains an unresolved Founder decision.
+- Canonical Theme-role ownership resolved by FD #26 (23 July 2026): Shared Core owns canonical Entity–Theme structural roles; Theme-level classification wins over stock-level.
