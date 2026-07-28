@@ -160,13 +160,14 @@ cd "C:\Users\Admin\Desktop\Antigravity\investment-intelligence-platform"
 hermes --profile iip
 ```
 
-1. **อ่าน AGENTS.md** — authority, workflow, current phase
-2. **อ่าน SESSION_CLOSEOUT.md** — last verified state, pending items
-3. **Verify state** — `hermes profile list`, `git status`, phase state
-4. **Present to Founder** — verified state + pending
-5. **Work** — record FDs immediately
-6. **Close** — write new SESSION_CLOSEOUT.md
+1. **อ่าน AGENTS.md** — project identity, rules, profile
+2. **อ่าน PROJECT_STATE.md** — 🎯 current phase, blockers, next action
+3. **อ่าน SESSION_CLOSEOUT.md** — last session context
+4. **Verify state** — `hermes profile list`, `git status`, phase state
+5. **Present to Founder** — "ระยะนี้ ต่อด้วย X ดีไหม?"
+6. **Work** — record FDs immediately
+7. **Close** — update PROJECT_STATE.md + write SESSION_CLOSEOUT.md
 
 ```
-START → AGENTS.md → SESSION_CLOSEOUT.md → Verify → Present → Execute → CLOSEOUT ↩
+START → AGENTS.md → PROJECT_STATE.md → CLOSEOUT → Verify → Execute → CLOSEOUT ↩
 ```

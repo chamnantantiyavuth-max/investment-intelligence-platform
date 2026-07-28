@@ -4,24 +4,22 @@
 
 ## Current state
 
-- Product phase: `IIP-Phase 9` implementation evidence verified; phase-close remains partial pending canonical review/reconciliation. `IIP-Phase 10` synthetic implementation is verified and authorized; phase-close is not claimed. A real-data extension labeled `Phase 10.5` is blocked/conditional.
-- Workflow gate: `WF-Phase 2R` complete; implementation must follow the approved workflow gates.
-- Latest documented project FD: `FD #42` — Institutional Intelligence V1 authorization.
-- Vault FD register: `09-Agent/project-notes/investment-intelligence-platform/fd-register.md`.
+- Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered.
+- Workflow gate: `WF-Phase 2R` complete; all Critical Mode phases passed.
+- Latest FD: `FD #43` — Marx-inspired signals (Profit Rate Trend + Narrative vs Reality Gap), Option B, 28 July 2026.
+- Tests: 91/91 combined FO + II passing (42 fundamental, 49 institutional). Module collision resolved.
 
 ## Open constraints
 
-- Active governance blocker: commit `9dd5b77` adds real SEC EDGAR/13F fetching and CUSIP mapping, while FD #42 states synthetic/mock 13F first and real 13F in V1.5. No FD #43 authorization is recorded.
-- Verification blocker: combined FO + II pytest invocation fails from module/import collision (23 failed, 57 passed); isolated locked suites pass (FO 26/26, II 54/54).
-- Deferred items include DR-004 (Legacy Knowledge Salvage), selected rule implementation, automated challenge/earnings/trap detection, and Deep Research moved to a later phase.
+- No active blockers. Previously reported Phase 10.5 authorization boundary resolved via FD #42 amendment (`cb3044b`). Combined test collision resolved via `e53805f`.
+- Deferred items: DR-004 (Legacy Knowledge Salvage), automated challenge/earnings/trap detection, Deep Research. Templates TPL-* remain deferred.
 - No broker connectivity, execution, or portfolio allocation.
 - No AI-invented investment rules, thresholds, weights, formulas, lookbacks, or fallback behavior.
 - No Legacy/quarantine access without separate named authorization.
-- Deferred templates remain deferred.
 
 ## Next allowed action
 
-Resolve the Phase 10.5 authorization boundary against FD #42 before advancing or closing the institutional-intelligence phase.
+All authorized phases delivered. Next phase requires Founder decision — no Phase 11 authorization exists. Options: define Phase 11, cross-module integration, frontend polish, or Founder-directed task.
 
 ## Bootstrap sources
 
@@ -33,16 +31,9 @@ Resolve the Phase 10.5 authorization boundary against FD #42 before advancing or
 
 ## Lifecycle sync
 
-- Last session: 2026-07-27 scheduled IIP review
-- Outcome: blocked
-- Evidence: `9dd5b77`; `operational/FOUNDERS-DECISIONS.md` FD #42; `python -m pytest institutional-intelligence-v0/test_locked -q` (54 passed); `python -m pytest fundamental-opportunity-v0/test_locked -q` (26 passed); combined run (57 passed, 23 failed); yfinance snapshot as of 2026-07-24.
-- Blockers: Phase 10.5 authorization boundary; combined-suite import collision.
-- Next allowed action: resolve Phase 10.5 authorization boundary before phase advancement/closure.
-- Phase gate: Phase 9 partial; Phase 10 authorized with synthetic path verified; Phase 10.5 blocked/conditional.
-- Phase evidence: `71d079f`, `330c572`, `9dd5b77`, and the isolated test commands above.
-- Next phase: Founder decision required for the real 13F extension.
-- Last verified: 2026-07-27
-
-## Freshness
-
-Last compact-state update: 2026-07-27. Gate 0 must still run as a read-only fresh-eyes audit; this file does not replace that audit.
+- Last session: 2026-07-28 IIP consolidation
+- Outcome: clean — all phases delivered, all tests passing, no blockers
+- Evidence: `cb3044b` (FD #42 amended), `e53805f` (test fix), `3bbb2f2` (FD #43), `9c3d851` (.gitignore); 91/91 tests passing.
+- Blockers: none
+- Next phase: Founder decision required
+- Last verified: 2026-07-28
