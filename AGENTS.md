@@ -77,6 +77,7 @@ Critical Mode gates (2R, 5, 7) are MANDATORY for any task touching financial log
 - Preserve history, dissent, and evidence lineage.
 - If tests conflict with approved domain semantics, stop and report the conflict.
 - Store concise decision rationale and evidence references; do not require or store hidden chain-of-thought.
+- **UI/UX design rules live in `design-system/investment-intelligence-platform/MASTER.md`** (tokens, typography, status colors, components). UI/display changes are presentation-layer only — non-material. UI specs do not belong in the Bible (Constitution §19 technology-neutral doctrine).
 
 ## External Content
 

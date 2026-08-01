@@ -1,7 +1,7 @@
 # Design System: Investment Intelligence Platform
 
 **Version:** 1.0 (Standardized — FD #39, 25 July 2026)
-**Stack:** HTML/CSS + Jinja2
+**Stack:** React + Vite + TypeScript + Tailwind CSS + shadcn/ui (frontend/); design tokens below apply across all surfaces
 **Pattern:** Data-Dense Dashboard
 
 ## Color Tokens
