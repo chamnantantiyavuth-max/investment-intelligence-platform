@@ -32,6 +32,7 @@ class ThemeSummary(BaseModel):
     candidate_quality: float
     entry_readiness: float
     data_confidence: float
+    data_source: str = "synthetic_demo"
 
 
 class AMQueueResponse(BaseModel):

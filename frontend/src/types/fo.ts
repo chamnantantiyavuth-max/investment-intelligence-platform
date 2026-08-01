@@ -55,7 +55,25 @@ export interface ValueTrapResult {
   action: string;
 }
 
-export interface ResearchPackageDetail extends ResearchPackageSummary {
+export interface ConvictionDetail {
+  level: string;
+  cap: string;
+  rationale: string;
+}
+
+export interface ResearchPackageDetail {
+  id: string;
+  name: string;
+  sector: string;
+  industry: string;
+  moat_width: string;
+  moat_depth: string;
+  moat_trend: string;
+  earnings_quality: string;
+  conviction: ConvictionDetail;
+  value_trap_verdict: string;
+  generated_at: string;
+  spec_ref: string;
   thesis_summary: string;
   thesis_lifecycle: string;
   macro_context: Record<string, unknown>;

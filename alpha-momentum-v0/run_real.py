@@ -8,9 +8,26 @@ from pathlib import Path
 from datetime import datetime
 
 HERE = Path(__file__).parent
-SYSTEM_PYTHON = r"C:\Users\Admin\AppData\Local\Programs\Python\Python314\python.exe"
+# Resolve a Python interpreter for source_adapter: prefer current interpreter,
+# fall back to a configured system Python 3.14 if it exists (yfinance/numpy compat).
 CACHE_DIR = HERE / "data" / "cache"
 OUTPUT_DIR = HERE / "output"
+
+def _resolve_python() -> str:
+    """Return a Python interpreter usable by source_adapter.py.
+
+    Priority: current interpreter (sys.executable) → configured system Python.
+    The hardcoded path was machine-specific (finding I15, full review 2026-08-02).
+    """
+    configured = os.environ.get("IIP_SYSTEM_PYTHON", r"C:\Users\Admin\AppData\Local\Programs\Python\Python314\python.exe")
+    if sys.executable and os.path.exists(sys.executable):
+        return sys.executable
+    if os.path.exists(configured):
+        return configured
+    raise RuntimeError(
+        "No usable Python interpreter found. Set IIP_SYSTEM_PYTHON to a Python "
+        "with yfinance/numpy, or run from a compatible environment."
+    )
 
 # Import V0 pipeline
 from pipeline import run_pipeline
@@ -20,7 +37,7 @@ from display import render_all
 def fetch_eod(force_refresh: bool = False):
     """Run source_adapter.py with system Python to fetch/cache EOD data."""
     adapter = HERE / "source_adapter.py"
-    args = [SYSTEM_PYTHON, str(adapter)]
+    args = [_resolve_python(), str(adapter)]
     if force_refresh:
         args.append("--refresh")
     result = subprocess.run(args, capture_output=True, text=True, timeout=120)

@@ -1,5 +1,5 @@
 // Phase 8: Fundamental & Opportunity API client
-import { ResearchPackageSummary, ResearchPackageDetail } from "@/types/fo";
+import type { ResearchPackageSummary, ResearchPackageDetail } from "@/types/fo";
 
 const BASE = "/api";
 

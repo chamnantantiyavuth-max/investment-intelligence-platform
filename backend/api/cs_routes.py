@@ -3,6 +3,8 @@ from fastapi import APIRouter
 
 router = APIRouter(prefix="/api", tags=["close-system"])
 
+# DEMO DATA — static demonstration assets, NOT live pipeline output.
+# data_source field on the response marks this provenance (Constitution §8/§23.4).
 _MOCK_ASSETS = [
     {
         "ticker": "BRK.B", "name": "Berkshire Hathaway", "sector": "Financials",
@@ -43,4 +45,4 @@ _MOCK_ASSETS = [
 
 @router.get("/cs-radar")
 async def get_cs_radar():
-    return {"assets": _MOCK_ASSETS}
+    return {"data_source": "synthetic_demo", "assets": _MOCK_ASSETS}

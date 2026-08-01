@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Lightbulb, Zap } from "lucide-react"
+import SyntheticDataBanner from "@/components/SyntheticDataBanner"
 
 const ANOMALIES = [
   { id: 1, title: "Sector rotation into Utilities", age: "New", desc: "Defensive sector volume 3σ above 20-day average. No credible explanation yet." },
@@ -21,6 +22,8 @@ export default function WeakSignalInboxPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Weak Signal Inbox</h1>
+
+      <SyntheticDataBanner note="Anomalies and hypotheses are static demonstration data — the experimental pipeline (E1–E4) is not yet wired to this page." />
 
       <Tabs defaultValue="anomalies">
         <TabsList>
@@ -46,8 +49,8 @@ export default function WeakSignalInboxPage() {
               <CardContent className="space-y-2">
                 <p className="text-sm text-muted-foreground">{a.desc}</p>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="xs">Propose Hypothesis</Button>
-                  <Button variant="ghost" size="xs">Dismiss</Button>
+                  <Button variant="outline" size="xs" disabled title="Pending implementation — no backend endpoint">Propose Hypothesis</Button>
+                  <Button variant="ghost" size="xs" disabled title="Pending implementation — no backend endpoint">Dismiss</Button>
                 </div>
               </CardContent>
             </Card>
@@ -74,8 +77,8 @@ export default function WeakSignalInboxPage() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="xs">Request Review</Button>
-                  <Button variant="ghost" size="xs">Add Evidence</Button>
+                  <Button variant="outline" size="xs" disabled title="Pending implementation — no backend endpoint">Request Review</Button>
+                  <Button variant="ghost" size="xs" disabled title="Pending implementation — no backend endpoint">Add Evidence</Button>
                 </div>
               </CardContent>
             </Card>

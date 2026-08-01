@@ -3,11 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, TrendingUp, Shield, Building2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import SyntheticDataBanner from "@/components/SyntheticDataBanner"
 
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Strategy Control Center</h1>
+
+      <SyntheticDataBanner note="Dashboard metrics are static demonstration values — no live pipeline is connected to this surface yet." />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <MetricCard label="Total Themes" value={143} trend="up" trendLabel="12 this week" />

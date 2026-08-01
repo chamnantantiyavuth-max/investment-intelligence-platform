@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { getFOPackage } from "@/api/foClient";
-import { ResearchPackageDetail, MoatType } from "@/types/fo";
+import type { MoatType, ConvictionDetail } from "@/types/fo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +14,18 @@ function moatColor(width: string) { return { Wide: "text-emerald-600", Narrow: "
 function depthColor(d: string) { return { Deep: "text-emerald-600", Moderate: "text-amber-600", Shallow: "text-rose-600" }[d] || ""; }
 function trendColor(t: string) { return { Widening: "text-emerald-600", Stable: "text-blue-600", Narrowing: "text-rose-600" }[t] || ""; }
 function qualityColor(r: string) { return { HIGH: "bg-emerald-100 text-emerald-700", MEDIUM: "bg-amber-100 text-amber-700", LOW: "bg-rose-100 text-rose-700", COSMETIC: "bg-rose-200 text-rose-800 line-through" }[r] || ""; }
+
+function asString(v: unknown): string { return typeof v === "string" ? v : ""; }
+function asNumber(v: unknown): number { return typeof v === "number" ? v : 0; }
+function asBool(v: unknown): boolean { return typeof v === "boolean" ? v : false; }
+function asMoatTypes(v: unknown): MoatType[] { return Array.isArray(v) ? (v as MoatType[]) : []; }
+function asConviction(v: unknown): ConvictionDetail {
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return { level: asString(o.level), cap: asString(o.cap), rationale: asString(o.rationale) };
+  }
+  return { level: "", cap: "", rationale: "" };
+}
 
 export default function FundamentalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +42,10 @@ export default function FundamentalDetailPage() {
   if (!pkg) return <Card><CardContent className="p-12 text-center text-muted-foreground">Company not found.</CardContent></Card>;
 
   const moat = pkg.company_assessment?.moat as Record<string, unknown> | undefined;
-  const fin = pkg.company_assessment?.financial_quality as Record<string, unknown> | undefined;
-  const mgmt = pkg.company_assessment?.management as Record<string, unknown> | undefined;
   const eq = pkg.earnings_trajectory;
   const val = pkg.valuation_context as Record<string, unknown>;
   const vt = val?.value_trap as Record<string, unknown> | undefined;
+  const conviction = asConviction(pkg.conviction);
 
   return (
     <div className="space-y-6">
@@ -62,7 +73,8 @@ export default function FundamentalDetailPage() {
             <Card>
               <CardContent className="p-4 text-center">
                 <span className="text-xs text-muted-foreground uppercase">Conviction</span>
-                <p className="text-2xl font-bold">{pkg.conviction}</p>
+                <p className="text-2xl font-bold">{conviction.level}</p>
+                {conviction.cap && <p className="text-xs text-muted-foreground">Cap: {conviction.cap}</p>}
               </CardContent>
             </Card>
             <Card>
@@ -79,15 +91,15 @@ export default function FundamentalDetailPage() {
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-4 gap-4 text-center mb-6">
-                <div><span className="text-xs text-muted-foreground uppercase block">Width</span><span className={cn("text-2xl font-bold", moatColor(moat?.width as string || ""))}>{moat?.width}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Depth</span><span className={cn("text-2xl font-bold", depthColor(moat?.depth as string || ""))}>{moat?.depth}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(moat?.trend as string || ""))}>{moat?.trend}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Score</span><span className="text-2xl font-bold">{moat?.moat_score as number}/100</span></div>
+                <div><span className="text-xs text-muted-foreground uppercase block">Width</span><span className={cn("text-2xl font-bold", moatColor(asString(moat?.width)))}>{asString(moat?.width) || "—"}</span></div>
+                <div><span className="text-xs text-muted-foreground uppercase block">Depth</span><span className={cn("text-2xl font-bold", depthColor(asString(moat?.depth)))}>{asString(moat?.depth) || "—"}</span></div>
+                <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(asString(moat?.trend)))}>{asString(moat?.trend) || "—"}</span></div>
+                <div><span className="text-xs text-muted-foreground uppercase block">Score</span><span className="text-2xl font-bold">{asNumber(moat?.moat_score)}/100</span></div>
               </div>
               <Separator className="my-4" />
-              <p className="text-sm mb-4">{moat?.moat_narrative as string}</p>
+              <p className="text-sm mb-4">{asString(moat?.moat_narrative) || "No moat narrative."}</p>
               <div className="flex flex-wrap gap-2">
-                {((moat?.types as MoatType[]) || []).map((t, i) => (
+                {asMoatTypes(moat?.types).map((t, i) => (
                   <Badge key={i} variant="secondary" className={cn("text-xs font-medium", t.strength === "Strong" ? "bg-emerald-100 text-emerald-700" : t.strength === "Moderate" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700")}>
                     {t.type} ({t.strength})
                   </Badge>
@@ -123,16 +135,16 @@ export default function FundamentalDetailPage() {
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-                <div><span className="text-muted-foreground">P/E (TTM):</span> <span className="font-semibold">{(val?.pe_ttm as number)?.toFixed(1)}x</span></div>
-                <div><span className="text-muted-foreground">P/E (5Y avg):</span> <span className="font-semibold">{(val?.pe_5y_avg as number)?.toFixed(1)}x</span></div>
-                <div><span className="text-muted-foreground">EV/EBITDA:</span> <span className="font-semibold">{(val?.ev_ebitda as number)?.toFixed(1)}x</span></div>
-                <div><span className="text-muted-foreground">FCF Yield:</span> <span className="font-semibold">{((val?.fcf_yield as number || 0) * 100).toFixed(1)}%</span></div>
+                <div><span className="text-muted-foreground">P/E (TTM):</span> <span className="font-semibold">{asNumber(val?.pe_ttm) ? asNumber(val?.pe_ttm).toFixed(1) : "—"}x</span></div>
+                <div><span className="text-muted-foreground">P/E (5Y avg):</span> <span className="font-semibold">{asNumber(val?.pe_5y_avg) ? asNumber(val?.pe_5y_avg).toFixed(1) : "—"}x</span></div>
+                <div><span className="text-muted-foreground">EV/EBITDA:</span> <span className="font-semibold">{asNumber(val?.ev_ebitda) ? asNumber(val?.ev_ebitda).toFixed(1) : "—"}x</span></div>
+                <div><span className="text-muted-foreground">FCF Yield:</span> <span className="font-semibold">{(asNumber(val?.fcf_yield) * 100).toFixed(1)}%</span></div>
               </div>
-              {vt && vt.triggered && (
+              {vt && asBool(vt.triggered) && (
                 <div className="border border-rose-200 bg-rose-50 rounded-lg p-4">
                   <h4 className="font-bold text-rose-700 mb-2">⚠️ Value Trap Detector</h4>
-                  <p className="text-sm font-semibold text-rose-700 mb-2">Score: {vt.score as number}/5 — {vt.verdict as string}</p>
-                  <p className="text-xs text-rose-600">{vt.action as string}</p>
+                  <p className="text-sm font-semibold text-rose-700 mb-2">Score: {asNumber(vt.score)}/5 — {asString(vt.verdict)}</p>
+                  <p className="text-xs text-rose-600">{asString(vt.action)}</p>
                 </div>
               )}
             </CardContent>

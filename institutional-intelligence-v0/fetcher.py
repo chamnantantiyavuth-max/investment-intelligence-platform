@@ -278,7 +278,10 @@ def fetch_all_watchlist(force_refresh: bool = False, max_funds: int = None) -> l
         ciks = ciks[:max_funds]
 
     results = []
+    attempted = 0
+    failed = 0
     for i, cik in enumerate(ciks):
+        attempted += 1
         print(f"[{i+1}/{len(ciks)}] {cik}", end=" ")
         try:
             filing = fetch_fund_13f(cik, force_refresh=force_refresh)
@@ -286,11 +289,27 @@ def fetch_all_watchlist(force_refresh: bool = False, max_funds: int = None) -> l
                 results.append(filing)
                 print(f"→ {filing['total_positions']} holdings, ${filing['total_value_usd']/1e9:.0f}B")
             else:
+                failed += 1
                 print("→ No 13F found")
         except Exception as e:
+            failed += 1
             print(f"→ Error: {e}")
 
-    return results
+    if failed:
+        print(
+            f"\n⚠️  INCOMPLETE FETCH: {attempted - failed}/{attempted} funds succeeded, "
+            f"{failed} failed or missing. Output is NOT authoritative as a full watchlist run."
+        )
+
+    return {
+        "filings": results,
+        "summary": {
+            "attempted": attempted,
+            "succeeded": len(results),
+            "failed": failed,
+            "complete": failed == 0,
+        },
+    }
 
 
 def _date_to_quarter(date_str: str) -> str:

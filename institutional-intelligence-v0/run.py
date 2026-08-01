@@ -48,11 +48,18 @@ def main():
     if args.real:
         from fetcher import fetch_all_watchlist
         print("Fetching real 13F data from SEC EDGAR...")
-        filings = fetch_all_watchlist(force_refresh=args.refresh, max_funds=args.funds)
-        data_source = "REAL 13F"
-        print(f"  {len(filings)} funds fetched\n")
+        result = fetch_all_watchlist(force_refresh=args.refresh, max_funds=args.funds)
+        filings = result["filings"]
+        summary = result["summary"]
+        if summary["complete"]:
+            data_source = "REAL 13F"
+        else:
+            data_source = f"REAL 13F (PARTIAL — {summary['succeeded']}/{summary['attempted']} funds)"
+        print(f"  {summary['succeeded']}/{summary['attempted']} funds fetched"
+              f" ({summary['failed']} failed/missing)\n")
     else:
         data_source = "SYNTHETIC"
+        filings = None
 
     print("=" * 60)
     print("Institutional Intelligence V0 — Pipeline")

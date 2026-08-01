@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { QConditionGrid } from "@/components/QConditionGrid"
 import { ConfidenceGauge } from "@/components/ConfidenceGauge"
+import SyntheticDataBanner from "@/components/SyntheticDataBanner"
 
 const ASSETS = [
   {
@@ -47,6 +48,8 @@ export default function CSRadarPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Close System Radar</h1>
+
+      <SyntheticDataBanner note="Radar assets are static demonstration data — the Close System pipeline is not yet wired to this API surface." />
 
       <Card>
         <CardHeader>

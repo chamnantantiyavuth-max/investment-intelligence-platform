@@ -1,6 +1,6 @@
 # AGENTS.md — Investment Intelligence Platform
 
-> **Inherits from:** `~/.hermes/profiles/iip/SOUL.md` (AI behavior) + `~/.hermes/profiles/iip/memories/USER.md` (Founder profile)
+> **Inherits from:** `~/.hermes/profiles/iip/SOUL.md` (AI behavior) + `~/.hermes/profiles/iip/user.md` (Founder profile)
 >
 > Read those first. This file contains only project-specific rules.
 
@@ -8,8 +8,8 @@
 
 Read and follow, in order:
 
-1. `~/.hermes/profiles/default/SOUL.md` — universal AI intellectual standards, working discipline, safety
-2. `~/.hermes/profiles/default/memories/USER.md` — Founder identity, methodology, constraints, communication preferences
+1. `~/.hermes/profiles/iip/SOUL.md` — universal AI intellectual standards, working discipline, safety
+2. `~/.hermes/profiles/iip/user.md` — Founder identity, methodology, constraints, communication preferences
 3. `02-PROJECT-CONSTITUTION.md` and approved constitutional amendments
 4. `operational/FOUNDERS-DECISIONS.md`
 5. Approved domain specifications
@@ -109,7 +109,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended).
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. Phase 11 NOT authorized — deferred.
 
 Current approved checkpoints:
 
@@ -134,6 +134,7 @@ Current approved checkpoints:
 - phase-10-complete (Institutional Intelligence V1: 13F filings, concentration ratio, conviction signals, super-investor watchlist; FD #42, 26 July 2026)
 - phase-10.5-complete (Real 13F data via SEC EDGAR — fetcher.py + cusip_mapper.py; FD #42 amended, 28 July 2026)
 - fd-43-approved (Profit Rate Trend + Narrative vs Reality Gap — Option B, Marx-inspired signals; 28 July 2026)
+- fd-44-recovery-approved (Full Project Review RETEST → bounded recovery; frontend build restored, synthetic surfaces labeled, AM core AC tests added, 262/262 tests, ADR-001 ratified; 2 August 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
@@ -147,7 +148,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-43 approved.
+- Founder Decisions #1-44 approved.
 
 Current-phase restrictions:
 
@@ -155,9 +156,10 @@ Current-phase restrictions:
 - No Legacy or quarantine access without separate named authorization.
 - No AI-invented investment rules, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, ordering, tie behavior, aggregation, or fallback.
 - No schema or migration.
-- Provisional technology only — no final stack selection claimed.
+- Provisional technology only — no final stack selection claimed (ADR-001 ratified as current working direction via FD #44, not final selection).
 - UI/display changes are authorized (presentation layer only — non-material).
 - New pipeline stages, data sources, or strategy logic require explicit authorization.
+- AM/CS/dashboard/weak-signal surfaces carry explicit SYNTHETIC/DEMO provenance labels — real pipeline wiring requires authorization.
 
 ## Working Method
 
@@ -182,13 +184,26 @@ hermes --profile iip
 ```
 
 1. **อ่าน AGENTS.md** — project identity, rules, profile
-2. **อ่าน PROJECT_STATE.md** — 🎯 current phase, blockers, next action
-3. **อ่าน SESSION_CLOSEOUT.md** — last session context
-4. **Verify state** — `hermes profile list`, `git status`, phase state
-5. **Present to Founder** — "ระยะนี้ ต่อด้วย X ดีไหม?"
-6. **Work** — record FDs immediately
-7. **Close** — update PROJECT_STATE.md + write SESSION_CLOSEOUT.md
+2. **อ่าน Domain Index** — map module→spec ก่อนทำงาน
+3. **อ่าน PROJECT_STATE.md** — 🎯 current phase, blockers, next action
+4. **อ่าน SESSION_CLOSEOUT.md** — last session context
+5. **Verify state** — `hermes profile list`, `git status`, phase state
+6. **Present to Founder** — "ระยะนี้ ต่อด้วย X ดีไหม?"
+7. **Work** — record FDs immediately. **Pre-Implementation Gate: before coding → read spec → "Confirmed: [summary]"**
+8. **Close** — update PROJECT_STATE.md + write SESSION_CLOSEOUT.md + **Closeout Checklist: FDs? Bible? STATE?**
 
 ```
-START → AGENTS.md → PROJECT_STATE.md → CLOSEOUT → Verify → Execute → CLOSEOUT ↩
-```
+START → AGENTS.md → Domain Index → PROJECT_STATE.md → CLOSEOUT → Verify → Execute → CLOSEOUT ↩
+```<!-- 2026-07-30 00:15 UTC+7 -->
+
+## ⚠️ Verify-First Rule (FD-HERMES-003)
+
+ก่อนพูด/แก้/สร้างอะไร — **อ่านไฟล์จริงก่อนทุกครั้ง**:
+
+| Situation | Action |
+|---|---|
+| อ้าง version number | อ่าน frontmatter จริงก่อน |
+| อ้าง model name | `hermes config get model.default` |
+| อ้างว่า sync แล้ว | ตรวจทุก profile จริง |
+| จะแก้ไขไฟล์ | `read_file` ก่อนดูเนื้อหาจริง |
+| ก่อนสรุป | Verify: version ✅ paths ✅ cross-profile ✅ |

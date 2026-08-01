@@ -1,9 +1,11 @@
 """Alpha Momentum API routes."""
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from backend.schemas.responses import AMQueueResponse, ThemeSummary
 
 router = APIRouter(prefix="/api", tags=["alpha-momentum"])
 
+# DEMO DATA — static demonstration themes, NOT live pipeline output.
+# data_source field on every response marks this provenance (Constitution §8/§23.4).
 _MOCK_THEMES = [
     ThemeSummary(
         id="theme-ai-infra", name="AI Infrastructure", approval_status="approved",
@@ -48,9 +50,4 @@ async def get_am_theme(theme_id: str):
     for t in _MOCK_THEMES:
         if t.id == theme_id:
             return t
-    return ThemeSummary(
-        id=theme_id, name="Unknown", approval_status="unknown",
-        lifecycle="unknown", driver_count=0, candidate_count=0,
-        evidence_supporting=0, evidence_contradicting=0, evidence_missing=0,
-        theme_quality=0, candidate_quality=0, entry_readiness=0, data_confidence=0,
-    )
+    raise HTTPException(status_code=404, detail=f"Theme '{theme_id}' not found")
