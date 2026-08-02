@@ -1,10 +1,12 @@
 # CRR-2026-0001 — Research Request: Microsoft Corporation (MSFT)
 
-**Status:** DRAFT — pending Founder approval (Research Gate, CIW-REQUEST-CONTRACT §2/§7)
+**Status:** APPROVED — Founder approval, Research Gate passed 2026-08-03 (identifies this exact request, Constitution §21)
 **Version:** 0.1
 **Date:** 2026-08-03
 **Authority:** FD-CIW-011 (pilot execution authorization); `docs/CIW-FIRST-SLICE-DESIGN.md` v0.3 (§5); CIW-REQUEST-CONTRACT §3–§4; FD-CIW-009 (pilot company)
-**Approval:** Research Gate — Founder review of scope, universe, portfolio-blind, modules, omissions, source gate (REQUEST-CONTRACT §7). Research does NOT begin until this request is Approved.
+**Approval:** Research Gate — **APPROVED by Founder 2026-08-03 (Option A, exact request identified).** Scope, universe, portfolio-blind, modules, omissions, and source gate reviewed. `Approved for Research` state activated (LIFECYCLE §2). Research may begin once the Source Map gate passes (LIFECYCLE §7).
+
+**Approval record:** prior state `Draft` → `Approved for Research`; actor: Founder; reason: Research Gate approval (Decision 7, session 2026-08-03); evidence: this document (CRR-2026-0001); timestamp 2026-08-03; workflow version: CIW v0.2 specs + design v0.3.
 
 ---
 
@@ -53,7 +55,7 @@ founder_constraints:
      recommendation framing of any kind"
   - "Every material claim must carry claim-level evidence reference (source ID + location)"
 portfolio_blind: true
-approval_status: Draft
+approval_status: Approved (Research Gate, 2026-08-03)
 authority:
   autonomous_investment_decision: false
   founder_final_authority: true
