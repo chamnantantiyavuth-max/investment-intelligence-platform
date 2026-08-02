@@ -1,11 +1,11 @@
 # CIW First-Slice Design — Pilot Company: MSFT
 
-**Status:** DRAFT v0.1 — pending Phase 2R independent review (Sol Medium) + Founder approval
-**Version:** 0.1
+**Status:** DRAFT v0.2 — Phase 2R review COMPLETE (PASS WITH FIXES, Sol Medium 2026-08-03); 6 findings addressed in v0.2; re-review dispatched
+**Version:** 0.2
 **Date:** 2026-08-03
 **Owner:** Founder
 **Authority:** FD-CIW-010 (Phase 11 Design Path OPENED — supersedes FD #44 for DESIGN purposes only); CIW-CONCEPT §6 (Pilot Scope); CIW-LIFECYCLE §6 (First-Slice Lifecycle); CIW-REQUEST-CONTRACT; CIW-QUALITY-GATES; CIW-RESULT-CONTRACT; CIW-PUBLICATION-STANDARD; CIW-RESEARCH-FRAMEWORK
-**Approval:** Pending — Phase 2R review → Founder approval → FD-CIW-011 (pilot execution authorization)
+**Approval:** Pending — Phase 2R re-review pass → Founder approval → FD-CIW-011 (pilot execution authorization)
 **Status after approval:** Documentation only. This design does NOT authorize execution; pilot execution requires FD-CIW-011.
 
 ---
@@ -27,7 +27,7 @@ This document is the **design plan for the CIW first slice** — the bounded pil
 ```
 FD-CIW-010 (done — design path opened)
   → [this design] DRAFT v0.1
-  → Phase 2R independent review (Sol Medium, hostile reviewer)
+  → Phase 2R independent review (Sol Medium, hostile reviewer — COMPLETE: PASS WITH FIXES) → fixes applied (v0.2) → Phase 2R re-review
   → Founder approval of design
   → FD-CIW-011 (pilot execution authorization — named FD superseding FD #44 for pilot scope)
   → CRR-2026-0001 Research Request draft → Founder approval (Research Gate)
@@ -41,11 +41,13 @@ No step may be skipped. FD #44 remains in force for everything outside the desig
 | # | Lifecycle Step (LIFECYCLE §6) | CIW Research Status | Artifact | Actor |
 |---|---|---|---|---|
 | 1 | Approved Research Request | `Approved for Research` | `docs/ciw-pilot-msft/CRR-2026-0001-request.md` | AI drafts (Class B) → **Founder approves** (Research Gate, REQUEST-CONTRACT §2/§7) |
-| 2 | Source Map | `Researching` | `docs/ciw-pilot-msft/source-map.md` | AI executor (source gate; `missing_required` blocks progression) |
+| 2 | Source Map | `Approved for Research` (unchanged until source gate passes) | `docs/ciw-pilot-msft/source-map.md` | AI executor (source gate; `missing_required` blocks progression) |
 | 3 | Bounded Initial Research | `Researching` → `Draft` | `docs/ciw-pilot-msft/research-draft.md` | AI executor (modules A–M, depth=initial) |
 | 4 | Independent Challenge | `Independent Review` | `docs/ciw-pilot-msft/challenge-review.md` | **Independent reviewer** (separate context — see §6) |
-| 5 | Founder Review | `Founder Review` | `docs/ciw-pilot-msft/founder-review-record.md` | **Founder only** |
-| 6 | Structured Research Result | `Published` (Current Authoritative v1) | `docs/ciw-pilot-msft/research-result.md` | Founder publishes; AI assembles per RESULT-CONTRACT |
+| 5 | Founder Review (of proposed result) | `Founder Review` | `docs/ciw-pilot-msft/founder-review-record.md` + `research-result.md` (proposed v1) | AI assembles the **versioned proposed** `research-result.md` BEFORE this step; **Founder approves that exact version (hash)** — no post-approval assembly |
+| 6 | Publication | `Published` (research status) / `Current Authoritative v1` (artifact state) | `docs/ciw-pilot-msft/research-result.md` | Founder-only transition of the approved version (LIFECYCLE §5) |
+
+**Status sequencing note:** transition `Approved for Research → Researching` requires the approved request scope **plus** the Source Map (LIFECYCLE §7) — bounded research formally starts only after the source gate passes; the Source Map itself is assembled while still in `Approved for Research`.
 
 **Prohibited transitions (LIFECYCLE §7):** AI → Published; Cron → any authoritative state change; Reviewer → Published (reviewer approves pass, Founder publishes). Every transition records audit fields: prior state, new state, actor, reason, evidence reference, timestamp, workflow version.
 
@@ -88,6 +90,7 @@ Per CIW-REQUEST-CONTRACT §3, the request to be drafted (after FD-CIW-011) must 
 | `portfolio_blind` | `true` (Constitution §23.8.1) — no holdings, positions, cost basis, or transaction history supplied |
 | `approval_status` | `Draft` → `Approved` (Founder, Research Gate) |
 | `authority` | `autonomous_investment_decision: false; founder_final_authority: true` |
+| `source_gate` | Per REQUEST-CONTRACT §4: (1) latest 10-K — required unless `justified-absent`; (2) latest 10-Q — required when within filing cycle; (3) earnings releases + transcripts for covered periods — required (earnings-related questions in scope); (4) proxy/compensation statement — required (Module E in scope); (5) regulatory sources applicable to MSFT's industry — required where material; (6) historical filings ≥ 5 years — required for Module F normalization. Rules: a missing required source blocks progression past Source Map unless it carries an explicit `justified-absent` reason (recorded, not hidden); derived/syndicated copies do NOT satisfy the gate (source independence); every source satisfies Data-Source Admission (`operational/SECURITY-AND-UNTRUSTED-CONTENT.md`) with source ID, tier, publisher, publication date, retrieval date, revision status, licensing status, governing-universe version |
 
 ### Module depth notes (RESEARCH-FRAMEWORK §3 — applicability-based, never a mandatory long-report checklist)
 
@@ -113,26 +116,32 @@ The challenge is a **required** step for pilot publication (QUALITY-GATES §3). 
 | Challenge questions | RESEARCH-FRAMEWORK §7 final challenge (three assumptions driving value, least-supported assumption, reversing fact, confirmation bias, skeptical short-seller argument, knowledgeable-operator argument, mispricing vs uncertainty vs distress vs optimism, rational private owner, market-closed-10-years, superior expected return) |
 | Output | `challenge-review.md` — PASS / FAIL / REVIEW REQUIRED per gate; advisory to Founder; **council/committee agreement is not Founder approval** (QUALITY-GATES §3) |
 
-**Gate result states (QUALITY-GATES §2):** `Pass` → proceeds to Founder Review; `Fail` → returns to executor with findings (bounded rework ≤ 2 cycles, QUALITY-GATES §6); `Review Required` → human review. A gate can never be bypassed by claiming "non-material".
+**Gate result states (QUALITY-GATES §2):** `Pass` → proceeds to Independent Challenge; `Fail` → returns to executor with findings; `Review Required` → human review. Rework is bounded by the approved request / Founder constraint — **no infinite loops** (QUALITY-GATES §6); the design fixes no numeric cycle count (the spec does not authorize one — any numeric cap requires explicit Founder approval). **Repeated failure creates an escalation record to the Founder** (QUALITY-GATES §6). A gate can never be bypassed by claiming "non-material".
 
-## 7. Quality Gates — Minimum Checks (QUALITY-GATES §2)
+## 7. Quality Gates — Minimum Checks (QUALITY-GATES §2, §5)
 
-Before `Independent Review` → `Founder Review` transition, the research must pass: source-coverage, primary-source, contradiction, unsupported-claim, stale-source (Constitution §8 three-year rule), accounting red-flag, valuation-assumption (explicit/versioned, advisory), deterministic-calculation lineage (where calculations exist), per-share economics, dilution, thesis-falsification (invalidation conditions stated), artifact-lineage, authority (no AI/Cron authoritative transitions), scope (within approved request).
+**Position:** the §2 quality gates run **between bounded initial research and Independent Challenge** (QUALITY-GATES §5 order: Approved Request → Source Map gate → bounded initial research → quality gates → Independent Challenge → Founder Review → Published) — the independent reviewer must never receive a draft that has not passed these gates.
+
+Gate inventory: source-coverage, primary-source, contradiction, unsupported-claim, stale-source (Constitution §8 three-year rule), accounting red-flag, valuation-assumption (explicit/versioned, advisory), deterministic-calculation lineage (where calculations exist), per-share economics, dilution, **Reverse-DCF** (recorded N/A with the Module N omission rationale — no reverse-DCF output is produced), **Permanent-loss** (applicable — Module K is selected), thesis-falsification (invalidation conditions stated), artifact-lineage, authority (no AI/Cron authoritative transitions), scope (within approved request).
 
 The research draft must carry the **completion standard** (QUALITY-GATES §4): scope completed, sources reviewed, artifacts produced, calculations performed, checks run (list), limitations, unresolved risks, disagreements, deviations from the approved request, **review status** — a completion claim without review status is incomplete.
 
 ## 8. Founder Review (PUBLICATION-STANDARD §1, §7)
 
-- Founder reviews the challenged draft + challenge artifact + quality-gate results.
-- **Every canonical change requires explicit Founder approval** — thesis status, valuation figures (advisory), confidence, classification impacts (PUBLICATION-STANDARD §1). Approval must identify the exact artifact (Constitution §21); casual agreement is not approval.
-- Founder approval → `Published` / Current Authoritative v1 (structured result).
+- **AI assembles a versioned proposed `research-result.md` BEFORE Founder Review** (after Independent Challenge passes); the Founder reviews that exact version (identified by version + content hash), together with the challenge artifact and quality-gate results.
+- **Every canonical change requires explicit Founder approval** — thesis status, valuation figures (advisory), confidence, classification impacts (PUBLICATION-STANDARD §1). Approval must identify the exact artifact **version/hash** (Constitution §21); casual agreement is not approval.
+- Founder approval of that exact version transitions it to `Published` (research status) / `Current Authoritative v1` (artifact state). **No post-approval analytical assembly is permitted** — any change after approval is a new version requiring a new review cycle (append-first, PUBLICATION-STANDARD §5).
 - **Class C (automatic canonical publication) is disabled** during the pilot (PUBLICATION-STANDARD §2). The deterministic-metadata allowlist is empty for the first slice (Founder has not approved any allowlist entry).
 
 ## 9. Structured Research Result (RESULT-CONTRACT)
 
-`research-result.md` must carry all RESULT-CONTRACT §2 fields: `research_id`, `company_id` + `universe` + `universe_version`, `as_of_date`, `research_version`, `research_status` (Published only after Founder approval), `investment_classification` (advisory, Founder-decided — never mechanically set), `thesis_status` (approved Thesis Lifecycle value), `confidence` (qualitative, evidence-linked), dimension summaries (business quality, moat, balance sheet, management, owner earnings, valuation context (advisory), permanent-loss mechanisms, monitoring indicators), `unresolved_questions` (explicit — honest empty states), `theme_feedback` (RESEARCH-FRAMEWORK §8), `artifact_references`, `review_status`, `source_map` (per-source status), `claim_lineage` (claim-level evidence references + calculation lineage), `portfolio_blind: true`.
+`research-result.md` must carry all RESULT-CONTRACT §2 fields: `research_id`, `company_id` + `universe` + `universe_version`, `as_of_date`, `research_version`, `research_status` (Published only after Founder approval), `investment_classification` (advisory, Founder-decided — never mechanically set), `thesis_status` (approved Thesis Lifecycle value), `confidence` (qualitative, evidence-linked), dimension summaries (business quality, moat, balance sheet, management, owner earnings, **`valuation_ranges` (advisory)** — field name preserved per RESULT-CONTRACT §2; with Modules N–P omitted the value is an **honest empty/not-produced entry carrying the Module N omission rationale** (DNA-016), never a renamed or silently weakened field — permanent-loss mechanisms, monitoring indicators), `unresolved_questions` (explicit — honest empty states), `theme_feedback` (RESEARCH-FRAMEWORK §8), `artifact_references`, `review_status`, `source_map` (per-source status), `claim_lineage` (claim-level evidence references + calculation lineage), `portfolio_blind: true`.
 
 **Source-coverage discipline (RESULT-CONTRACT §3):** any `missing_required` or `failed_retrieval` forces the result to `Incomplete` or `Review Required` — a polished report cannot appear complete despite missing primary sources. Contradictions remain visible; never averaged away. No evidence found ≠ evidence of non-existence.
+
+**State vs artifact distinction (LIFECYCLE §5):** `Published` is the CIW research status; `Current Authoritative` is the artifact state. The proposed v1 (pre-publication) remains retrievable — publication is an explicit Founder-approved transition of the exact reviewed version, and any later change is a new version (append-first).
+
+**Final-challenge discipline (RESEARCH-FRAMEWORK §7):** where a challenge question depends on an omitted module (e.g., expected return vs realistic alternatives — Module P), the documented answer is "not assessable under the approved N–P omissions", unless supportable strictly within the approved scope.
 
 ## 10. Non-Scope (hard constraints — CIW-CONCEPT §6/§7, FD-CIW-001..007)
 
@@ -159,11 +168,18 @@ The first slice is complete (CIW-CONCEPT §6 + QUALITY-GATES §5) only when:
 4. Founder approval recorded for the request (Research Gate), the publication (Publisher), and every canonical change.
 5. `research-result.md` reaches `Published` with `portfolio_blind: true` and complete source-coverage report.
 6. **Constraint check:** the slice ran with zero Cron jobs, zero DB/schema changes, zero new repos/profiles, zero Obsidian sync, zero earnings automation.
-7. Evidence log updated (per v3.7.1 milestone-evidence-log practice) with the verification tags (TEST_VERIFIED / STATIC_OBSERVATION / EXTERNAL_NOT_TESTED / INFERENCE).
+7. Project-level records updated — this means the **existing** operational session/closeout records (e.g., `PROJECT_STATE.md` closeout, session log) plus the review verdict persisted under `evidence/`; it is **not** a new CIW lifecycle artifact and does not expand the six-artifact slice (CONCEPT §6). Verification tags (TEST_VERIFIED / STATIC_OBSERVATION / EXTERNAL_NOT_TESTED / INFERENCE) recorded in those existing records.
 
 **Pilot outcome framing:** a successful slice validates the CIW workflow's feasibility — nothing more. Any inference that the methodology is economically validated, or that MSFT is endorsed, is explicitly rejected (RESEARCH-FRAMEWORK §1 minority warning).
 
-## 12. Risks and Mitigations
+## 12. Phase 2R Review Record
+
+- **Reviewer:** Sol Medium (`gpt-5.6-sol` via openai-codex), independent context — Phase 2R hostile review, dispatched 2026-08-03.
+- **Verdict (v0.1):** PASS WITH FIXES — 6 material findings (see `evidence/PHASE-2R-CIW-FIRST-SLICE-2026-08-03.md`).
+- **Disposition (v0.2):** all 6 findings addressed — (1) source-gate section added to request spec; Source Map kept in `Approved for Research` until gate passes; (2) quality gates repositioned before Independent Challenge; Reverse-DCF (N/A with Module N rationale) + Permanent-loss gates added; (3) versioned proposed result assembled before Founder Review; approval tied to exact version/hash; no post-approval assembly; status/artifact distinction explicit; (4) `valuation_ranges` field name restored with honest empty/not-produced value + omission rationale; challenge "not assessable" rule stated; (5) numeric rework cap removed; escalation-record requirement added; (6) evidence-log clarified as existing project-level records, not a new slice artifact.
+- **Re-review:** dispatched against v0.2 (workflow rule — architecture changes after review require mandatory re-review) before FD-CIW-011.
+
+## 13. Risks and Mitigations
 
 | Risk | Mitigation |
 |---|---|
@@ -176,5 +192,5 @@ The first slice is complete (CIW-CONCEPT §6 + QUALITY-GATES §5) only when:
 
 ---
 
-*Draft v0.1 (FD-CIW-010). Sources: CIW-CONCEPT §6, CIW-LIFECYCLE §6–§7, CIW-REQUEST-CONTRACT §2–§7, CIW-QUALITY-GATES §1–§6, CIW-RESULT-CONTRACT §2–§6, CIW-PUBLICATION-STANDARD §1–§3, CIW-RESEARCH-FRAMEWORK §1–§8; FD-CIW-001..010.*
+*Draft v0.2 (FD-CIW-010). Phase 2R: PASS WITH FIXES (Sol Medium, 2026-08-03) — 6 findings addressed. Sources: CIW-CONCEPT §6, CIW-LIFECYCLE §6–§7, CIW-REQUEST-CONTRACT §2–§7, CIW-QUALITY-GATES §1–§6, CIW-RESULT-CONTRACT §2–§6, CIW-PUBLICATION-STANDARD §1–§3, CIW-RESEARCH-FRAMEWORK §1–§8; FD-CIW-001..010.*
 <!-- 2026-08-03 01:16 UTC+7 -->
