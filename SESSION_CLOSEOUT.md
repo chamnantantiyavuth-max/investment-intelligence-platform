@@ -27,6 +27,7 @@ State:       CIW governance chain COMPLETE (map → FD-CIW-001..007 → spec v0.
 | D3 | **FD-CIW-008: 7 CIW specs v0.2 batch approved** (CONCEPT, RESEARCH-FRAMEWORK, LIFECYCLE, REQUEST-CONTRACT, RESULT-CONTRACT, QUALITY-GATES, PUBLICATION-STANDARD) |
 | D4 | Plan: 12 targeted amendments (11 files + map promotion) — approved |
 | D5 | Sequence: B (commit) → C (closeout) → A (pilot shortlist) |
+| D6 | **FD-CIW-009: Pilot company = MSFT** (picked from shortlist of 5: MSFT/JNJ/AAPL/META/NVDA) |
 
 ## Deliverables Detail
 
@@ -61,4 +62,4 @@ hermes --profile iip
 4. Recall obsidian-memory (MEM-IIP-006/007, CURRENT-STATE)
 5. Founder decides: pilot shortlist (FD-CIW-007) / Phase 11 design / other
 
-<!-- 2026-08-02 23:50 UTC+7 -->
+<!-- 2026-08-02 23:55 UTC+7 -->

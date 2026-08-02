@@ -6,8 +6,8 @@
 ## Current state
 
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW) NOT authorized — deferred per FD #44 + FD-CIW-001 (2 Aug 2026).**
-- Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` (documentation-only; Phase 11 implementation still not opened; amendment map still DRAFT).
-- Latest FDs: `FD-CIW-001..008` — CIW governance decisions (2 August 2026; 001–007 all Option A, 008 spec batch approval).
+- Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009).**
+- Latest FDs: `FD-CIW-001..009` — CIW governance decisions (2 August 2026; 001–007 all Option A, 008 spec batch approval, 009 pilot company = MSFT).
 - Tests: **262/262 all passing** — verified 2 August 2026.
 
 ## Build Metrics (single source of truth — v3.3.0)
@@ -18,7 +18,7 @@
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-02 |
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
 | Commits | 70 on `main` (ahead of origin by 17) | 2026-08-02 |
-| FDs approved | #1–44 + FD-CIW-001..008 | 2026-08-02 |
+| FDs approved | #1–44 + FD-CIW-001..009 | 2026-08-02 |
 | closeout_status | **completed** (CIW spec v0.2 + amendments session) | 2026-08-02 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
@@ -34,7 +34,7 @@
 
 ## Next allowed action
 
-CIW governance foundation complete (council verdict + amendment map + FD-CIW-001..008 + 7 approved specs). Next step requires Founder decision — options: (a) approve amendment map + issue targeted amendments per Constitution §21 (DNA-019/020, Operating Model §5.7, ROADMAP Phase 11 row, FDs register, CANDIDATE-AND-QUEUE status mapping, EVIDENCE/SECURITY source gate, DEFERRED-DECISIONS, OPEN-QUESTIONS, GLOSSARY, INDEX), (b) pilot company shortlist (FD-CIW-007 — after specs, which are now approved), or (c) Founder-directed task. Phase 11 implementation still gated behind a separate named FD superseding FD #44.
+CIW governance foundation complete (council verdict + amendment map + FD-CIW-001..009 + 7 approved specs + pilot company **MSFT** selected). Next step requires Founder decision: **open Phase 11 design/implementation** — requires a separate named FD superseding FD #44 — then run the first-slice pilot per CIW-CONCEPT §6 (Approved Research Request → Source Map → bounded initial research → Independent Challenge → Founder Review → structured Research Result). Phase 11 implementation still gated behind that named FD.
 
 ## Bootstrap sources
 
@@ -59,7 +59,7 @@ CIW governance foundation complete (council verdict + amendment map + FD-CIW-001
 | Field | Value |
 |-------|-------|
 | closeout_status | completed |
-| fd_count | 44 + 8 CIW (52 total) |
-| audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) |
+| fd_count | 44 + 9 CIW (53 total) |
+| audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) → pilot company selected (FD-CIW-009, MSFT) |
 
-<!-- 2026-08-02 23:50 UTC+7 -->
+<!-- 2026-08-02 23:55 UTC+7 -->
