@@ -85,7 +85,12 @@ These decisions are approved constitutional constraints.
 
 52. FD-CIW-008 — CIW Spec v0.2 Batch Approval: all 7 CIW specifications approved (CONCEPT, RESEARCH-FRAMEWORK, LIFECYCLE, REQUEST-CONTRACT, RESULT-CONTRACT, QUALITY-GATES, PUBLICATION-STANDARD) at `project-definition/company-intelligence-workbench/`; documentation-only; does NOT authorize implementation/pilot/schema/Cron; targeted amendments to existing approved docs issued separately (2026-08-02). 2 August 2026.
 
+53. FD-CIW-009 — CIW Pilot Company SELECTED: MSFT (Microsoft Corporation, NASDAQ: MSFT) — picked from Founder-reviewed shortlist of 5 (MSFT/JNJ/AAPL/META/NVDA, all from the existing FO pipeline universe with real yfinance + 13F data). Rationale: multi-segment business exercises Modules A–Q meaningfully; stable enough for clean first-slice workflow validation; richest source base; real data already in pipeline. Selection per FD-CIW-007 criteria: source-rich, US-listed common stock (DNA-017 universe), portfolio-blind. Pilot validates workflow feasibility — NOT endorsement of the stock (Council minority warning). Phase 11 implementation still requires a separate named FD superseding FD #44. 2 August 2026.
+
+54. FD-CIW-010 — Phase 11 (CIW) Design Path OPENED: supersedes FD #44 for DESIGN purposes only. Authorizes drafting the CIW first-slice design plan for pilot company MSFT per CIW-CONCEPT §6 (Approved Request → Source Map → bounded initial research → Independent Challenge → Founder Review → structured Research Result). Documentation-only — no code, schema, Cron, new repository/profile, Obsidian sync, or earnings automation. Implementation/pilot execution remains DEFERRED — requires a further named FD superseding FD #44 before any execution. 3 August 2026.
+
 ---
 
 **Amendment record (Constitution §21):** items 45–52 (FD-CIW-001..008) added 2026-08-02 — affected FD: FD-CIW-001..008 (approved 2 Aug 2026); reason: CIW governance decisions + spec v0.2 batch approval; trade-offs: Phase 11 stays deferred, implementation gated behind separate named FD; downstream impact: DNA-019/020, Operating Model §5.7, ROADMAP Phase 11, CIW specs; Founder approval: FD-CIW-008 (batch); amendment history: #1–44 (original) → #45–52 FD-CIW rows added.
-<!-- 2026-08-02 23:45 UTC+7 -->
+**Amendment record (Constitution §21):** items 53–54 (FD-CIW-009..010) added 2026-08-03 — affected FD: FD-CIW-009 (pilot company MSFT) + FD-CIW-010 (Phase 11 Design Path opened; supersedes FD #44 for design purposes only); reason: pilot selection recorded + design path authorization; trade-offs: implementation still gated behind a separate named FD; amendment history: #1–44 (original) → #45–52 (FD-CIW-001..008) → #53–54 (FD-CIW-009..010).
+<!-- 2026-08-03 01:16 UTC+7 -->
