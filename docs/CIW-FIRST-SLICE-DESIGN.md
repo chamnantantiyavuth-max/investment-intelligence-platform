@@ -1,11 +1,11 @@
 # CIW First-Slice Design — Pilot Company: MSFT
 
-**Status:** DRAFT v0.2 — Phase 2R review COMPLETE (PASS WITH FIXES, Sol Medium 2026-08-03); 6 findings addressed in v0.2; re-review dispatched
-**Version:** 0.2
+**Status:** DRAFT v0.3 — Phase 2R re-review COMPLETE (PASS WITH FIXES, 5/6 ADDRESSED + F4 completed in v0.3); targeted confirmation dispatched
+**Version:** 0.3
 **Date:** 2026-08-03
 **Owner:** Founder
 **Authority:** FD-CIW-010 (Phase 11 Design Path OPENED — supersedes FD #44 for DESIGN purposes only); CIW-CONCEPT §6 (Pilot Scope); CIW-LIFECYCLE §6 (First-Slice Lifecycle); CIW-REQUEST-CONTRACT; CIW-QUALITY-GATES; CIW-RESULT-CONTRACT; CIW-PUBLICATION-STANDARD; CIW-RESEARCH-FRAMEWORK
-**Approval:** Pending — Phase 2R re-review pass → Founder approval → FD-CIW-011 (pilot execution authorization)
+**Approval:** Pending — Phase 2R targeted confirmation pass → Founder approval → FD-CIW-011 (pilot execution authorization)
 **Status after approval:** Documentation only. This design does NOT authorize execution; pilot execution requires FD-CIW-011.
 
 ---
@@ -55,7 +55,7 @@ No step may be skipped. FD #44 remains in force for everything outside the desig
 
 ```
 docs/
-├── CIW-FIRST-SLICE-DESIGN.md        ← this design (v0.1 draft → v0.1 approved)
+├── CIW-FIRST-SLICE-DESIGN.md        ← this design (v0.3 draft — pending targeted confirmation + Founder approval)
 └── ciw-pilot-msft/
     ├── CRR-2026-0001-request.md     ← Approved Research Request (Research Gate)
     ├── source-map.md                ← Source Map + source-coverage report
@@ -135,7 +135,7 @@ The research draft must carry the **completion standard** (QUALITY-GATES §4): s
 
 ## 9. Structured Research Result (RESULT-CONTRACT)
 
-`research-result.md` must carry all RESULT-CONTRACT §2 fields: `research_id`, `company_id` + `universe` + `universe_version`, `as_of_date`, `research_version`, `research_status` (Published only after Founder approval), `investment_classification` (advisory, Founder-decided — never mechanically set), `thesis_status` (approved Thesis Lifecycle value), `confidence` (qualitative, evidence-linked), dimension summaries (business quality, moat, balance sheet, management, owner earnings, **`valuation_ranges` (advisory)** — field name preserved per RESULT-CONTRACT §2; with Modules N–P omitted the value is an **honest empty/not-produced entry carrying the Module N omission rationale** (DNA-016), never a renamed or silently weakened field — permanent-loss mechanisms, monitoring indicators), `unresolved_questions` (explicit — honest empty states), `theme_feedback` (RESEARCH-FRAMEWORK §8), `artifact_references`, `review_status`, `source_map` (per-source status), `claim_lineage` (claim-level evidence references + calculation lineage), `portfolio_blind: true`.
+`research-result.md` must carry all RESULT-CONTRACT §2 fields: `research_id`, `company_id` + `universe` + `universe_version`, `as_of_date`, `research_version`, `research_status` (Published only after Founder approval), `investment_classification` (advisory, Founder-decided — never mechanically set), `thesis_status` (approved Thesis Lifecycle value), `confidence` (qualitative, evidence-linked), dimension summaries (business quality, moat, balance sheet, management, owner earnings, **`valuation_ranges` (advisory)** — field name preserved per RESULT-CONTRACT §2; with Modules N–P omitted the value is an **honest empty/not-produced entry carrying the Module N omission rationale** (DNA-016), never a renamed or silently weakened field — permanent-loss mechanisms, **`monitoring indicators` — with Module Q omitted, an honest empty/not-produced entry carrying the Module Q omission rationale** (DNA-016; same discipline as `valuation_ranges`)), `unresolved_questions` (explicit — honest empty states), `theme_feedback` (RESEARCH-FRAMEWORK §8), `artifact_references`, `review_status`, `source_map` (per-source status), `claim_lineage` (claim-level evidence references + calculation lineage), `portfolio_blind: true`.
 
 **Source-coverage discipline (RESULT-CONTRACT §3):** any `missing_required` or `failed_retrieval` forces the result to `Incomplete` or `Review Required` — a polished report cannot appear complete despite missing primary sources. Contradictions remain visible; never averaged away. No evidence found ≠ evidence of non-existence.
 
@@ -177,7 +177,8 @@ The first slice is complete (CIW-CONCEPT §6 + QUALITY-GATES §5) only when:
 - **Reviewer:** Sol Medium (`gpt-5.6-sol` via openai-codex), independent context — Phase 2R hostile review, dispatched 2026-08-03.
 - **Verdict (v0.1):** PASS WITH FIXES — 6 material findings (see `evidence/PHASE-2R-CIW-FIRST-SLICE-2026-08-03.md`).
 - **Disposition (v0.2):** all 6 findings addressed — (1) source-gate section added to request spec; Source Map kept in `Approved for Research` until gate passes; (2) quality gates repositioned before Independent Challenge; Reverse-DCF (N/A with Module N rationale) + Permanent-loss gates added; (3) versioned proposed result assembled before Founder Review; approval tied to exact version/hash; no post-approval assembly; status/artifact distinction explicit; (4) `valuation_ranges` field name restored with honest empty/not-produced value + omission rationale; challenge "not assessable" rule stated; (5) numeric rework cap removed; escalation-record requirement added; (6) evidence-log clarified as existing project-level records, not a new slice artifact.
-- **Re-review:** dispatched against v0.2 (workflow rule — architecture changes after review require mandatory re-review) before FD-CIW-011.
+- **Re-review (v0.2):** PASS WITH FIXES — F1/F2/F3/F5/F6 ADDRESSED, F4 PARTIAL (monitoring indicators honest-empty + Module Q rationale), 1 new issue (stale v0.1 file-tree annotation). Both completed in v0.3. Scope Expansion: none.
+- **Targeted confirmation:** dispatched against v0.3 (reviewer's stated next step) before FD-CIW-011.
 
 ## 13. Risks and Mitigations
 
@@ -192,5 +193,5 @@ The first slice is complete (CIW-CONCEPT §6 + QUALITY-GATES §5) only when:
 
 ---
 
-*Draft v0.2 (FD-CIW-010). Phase 2R: PASS WITH FIXES (Sol Medium, 2026-08-03) — 6 findings addressed. Sources: CIW-CONCEPT §6, CIW-LIFECYCLE §6–§7, CIW-REQUEST-CONTRACT §2–§7, CIW-QUALITY-GATES §1–§6, CIW-RESULT-CONTRACT §2–§6, CIW-PUBLICATION-STANDARD §1–§3, CIW-RESEARCH-FRAMEWORK §1–§8; FD-CIW-001..010.*
+*Draft v0.3 (FD-CIW-010). Phase 2R: PASS WITH FIXES (Sol Medium, 2026-08-03) — 6 findings addressed; re-review: F1-F3/F5/F6 ADDRESSED, F4 completed in v0.3. Sources: CIW-CONCEPT §6, CIW-LIFECYCLE §6–§7, CIW-REQUEST-CONTRACT §2–§7, CIW-QUALITY-GATES §1–§6, CIW-RESULT-CONTRACT §2–§6, CIW-PUBLICATION-STANDARD §1–§3, CIW-RESEARCH-FRAMEWORK §1–§8; FD-CIW-001..010.*
 <!-- 2026-08-03 01:16 UTC+7 -->

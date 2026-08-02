@@ -76,3 +76,35 @@ The warning is visible and correctly framed at `docs/CIW-FIRST-SLICE-DESIGN.md:2
 
 *Persisted 2026-08-03 01:29 UTC+7. Verdict source: delegation `deleg_f8fc2b51` (Sol Medium, gpt-5.6-sol via openai-codex, read-only).*
 <!-- 2026-08-03 01:29 UTC+7 -->
+
+
+---
+
+## Phase 2R Re-Review (v0.2) — Verdict (verbatim, deleg_ace5a55c, Sol Medium)
+
+## Verdict — PASS WITH FIXES
+
+## Findings Verification
+
+- **F1 — ADDRESSED:** Source Map assembly kept in `Approved for Research`; `source_gate` defined with all six categories, `justified-absent`, derived-duplicate exclusion, blocking behavior, real-source admission fields.
+- **F2 — ADDRESSED:** complete §2 gate inventory placed between bounded research and Independent Challenge; Reverse-DCF N/A with Module N rationale; Permanent-loss applicable under Module K.
+- **F3 — ADDRESSED:** versioned proposed result before Founder Review; exact version/hash approval; no post-approval assembly; `Published`/`Current Authoritative` distinguished; prior versions retrievable.
+- **F4 — PARTIAL (completed in v0.3):** `valuation_ranges` restored with honest not-produced value; expected-return answer "not assessable" stated; **missing**: `monitoring indicators` (Module Q omitted) lacked the same honest-empty + Module Q omission rationale → added in v0.3.
+- **F5 — ADDRESSED:** invented two-cycle cap removed; Founder/request-bounded retries, no infinite loops, repeated-failure escalation record present.
+- **F6 — ADDRESSED:** evidence updates identified as existing project-level records outside the six-artifact tree.
+
+## New Issues Introduced
+
+1. Stale "v0.1 draft → v0.1 approved" file-tree annotation (design :58) → corrected to v0.3 pending state.
+
+## Evidence Gaps
+
+- Design-only review: actual request, Source Map, source admissions, challenge artifact, result hash, Founder approval record, preserved versions do not yet exist (expected — pre-execution).
+- Reviewer/fallback availability, direct-source inspection, source-gate coverage, calculation replayability, runtime publication blocking remain unverified until an authorized pilot.
+- HEAD verified `9f5f70e`; working tree clean; read-only honored.
+
+## Scope Expansion Check — none
+
+## Re-review Recommendation — fix first (both items completed in v0.3), then targeted confirmation, then: Phase 2R pass → Founder design approval → FD-CIW-011 → CRR-2026-0001 draft + Founder Research Gate → authorized pilot.
+
+<!-- 2026-08-03 01:36 UTC+7 -->
