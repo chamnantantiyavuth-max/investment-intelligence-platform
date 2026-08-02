@@ -1,56 +1,51 @@
-# Session Closeout — 2 August 2026 (CIW Bible Council + Governance Decisions)
+# Session Closeout — 2 August 2026 (CIW Spec v0.2 + Targeted Amendments)
 
-> **Profile:** iip | **Model:** deepseek-v4-flash (Parent) + gpt-5.6-sol (Council) | **Repo:** `investment-intelligence-platform`
+> **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
 
 ## Session Summary
 
 ```
-Trigger:     Council the ChatGPT CIW Bible proposal + review project + write v3.7.1 plan
-Council:     Bible Council — verdict FOUNDER DECISION REQUIRED (11 findings: 3 CRITICAL, 8 HIGH)
-             Reviewer: gpt-5.6-sol (openai-codex) — ran successfully, NO fallback needed
-Founder:     Accepted verdict + 10 Required Changes (Option A) → FD-CIW-001..007 approved (all A)
-Deliverables: evidence/COUNCIL_DECISION-bible-2026-08-02.md
-             docs/CIW-INTEGRATION-AMENDMENT-MAP.md
-             Vault FD register: +7 rows (FD-CIW-001..007)
-State:       Phase 11 (CIW) remains DEFERRED — in-principle concept approval only
+Trigger:     Continue from CIW Bible Council (2 Aug evening) — recall MEM-IIP-006, read state files
+Flow:        Status + options → A (draft CIW spec v0.2) → plan → approve → 7 specs drafted
+             → batch approve (FD-CIW-008) → amendment plan → approve → 11 targeted amendments + map approval
+             → commit 6931168 → closeout
+Deliverables: project-definition/company-intelligence-workbench/ (7 specs, Approved v0.2)
+             docs/CIW-INTEGRATION-AMENDMENT-MAP.md (DRAFT → APPROVED, §15 gate COMPLETE)
+             11 §21 amendment records in approved docs (DNA, Operating Model, FDs, CANDIDATE, EVIDENCE,
+             SECURITY, ROADMAP, DEFERRED-DECISIONS, OPEN-QUESTIONS, GLOSSARY, INDEX)
+             Vault fd-register: +FD-CIW-008 | Memory: MEM-IIP-007 (decision), MEM-IIP-008 (lesson)
+State:       CIW governance chain COMPLETE (map → FD-CIW-001..007 → spec v0.2 → amendments)
+             Phase 11 implementation still DEFERRED (FD #44 in force) — documentation only
 ```
 
-## Council Verdict Highlights
-
-| Finding class | Count | Key items |
-|---------------|-------|-----------|
-| CRITICAL | 3 | CIW as 5th layer demotes Phase 8; FD #44 reauthorization-by-implication; DNA-017 universe expansion |
-| HIGH | 8 | valuation veto risk; unmapped states; Class C automation hole; source-gate gap; non-auditable lifecycle; non-independent review; oversized pilot; wholesale-Bible omission risk |
-
-**Minority warning:** pilot validates workflow feasibility, not the value-investing methodology's economic validity.
-
-## Decisions Approved (all Option A)
+## Decisions Approved
 
 | ID | Decision |
 |----|----------|
-| D1 | Accept Council verdict + 10 Required Changes as basis; Phase 11 stays deferred |
-| FD-CIW-001 | Capability: in-principle only — CIW = Phase 11 workflow inside FO path; does NOT authorize implementation; FD #44 in force |
-| FD-CIW-002 | Execution: concept-only; bounded module in existing repo when authorized |
-| FD-CIW-003 | Framework: research methodology (advisory), not operational standard |
-| FD-CIW-004 | Publication: Founder review for every canonical change; deterministic-metadata allowlist only |
-| FD-CIW-005 | Cron: Class A+B only (observe + draft); no Class C, no promotion |
-| FD-CIW-006 | Obsidian: narrative layer confirmed; never sole structured state |
-| FD-CIW-007 | Pilot company: deferred — shortlist after specs (US-listed, source-rich, portfolio-blind) |
-| D9 | Stop — governance foundation complete |
+| D1 | Option A: draft CIW spec v0.2 (documentation-only) from amendment map |
+| D2 | Plan: 8 files (7 specs + README index) — approved |
+| D3 | **FD-CIW-008: 7 CIW specs v0.2 batch approved** (CONCEPT, RESEARCH-FRAMEWORK, LIFECYCLE, REQUEST-CONTRACT, RESULT-CONTRACT, QUALITY-GATES, PUBLICATION-STANDARD) |
+| D4 | Plan: 12 targeted amendments (11 files + map promotion) — approved |
+| D5 | Sequence: B (commit) → C (closeout) → A (pilot shortlist) |
 
-## Deferred (per FD #44 / FD-CIW-001..007)
+## Deliverables Detail
 
-- Phase 11 implementation, automation, schemas, repo changes, pilot (require separate named FD superseding FD #44)
-- CIW spec v0.2 drafting (next session option — documentation only)
-- Pilot company selection (FD-CIW-007)
-- AM/CS API-backed workflows, cross-module institutional integration, final stack, DB expansion (unchanged)
+- **7 CIW specs** (Approved v0.2, all grounded in Council Required Changes #1–#10 + amendment map; rejected elements excluded: 5-layer structure, DNA-017 rewording, Class C publication, mechanical "Attractive Below Price")
+- **Amendment map** promoted to APPROVED — `docs/CIW-INTEGRATION-AMENDMENT-MAP.md`; §15 Approval Gate marked COMPLETE
+- **11 targeted amendments** per Constitution §21, each with amendment record: DNA-019/020, Operating Model §5.7, FOUNDERS-DECISIONS #45–52, CANDIDATE §3.3 CIW mapping, EVIDENCE-MODEL §11, SECURITY source-admission note, ROADMAP Phase 11 filled, DEFERRED-DECISIONS CIW deferrals, OPEN-QUESTIONS (+handoff contract resolved), DOMAIN-GLOSSARY CIW terms, 03-INDEX CIW section
+
+## Git
+
+- Commit `6931168` — 23 files, +1240/−73 — "feat(FD-CIW-008): CIW governance complete"
+- Still untracked (pending decisions): `CODEBUDDY.md`, `ChatGPT/`
+- Still ahead of origin: 16 commits (was 15)
 
 ## Key Learnings
 
-- **Sol Medium worked this session** — gpt-5.6-sol via openai-codex completed the council (373s, 11 API calls), no Luna fallback. The 2 Aug morning HTTP 400 was transient or config-dependent — do not assume permanent unavailability (updates MEM-IIP-005).
-- **Council verdict pattern:** "FOUNDER DECISION REQUIRED" with Option-A recommendations → Founder accepted all 8 in sequence, one per turn. Fast, decisive.
-- **Artifact Gate:** council artifact persisted BEFORE Founder presentation; amendment map is the Required Change #10 deliverable.
-- **Constitution §21 honored:** no constitutional amendment proposed — amendment-map approach keeps authority hierarchy intact.
+- **Plan-first pattern works**: each step (spec draft, amendments) followed plan → approve → execute → verify; Founder approves fast with batch decisions
+- **search_files fails on Windows paths** (rg IO error) — terminal grep/ls workaround (MEM-IIP-008)
+- **Sibling subagent concurrency**: vault fd-register was modified by another session mid-work — anchor patches on unique content, verify diff
+- **Timestamp discipline**: mid-file inserts need footer appended at true EOF; 3 files caught and fixed
 
 ## Start Next Session
 
@@ -61,9 +56,9 @@ hermes --profile iip
 
 ### Loop Protocol:
 1. อ่าน AGENTS.md
-2. อ่าน PROJECT_STATE.md (FD-CIW-001..007 recorded; Phase 11 deferred)
+2. อ่าน PROJECT_STATE.md (FD-CIW-008 recorded; CIW governance chain complete; Phase 11 deferred)
 3. อ่าน SESSION_CLOSEOUT.md นี้
-4. Recall obsidian-memory (MEM-IIP-006, CURRENT-STATE)
-5. Founder decides: draft CIW spec v0.2 / open Phase 11 design / other direction
+4. Recall obsidian-memory (MEM-IIP-006/007, CURRENT-STATE)
+5. Founder decides: pilot shortlist (FD-CIW-007) / Phase 11 design / other
 
-<!-- 2026-08-02 23:48 UTC+7 -->
+<!-- 2026-08-02 23:50 UTC+7 -->

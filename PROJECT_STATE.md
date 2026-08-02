@@ -17,9 +17,9 @@
 | Python tests | 262/262 passing | 2026-08-02 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-02 |
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
-| Commits | 68 on `main` (ahead of origin by 15) | 2026-08-02 |
+| Commits | 70 on `main` (ahead of origin by 17) | 2026-08-02 |
 | FDs approved | #1–44 + FD-CIW-001..008 | 2026-08-02 |
-| closeout_status | **completed** (CIW council session) | 2026-08-02 |
+| closeout_status | **completed** (CIW spec v0.2 + amendments session) | 2026-08-02 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -47,11 +47,11 @@ CIW governance foundation complete (council verdict + amendment map + FD-CIW-001
 
 ## Lifecycle sync
 
-- Last session: 2026-08-02 CIW Bible Council + governance decisions (evening)
-- Outcome: Council verdict FOUNDER DECISION REQUIRED → accepted (Option A) → FD-CIW-001..007 approved → amendment map drafted → session closed
-- Evidence: `evidence/COUNCIL_DECISION-bible-2026-08-02.md`, `docs/CIW-INTEGRATION-AMENDMENT-MAP.md`, `evidence/COUNCIL_DECISION-full-review-2026-08-02.md`, `evidence/FULL_PROJECT_REVIEW-2026-08-02.md`
+- Last session: 2026-08-02 CIW Spec v0.2 drafting + batch approval + targeted amendments (evening)
+- Outcome: 7 CIW specs approved (FD-CIW-008) → amendment map approved → 11 targeted amendments issued (Constitution §21) → CIW governance chain complete; Phase 11 implementation still deferred
+- Evidence: `docs/CIW-INTEGRATION-AMENDMENT-MAP.md`, `project-definition/company-intelligence-workbench/`, `evidence/COUNCIL_DECISION-bible-2026-08-02.md`
 - Blockers: none
-- Next phase: Founder decision required
+- Next phase: Founder decision — pilot shortlist (FD-CIW-007) / Phase 11 design / other
 - Last verified: 2026-08-02
 
 ## Session
@@ -62,4 +62,4 @@ CIW governance foundation complete (council verdict + amendment map + FD-CIW-001
 | fd_count | 44 + 8 CIW (52 total) |
 | audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) |
 
-<!-- 2026-08-02 23:48 UTC+7 -->
+<!-- 2026-08-02 23:50 UTC+7 -->
