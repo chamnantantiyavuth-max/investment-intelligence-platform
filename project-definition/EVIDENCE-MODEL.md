@@ -213,3 +213,12 @@ Data Confidence applies at multiple levels: individual evidence records, aggrega
 | Real source ingestion and reconciliation | — | ✅ | ✅ | ✅ | ✅ |
 | Data quality monitoring | — | ✅ | ✅ | ✅ | ✅ |
 | AI extraction and classification lineage | — | — | — | ✅ | ✅ |
+
+## 11. CIW Research Results (cross-reference)
+
+The Company Intelligence Workbench (Phase 11 deep-research workflow, FD-CIW-001/008) applies this Evidence Model through its **Research Result contract** — `project-definition/company-intelligence-workbench/CIW-RESULT-CONTRACT.md` — which specifies, per Required Change #7: the **pilot source gate**, **real-source admission contract** (satisfying `operational/SECURITY-AND-UNTRUSTED-CONTENT.md` §Data-Source Admission), **source-coverage reporting** (missing/failed sources force `Incomplete` or `Review Required`), **claim-level evidence references**, and **calculation lineage** (rerunnable from raw sources). CIW adds no new evidence categories — it operationalizes §§2–7 above.
+
+---
+
+**Amendment record (Constitution §21):** §11 added 2026-08-02 — affected FD: FD-CIW-007, FD-CIW-008 (Required Change #7); reason: pilot source gate + lineage contract located in CIW spec; trade-offs: no duplicate contract, single source of truth in CIW-RESULT-CONTRACT; downstream impact: CIW RESULT contract; Founder approval: FD-CIW-008 (batch); amendment history: v0.1 original §§1–10 → v0.2 §11 added.
+<!-- 2026-08-02 23:45 UTC+7 -->

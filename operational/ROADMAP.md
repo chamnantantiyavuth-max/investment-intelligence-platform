@@ -82,3 +82,15 @@ Track hedge fund & institutional investor 13F filings, concentration ratios, and
 - Feeds: AM (conviction boost), FO (Hidden Signals), Theme (sector rotation), CS (macro positioning)
 
 ## Phase 11 — Deep Research Handoff
+
+Company Intelligence Workbench (CIW): bounded deep-research handoff within the Fundamental & Opportunity path (Operating Model §5.7).
+**Status: Concept + specs approved; implementation deferred.**
+- Concept approved in principle (FD-CIW-001, 2 Aug 2026) — NOT a fifth product layer
+- CIW spec v0.2 approved (FD-CIW-008, 2 Aug 2026): `project-definition/company-intelligence-workbench/` (CONCEPT, RESEARCH-FRAMEWORK, LIFECYCLE, REQUEST-CONTRACT, RESULT-CONTRACT, QUALITY-GATES, PUBLICATION-STANDARD)
+- Implementation, pilot, schemas, and automation remain DEFERRED until a separate named Founder Decision supersedes FD #44
+- Pilot company selection deferred (FD-CIW-007) — shortlist after targeted amendments
+
+---
+
+**Amendment record (Constitution §21):** Phase 11 row filled 2026-08-02 — affected FD: FD-CIW-001, FD-CIW-008; reason: previously empty row; trade-offs: none (deferral status unchanged); downstream impact: CIW specs; Founder approval: FD-CIW-008 (batch); amendment history: Phase 11 empty → filled with CIW status.
+<!-- 2026-08-02 23:45 UTC+7 -->

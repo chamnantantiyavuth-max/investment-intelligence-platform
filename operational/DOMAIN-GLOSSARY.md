@@ -64,3 +64,23 @@ The final human authorization point within the platform. AI proposes; the Founde
 
 ## External Integration Boundary
 The formal boundary separating the Investment Intelligence Platform from downstream systems (Capital Command, Trading / Execution Systems). The platform produces intelligence packages; external systems consume them.
+
+## Company Intelligence Workbench (CIW)
+The deferred Phase 11 deep-research workflow inside the Fundamental & Opportunity Intelligence path (Operating Model §5.7). A bounded research handoff — not a fifth product layer. Concept approved in principle (FD-CIW-001); specs v0.2 approved (FD-CIW-008); implementation deferred.
+
+## Source Map
+The required pre-research inventory of sources for a CIW research assignment (annual/interim filings, earnings releases and transcripts, proxy, debt and segment disclosures, competitor filings, regulatory and industry sources, historical filings for normalization). Missing sources are visible with reasons, never hidden (CIW-REQUEST-CONTRACT §4).
+
+## Research Request
+The formal, Founder-approved contract authorizing CIW deep research on exactly one company. Carries research question, governing universe + version, known evidence and counterevidence, required depth and outputs, applicable modules with justified omissions, and `portfolio_blind: true` (CIW-REQUEST-CONTRACT).
+
+## Research Result
+The compact structured record CIW returns to the platform — source map with coverage status, claim-level evidence references, calculation lineage, dimension summaries, thesis status, confidence, unresolved questions, and Theme feedback. Not the full paper (CIW-RESULT-CONTRACT).
+
+## Artifact Authority States
+Document-level states for CIW artifacts: Draft → Reviewed Draft → Founder-Reviewed → Current Authoritative → Superseded / Archived / Rejected. Only the Founder creates Current Authoritative. Prior versions remain retrievable (append-first) (CIW-LIFECYCLE §5).
+
+---
+
+**Amendment record (Constitution §21):** CIW terms added 2026-08-02 — affected FD: FD-CIW-001..008; reason: amendment map §12 (glossary additions); trade-offs: none; downstream impact: CIW specs; Founder approval: FD-CIW-008 (batch); amendment history: v0.1 original → v0.2 CIW terms added.
+<!-- 2026-08-02 23:45 UTC+7 -->

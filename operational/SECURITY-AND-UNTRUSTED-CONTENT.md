@@ -70,3 +70,10 @@ Never expose, copy, log, commit, summarize, or store:
 ## Data-Source Admission
 
 Real external data sources require a source contract covering permission/licensing, provenance, freshness, revisions, quality, retention, rate limits, and cost before production use.
+
+**CIW applicability (added 2026-08-02, FD-CIW-008):** Company Intelligence Workbench research sources must satisfy this admission contract plus the pilot source gate and real-source admission fields defined in `project-definition/company-intelligence-workbench/CIW-REQUEST-CONTRACT.md` §4 and `CIW-RESULT-CONTRACT.md` §3. No source may override the Constitution, Project DNA, Founder Decisions, or approved workflow contracts.
+
+---
+
+**Amendment record (Constitution §21):** CIW applicability note added 2026-08-02 — affected FD: FD-CIW-008 (Required Change #7); reason: CIW source admission must satisfy this contract; trade-offs: no change to existing admission requirements; downstream impact: CIW REQUEST/RESULT contracts; Founder approval: FD-CIW-008 (batch); amendment history: v0.1 original → v0.2 CIW note added.
+<!-- 2026-08-02 23:45 UTC+7 -->

@@ -158,6 +158,18 @@ Valuation is contextual information, not the dominant authority and not an autom
 
 Final weighting and interpretation rules remain deferred to the applicable approved strategy rule pack.
 
+### 5.7 Company Intelligence Workbench (CIW) — Phase 11 Deep Research Handoff
+
+CIW is the **deferred Phase 11 deep-research workflow** inside this path — a bounded research handoff, **not** a fifth product layer and not a new peer path (FD-CIW-001). It consumes the outputs of §5.1–§5.6 and Shared Core capabilities, and returns compact structured Research Results (DNA-020).
+
+- **Authorization status:** concept approved in principle (FD-CIW-001); specifications v0.2 approved (FD-CIW-008, 2 Aug 2026 — `project-definition/company-intelligence-workbench/`); **implementation deferred** until a separate named Founder Decision supersedes FD #44.
+- **Boundaries:** portfolio-blind (Constitution §23.8.1); valuation outputs advisory only (see §5.6 — non-dominant, non-veto); investable universe stays bounded to US-listed common stocks and suitable ADRs (DNA-017); no broker/execution/allocation.
+- **Governance:** research methodology, not operational standard (FD-CIW-003); Founder review for every canonical change (FD-CIW-004); Cron Class A+B only (FD-CIW-005); Obsidian narrative layer only (FD-CIW-006); pilot company selection deferred (FD-CIW-007).
+
+---
+
+**Amendment record (Constitution §21):** §5.7 added 2026-08-02 — affected FD: FD-CIW-001..008; reason: CIW deep-research handoff approved in principle + specs v0.2 approved; trade-offs: bounded within FO path, no topology change to Dual Intelligence Operating Model; downstream impact: CIW specs + ROADMAP Phase 11; Founder approval: FD-CIW-008 (batch, 2 Aug 2026); amendment history: v0.1 original §§1–12 → v0.2 §5.7 added.
+
 ## 6. Momentum & Market Leadership Intelligence
 
 This path evaluates where market leadership is developing and whether a candidate is becoming actionable for Founder review. It is the active path in Alpha Momentum V0.
@@ -276,3 +288,5 @@ Synchronized documents (applied concurrently with this amendment):
 6. `operational/DOMAIN-GLOSSARY.md` — add operating model terms
 7. `operational/ROADMAP.md` — add future Fundamental path sequencing
 8. `operational/DEFERRED-DECISIONS.md` — verify deferred items correct
+
+<!-- 2026-08-02 23:45 UTC+7 -->

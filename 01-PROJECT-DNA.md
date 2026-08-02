@@ -81,3 +81,16 @@ Global evidence may form themes. V0 investable screening remains intentionally b
 ## DNA-018 — Structured Source of Truth, Narrative Learning Layer
 
 The application stores structured evidence, state, lineage, decisions, and outcomes. Obsidian and NotebookLM support narrative learning, case studies, playbooks, and reflection.
+
+## DNA-019 — Deep Research Must Earn Its Cost
+
+A long report is not proof of deep research. Deep research must be justified by expected decision value, uncertainty reduction, strategic relevance, or learning value. CIW research requests carry bounded scope and justified module omissions accordingly.
+
+## DNA-020 — Company Research Must Return Intelligence to the System
+
+Company research must not become an isolated paper archive. It must return structured findings to Candidate Intelligence, Theme Intelligence, industry maps, evidence progression, coverage-gap detection, and learning/postmortems. The CIW Research Result contract operationalizes this.
+
+---
+
+**Amendment record (Constitution §21):** DNA-019 + DNA-020 added 2026-08-02 — affected FD: FD-CIW-001..008 (CIW spec v0.2, FD-CIW-008); reason: CIW deep-research additions approved by Founder; trade-offs: bounded-research discipline preserved, no new investable universe; downstream impact: CIW specs (`project-definition/company-intelligence-workbench/`) reference DNA-019/020; Founder approval: FD-CIW-008 (batch, 2 Aug 2026); amendment history: v0.1 original DNA-001..018 → v0.2 DNA-019..020 added.
+<!-- 2026-08-02 23:45 UTC+7 -->

@@ -166,6 +166,10 @@ These axes operate at different scopes (Candidate–Theme vs. Candidate–Strate
 - Transitions must be audited.
 - Archived Candidates retain history and may be reactivated.
 
+**CIW research-status mapping (added 2026-08-02, FD-CIW-008):** the Company Intelligence Workbench (Phase 11 deep-research workflow) uses workflow-level research statuses that map onto the approved Research States above — see `project-definition/company-intelligence-workbench/CIW-LIFECYCLE.md` §2. Summary: Proposed for Research / Approved for Research / Researching / Draft / Independent Review / Founder Review / Published → `Selected for Deep Research`; Monitoring → `Watchlist`; Archived → `Archived`. Research completion is **not** investment approval; CIW introduces no competing official state machine.
+
+**Amendment record (Constitution §21):** CIW mapping note added 2026-08-02 — affected FD: FD-CIW-004, FD-CIW-008; reason: Required Change #4 (reuse approved states); trade-offs: no parallel state machine; downstream impact: CIW-LIFECYCLE spec; Founder approval: FD-CIW-008 (batch); amendment history: v0.1 original → v0.2 CIW mapping added.
+
 ### 3.3.1 Thesis Narrative and Conviction
 
 A Candidate carries an investment thesis — a structured narrative explaining why the Candidate merits consideration, not merely a score or ranking.
@@ -294,3 +298,5 @@ Capacity is determined by the number of candidates that meet the strategy's qual
 | AI-driven candidate discovery within themes | — | — | — | ✅ | ✅ |
 | Event-driven pipeline (trigger-based rerun) | — | — | — | ✅ | ✅ |
 | Deep Research handoff | — | — | — | — | ✅ |
+
+<!-- 2026-08-02 23:45 UTC+7 -->

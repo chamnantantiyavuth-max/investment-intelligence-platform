@@ -41,6 +41,20 @@ The Constitution is the authority. These documents derive from it without alteri
 | 7 | `ALPHA-MOMENTUM-V0-SPEC.md` | V0 specification: controlled universe, theme selection criteria, screening pipeline, acceptance criteria |
 | 8 | `INVESTMENT-INTELLIGENCE-OPERATING-MODEL.md` | Dual intelligence operating model: Fundamental & Opportunity + Momentum & Market Leadership paths, Shared Core, Independent Challenge, Founder Decision Gate |
 
+### CIW Specifications v0.2 (Phase 11 — company-intelligence-workbench/)
+
+> **Approved v0.2 (FD-CIW-008, 2 Aug 2026).** CIW (Company Intelligence Workbench) is the deferred Phase 11 Deep Research Handoff workflow inside the Fundamental & Opportunity path — concept approved in principle only (FD-CIW-001..007). Phase 11 implementation remains deferred per FD #44; these documents are documentation-only and do not authorize implementation, pilot, schema, or Cron. Targeted amendments to existing approved documents require separate approval.
+
+| # | File | Content |
+|---|---|---|
+| 9 | `company-intelligence-workbench/CIW-CONCEPT.md` | What CIW is: bounded deep-research handoff in FO path (not a 5th layer); authorization status; responsibility matrix; universe boundary; valuation advisory; pilot scope |
+| 10 | `company-intelligence-workbench/CIW-RESEARCH-FRAMEWORK.md` | Research methodology (advisory, FD-CIW-003); required separations; applicability-based Modules A–Q; valuation discipline; portfolio-blind; source discipline; final challenge |
+| 11 | `company-intelligence-workbench/CIW-LIFECYCLE.md` | CIW research statuses mapped to approved Candidate Research States; thesis status mapping; artifact authority states; transition matrix |
+| 12 | `company-intelligence-workbench/CIW-REQUEST-CONTRACT.md` | Research Request contract: Research Gate, request fields, pilot source gate, automation limits, failure semantics, approval flow |
+| 13 | `company-intelligence-workbench/CIW-RESULT-CONTRACT.md` | Structured Research Result contract: source-coverage report, claim/calculation lineage, evidence discipline, completeness states |
+| 14 | `company-intelligence-workbench/CIW-QUALITY-GATES.md` | Mandatory independent review (executor/reviewer separation); minimum quality gates; completion standard; first-slice gate order |
+| 15 | `company-intelligence-workbench/CIW-PUBLICATION-STANDARD.md` | Founder review for every canonical change (FD-CIW-004); deterministic-metadata allowlist; Cron Class A+B only (FD-CIW-005); append-first; Obsidian narrative-only (FD-CIW-006) |
+
 ## Version Boundaries
 
 | Version | Data | Themes | Discovery |
@@ -64,3 +78,4 @@ The Constitution is the authority. These documents derive from it without alteri
 - The six substantive documents in this directory are Approved Domain Specifications v0.1, subordinate to the Constitution and Founder's Decisions.
 - Omission in a specification does not cancel a higher-authority requirement.
 - Canonical Theme-role ownership resolved by FD #26 (23 July 2026): Shared Core owns canonical Entity–Theme structural roles; Theme-level classification wins over stock-level.
+<!-- 2026-08-02 23:48 UTC+7 -->
