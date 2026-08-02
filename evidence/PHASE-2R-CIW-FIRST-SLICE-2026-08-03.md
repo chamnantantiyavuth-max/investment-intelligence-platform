@@ -108,3 +108,21 @@ The warning is visible and correctly framed at `docs/CIW-FIRST-SLICE-DESIGN.md:2
 ## Re-review Recommendation — fix first (both items completed in v0.3), then targeted confirmation, then: Phase 2R pass → Founder design approval → FD-CIW-011 → CRR-2026-0001 draft + Founder Research Gate → authorized pilot.
 
 <!-- 2026-08-03 01:36 UTC+7 -->
+
+
+---
+
+## Phase 2R Targeted Confirmation (v0.3) — Verdict (verbatim, deleg_82c2fc17, Sol Medium)
+
+## Confirmation — CONFIRMED
+
+- **Item 1 (monitoring indicators):** verified — design line 138 preserves `monitoring indicators` with an honest empty/not-produced entry and explicit Module Q omission rationale, matching `valuation_ranges`, RESULT-CONTRACT §2, and DNA-016.
+- **Item 2 (file-tree annotation):** verified — design line 58 states "v0.3 draft — pending targeted confirmation + Founder approval"; stale v0.1 annotation removed.
+- **New Issues:** none.
+- **Recommendation:** proceed to Founder design approval + FD-CIW-011.
+
+## Phase 2R GATE RESULT — PASSED
+
+Three rounds: PASS WITH FIXES (6 findings, addressed v0.2) → PASS WITH FIXES (F4 completed + annotation fixed, v0.3) → CONFIRMED. Design `docs/CIW-FIRST-SLICE-DESIGN.md` v0.3 cleared for Founder approval + FD-CIW-011.
+
+<!-- 2026-08-03 01:37 UTC+7 -->
