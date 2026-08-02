@@ -5,9 +5,9 @@
 
 ## Current state
 
-- Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW) NOT authorized — deferred per FD #44 + FD-CIW-001 (2 Aug 2026).**
-- Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009).**
-- Latest FDs: `FD-CIW-001..009` — CIW governance decisions (2 August 2026; 001–007 all Option A, 008 spec batch approval, 009 pilot company = MSFT).
+- Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** for the MSFT first slice per `docs/CIW-FIRST-SLICE-DESIGN.md` v0.3 (Phase 2R PASSED — 3 rounds). Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred.
+- Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009). Pilot IN PROGRESS (3 Aug 2026):** design v0.3 approved (2R PASSED), CRR-2026-0001 approved (Research Gate), Source Map gate passed (real SEC EDGAR verification) — bounded research (Modules A–M, initial) next.
+- Latest FDs: `FD-CIW-010` (Design Path OPENED, docs-only, 3 Aug 2026) + `FD-CIW-011` (Pilot Execution Authorization — MSFT first slice, supersedes FD #44 for pilot scope only, 3 Aug 2026). Chain: FD-CIW-001..011 (55 total).
 - Tests: **262/262 all passing** — verified 2 August 2026.
 
 ## Build Metrics (single source of truth — v3.3.0)
@@ -17,9 +17,9 @@
 | Python tests | 262/262 passing | 2026-08-02 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-02 |
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
-| Commits | 70 on `main` (ahead of origin by 17) | 2026-08-02 |
-| FDs approved | #1–44 + FD-CIW-001..009 | 2026-08-02 |
-| closeout_status | **completed** (CIW spec v0.2 + amendments session) | 2026-08-02 |
+| Commits | 82 on `main` (synced with origin after push) | 2026-08-03 |
+| FDs approved | #1–44 + FD-CIW-001..011 (55) | 2026-08-03 |
+| closeout_status | **completed** (CIW design path + pilot authorization session) | 2026-08-03 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -34,7 +34,7 @@
 
 ## Next allowed action
 
-CIW governance foundation complete (council verdict + amendment map + FD-CIW-001..009 + 7 approved specs + pilot company **MSFT** selected). Next step requires Founder decision: **open Phase 11 design/implementation** — requires a separate named FD superseding FD #44 — then run the first-slice pilot per CIW-CONCEPT §6 (Approved Research Request → Source Map → bounded initial research → Independent Challenge → Founder Review → structured Research Result). Phase 11 implementation still gated behind that named FD.
+CIW pilot first slice IN PROGRESS: FD-CIW-010 (design path) + FD-CIW-011 (pilot execution authorization) approved; design v0.3 passed Phase 2R (3 rounds); CRR-2026-0001 approved at Research Gate; Source Map gate passed (real SEC EDGAR). **Next action: bounded initial research (Modules A–M, initial depth) → `research-draft.md` → Independent Challenge (Sol Medium) → Founder Review → structured Research Result (Founder publication on exact version/hash).** No further authorization needed to begin research; every Founder gate remains binding.
 
 ## Bootstrap sources
 
@@ -47,19 +47,19 @@ CIW governance foundation complete (council verdict + amendment map + FD-CIW-001
 
 ## Lifecycle sync
 
-- Last session: 2026-08-02 CIW Spec v0.2 drafting + batch approval + targeted amendments (evening)
-- Outcome: 7 CIW specs approved (FD-CIW-008) → amendment map approved → 11 targeted amendments issued (Constitution §21) → CIW governance chain complete; Phase 11 implementation still deferred
-- Evidence: `docs/CIW-INTEGRATION-AMENDMENT-MAP.md`, `project-definition/company-intelligence-workbench/`, `evidence/COUNCIL_DECISION-bible-2026-08-02.md`
+- Last session: 2026-08-03 CIW design path + pilot authorization (morning)
+- Outcome: FD-CIW-010 (design path) → design v0.3 (Phase 2R PASSED, 3 rounds, evidence persisted) → FD-CIW-011 (pilot execution authorization) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed (real SEC EDGAR). Side items: CODEBUDDY.md/ChatGPT/ declared, origin pushed (synced), *.env gitignore gap closed.
+- Evidence: `evidence/PHASE-2R-CIW-FIRST-SLICE-2026-08-03.md`, `docs/CIW-FIRST-SLICE-DESIGN.md` v0.3, `docs/ciw-pilot-msft/CRR-2026-0001-request.md`, `docs/ciw-pilot-msft/source-map.md`
 - Blockers: none
-- Next phase: Founder decision — pilot shortlist (FD-CIW-007) / Phase 11 design / other
-- Last verified: 2026-08-02
+- Next phase: bounded initial research (Modules A–M) → Independent Challenge → Founder Review → structured Research Result
+- Last verified: 2026-08-03
 
 ## Session
 
 | Field | Value |
 |-------|-------|
 | closeout_status | completed |
-| fd_count | 44 + 9 CIW (53 total) |
-| audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) → pilot company selected (FD-CIW-009, MSFT) |
+| fd_count | 44 + 11 CIW (55 total) |
+| audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) → pilot company selected (FD-CIW-009, MSFT) → design v0.3 Phase 2R PASSED → pilot execution authorized (FD-CIW-011) → Research Gate passed (CRR-2026-0001) |
 
-<!-- 2026-08-02 23:55 UTC+7 -->
+<!-- 2026-08-03 01:50 UTC+7 -->

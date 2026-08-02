@@ -110,7 +110,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. Phase 11 NOT authorized — deferred.
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. **Phase 11 (CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** — MSFT first slice per docs/CIW-FIRST-SLICE-DESIGN.md v0.3 (Phase 2R PASSED); CRR-2026-0001 approved (Research Gate), Source Map passed; bounded research (Modules A–M) next. Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred.
 
 Current approved checkpoints:
 
@@ -136,6 +136,7 @@ Current approved checkpoints:
 - phase-10.5-complete (Real 13F data via SEC EDGAR — fetcher.py + cusip_mapper.py; FD #42 amended, 28 July 2026)
 - fd-43-approved (Profit Rate Trend + Narrative vs Reality Gap — Option B, Marx-inspired signals; 28 July 2026)
 - fd-44-recovery-approved (Full Project Review RETEST → bounded recovery; frontend build restored, synthetic surfaces labeled, AM core AC tests added, 262/262 tests, ADR-001 ratified; 2 August 2026)
+- fd-ciw-010-011-approved (Phase 11 CIW Design Path OPENED + Pilot Execution AUTHORIZED for MSFT first slice per design v0.3, Phase 2R PASSED (3 rounds), CRR-2026-0001 approved at Research Gate, Source Map passed; 3 August 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
@@ -149,7 +150,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-44 approved.
+- Founder Decisions #1-44 + FD-CIW-001..011 (55 total) approved.
 
 Current-phase restrictions:
 
