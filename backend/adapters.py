@@ -347,14 +347,18 @@ def fo_cheap_quality() -> list[ResearchPackageSummary]:
 
 
 # ── II mapping ────────────────────────────────────────────────────────────────
-def ii_signals() -> IISignalsResponse:
+def ii_signals(limit: int = 0, offset: int = 0) -> IISignalsResponse:
     raw, parsed = load_snapshot("ii")
     if not isinstance(parsed, dict):
         raise ArtifactUnavailable("ii", "corrupt", "II artifact must be a dict")
     prov = admit("ii", parsed)
-    signals = [IISignalSummary(**s) for s in parsed.get("signals", [])]
+    all_signals = parsed.get("signals", [])
+    total = len(all_signals)
+    if limit > 0:
+        all_signals = all_signals[offset:offset + limit]
+    signals = [IISignalSummary(**s) for s in all_signals]
     return IISignalsResponse(signals=signals, summary=parsed.get("summary", {}),
-                             meta=parsed.get("meta", {}), provenance=prov)
+                             meta=parsed.get("meta", {}), provenance=prov, total=total)
 
 
 # ── Dashboard (per-component admission, NF7) ──────────────────────────────────

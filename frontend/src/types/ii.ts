@@ -21,4 +21,5 @@ export interface IISignalsResponse {
   summary: Record<string, unknown>;
   meta: Record<string, unknown>;
   provenance: Provenance;
+  total?: number;
 }

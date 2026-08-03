@@ -10,6 +10,7 @@ import CSRadarPage from "@/pages/CSRadarPage"
 import FundamentalQueuePage from "@/pages/FundamentalQueuePage"
 import FundamentalDetailPage from "@/pages/FundamentalDetailPage"
 import CheapQualityPage from "@/pages/CheapQualityPage"
+import InstitutionalPage from "@/pages/InstitutionalPage"
 import WeakSignalInboxPage from "@/pages/WeakSignalInboxPage"
 import NotFoundPage from "@/pages/NotFoundPage"
 
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="fundamental" element={<FundamentalQueuePage />} />
             <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
             <Route path="cheap-quality" element={<CheapQualityPage />} />
+            <Route path="institutional" element={<InstitutionalPage />} />
             <Route path="weak-signals" element={<WeakSignalInboxPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

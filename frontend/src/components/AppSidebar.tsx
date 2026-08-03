@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, TrendingUp, Shield, Radio, DollarSign, Building2 } from "lucide-react"
+import { LayoutDashboard, TrendingUp, Shield, Radio, DollarSign, Building2, Landmark } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 const navItems = [
@@ -19,6 +19,7 @@ const navItems = [
   { title: "Close System Radar", url: "/cs-radar", icon: Shield },
   { title: "Fundamental Queue", url: "/fundamental", icon: Building2 },
   { title: "Cheap & Quality", url: "/cheap-quality", icon: DollarSign },
+  { title: "Institutional Intelligence", url: "/institutional", icon: Landmark },
   { title: "Weak Signal Inbox", url: "/weak-signals", icon: Radio },
 ]
 

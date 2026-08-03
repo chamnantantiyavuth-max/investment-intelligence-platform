@@ -365,6 +365,34 @@ def test_ii_signals_200_shape_and_provenance():
     assert body["provenance"]["completeness"] == "partial_3_5"  # partial preserved verbatim
 
 
+def test_ii_pagination_limit_offset():
+    """II pagination (FD #46, 3 Aug post-release): limit/offset slice, total always full count."""
+    art = _ii_artifact(partial=True)
+    extra = []
+    for i, tk in enumerate(("AAPL", "MSFT", "NVDA", "AMZN")):
+        s = dict(art["signals"][0], ticker=tk, value_usd=1000 * (i + 1))
+        extra.append(s)
+    art["signals"] = extra
+    _write_artifact("ii", art)
+    _login()
+    r = client.get("/api/ii-signals?limit=2&offset=0")
+    assert r.status_code == 200
+    b1 = r.json()
+    assert len(b1["signals"]) == 2
+    assert b1["total"] == 4
+    r2 = client.get("/api/ii-signals?limit=2&offset=2")
+    b2 = r2.json()
+    assert len(b2["signals"]) == 2
+    # no overlap between page 1 and page 2
+    ids1 = {s["ticker"] for s in b1["signals"]}
+    ids2 = {s["ticker"] for s in b2["signals"]}
+    assert not (ids1 & ids2), "pagination pages must not overlap"
+    assert ids1 | ids2 == {"AAPL", "MSFT", "NVDA", "AMZN"}
+    # provenance preserved on paginated response
+    assert b1["provenance"]["mode"] == "real"
+    assert b1["provenance"]["completeness"] == "partial_3_5"
+
+
 def test_ii_synthetic_artifact_rejected_503():
     _write_artifact("ii", _ii_artifact(mode="SYNTHETIC"))
     _login()

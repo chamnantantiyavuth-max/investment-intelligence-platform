@@ -9,5 +9,6 @@ router = APIRouter(prefix="/api", tags=["institutional-intelligence"], dependenc
 
 
 @router.get("/ii-signals", response_model=IISignalsResponse)
-async def get_ii_signals():
-    return adapters.ii_signals()
+async def get_ii_signals(limit: int = 0, offset: int = 0):
+    """II signals with optional server-side pagination (FD #46; limit=0 = full list, backward-compatible)."""
+    return adapters.ii_signals(limit=limit, offset=offset)

@@ -166,9 +166,10 @@ class IISignalSummary(BaseModel):
 
 class IISignalsResponse(BaseModel):
     signals: list[IISignalSummary]
-    summary: dict
-    meta: dict
+    summary: dict[str, Any] = {}
+    meta: dict[str, Any] = {}
     provenance: Provenance
+    total: int = 0  # total signals available (set when pagination used)
 
 
 # ── CS (unchanged synthetic contract) ─────────────────────────────────────────

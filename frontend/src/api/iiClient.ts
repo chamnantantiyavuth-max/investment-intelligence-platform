@@ -9,6 +9,7 @@ async function fetchJSON<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export function getIISignals(): Promise<IISignalsResponse> {
-  return fetchJSON<IISignalsResponse>("/ii-signals");
+export function getIISignals(limit = 0, offset = 0): Promise<IISignalsResponse> {
+  const q = limit > 0 ? `?limit=${limit}&offset=${offset}` : "";
+  return fetchJSON<IISignalsResponse>(`/ii-signals${q}`);
 }
