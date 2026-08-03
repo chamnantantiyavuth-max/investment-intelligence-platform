@@ -13,9 +13,10 @@ class DashboardSummary(BaseModel):
     am_active_themes: int = 12
     am_queue_size: int = 5
     am_last_run: Optional[str] = "2026-07-25T01:00:00Z"
-    cs_radar_items: int = 8
-    cs_qc_met: int = 3
+    cs_radar_items: int = 2
+    cs_qc_met: int = 1
     cs_regime: str = "risk-on"
+    data_source: str = "synthetic_demo"
 
 
 class ThemeSummary(BaseModel):
@@ -60,6 +61,7 @@ class ResearchPackageSummary(BaseModel):
     earnings_quality: str
     conviction: str
     value_trap_verdict: str
+    data_source: str = "synthetic_demo"
 
 
 class ResearchPackageDetail(BaseModel):
@@ -79,6 +81,7 @@ class ResearchPackageDetail(BaseModel):
     earnings_quality: str
     conviction: dict
     value_trap_verdict: str
+    data_source: str = "synthetic_demo"
     generated_at: str
     spec_ref: str
     thesis_summary: str

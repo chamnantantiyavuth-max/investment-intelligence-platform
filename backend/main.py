@@ -26,4 +26,10 @@ async def health():
 
 @app.get("/api/dashboard/summary", response_model=DashboardSummary)
 async def get_dashboard_summary():
-    return DashboardSummary()
+    # Derive CS counts from the single source of truth (cs_routes mock) so the
+    # dashboard KPI can never disagree with /api/cs-radar (audit SOL-003 fix).
+    cs_assets = cs_routes._MOCK_ASSETS
+    return DashboardSummary(
+        cs_radar_items=len(cs_assets),
+        cs_qc_met=sum(1 for a in cs_assets if a["q_conditions_met"] == a["q_conditions_total"]),
+    )

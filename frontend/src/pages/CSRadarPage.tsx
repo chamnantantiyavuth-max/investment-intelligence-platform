@@ -1,50 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { QConditionGrid } from "@/components/QConditionGrid"
-import { ConfidenceGauge } from "@/components/ConfidenceGauge"
-import SyntheticDataBanner from "@/components/SyntheticDataBanner"
+import { useQuery } from "@tanstack/react-query";
+import { getCSRadar, type CSAsset } from "@/api/csClient";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { QConditionGrid } from "@/components/QConditionGrid";
+import { ConfidenceGauge } from "@/components/ConfidenceGauge";
+import { Skeleton } from "@/components/ui/skeleton";
+import SyntheticDataBanner from "@/components/SyntheticDataBanner";
 
-const ASSETS = [
-  {
-    ticker: "BRK.B", name: "Berkshire Hathaway", sector: "Financials",
-    qMet: 4, qTotal: 5,
-    qDetails: [
-      { name: "Earnings Stability", met: true, value: "15yr positive" },
-      { name: "Earnings Growth", met: true, value: "12% 10yr CAGR" },
-      { name: "P/E Moderate", met: true, value: "P/E 14.2" },
-      { name: "Debt/Equity Low", met: true, value: "D/E 0.3" },
-      { name: "Price/Book", met: false, value: "P/B 1.6x" },
-    ],
-    suitability: 8.0, opportunity: 5.5, regime: "compatible", confidence: 85,
-  },
-  {
-    ticker: "JNJ", name: "Johnson & Johnson", sector: "Healthcare",
-    qMet: 5, qTotal: 5,
-    qDetails: [
-      { name: "Earnings Stability", met: true, value: "20yr+ positive" },
-      { name: "Earnings Growth", met: true, value: "6% 10yr CAGR" },
-      { name: "P/E Moderate", met: true, value: "P/E 16.1" },
-      { name: "Debt/Equity Low", met: true, value: "D/E 0.5" },
-      { name: "Dividend Record", met: true, value: "62yr growth" },
-    ],
-    suitability: 9.0, opportunity: 7.0, regime: "compatible", confidence: 90,
-  },
-  {
-    ticker: "PG", name: "Procter & Gamble", sector: "Consumer Staples",
-    qMet: 4, qTotal: 5,
-    qDetails: [
-      { name: "Earnings Stability", met: true, value: "Consistent" },
-      { name: "Earnings Growth", met: true, value: "5% 10yr" },
-      { name: "P/E Moderate", met: false, value: "P/E 25.1" },
-      { name: "Debt/Equity Low", met: true, value: "D/E 0.7" },
-      { name: "Dividend Record", met: true, value: "68yr" },
-    ],
-    suitability: 7.5, opportunity: 4.0, regime: "caution", confidence: 75,
-  },
-]
+// Audit SOL-003/BROWSER-003 fix: page now consumes the CS API (single source of
+// truth = backend /api/cs-radar mock). The hardcoded frontend asset array was
+// removed because it disagreed with the API (dashboard=8 / API=2 / UI=3).
 
 export default function CSRadarPage() {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["cs-radar"],
+    queryFn: getCSRadar,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) return <Skeleton className="h-64 w-full" />;
+  if (error) return (
+    <Card className="border-rose-200 bg-rose-50">
+      <CardContent className="p-6 text-center text-rose-700">Failed to load. <button onClick={() => refetch()} className="underline">Retry</button></CardContent>
+    </Card>
+  );
+
+  const assets: CSAsset[] = data?.assets ?? [];
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Close System Radar</h1>
@@ -69,7 +52,7 @@ export default function CSRadarPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ASSETS.map((a) => (
+              {assets.map((a) => (
                 <TableRow key={a.ticker}>
                   <TableCell className="font-mono font-bold">{a.ticker}</TableCell>
                   <TableCell>
@@ -77,22 +60,22 @@ export default function CSRadarPage() {
                     <div className="text-xs text-muted-foreground">{a.sector}</div>
                   </TableCell>
                   <TableCell>
-                    <QConditionGrid conditions={a.qDetails} />
-                    <span className="text-xs text-muted-foreground">{a.qMet}/{a.qTotal} met</span>
+                    <QConditionGrid conditions={a.q_details} />
+                    <span className="text-xs text-muted-foreground">{a.q_conditions_met}/{a.q_conditions_total} met</span>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="font-semibold">{a.suitability}</span>
+                    <span className="font-semibold">{a.dimensions.suitability}</span>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="font-semibold">{a.opportunity}</span>
+                    <span className="font-semibold">{a.dimensions.opportunity}</span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={a.regime === "compatible" ? "secondary" : "outline"}>
-                      {a.regime}
+                    <Badge variant={a.dimensions.regime === "compatible" ? "secondary" : "outline"}>
+                      {a.dimensions.regime}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <ConfidenceGauge value={a.confidence} size="sm" />
+                    <ConfidenceGauge value={a.dimensions.data_confidence * 10} size="sm" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -101,5 +84,5 @@ export default function CSRadarPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

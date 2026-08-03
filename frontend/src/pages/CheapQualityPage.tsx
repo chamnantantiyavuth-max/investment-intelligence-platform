@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import SyntheticDataBanner from "@/components/SyntheticDataBanner";
 
 function moatColor(width: string) { return { Wide: "bg-emerald-100 text-emerald-700", Narrow: "bg-amber-100 text-amber-700", None: "bg-rose-100 text-rose-700" }[width] || ""; }
 
@@ -33,6 +34,8 @@ export default function CheapQualityPage() {
           Companies that are unusually cheap vs own history AND passed Value Trap detection
         </p>
       </div>
+
+      <SyntheticDataBanner note="Watchlist members come from the FO pipeline running synthetic fixtures — real data wiring is not yet connected to this API surface." />
 
       {!data?.length ? (
         <Card>
