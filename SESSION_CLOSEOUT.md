@@ -1,26 +1,27 @@
-# Session Closeout — 3 August 2026 (CIW Pilot: Research → Challenge → Publication → Monitoring LIVE)
+# Session Closeout — 3 August 2026 (CIW Second Slice: MSFT Valuation → Research → Challenge → PUBLISHED)
 
 > **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
 
 ## Session Summary
 
 ```
-Trigger:     Continue CIW pilot (morning session already authorized design v0.3 + FD-CIW-011)
-Flow:        Source retrieval (real SEC EDGAR + Microsoft IR: 10-K FY26, 10-Q Q3, DEF 14A,
-             4 earnings releases + 4 transcripts, 5-yr XBRL companyfacts, market quote)
-             → research-draft.md v0.1 (Modules A–M initial, claim lineage, 16 gates)
-             → Independent Challenge rounds 1–5 (FAIL×4 → PASS; F1–F8/N1/N2 disposed)
-             → versioned proposed research-result.md v1 → Founder APPROVED (FD-CIW-012)
-             → Published / Current Authoritative v1 (Founder-only transition, exact hash)
-             → FD-CIW-013 (implementation slice) → CIW-MONITORING-CONTRACT.md v0.1
-             → Cron Class A job ciw-msft-class-a-monitor created + verified (26/26 ad-hoc)
-             → Founder APPROVED contract (FD-CIW-014) → monitoring LIVE
-Deliverables: docs/ciw-pilot-msft/ 6/6 artifacts (request/source-map/draft/challenge/founder-review/result)
-             CIW-MONITORING-CONTRACT.md (approved v0.1) · monitoring/2026-08-03-monitoring-draft.md
-             cron ciw-msft-class-a-monitor (weekly Mon 09:00) · scripts/ciw_msft_monitor.py
-             FD-CIW-012/013/014 (items 56–58) · PROJECT_STATE synced · memory MEM-IIP-013/014/015
-State:       CIW pilot first slice COMPLETE — workflow feasibility validated end-to-end
-             + Module Q monitoring LIVE (Cron Class A, draft notes pending Founder review)
+Trigger:     "start IIP" → housekeeping (Option A) → second slice (Option B: valuation focus)
+Flow:        Housekeeping: pushed 12 commits to origin; verified *.env gitignore closed,
+             CODEBUDDY/ChatGPT declared; git sync clean
+             → Option B approved → CRR-2026-0002 drafted (valuation slice: N/O/P + G-ref/H/M-refresh)
+             → Phase 2R hostile review (Sol Medium) 3 rounds: FAIL (F1-F10) → F6/F7 PARTIAL → PASS WITH FIXES (N1)
+             → FD-CIW-015 (item 59) + Research Gate: CRR-2026-0002 v0.4 APPROVED
+             → Source Map 2 gate PASSED (10 categories; live market/rates/comparators 2026-08-03)
+             → research-draft-2 v0.1→v0.4: Independent Challenge 4 rounds (FAIL×3 → PASS 16/16;
+               F1-F7/N1/N2 disposed — caught ROIC 68%→32-36%, reverse-DCF basis mismatch, range lineage errors)
+             → proposed research-result-2.md v1 → Founder APPROVED (FD-CIW-016, item 60) → PUBLISHED
+             → committed (cd67d3e + 0191162) + pushed origin + .gitattributes LF guard + ad-hoc verification
+Deliverables: CRR-2026-0002-request.md (Approved v0.4) · source-map-2.md · research-draft-2.md (v0.4 reviewed)
+             challenge-review-2{,-REVIEW,-CONFIRM,-FINAL}.md (rounds 1-4) · founder-review-record-2.md
+             research-result-2.md (Published v1, hash a49b8911…fcf byte-verified)
+             FD-CIW-015/016 (items 59-60) · PROJECT_STATE + AGENTS + vault fd-register synced (60 FDs)
+             MEM-IIP-016 captured · .gitattributes LF enforcement
+State:       CIW pilot first slice + monitoring + SECOND SLICE (valuation) COMPLETE — 6/6+ artifacts
              Phase 11 expansion (Class B/C, Obsidian, expanded tree, schema) STILL DEFERRED
 ```
 
@@ -28,51 +29,46 @@ State:       CIW pilot first slice COMPLETE — workflow feasibility validated e
 
 | ID | Decision |
 |----|----------|
-| D1 | **FD-CIW-012: research-result.md v1 PUBLISHED** (Option A — exact version + SHA-256 `34a1f324…7168a59`) → Published / Current Authoritative v1 |
-| D2 | **FD-CIW-013: Phase 11 implementation slice** (Option B — Module Q monitoring contract + Cron Class A) |
-| D3 | **FD-CIW-014: Monitoring Contract APPROVED + job LIVE** (Option A — SHA-256 `d7ef7168…cfa64e3`) |
+| D1 | **Option A — Housekeeping first** (push 12 commits, verify gitignore/CODEBUDDY, git sync) |
+| D2 | **Option B — Second slice = Valuation** (Modules N/O/P + G-refinement/H/M-refresh, advisory only) |
+| D3 | **FD-CIW-015 — Second-Slice EXECUTION AUTHORIZATION** (CRR-2026-0002 v0.4, hash `ce7ced52…78c4`; supersedes FD #44 for this scope only; Research Gate passed same approval) |
+| D4 | **FD-CIW-016 — Second-Slice Result PUBLISHED** (research-result-2.md v1, hash `a49b8911…fcf`; supplemental artifact; first-slice v1 intact) |
 
 ## Independent Challenge Record (the core governance event)
 
 | Round | Draft | Verdict | Findings → Disposition |
 |---|---|---|---|
-| 1 | v0.1 | **FAIL** | F1–F8 (OE SBC double-count; FY23 ETR/ROIC; RPO/OpenAI conflation; moat framing; $743.8B obligations + $329.1B leases omitted; falsification; stress precision; freshness) |
-| 2 | v0.2 | **FAIL** | F1–F5/F8 FIXED VERIFIED; F6/F7 PARTIAL; N1 new (cloud-rank claim) |
-| 3 | v0.3 | **FAIL** | N2 (threshold rationale invented subgroup growth); condition-3 wording; citation IDs |
-| 4 | v0.4 | **FAIL** | minimum-evidence line contradicted condition-3 routes |
-| 5 | v0.5 | **PASS** | all blockers cleared; thesis-falsification gate PASS; no new material errors |
+| 1 | v0.1 | **FAIL** | F1–F7: maintenance band invented (31–37% unsupported); incremental ROIC 68% wrong → 32–36%; reverse DCF ~17% wrong (EV/equity basis mismatch → ~19.1%); input schedule incomplete ($390 → $376.49/$401.93); Module P 9–12% claim unsupported (→ 6.76–9.35%, superiority INCONCLUSIVE); Final Challenge missing; 16/16 self-pass false (8 PASS/8 FAIL) |
+| 2 | v0.2 | **FAIL** | N1: authoritative first-slice OE range mis-stated ($52.1B vs $56.3B — depreciation-only vs broad D&A); Module N replaced retained range with A–C band; F4/F7 PARTIAL |
+| 3 | v0.3 | **FAIL** | N2: residual text folded depreciation-only endpoint into retained range (§4 P/OE 66.5×, §12 $52B–$134B); F4 as-of fields; F7 round-2 history |
+| 4 | v0.4 | **PASS** | 16/16 gates; all residuals closed; no new material defects |
 
-- **Reviewer:** Sol Medium (gpt-5.6-sol via openai-codex) — separate context every round, direct primary-source inspection (re-fetched 10-K, XBRL, DEF 14A, transcript; SHA-256 verified). All 5 rounds on Sol Medium — no Luna fallback.
-- **Lessons:** MEM-IIP-014 — recompute from raw source (typed-formula ETR error), issuer-reported ≠ proof, citation IDs must resolve exactly, approved artifact byte-immutable (git autocrlf hash drift), search_files broken on Windows → explicit reviewer tool guidance.
+- **Reviewer:** Sol Medium (gpt-5.6-sol via openai-codex) — separate context every round, direct primary-source inspection + independent recalculation from SEC XBRL raw facts (companyfacts.json). All 4 rounds on Sol Medium — no Luna fallback.
+- **Phase 2R (request):** 3 rounds — FAIL (F1–F10) → F6/F7 PARTIAL → PASS WITH FIXES (N1 stale-version text).
 
-## Key Research Findings (Published result v1 — advisory)
+## Key Research Findings (Published result v1 — advisory, portfolio-blind)
 
-- Business quality HIGH: revenue $331.8B (+18%), Microsoft Cloud $214.4B (+27%), RPO $678B (+84%; +25% ex-OpenAI)
-- Moat Wide/Deep (Phase 8 canonical supported at initial depth, not re-derived); ROIC declining 77%→35%
-- Owner earnings advisory $56.3B/$102.7B/$133.7B — 60% maintenance-split is least-supported assumption
-- $743.8B contractual obligations + $329.1B not-yet-commenced leases = material fixed-cost rigidity
-- Price $464.72 (7/31) → trailing P/E ~25.9×, P/OE base ~33.7× — demanding but contractually visible
-- Honest empty states: valuation_ranges (Module N), monitoring indicators (Module Q → now opened by contract), expected-return not-assessable
-- NOT authorized by publication: official state changes, recommendation, MSFT endorsement, Phase 11 expansion
-
-## Monitoring (FD-CIW-013/014 — LIVE)
-
-- **Contract:** CIW-MONITORING-CONTRACT.md v0.1 (14 indicators I-1..I-14; falsification-trigger mapping to Module J conditions 1/2/3; early-warning thresholds; DRAFT note format; Founder review flow).
-- **Job:** ciw-msft-class-a-monitor (weekly Mon 09:00; EDGAR filing check + XBRL/market collection → DRAFT note).
-- **Verified:** script 26/26 ad-hoc checks (live SEC EDGAR + Yahoo; 10-Q fp="Q3" bug fixed); first draft note NO TRIGGER.
-- **Guards:** Class A only — outputs always DRAFT pending Founder review; TRIGGER CANDIDATE → Founder only, never auto-action; no official state changes; portfolio-blind.
+- **Maintenance-capex split UNRESOLVED** — authoritative first-slice range $56.3B–$133.7B retained (filing discloses no asset-age/replacement evidence; 3.46yr/7.9% are non-identifying arithmetic proxies; 60% split unsupported but NOT replaced); Base DCF dispersion ≈ $141–$335/sh (~$194/sh) — the central AI-capex question stays open
+- **Incremental ROIC (corrected):** 32–36% on FY23–FY26 AI-capital cohort (ΔNOPAT $53.4B; v0.1's 68% rejected); marginal $175B CY26 build returns INCONCLUSIVE until FY27–FY29
+- **Reverse DCF (equity basis):** price $464.72 embeds ~19.1% OE growth 5yr at 10% cost of equity — demanding
+- **Advisory IV:** Bear $211 / Base $325 / Bull $493 per share; price above Base ~43%, ~6% below Bull; earnings-power anchor $189/sh
+- **Margin of safety:** none at current price under base/conservative (Conservative $242, Base $325, Optimistic $435 — price-premium convention)
+- **Module P:** MSFT model-implied returns 6.76–9.35% vs 4.745% risk-free; superiority vs S&P 500/AMZN/NVDA/JNJ **INCONCLUSIVE** (no comparator primary filings — honest limitation)
+- **NOT authorized by publication:** official state changes, recommendation, "Attractive Below Price", methodology-validity claim, deterministic valuation contracts (deferred), Phase 11 expansion, MSFT endorsement
 
 ## Git
 
-- 13 commits this session: `e0a902a` → `09bb2c3`. Main at 89+ commits. Working tree clean.
-- Note: origin push deferred (flag for next session — local-only commits).
+- 2 commits: `cd67d3e` (second slice complete + FD-CIW-015/016 + artifacts + .gitattributes) → `0191162` (fix .gitattributes HTML comment). Pushed to origin (`12ec878..0191162`). Working tree clean.
+- `.gitattributes` added: LF enforcement for `docs/ciw-pilot-msft/*.md` + `evidence/PHASE-2R-*.md` + `evidence/COUNCIL_DECISION-*.md` — hash-drift guard (MEM-IIP-014).
+- Ad-hoc verification (Temp script `hermes-verify-gitattributes.sh`, run + cleaned): 5/5 PASS — parse clean, eol=lf on all 12 CIW/evidence files, committed blob + working tree + index blob all == approved hash `a49b8911…fcf`.
 
 ## Key Learnings
 
-- **The mandatory independent challenge is the strongest quality mechanism in the workflow** — 8 real material errors caught in round 1 that self-review missed; 5 rounds converged to PASS with bounded rework.
-- **Byte-immutability of approved artifacts is real** — Windows git autocrlf converts LF→CRLF on checkout, changing content hashes; normalized to LF and verified the published hash matches the approved hash exactly.
-- **Sol Medium reliability confirmed** — 5 consecutive successful challenge rounds; the 2 Aug HTTP 400 was transient.
-- **Cron Class A discipline is enforceable in practice** — script emits deterministic trigger states; agent formats DRAFT note with correct guards (verified in test run).
+- **Approved artifact byte-immutability is ABSOLUTE:** the result file keeps its "PROPOSED" header forever — the publication transition lives in `founder-review-record-2.md`, NEVER by editing the artifact (first-slice precedent; caught my own near-miss this session: mutated status header → hash drifted → reverted to byte-identical).
+- **Independent Challenge catches errors self-review misses** — 3 material calc errors caught across rounds (ROIC 68%→32–36%, reverse-DCF basis, range lineage). The 4-round loop converged with bounded rework.
+- **Maintenance-capex discipline:** evidence test CAN reject an unsupported assumption (60%) without substituting another — honest result is "UNRESOLVED, range retained", not "resolved with my band".
+- **Equity vs EV basis matters:** owner earnings (equity cash flow) must be discounted at cost of equity and compared with equity market cap — mixing with WACC/EV gives systematically wrong reverse-DCF results.
+- **.gitattributes eol=lf is the hash-drift guard** on Windows autocrlf=true setups — HTML comments are NOT valid in .gitattributes (git parser error).
 
 ## Start Next Session
 
@@ -82,10 +78,10 @@ hermes --profile iip
 ```
 
 ### Loop Protocol:
-1. อ่าน AGENTS.md (Phase 11 CIW — pilot complete + monitoring LIVE checkpoint)
+1. อ่าน AGENTS.md (Phase 11 CIW — pilot first slice + monitoring + second slice COMPLETE checkpoint; 60 FDs)
 2. อ่าน PROJECT_STATE.md (next options — see §Next allowed action)
 3. อ่าน SESSION_CLOSEOUT.md นี้
-4. Recall obsidian-memory (MEM-IIP-013/014/015, CURRENT-STATE)
-5. Check cron job output: `cronjob action=list` → any draft monitoring notes since last session → Founder review
+4. Recall obsidian-memory (MEM-IIP-016, CURRENT-STATE)
+5. Check cron job output: `cronjob action=list` → ciw-msft-class-a-monitor (weekly Mon 09:00) → any draft monitoring notes since last session → Founder review
 
-<!-- 2026-08-03 15:30 UTC+7 -->
+<!-- 2026-08-03 19:55 UTC+7 -->
