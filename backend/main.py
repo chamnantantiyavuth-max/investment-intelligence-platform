@@ -68,36 +68,49 @@ async def loopback_guard(request: Request, call_next):
     return await call_next(request)
 
 
-# ── ASGI response capture (F2/NF6): hash exact serialized bytes served ───────
+# ── ASGI response capture (F2/NF6): hash exact serialized bytes served + persist lineage ──
 class CaptureResponseMiddleware:
-    """Pure ASGI middleware: intercepts send() to hash the exact response bytes (F2)."""
+    """Pure ASGI middleware: captures status + exact body bytes, persists api_reads lineage.
+
+    Council F1: records the REAL HTTP status, REAL response SHA-256, and the component runs
+    that produced the response (adapters.REQUEST_RUNS) into api_reads + api_read_runs.
+    """
 
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
         if scope.get("type") != "http" or not scope.get("path", "").startswith("/api") \
-                or scope["path"] == "/api/health":
+                or scope["path"] in ("/api/health", "/api/auth/login", "/api/auth/status"):
             await self.app(scope, receive, send)
             return
+        adapters.REQUEST_RUNS.set([])  # fresh lineage accumulator per request
         chunks = []
+        status_holder = {"status": 0}
 
         async def send_capture(message):
-            if message["type"] == "http.response.body":
+            if message["type"] == "http.response.start":
+                status_holder["status"] = message.get("status", 0)
+            elif message["type"] == "http.response.body":
                 chunks.append(message.get("body", b""))
             await send(message)
 
         await self.app(scope, receive, send_capture)
         body = b"".join(chunks)
-        if body:
-            sha = hashlib.sha256(body).hexdigest()
-            try:
-                persistence.log_read(
+        try:
+            if body:
+                sha = hashlib.sha256(body).hexdigest()
+                runs = list(adapters.REQUEST_RUNS.get())
+                read_id = persistence.log_read(
                     endpoint=scope["path"], params=str(scope.get("query_string", b"")),
-                    data_source="api", response_sha256=sha, status=0,
-                    adapter_version=persistence.ADAPTER_VERSION)
-            except Exception:
-                pass  # never fail the request because lineage logging failed
+                    data_source="api", response_sha256=sha, status=status_holder["status"],
+                    adapter_version=persistence.ADAPTER_VERSION, runs=runs)
+                # dashboard composite lineage uses api_read_runs via REQUEST_RUNS
+                adapters.LAST_READ_ID.set(read_id)
+        except Exception as e:  # pragma: no cover - defensive; lineage must not fail the request
+            import sys
+            print(f"[capture] lineage log failed for {scope.get('path')}: {type(e).__name__}: {e}",
+                  file=sys.stderr)
 
 
 app.add_middleware(CaptureResponseMiddleware)

@@ -179,7 +179,11 @@ def log_read(endpoint: str, params: str, data_source: str, response_sha256: str,
             "adapter_version, served_at) VALUES(?,?,?,?,?,?,?)",
             (endpoint, params, data_source, response_sha256, status, adapter_version, _now()))
         read_id = cur.lastrowid
+        # dedupe by component (dashboard touches am via am_queue + dashboard_components)
+        seen: dict[str, str] = {}
         for run_id, component in (runs or []):
+            seen[component] = run_id
+        for component, run_id in seen.items():
             run_row = conn.execute(
                 "SELECT id FROM pipeline_runs WHERE module=? AND run_id=?",
                 (component, run_id)).fetchone()

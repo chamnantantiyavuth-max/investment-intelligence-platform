@@ -10,6 +10,7 @@ Design principles (arch v0.4 §2):
 """
 from __future__ import annotations
 
+import contextvars
 import hashlib
 import json
 import os
@@ -25,7 +26,18 @@ from backend.schemas.responses import (
 )
 
 ADAPTER_VERSION = "v1"
+# Immutable adapter registry (plan T5 / council F3): version -> committed code hash of adapters.py.
+# Stored in a SEPARATE json so editing the registry cannot change the code hash (no circularity).
+# If adapters.py changes, recompute hash + bump ADAPTER_VERSION. verify_adapter_registry() enforces.
+_ADAPTER_REGISTRY_PATH = Path(__file__).with_name("adapter_registry.json")
+ADAPTER_REGISTRY: dict[str, str] = json.loads(_ADAPTER_REGISTRY_PATH.read_text(encoding="utf-8"))
 ADAPTER_CODE_HASH = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+# Per-request lineage accumulator: route handlers touch artifacts -> adapters record which
+# (module, run_id) were served; CaptureResponseMiddleware persists api_reads + api_read_runs.
+REQUEST_RUNS: contextvars.ContextVar[list[tuple[str, str]]] = contextvars.ContextVar(
+    "request_runs", default=[])
+LAST_READ_ID: contextvars.ContextVar[int] = contextvars.ContextVar("last_read_id", default=0)
 
 # Staleness bounds (FD #47 D3 — operational, NOT investment rules)
 STALENESS_DAYS = {"am": 7, "fo": 30, "ii": 120}
@@ -60,8 +72,23 @@ def _artifact_path(module: str) -> Path:
     return _repo_root() / rel
 
 
+def verify_adapter_registry() -> None:
+    """F3: code hash must match the registered version — source change without version bump fails."""
+    registered = ADAPTER_REGISTRY.get(ADAPTER_VERSION)
+    if registered is None:
+        raise RuntimeError(f"ADAPTER_VERSION={ADAPTER_VERSION!r} not present in ADAPTER_REGISTRY")
+    if not hmac.compare_digest(registered, ADAPTER_CODE_HASH):
+        raise RuntimeError(
+            f"adapter code hash {ADAPTER_CODE_HASH[:16]}… != registered hash for v{ADAPTER_VERSION} "
+            f"({registered[:16]}…) — bump ADAPTER_VERSION + ADAPTER_REGISTRY after changing adapters.py")
+
+
 def load_snapshot(module: str) -> tuple[bytes, dict | list]:
-    """Load ONE immutable byte snapshot for this request (no TOCTOU)."""
+    """Load ONE immutable byte snapshot for this request (no TOCTOU), ingest for lineage.
+
+    The exact bytes read are the bytes registered (persistence.ingest_run) and the bytes
+    mapped to the response (council F1: same snapshot drives hash / ingest / map / serve).
+    """
     path = _artifact_path(module)
     try:
         raw = path.read_bytes()
@@ -71,6 +98,14 @@ def load_snapshot(module: str) -> tuple[bytes, dict | list]:
         parsed = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as e:
         raise ArtifactUnavailable(module, "corrupt", str(e))
+    # F1: register the exact served bytes in the immutable run registry + record lineage.
+    # Corrupt-bytes path is unreachable here (handled above) but ingest may still raise on
+    # non-dict artifacts — those are admission failures, not 5xx. Map to ArtifactUnavailable.
+    try:
+        run_id = persistence.ingest_run(module, raw)
+    except Exception as e:
+        raise ArtifactUnavailable(module, "corrupt", str(e))
+    REQUEST_RUNS.get().append((run_id, module))
     return raw, parsed
 
 

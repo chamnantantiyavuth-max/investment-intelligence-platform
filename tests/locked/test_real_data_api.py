@@ -143,9 +143,42 @@ def test_tampered_cookie_rejected():
 
 
 def test_missing_password_blocks_startup():
-    """Startup guard: app refuses to boot without IIP_AUTH_PASSWORD (tested via import guard)."""
-    from backend import auth as auth_mod  # noqa: F401
-    assert auth_mod.ENV_CHECKED is True
+    """Startup guard: app refuses to boot without IIP_AUTH_PASSWORD (real subprocess proof)."""
+    code = (
+        "import os; os.environ.pop('IIP_AUTH_PASSWORD', None); os.environ['IIP_AUTH_SECRET']='x'*40; "
+        "import backend.auth"
+    )
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=30,
+                       cwd=str(Path(__file__).resolve().parents[2]))
+    assert r.returncode != 0, "backend.auth must refuse to import without IIP_AUTH_PASSWORD"
+    assert "IIP_AUTH_PASSWORD" in r.stderr
+
+
+def test_weak_secret_blocks_startup():
+    """Startup guard: secret <32 chars must refuse to boot (real subprocess proof)."""
+    code = (
+        "import os; os.environ['IIP_AUTH_PASSWORD']='pw'; os.environ['IIP_AUTH_SECRET']='short'; "
+        "import backend.auth"
+    )
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=30,
+                       cwd=str(Path(__file__).resolve().parents[2]))
+    assert r.returncode != 0, "backend.auth must refuse weak IIP_AUTH_SECRET"
+    assert "IIP_AUTH_SECRET" in r.stderr
+
+
+def test_expired_session_rejected_server_side():
+    """F6/F8: a token past its expires_at must be rejected even if the cookie is presented."""
+    from backend import auth as auth_mod
+    _login()
+    # craft a token signed with the test secret but already expired
+    import time as _time
+    nonce = "expired-nonce"
+    payload = json.dumps({"nonce": nonce, "issued_at": int(_time.time()) - 7200,
+                          "expires_at": int(_time.time()) - 3600}, separators=(",", ":"))
+    expired_token = f"{payload}.{auth_mod._sign(payload)}"
+    fresh = TestClient(app)
+    fresh.cookies.set(auth_mod.SESSION_COOKIE, expired_token)
+    assert fresh.get("/api/am-queue").status_code == 401
 
 
 def test_non_loopback_host_rejected():
@@ -218,9 +251,13 @@ def test_am_theme_detail_shape_and_404():
 
 
 # ── 4. FO ─────────────────────────────────────────────────────────────────────
+_FO_SEQ = [0]
+
+
 def _fo_envelope() -> dict:
+    _FO_SEQ[0] += 1  # unique run_id per test — immutable guard rejects reused ids with different bytes
     return {
-        "run_id": "FO-20260803-000001",
+        "run_id": f"FO-20260803-{_FO_SEQ[0]:06d}",
         "provenance": {"source": "yfinance", "mode": "real", "as_of": "2026-08-01",
                        "coverage": "3/3", "completeness": "complete", "hybrid": False},
         "packages": [
@@ -401,10 +438,24 @@ def test_ingest_upsert_and_immutable_reject():
     # re-ingest identical bytes -> same row, no dup
     run_id2 = persistence.ingest_run("am", payload)
     assert run_id == run_id2
-    # same (module, run_id) with different bytes -> REJECT (immutable)
+    # same (module, run_id) with different bytes -> REJECT (immutable, case a)
     altered = json.dumps({**art, "point_in_time": "2026-08-02"}, default=str).encode()
     with pytest.raises(Exception):
         persistence.ingest_run("am", altered)
+
+
+def test_ingest_no_embedded_run_id_content_addressed():
+    """Plan T1/C7 case b: bytes without an embedded run_id get a hash-derived id;
+    changed bytes -> NEW id (never collapses)."""
+    from backend import persistence
+    p1 = {"packages": [{"id": "A"}]}
+    p2 = {"packages": [{"id": "B"}]}
+    r1 = persistence.ingest_run("noembed", json.dumps(p1).encode())
+    r2 = persistence.ingest_run("noembed", json.dumps(p2).encode())
+    assert r1 != r2, "different bytes must produce different content-addressed run ids"
+    # re-ingest identical bytes -> same id (idempotent)
+    r1b = persistence.ingest_run("noembed", json.dumps(p1).encode())
+    assert r1b == r1
 
 
 def test_api_reads_lineage_with_composite_runs():
@@ -426,6 +477,43 @@ def test_api_reads_lineage_with_composite_runs():
         persistence.log_read("/api/x", "{}", "real", "h", 200, "v1", runs=[(999999, "am")])
 
 
+def test_endpoint_to_db_lineage_wired():
+    """Council F1: a real AM/FO/II read must register pipeline_runs + api_reads + api_read_runs."""
+    from backend import persistence
+    from backend import adapters
+    _write_artifact("fo", _fo_envelope())
+    _write_artifact("ii", _ii_artifact())
+    _real_am_artifact()  # mirror real AM artifact into isolated base
+    _login()
+    # real API reads (dashboard touches am+fo+ii -> composite lineage)
+    r = client.get("/api/dashboard/summary")
+    assert r.status_code == 200
+    body = r.json()
+    # dashboard run_ids must be NON-NULL now (F1 proof)
+    for comp in ("am", "fo", "ii"):
+        assert body["components"][comp]["run_id"], f"{comp} run_id must be registered"
+    # pipeline_runs rows exist for all three modules
+    for mod in ("am", "fo", "ii"):
+        assert persistence.latest_run(mod) is not None
+    # api_reads row recorded with real status + hash for the dashboard call
+    conn = persistence._connect()
+    try:
+        row = conn.execute(
+            "SELECT endpoint, status, response_sha256, adapter_version FROM api_reads "
+            "WHERE endpoint='/api/dashboard/summary' ORDER BY id DESC LIMIT 1").fetchone()
+        assert row is not None
+        assert row["status"] == 200
+        assert len(row["response_sha256"]) == 64
+        assert row["adapter_version"] == "v1"
+        # composite lineage: dashboard read has 3 component runs
+        n = conn.execute(
+            "SELECT COUNT(*) c FROM api_read_runs ar JOIN api_reads a ON a.id=ar.api_read_id "
+            "WHERE a.endpoint='/api/dashboard/summary'").fetchone()["c"]
+        assert n >= 3, f"expected >=3 api_read_runs rows, got {n}"
+    finally:
+        conn.close()
+
+
 def test_schema_version_init_and_newer_reject():
     from backend import persistence
     assert persistence.get_schema_version() == 1
@@ -433,6 +521,28 @@ def test_schema_version_init_and_newer_reject():
     # next open must refuse to operate
     with pytest.raises(Exception):
         persistence.check_schema_compatibility()
+    persistence.set_schema_version(1)  # restore — avoids polluting later tests (test order)
+
+
+def test_api_reads_lineage_records_real_status_and_hash():
+    """Council F1/F8: middleware-recorded api_reads carries the REAL status + response SHA."""
+    from backend import persistence
+    _write_artifact("fo", _fo_envelope())
+    _login()
+    r = client.get("/api/fo-queue")
+    assert r.status_code == 200
+    expected_sha = hashlib.sha256(r.content).hexdigest()
+    conn = persistence._connect()
+    try:
+        row = conn.execute(
+            "SELECT status, response_sha256, adapter_version FROM api_reads "
+            "WHERE endpoint='/api/fo-queue' ORDER BY id DESC LIMIT 1").fetchone()
+        assert row is not None
+        assert row["status"] == 200
+        assert row["response_sha256"] == expected_sha, "recorded hash must match actual served bytes"
+        assert row["adapter_version"] == "v1"
+    finally:
+        conn.close()
 
 
 def test_adapter_registry_code_hash_bound():
@@ -441,8 +551,16 @@ def test_adapter_registry_code_hash_bound():
     assert persistence.ADAPTER_VERSION == adapters.ADAPTER_VERSION
     # code-hash is deterministic and non-trivial
     assert len(adapters.ADAPTER_CODE_HASH) == 64
-    assert adapters.ADAPTER_CODE_HASH == hashlib.sha256(
-        Path(adapters.__file__).read_bytes()).hexdigest()
+    # F3: current file hash MUST match the registered immutable hash — else registry contract broken
+    assert adapters.ADAPTER_CODE_HASH == adapters.ADAPTER_REGISTRY[adapters.ADAPTER_VERSION]
+    # F3: changing the code without bumping the version must FAIL verification
+    original_hash = adapters.ADAPTER_CODE_HASH
+    adapters.ADAPTER_CODE_HASH = "0" * 64  # simulate a source change without a version bump
+    try:
+        with pytest.raises(Exception):
+            adapters.verify_adapter_registry()
+    finally:
+        adapters.ADAPTER_CODE_HASH = original_hash
 
 
 # ── 9. Fail-closed / stale ────────────────────────────────────────────────────
@@ -506,7 +624,7 @@ def test_e2e_subprocess_envelope_produce_and_serve():
         "tmp=p.with_suffix('.json.tmp');tmp.write_text(json.dumps(env),encoding='utf-8');"
         "os.replace(tmp,p);print('written')"
     )
-    r = subprocess.run([sys.executable, "-c", code, str(out_path)],
+    r = subprocess.run([shutil.which("python3"), "-c", code, str(out_path)],
                        cwd=str(producer_dir), capture_output=True, text=True, timeout=60)
     assert r.returncode == 0, r.stderr
     # 3.11 FastAPI ingests + serves the envelope produced by the 3.14 interpreter
