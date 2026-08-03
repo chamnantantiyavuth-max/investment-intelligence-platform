@@ -1,32 +1,39 @@
-# Session Closeout — 3 August 2026 (AM Findings → Production Readiness → Pre-Launch Close Beta Audit)
+# Session Closeout — 3 August 2026 (AM Findings → Production Readiness → Pre-Launch Close Beta Audit → Real-Data Production Path RELEASED)
 
 > **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
 
-## Session Summary
+## Session Summary (Second Session — Real-Data Production Path, FD #46–48)
 
 ```
-Trigger:     "GOAL MODE IIP Session (next)" — resolve 3 standing AM findings + verify pipeline/cron health
-Flow:        Loop v3 + governance sync PASS (v3.7.1 shared↔iip) + cron audit
-             → FD #45: FSLR P/E verified as yfinance trailingEps artifact (no action until clean refresh);
-               AMD -8.8% verified genuine price-driven unwind; GAP-006 FIXED (V0_TICKERS 5→9,
-               re-run AM-V0-20260803-171535, real EOD coverage 9/9)
-             → Production smoke test (FD-HERMES-010): 8/8 APIs + 6/6 pages → found + fixed
-               vite proxy drift 8001→8000 (e5f4134)
-             → UI design audit: sidebar token gap (light not dark #0f1117) parked
-             → Full Pre-Launch Close Beta Audit (split-lane, FD-HERMES-007/010):
-               Parent browser 10/10 + Sol Medium (gpt-5.6-sol) API/oracle
-               → NOT READY (a80c237): SOL-003/BROWSER-003 CS triple disagreement 8/2/3 + provenance Minors
-             → Option A remediation (f96f0a5): single-source CS counts, CSRadarPage→API,
-               data_source everywhere, Cheap&Quality banner; 262/262 + build + browser verified
-             → Re-audit (91982a5) + Founder acceptance of 2 cosmetic Minors (b038b2f)
-               → READY WITH ACCEPTED RISKS — audit CLOSED
-             → Closeout: MEM-IIP-019/020 + session log/transcript + state sync
-Deliverables: FD #45 (AM findings + GAP-006 fix) · production-readiness fix (vite proxy)
-             Full pre-launch audit bundle (qa/prelaunch-audit/: manifest, adapter, workflow
-             register, bug register, verdict with Founder acceptance, evidence)
-             8 commits: 532b1c5 5e523d6 a9d4c6a e5f4134 a80c237 f96f0a5 91982a5 b038b2f
-State:       61 FDs. AM real EOD coverage 9/9. App READY WITH ACCEPTED RISKS (labeled
-             synthetic demo). CIW paused (unchanged). Audit CLOSED.
+Trigger:     "Open the real-data production path named FD for real-pipeline API wiring
+             + persistence + auth, then a final production audit"
+Flow:        Critical Mode full chain:
+             → FD #46 opened (62 FDs): AM/FO/II real→API wiring, SQLite persistence,
+               single-user auth, CS stays synthetic; supersedes FD #44 for this scope
+             → Arch v0.1→v0.4 (docs/ARCH-REAL-DATA-PRODUCTION.md): 3 adversarial 2R
+               rounds (FAIL each; F1–F8 + NF1–NF8 folded; evidence/PHASE-2R-*)
+             → Plan v1.1 + Plan Council Lite PASS WITH FIXES (C1–C8 folded)
+             → FD #47 D1–D4 (stdlib sqlite3, fail-closed 503, staleness bounds, 2R disposition)
+             → Implementation: persistence.py + auth.py + adapters.py + schemas +
+               routes (am/fo/ii/cs) + CaptureResponseMiddleware + runner changes
+               (FO envelope + atomic write + mode-gated evidence, II as_of/atomic)
+               + frontend (login gate, credentials, AM/FO real contracts, dashboard
+               per-component provenance, CS agreement 2/1) + gate-check.sh/isolation-scan.sh
+             → Real artifacts committed: FO yfinance 8 pkgs, II SEC EDGAR partial_21_51
+               (25,246 signals), AM REAL EOD hybrid
+             → 301/301 tests, build exit 0, gate exit 0, isolation exit 0, browser lane 10/10
+             → Final Council R1 REWORK (F1–F4: lineage not wired, test overclaim,
+               adapter registry, evidence packet) → remediated (47576c0, 97c91f2)
+               + F3 NameError masked-guard found via ad-hoc verifier → 124d7f6
+             → Final Council R2 PASS WITH FIXES (all closed, no outstanding changes)
+             → Final production audit: browser 10/10 + Sol Medium API/oracle 10/10
+               + SQLite lineage + CS oracle (2,1) == dashboard
+             → FD #48 RELEASE ACCEPTED (READY WITH ACCEPTED RISKS, 64 FDs)
+Deliverables: Real-data API surfaces (AM/FO/II) + SQLite lineage + single-user auth
+             + provenance labels + 39 locked real-data-api tests + 6 evidence/council
+             artifacts + 15 commits (7e30ab7 → e3a5a6b incl. 08f0f96 impl)
+State:       64 FDs. 301/301 tests. App RELEASED READY WITH ACCEPTED RISKS with real
+             AM/FO/II data; CS sole synthetic surface. CIW paused (unchanged).
 ```
 
 ## Decisions Approved

@@ -7,26 +7,27 @@
 
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW): PILOT FIRST SLICE + MONITORING + SECOND SLICE COMPLETE (3 Aug 2026)** — MSFT research published (FD-CIW-012) + monitoring contract + Cron Class A live (FD-CIW-013/014) + **valuation second slice PUBLISHED (FD-CIW-016)**. Full implementation (Cron Class B/C, Obsidian sync, expanded tree, schema) remains deferred.
 - Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009). Pilot first slice COMPLETE (3 Aug 2026):** design v0.3 (2R PASSED) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed (real SEC EDGAR) → bounded research (Modules A–M initial) → Independent Challenge PASS (round 5, after 4 FAIL rounds + rework v0.1→v0.5) → Founder-approved publication (FD-CIW-012): `research-result.md` v1 Published / Current Authoritative.
-- Latest FDs: **FD #47 (3 Aug 2026) — Implementation Decisions D1–D4 (Option A):** stdlib sqlite3 persistence, fail-closed 503 admission on real surfaces, staleness bounds (AM≤7d/FO≤30d/II≤120d), 2R disposition. Prior: **FD #46 (3 Aug 2026) — Real-Data Production Path OPENED** (supersedes FD #44 for THIS SCOPE ONLY): AM/FO/II real-pipeline→API wiring (CS stays synthetic-labeled), SQLite persistence (run registry + snapshots + evidence lineage), single-user session auth (all /api/* except health/login/status), provenance labels flip synthetic_demo → real_<source>_<timestamp> where real. Chain: #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 (63 total).
+- Latest FDs: **FD #48 (3 Aug 2026) — RELEASE ACCEPTED (READY WITH ACCEPTED RISKS):** Final Council round 2 PASS WITH FIXES (evidence/COUNCIL_DECISION-final-2026-08-03.md), final production audit split-lane complete (browser 10/10 + API/oracle 10/10 + DB lineage + CS oracle), accepted risks: II API-only surface / II 16.7MB artifact / CS stays synthetic / single-user loopback auth. Prior: **FD #47 (3 Aug 2026) — D1–D4:** stdlib sqlite3, fail-closed 503 admission, staleness bounds (AM≤7d/FO≤30d/II≤120d), 2R disposition. **FD #46 (3 Aug 2026) — Real-Data Production Path OPENED** (supersedes FD #44 for THIS SCOPE ONLY): AM/FO/II real-pipeline→API wiring (CS stays synthetic-labeled), SQLite persistence (run registry + snapshots + evidence lineage), single-user session auth (all /api/* except health/login/status), provenance labels flip synthetic_demo → real_<source>_<timestamp> where real. Chain: #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 (64 total).
+- **Real-Data Production Path COMPLETE + RELEASED (3 Aug 2026, FD #46–48):** AM/FO/II serve real pipeline artifacts (AM REAL EOD hybrid, FO yfinance 8 pkgs, II SEC EDGAR partial_21_51) through auth-protected API with SQLite lineage; CS remains the sole labeled-synthetic surface; provenance labels per component (real/hybrid/synthetic + human_sourced evidence); dashboard CS agreement (2/1) enforced. Gates: 3× Phase 2R (FAIL→folded) + Plan Council Lite (PASS WITH FIXES) + Final Council R1 REWORK (F1–F4 remediated) + R2 PASS WITH FIXES + final production audit (browser + API/oracle + DB lineage + oracle).
 - **Pre-Launch Close Beta Audit CLOSED (3 Aug 2026 evening):** split-lane audit (Parent browser 10/10 + Sol Medium API/oracle) → NOT READY → Option A remediation (CS truth agreement + provenance labels) → re-audit verified → **READY WITH ACCEPTED RISKS** (Founder accepted 2 cosmetic Minors). App is release-ready as a **labeled synthetic demo**; FD #44 boundaries unchanged (real-pipeline wiring/persistence/auth deferred). Artifacts: `qa/prelaunch-audit/`.
-- Tests: **296/296 all passing** — verified 3 August 2026 (post FD #46 implementation: 124 locked (90 old + 34 new real-data-api) + 56 AM + 42 FO + 25 CS + 49 II).
+- Tests: **301/301 all passing** — verified 3 August 2026 (post FD #46–48 release: 129 locked (90 old + 39 new real-data-api) + 56 AM + 42 FO + 25 CS + 49 II).
 
 ## Build Metrics (single source of truth — v3.3.0)
 
 | Metric | Value | Last verified |
 |--------|-------|---------------|
-| Python tests | 262/262 passing | 2026-08-02 |
-| Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-02 |
+| Python tests | 301/301 passing | 2026-08-03 |
+| Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-03 |
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
-| Commits | 89 on `main` | 2026-08-03 |
-| FDs approved | #1–44 + FD-CIW-001..016 + FD #45 + FD #46 (62) | 2026-08-03 |
-| closeout_status | **completed** (FD #46 Real-Data Production Path OPENED) | 2026-08-03 |
+| Commits | 96 on `main` | 2026-08-03 |
+| FDs approved | #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 (64) | 2026-08-03 |
+| closeout_status | **completed** (FD #46–48 Real-Data Production Path RELEASED — READY WITH ACCEPTED RISKS) | 2026-08-03 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
 ## Open constraints
 
-- No active blockers. Real-data production path OPENED (FD #46): AM/FO/II real→API wiring in execution; CS API surface serves labeled synthetic demo data (stays synthetic — no real CS data).
+- No active blockers. **Real-data production path RELEASED (FD #46–48, 3 Aug 2026):** AM/FO/II serve real pipeline artifacts through auth-protected API with SQLite lineage; CS API surface serves labeled synthetic demo data (stays synthetic — no real CS data).
 - Deferred items: DR-004 (Legacy Knowledge Salvage), Phase 11 Deep Research Handoff / CIW (concept approved in principle only — FD-CIW-001; implementation/automation/schemas/pilot require a separate named FD superseding FD #44), CIW pilot company selection (FD-CIW-007 — shortlist after specs), AM/CS API-backed workflows, automated challenge/earnings/trap detection, cross-module institutional signal integration, final stack declaration, database/persistence expansion. Templates TPL-* remain deferred.
 - No broker connectivity, execution, or portfolio allocation.
 - No AI-invented investment rules, thresholds, weights, formulas, lookbacks, or fallback behavior.
