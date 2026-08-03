@@ -1,0 +1,909 @@
+{
+  "run_id": "FO-20260803-140032",
+  "provenance": {
+    "source": "yfinance",
+    "mode": "real",
+    "as_of": "2026-08-03",
+    "coverage": "8/8",
+    "completeness": "complete",
+    "hybrid": false
+  },
+  "packages": [
+    {
+      "id": "AAPL",
+      "name": "Apple Inc.",
+      "generated_at": "2026-08-03T21:00:32.612503",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Apple Inc. lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Neutral — AI capex tailwind, valuation headwind from rates"
+      },
+      "industry_assessment": {
+        "sector": "Technology",
+        "industry": "Consumer Electronics",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.4865,
+          "operating_margin": 0.3262,
+          "fcf_conversion": 0.8355,
+          "debt_to_equity": 0.7844,
+          "roe": 1.4875,
+          "revenue_growth_3y": 0.164
+        },
+        "capital_allocation": {
+          "quality": "GOOD",
+          "fcf_available": true,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.8355,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Apple Inc. shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 35.0,
+        "pe_5y_avg": 22.6,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 27.0,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.024,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 305.02,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "MSFT",
+      "name": "Microsoft Corporation",
+      "generated_at": "2026-08-03T21:00:32.612541",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Microsoft Corporation lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Neutral — AI capex tailwind, valuation headwind from rates"
+      },
+      "industry_assessment": {
+        "sector": "Technology",
+        "industry": "Software - Infrastructure",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.6794,
+          "operating_margin": 0.4511,
+          "fcf_conversion": 0.1223,
+          "debt_to_equity": 0.2912,
+          "roe": 0.3404,
+          "revenue_growth_3y": 0.177
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": false,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.1223,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Microsoft Corporation shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 27.3,
+        "pe_5y_avg": 20.1,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 18.0,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0045,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 489.61,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "NVDA",
+      "name": "NVIDIA Corporation",
+      "generated_at": "2026-08-03T21:00:32.612563",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "NVIDIA Corporation lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Neutral — AI capex tailwind, valuation headwind from rates"
+      },
+      "industry_assessment": {
+        "sector": "Technology",
+        "industry": "Semiconductors",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.7414,
+          "operating_margin": 0.656,
+          "fcf_conversion": 0.2903,
+          "debt_to_equity": 6.555,
+          "roe": 1.1429,
+          "revenue_growth_3y": 0.852
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": false,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.2903,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "NVIDIA Corporation shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 31.0,
+        "pe_5y_avg": 13.5,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 29.1,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0095,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 202.15,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "Elevated leverage — balance sheet risk in downturn"
+      ],
+      "independent_challenge": [
+        "Debt/Equity 6.6x — refinancing risk if rates stay elevated."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "GOOGL",
+      "name": "Alphabet Inc.",
+      "generated_at": "2026-08-03T21:00:32.612580",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Alphabet Inc. lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Not assessed"
+      },
+      "industry_assessment": {
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.609,
+          "operating_margin": 0.3403,
+          "fcf_conversion": 0.0928,
+          "debt_to_equity": 0.1886,
+          "roe": 0.4868,
+          "revenue_growth_3y": 0.242
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": false,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.0928,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Alphabet Inc. shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 18.6,
+        "pe_5y_avg": 8.6,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 24.6,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0104,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 371.2,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "AMZN",
+      "name": "Amazon.com, Inc.",
+      "generated_at": "2026-08-03T21:00:32.612592",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Amazon.com, Inc. lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Not assessed"
+      },
+      "industry_assessment": {
+        "sector": "Consumer Cyclical",
+        "industry": "Internet Retail",
+        "position": "Strong"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.5077,
+          "operating_margin": 0.1369,
+          "fcf_conversion": 0.0238,
+          "debt_to_equity": 0.4562,
+          "roe": 0.3056,
+          "revenue_growth_3y": 0.196
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": false,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.0238,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Amazon.com, Inc. shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 22.9,
+        "pe_5y_avg": 13.8,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 18.1,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0011,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 284.8,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "META",
+      "name": "Meta Platforms, Inc.",
+      "generated_at": "2026-08-03T21:00:32.612602",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Meta Platforms, Inc. lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Not assessed"
+      },
+      "industry_assessment": {
+        "sector": "Communication Services",
+        "industry": "Internet Content & Information",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.8175,
+          "operating_margin": 0.3088,
+          "fcf_conversion": 0.3165,
+          "debt_to_equity": 0.43,
+          "roe": 0.2985,
+          "revenue_growth_3y": 0.28
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": false,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.3165,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Meta Platforms, Inc. shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 22.2,
+        "pe_5y_avg": 15.9,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 13.1,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0166,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 589.96,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "TSLA",
+      "name": "Tesla, Inc.",
+      "generated_at": "2026-08-03T21:00:32.612615",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Tesla, Inc. lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Not assessed"
+      },
+      "industry_assessment": {
+        "sector": "Consumer Cyclical",
+        "industry": "Auto Manufacturers",
+        "position": "Challenged"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.1885,
+          "operating_margin": 0.0141,
+          "fcf_conversion": 1.2706,
+          "debt_to_equity": 0.1837,
+          "roe": 0.0467,
+          "revenue_growth_3y": 0.255
+        },
+        "capital_allocation": {
+          "quality": "WATCH",
+          "fcf_available": true,
+          "roe_adequate": false,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 1.2706,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Tesla, Inc. shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 291.7,
+        "pe_5y_avg": 261.4,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 111.8,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0039,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 317.92,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    },
+    {
+      "id": "JNJ",
+      "name": "Johnson & Johnson",
+      "generated_at": "2026-08-03T21:00:32.612627",
+      "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+      "thesis_summary": "Johnson & Johnson lacks a structural moat. Investment case depends entirely on earnings growth and valuation mean-reversion. High risk of value trap.",
+      "thesis_lifecycle": "Under Review",
+      "conviction": {
+        "level": "Moderate",
+        "cap": "Moderate",
+        "rationale": "Moat cap: Moderate."
+      },
+      "macro_context": {
+        "regime": "Growth — Late Cycle",
+        "gdp_growth": 0.025,
+        "inflation": 0.031,
+        "fed_funds": 0.0525,
+        "sector_implication": "Neutral — defensive sector, patent cliff risk offset by aging demographics"
+      },
+      "industry_assessment": {
+        "sector": "Healthcare",
+        "industry": "Drug Manufacturers - General",
+        "position": "Leader"
+      },
+      "company_assessment": {
+        "moat": {
+          "types": [],
+          "active_count": 0,
+          "total_types": 0,
+          "width": "None",
+          "depth": "Shallow",
+          "trend": "Stable",
+          "types_summary": ""
+        },
+        "financial_quality": {
+          "gross_margin": 0.6814,
+          "operating_margin": 0.2919,
+          "fcf_conversion": 0.8026,
+          "debt_to_equity": 0.5771,
+          "roe": 0.2574,
+          "revenue_growth_3y": 0.066
+        },
+        "capital_allocation": {
+          "quality": "GOOD",
+          "fcf_available": true,
+          "roe_adequate": true,
+          "buyback_impact": 0
+        },
+        "management": {
+          "ceo_tenure_years": 0,
+          "credibility": "UNKNOWN",
+          "insider_activity": "",
+          "cfo_turnover_3y": 0
+        },
+        "conviction_cap": "Moderate",
+        "moat_narrative": "No structural competitive advantage identified. The company competes on price, features, or operational efficiency without a defendable moat.",
+        "moat_score": 5
+      },
+      "earnings_trajectory": {
+        "rating": "MEDIUM",
+        "conviction_impact": "Neutral — wait for next quarter",
+        "surprise_direction": "",
+        "surprise_magnitude_pct": 0,
+        "revenue_quality": "",
+        "margin_quality": "",
+        "fcf_conversion": 0.8026,
+        "one_time_items": false,
+        "share_buyback_impact_pct": 0,
+        "guidance_direction": "",
+        "guidance_reason": "",
+        "narrative": "Johnson & Johnson shows mixed financial quality signals — earnings quality rated MEDIUM."
+      },
+      "valuation_context": {
+        "pe_ttm": 29.2,
+        "pe_5y_avg": 18.8,
+        "pe_10y_avg": 0,
+        "ev_ebitda": 18.5,
+        "ev_ebitda_industry": 0,
+        "fcf_yield": 0.0279,
+        "scenario_bull": 0,
+        "scenario_base": 0,
+        "scenario_bear": 0,
+        "current_price": 251.33,
+        "unusually_cheap": false,
+        "value_trap": {
+          "triggered": false
+        },
+        "profit_rate_trend": {
+          "triggered": false,
+          "reason": "Insufficient ROIC data"
+        },
+        "narrative_gap": {
+          "triggered": false,
+          "gap_ratio": null,
+          "verdict": "INSUFFICIENT_DATA",
+          "detail": "Fair value cannot be computed — missing scenario data."
+        }
+      },
+      "key_risks": [
+        "No material risks identified from available data"
+      ],
+      "independent_challenge": [
+        "No material challenge identified — thesis has not been stress-tested."
+      ],
+      "supporting_evidence": [],
+      "contradicting_evidence": [
+        "No contradicting evidence identified from available data."
+      ],
+      "open_questions": [
+        "Will next quarter confirm improving or deteriorating earnings quality trend?"
+      ]
+    }
+  ]
+}

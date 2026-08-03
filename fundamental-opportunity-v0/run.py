@@ -67,7 +67,7 @@ def main():
     print(f"DATA: {data_source}")
     print("=" * 60)
 
-    packages = run_pipeline(companies=companies)
+    packages = run_pipeline(companies=companies, mode="real" if data_source == "REAL EOD" else "synthetic")
     print(f"\nPipeline complete: {len(packages)} companies assessed.\n")
 
     for pkg in packages:
@@ -91,9 +91,26 @@ def main():
     json_path = os.path.join(output_dir, "pipeline_result.json")
     html_path = os.path.join(output_dir, "research_packages.html")
 
-    # Save JSON
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(packages, f, indent=2, default=str, ensure_ascii=False)
+    # Save JSON — envelope {run_id, provenance, packages} + atomic write (arch v0.4 §3/§6, FD #46)
+    from datetime import datetime, timezone
+    envelope = {
+        "run_id": f"FO-{datetime.now(timezone.utc):%Y%m%d-%H%M%S}",
+        "provenance": {
+            "source": "yfinance" if data_source == "REAL EOD" else "fixtures",
+            "mode": "real" if data_source == "REAL EOD" else "synthetic",
+            "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "coverage": f"{len(packages)}/{len(packages)}",
+            "completeness": "complete",
+            "hybrid": False,
+        },
+        "packages": packages,
+    }
+    tmp_path = json_path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(envelope, f, indent=2, default=str, ensure_ascii=False)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, json_path)
     print(f"JSON saved: {json_path}")
 
     # HTML output

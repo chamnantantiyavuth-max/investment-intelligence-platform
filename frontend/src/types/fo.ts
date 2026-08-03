@@ -1,5 +1,6 @@
-// Phase 8: Fundamental & Opportunity — TypeScript types
-// Mirrors Pydantic schemas in backend/schemas/responses.py
+// Phase 8 + FD #46: Fundamental & Opportunity — TypeScript types
+// Mirrors Pydantic schemas in backend/schemas/responses.py (real-artifact contracts + provenance)
+import type { Provenance } from "./am";
 
 export interface MoatType {
   type: string;
@@ -18,6 +19,7 @@ export interface ResearchPackageSummary {
   earnings_quality: string;
   conviction: string;
   value_trap_verdict: string;
+  provenance: Provenance;
 }
 
 export interface EarningsQuality {
@@ -72,6 +74,7 @@ export interface ResearchPackageDetail {
   earnings_quality: string;
   conviction: ConvictionDetail;
   value_trap_verdict: string;
+  provenance: Provenance;
   generated_at: string;
   spec_ref: string;
   thesis_summary: string;

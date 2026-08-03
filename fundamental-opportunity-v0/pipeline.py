@@ -21,23 +21,26 @@ from value_trap import is_unusually_cheap, run_value_trap_check, run_profit_rate
 from narrative_gap import run_narrative_gap
 
 
-def run_pipeline(companies: list[dict] = None) -> list[dict]:
+def run_pipeline(companies: list[dict] = None, mode: str = "synthetic") -> list[dict]:
     """Run the full 6-stage Fundamental & Opportunity pipeline.
 
     Args:
         companies: Optional list of company dicts. If None, uses FIXTURES.
+        mode: "synthetic" (default, backward-compatible) or "real" (yfinance).
+            Propagated to evidence generation so real runs never claim
+            "synthetic fixture" (arch v0.4 §3, FD #46 provenance).
 
     Returns a list of Research Packages, one per company.
     """
     source = companies if companies is not None else FIXTURES
     packages = []
     for company in source:
-        pkg = build_research_package(company)
+        pkg = build_research_package(company, mode=mode)
         packages.append(pkg)
     return packages
 
 
-def build_research_package(company: dict) -> dict:
+def build_research_package(company: dict, mode: str = "synthetic") -> dict:
     """Build a complete 13-section Research Package for one company.
 
     Gracefully handles missing fields — uses defaults rather than crashing.
@@ -149,7 +152,7 @@ def build_research_package(company: dict) -> dict:
         },
         "key_risks": key_risks,
         "independent_challenge": _independent_challenge(company, moat, earnings_quality),
-        "supporting_evidence": _supporting_evidence(company),
+        "supporting_evidence": _supporting_evidence(company, mode),
         "contradicting_evidence": _contradicting_evidence(company, moat),
         "open_questions": open_questions,
     }
@@ -295,9 +298,10 @@ def _independent_challenge(company, moat, eq):
     return challenges if challenges else ["No material challenge identified — thesis has not been stress-tested."]
 
 
-def _supporting_evidence(company):
+def _supporting_evidence(company, mode: str = "synthetic"):
     evidence = []
-    evidence.append(f"Financial data: synthetic fixture for {company['id']} (V0 testing only)")
+    if mode != "real":
+        evidence.append(f"Financial data: synthetic fixture for {company['id']} (V0 testing only)")
     if company.get("moat_types"):
         evidence.append(f"Moat evidence: {company['moat_types'][0]['evidence']}")
     return evidence

@@ -81,7 +81,7 @@ export default function FundamentalQueuePage() {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
-          SYNTHETIC — NOT LIVE DATA
+          {data[0]?.provenance.mode === "real" ? `REAL · ${data[0].provenance.source}` : "SYNTHETIC — NOT LIVE DATA"}
         </Badge>
       </div>
 

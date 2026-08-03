@@ -1,56 +1,121 @@
-"""Pydantic response schemas for API endpoints."""
+"""Pydantic response schemas for API endpoints — locked to REAL artifact fields (arch v0.4 §3, plan T4).
+
+Real-Data Production Path (FD #46): synthetic-only fields (driver_count, evidence counts,
+numeric quality scores) REMOVED from real surfaces. Provenance required on every real surface.
+"""
 from __future__ import annotations
+
 from enum import Enum
+from typing import Any, Optional
+
 from pydantic import BaseModel
-from typing import Optional
+
+
+# ── Provenance (required on every real surface; never invented) ──────────────
+class Provenance(BaseModel):
+    source: str
+    mode: str                  # real | synthetic
+    as_of: Optional[str] = None
+    coverage: Optional[str] = None
+    completeness: Optional[str] = None
+    hybrid: bool = False       # true when real + non-real components coexist
+    component_map: dict[str, str] = {}  # per-component label (arch §3): field -> real|synthetic|human_sourced
+
+
+class EvidenceProvenance(BaseModel):
+    source_id: str
+    source_type: str           # real | synthetic | human_sourced
+
+
+# ── Dashboard ────────────────────────────────────────────────────────────────
+class ComponentProvenance(BaseModel):
+    run_id: Optional[str] = None
+    point_in_time: Optional[str] = None
+    data_source: Optional[str] = None
+    source: Optional[str] = None        # e.g. backend_static_mock for CS
+    state: str = "available"            # available | unavailable
 
 
 class DashboardSummary(BaseModel):
-    total_themes: int = 143
-    approved_themes: int = 12
-    active_signals: int = 7
-    queue_size: int = 5
-    am_active_themes: int = 12
-    am_queue_size: int = 5
-    am_last_run: Optional[str] = "2026-07-25T01:00:00Z"
-    cs_radar_items: int = 2
-    cs_qc_met: int = 1
-    cs_regime: str = "risk-on"
-    data_source: str = "synthetic_demo"
+    total_themes: int = 0
+    approved_themes: int = 0
+    active_signals: int = 0
+    queue_size: int = 0
+    am_last_run: Optional[str] = None
+    cs_radar_items: int = 0
+    cs_qc_met: int = 0
+    cs_regime: str = "unknown"
+    components: dict[str, ComponentProvenance]  # am / fo / ii / cs — per-component provenance
 
 
+# ── AM (locked to real artifact fields) ───────────────────────────────────────
 class ThemeSummary(BaseModel):
     id: str
     name: str
-    approval_status: str
+    sector: str
+    industry: str
     lifecycle: str
-    driver_count: int
-    candidate_count: int
-    evidence_supporting: int
-    evidence_contradicting: int
-    evidence_missing: int
-    theme_quality: float
-    candidate_quality: float
-    entry_readiness: float
-    data_confidence: float
-    data_source: str = "synthetic_demo"
+    approval_status: str
+    monitoring_status: str
+    confidence: str
+    key_tickers: list[str]
+    stocks_in_industry: int
+    why_now: str
+    provenance: Provenance
+    evidence_provenance: list[EvidenceProvenance]
+
+
+class CandidateQuality(BaseModel):
+    fundamentals: str
+    growth: str
+    liquidity: str
+    relative_strength: str
+    trend_quality: str
+    accumulation: str
+    industry_leadership: str
+
+
+class EntryReadiness(BaseModel):
+    price_structure: str
+    base_quality: str
+    breakout_proximity: str
+    volume_behavior: str
+    volatility_contraction: str
+    extension_risk: str
+
+
+class DataConfidence(BaseModel):
+    freshness: str
+    completeness: str
+    reliability: str
+    conflicts: str
+    missing_data: str
+
+
+class CandidateSummary(BaseModel):
+    id: str
+    ticker: str
+    research_state: str
+    conviction_level: str
+    candidate_quality: CandidateQuality
+    entry_readiness: EntryReadiness
+    data_confidence: DataConfidence
+    provenance: Provenance
+
+
+class ThemeWithCandidates(BaseModel):
+    theme: ThemeSummary
+    candidates: list[CandidateSummary]
 
 
 class AMQueueResponse(BaseModel):
-    themes: list[ThemeSummary]
+    run_id: str
+    point_in_time: Optional[str] = None
+    themes: list[ThemeWithCandidates]
 
 
-# ── Fundamental & Opportunity Intelligence (Phase 8) ──
-
-class MoatType(str, Enum):
-    """Moat width classification per §3.4.1."""
-    WIDE = "Wide"
-    NARROW = "Narrow"
-    NONE = "None"
-
-
+# ── FO (envelope {run_id, provenance, packages}; locked flattening) ──────────
 class ResearchPackageSummary(BaseModel):
-    """Lightweight summary for queue listing (10 fields)."""
     id: str
     name: str
     sector: str
@@ -61,27 +126,12 @@ class ResearchPackageSummary(BaseModel):
     earnings_quality: str
     conviction: str
     value_trap_verdict: str
-    data_source: str = "synthetic_demo"
+    provenance: Provenance
 
 
-class ResearchPackageDetail(BaseModel):
-    """Full research package with all summary fields + 13 content sections.
-
-    Standalone model (not inheriting from summary) to avoid field type
-    conflicts — e.g., summary uses ``conviction: str`` (level only) while
-    detail uses ``conviction: dict`` (full conviction object).
-    """
-    id: str
-    name: str
-    sector: str
-    industry: str
-    moat_width: str
-    moat_depth: str
-    moat_trend: str
-    earnings_quality: str
-    conviction: dict
-    value_trap_verdict: str
-    data_source: str = "synthetic_demo"
+class ResearchPackageDetail(ResearchPackageSummary):
+    """Full research package: summary fields + full content sections."""
+    conviction: Any
     generated_at: str
     spec_ref: str
     thesis_summary: str
@@ -96,3 +146,32 @@ class ResearchPackageDetail(BaseModel):
     supporting_evidence: list
     contradicting_evidence: list
     open_questions: list
+
+
+# ── II (new surface) ──────────────────────────────────────────────────────────
+class IISignalSummary(BaseModel):
+    filer_name: str
+    filer_cik: str
+    filer_category: str
+    ticker: str
+    filing_quarter: str
+    report_date: str
+    pct_of_portfolio: float
+    conviction: str
+    action: str
+    change_pct: float
+    signal_score: float
+    value_usd: float
+
+
+class IISignalsResponse(BaseModel):
+    signals: list[IISignalSummary]
+    summary: dict
+    meta: dict
+    provenance: Provenance
+
+
+# ── CS (unchanged synthetic contract) ─────────────────────────────────────────
+class CSRadarResponse(BaseModel):
+    data_source: str = "synthetic_demo"
+    assets: list[Any]

@@ -35,7 +35,9 @@ export default function CheapQualityPage() {
         </p>
       </div>
 
-      <SyntheticDataBanner note="Watchlist members come from the FO pipeline running synthetic fixtures — real data wiring is not yet connected to this API surface." />
+      {data?.[0]?.provenance.mode !== "real" && (
+        <SyntheticDataBanner note="Watchlist members come from the FO pipeline running synthetic fixtures — real data wiring is not yet connected to this API surface." />
+      )}
 
       {!data?.length ? (
         <Card>

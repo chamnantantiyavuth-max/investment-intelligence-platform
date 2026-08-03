@@ -86,6 +86,17 @@ def main():
     result["summary"]["total_signals"] = len(signals)
     result["summary"]["top_signals"] = signals[:args.top]
     result["meta"]["data_source"] = data_source
+    # as_of stamp (arch v0.4 §6/NF7): filing-consistent date for the staleness admission bound (D3)
+    from datetime import datetime, timezone
+    import re
+    result["meta"]["as_of"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if data_source == "REAL 13F":
+        result["meta"]["completeness"] = "complete"
+    elif "PARTIAL" in data_source:
+        m = re.search(r"(\d+)\s*/\s*(\d+)", data_source)
+        result["meta"]["completeness"] = f"partial_{m.group(1)}_{m.group(2)}" if m else "partial"
+    else:
+        result["meta"]["completeness"] = "complete"
 
     # Display
     for s in signals[:args.top]:

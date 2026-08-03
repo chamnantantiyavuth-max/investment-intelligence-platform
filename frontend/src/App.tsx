@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Layout } from "@/components/Layout"
+import { authStatus } from "@/api/authClient"
+import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import AMQueuePage from "@/pages/AMQueuePage"
 import AMThemeCardPage from "@/pages/AMThemeCardPage"
@@ -10,22 +13,40 @@ import CheapQualityPage from "@/pages/CheapQualityPage"
 import WeakSignalInboxPage from "@/pages/WeakSignalInboxPage"
 import NotFoundPage from "@/pages/NotFoundPage"
 
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const [authed, setAuthed] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    authStatus().then(setAuthed)
+  }, [])
+
+  if (authed === null) {
+    return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading…</div>
+  }
+  if (!authed) {
+    return <LoginPage onSuccess={() => setAuthed(true)} />
+  }
+  return <>{children}</>
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="am-queue" element={<AMQueuePage />} />
-          <Route path="am-theme/:id" element={<AMThemeCardPage />} />
-          <Route path="cs-radar" element={<CSRadarPage />} />
-          <Route path="fundamental" element={<FundamentalQueuePage />} />
-          <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
-          <Route path="cheap-quality" element={<CheapQualityPage />} />
-          <Route path="weak-signals" element={<WeakSignalInboxPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <AuthGate>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="am-queue" element={<AMQueuePage />} />
+            <Route path="am-theme/:id" element={<AMThemeCardPage />} />
+            <Route path="cs-radar" element={<CSRadarPage />} />
+            <Route path="fundamental" element={<FundamentalQueuePage />} />
+            <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
+            <Route path="cheap-quality" element={<CheapQualityPage />} />
+            <Route path="weak-signals" element={<WeakSignalInboxPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </AuthGate>
     </BrowserRouter>
   )
 }

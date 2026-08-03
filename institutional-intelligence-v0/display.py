@@ -132,10 +132,14 @@ def render_html(result: dict) -> str:
 
 
 def save_json(result: dict, path: str):
-    """Save pipeline result as JSON."""
+    """Save pipeline result as JSON — atomic write (tmp + os.replace, arch v0.4 §2/§6)."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, default=str, ensure_ascii=False)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, path)
 
 
 def render_report(result: dict, json_path: str = None) -> str:

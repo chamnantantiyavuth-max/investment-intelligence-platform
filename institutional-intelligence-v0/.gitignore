@@ -1,2 +1,5 @@
 output/
+!output/
+output/*
+!output/institutional_signals.json
 data/cache/

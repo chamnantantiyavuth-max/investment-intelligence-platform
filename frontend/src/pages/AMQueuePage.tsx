@@ -2,17 +2,14 @@ import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ThemeStatusBadge } from "@/components/ThemeStatusBadge"
-import { EvidenceIndicator } from "@/components/EvidenceIndicator"
-import { ConfidenceGauge } from "@/components/ConfidenceGauge"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getAMQueue } from "@/api/amClient"
-import SyntheticDataBanner from "@/components/SyntheticDataBanner"
 
 export default function AMQueuePage() {
-  const { data: themes, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["am-queue"],
     queryFn: getAMQueue,
     staleTime: 5 * 60 * 1000,
@@ -31,13 +28,18 @@ export default function AMQueuePage() {
     </div>
   );
 
+  const themes = data?.themes ?? [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Alpha Momentum Queue</h1>
       </div>
 
-      <SyntheticDataBanner note="Theme rankings come from the AM API, which currently serves demonstration data — the real AM pipeline is not yet connected to this API surface." />
+      <p className="text-xs text-slate-500">
+        Run {data?.run_id} · as of {data?.point_in_time ?? "—"} · {themes.length} themes
+        {themes[0]?.theme.provenance.hybrid && " · hybrid data (real EOD + synthetic evidence labeled)"}
+      </p>
 
       <Card>
         <CardHeader>
@@ -49,15 +51,13 @@ export default function AMQueuePage() {
               <TableRow>
                 <TableHead className="w-[280px]">Theme</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Evidence</TableHead>
-                <TableHead className="text-center">Theme Q.</TableHead>
-                <TableHead className="text-center">Candidate Q.</TableHead>
-                <TableHead className="text-center">Data Conf.</TableHead>
+                <TableHead className="text-center">Candidates</TableHead>
+                <TableHead className="text-center">Stocks in Industry</TableHead>
                 <TableHead className="w-[60px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {themes?.map((t) => (
+              {themes.map(({ theme: t }) => (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.name}</TableCell>
                   <TableCell>
@@ -66,23 +66,8 @@ export default function AMQueuePage() {
                       lifecycle={t.lifecycle as "weak_signal" | "formation" | "emerging" | "expansion" | "crowded" | "deterioration" | undefined}
                     />
                   </TableCell>
-                  <TableCell>
-                    <EvidenceIndicator
-                      supporting={t.evidence_supporting}
-                      contradicting={t.evidence_contradicting}
-                      missing={t.evidence_missing}
-                      className="w-32"
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-semibold">{t.theme_quality}</span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-semibold">{t.candidate_quality}</span>
-                  </TableCell>
-                  <TableCell>
-                    <ConfidenceGauge value={t.data_confidence * 20} size="sm" />
-                  </TableCell>
+                  <TableCell className="text-center font-semibold">{t.key_tickers.length}</TableCell>
+                  <TableCell className="text-center">{t.stocks_in_industry}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon-sm" render={<Link to={`/am-theme/${t.id}`} />}>
                       <ArrowRight className="size-4" />

@@ -11,10 +11,14 @@ venv/
 # Node
 node_modules/
 
+# Real-Data Production Path (FD #46): track approved pipeline artifacts + DB hygiene
+/backend/data/*.db*
+
 # Environment
 .env
 .env.*
 *.env
+!.env.example
 
 # OS
 .DS_Store
@@ -22,3 +26,11 @@ Thumbs.db
 nul
 output/
 data/cache/*.json
+
+# Order matters: un-ignore AFTER the `output/` rule so the exceptions win (FD #46)
+!fundamental-opportunity-v0/output/
+fundamental-opportunity-v0/output/*
+!fundamental-opportunity-v0/output/pipeline_result.json
+!institutional-intelligence-v0/output/
+institutional-intelligence-v0/output/*
+!institutional-intelligence-v0/output/institutional_signals.json

@@ -1,21 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ThemeStatusBadge } from "@/components/ThemeStatusBadge"
-import { EvidenceIndicator } from "@/components/EvidenceIndicator"
-import { ConfidenceGauge } from "@/components/ConfidenceGauge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeft } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getAMTheme } from "@/api/amClient"
-import SyntheticDataBanner from "@/components/SyntheticDataBanner"
 
 export default function AMThemeCardPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: theme, isLoading, error, refetch } = useQuery({
+  const { data: tc, isLoading, error, refetch } = useQuery({
     queryKey: ["am-theme", id],
     queryFn: () => getAMTheme(id!),
     enabled: !!id,
@@ -42,7 +40,9 @@ export default function AMThemeCardPage() {
       </div>
     );
   }
-  if (!theme) return null;
+  if (!tc) return null;
+  const theme = tc.theme;
+  const candidates = tc.candidates ?? [];
 
   return (
     <div className="space-y-6">
@@ -57,61 +57,46 @@ export default function AMThemeCardPage() {
               approvalStatus={theme.approval_status as "detected" | "experimental" | "under_review" | "approved" | "rejected"}
               lifecycle={theme.lifecycle as "weak_signal" | "formation" | "emerging" | "expansion" | "crowded" | "deterioration" | undefined}
             />
-            <Badge variant="outline" className="text-xs">{theme.data_source}</Badge>
+            <Badge variant="outline" className="text-xs">
+              {theme.provenance.hybrid ? "hybrid" : theme.provenance.mode} · {theme.provenance.source}
+            </Badge>
           </div>
         </div>
       </div>
 
-      {theme.data_source === "synthetic_demo" && (
-        <SyntheticDataBanner note="Theme Card summary comes from the AM API, which currently serves demonstration data — narrative, drivers, candidates, and Human Control workflow are not yet wired to this API surface." />
-      )}
+      <p className="text-xs text-slate-500">{theme.why_now}</p>
 
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="candidates">Candidates</TabsTrigger>
-          <TabsTrigger value="evidence">Evidence</TabsTrigger>
-          <TabsTrigger value="review">HC Review</TabsTrigger>
+          <TabsTrigger value="candidates">Candidates ({candidates.length})</TabsTrigger>
+          <TabsTrigger value="evidence">Evidence ({theme.evidence_provenance.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 pt-4">
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Theme Narrative</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Pending implementation — narrative is not yet available from the API.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Key Drivers</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{theme.driver_count} drivers registered — detail list pending implementation.</p>
-            </CardContent>
-          </Card>
-
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Card>
               <CardContent className="flex flex-col items-center gap-1 p-4 pt-4">
-                <span className="text-[11px] uppercase text-muted-foreground">Theme Quality</span>
-                <span className="text-2xl font-bold">{theme.theme_quality}</span>
+                <span className="text-[11px] uppercase text-muted-foreground">Confidence</span>
+                <span className="text-2xl font-bold">{theme.confidence}</span>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex flex-col items-center gap-1 p-4 pt-4">
-                <span className="text-[11px] uppercase text-muted-foreground">Candidate Q.</span>
-                <span className="text-2xl font-bold">{theme.candidate_quality}</span>
+                <span className="text-[11px] uppercase text-muted-foreground">Stocks in Industry</span>
+                <span className="text-2xl font-bold">{theme.stocks_in_industry}</span>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex flex-col items-center gap-1 p-4 pt-4">
-                <span className="text-[11px] uppercase text-muted-foreground">Entry Readiness</span>
-                <span className="text-2xl font-bold">{theme.entry_readiness}</span>
+                <span className="text-[11px] uppercase text-muted-foreground">Key Tickers</span>
+                <span className="text-2xl font-bold">{theme.key_tickers.length}</span>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex flex-col items-center gap-1 p-4 pt-4">
-                <span className="text-[11px] uppercase text-muted-foreground">Data Confidence</span>
-                <ConfidenceGauge value={theme.data_confidence * 20} />
+                <span className="text-[11px] uppercase text-muted-foreground">Data</span>
+                <span className="text-lg font-bold">{theme.provenance.hybrid ? "hybrid" : "real"}</span>
               </CardContent>
             </Card>
           </div>
@@ -119,36 +104,46 @@ export default function AMThemeCardPage() {
 
         <TabsContent value="candidates" className="pt-4">
           <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-muted-foreground">
-                {theme.candidate_count} candidates registered — candidate detail list pending implementation.
-              </p>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ticker</TableHead>
+                    <TableHead>State</TableHead>
+                    <TableHead>Conviction</TableHead>
+                    <TableHead>Entry Structure</TableHead>
+                    <TableHead>Freshness</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {candidates.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.ticker}</TableCell>
+                      <TableCell>{c.research_state}</TableCell>
+                      <TableCell>{c.conviction_level}</TableCell>
+                      <TableCell>{c.entry_readiness.price_structure}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{c.data_confidence.freshness}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="evidence" className="space-y-4 pt-4">
-          <EvidenceIndicator
-            supporting={theme.evidence_supporting}
-            contradicting={theme.evidence_contradicting}
-            missing={theme.evidence_missing}
-            className="max-w-md"
-          />
-          <Separator />
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card><CardHeader><CardTitle className="text-sm">Supporting</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-[#10b981]">{theme.evidence_supporting}</p></CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-sm">Contradicting</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-[#ec4899]">{theme.evidence_contradicting}</p></CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-sm">Missing</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-slate-400">{theme.evidence_missing}</p></CardContent></Card>
+          <div className="flex flex-wrap gap-2">
+            {theme.evidence_provenance.map((e) => (
+              <Badge key={e.source_id} variant="outline" className="text-xs">
+                {e.source_id} · {e.source_type}
+              </Badge>
+            ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="review" className="pt-4">
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Human Control Review</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">7 HC decision slots — pending implementation.</p>
-            </CardContent>
-          </Card>
+          <Separator />
+          <p className="text-xs text-slate-500">
+            Evidence source labels from the real artifact — synthetic (SRC-SYN) and human-sourced
+            entries are marked individually; no blanket label over mixed content.
+          </p>
         </TabsContent>
       </Tabs>
     </div>

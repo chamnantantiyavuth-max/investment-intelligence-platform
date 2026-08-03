@@ -1,7 +1,9 @@
 """Close System API routes."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-router = APIRouter(prefix="/api", tags=["close-system"])
+from backend.auth import require_auth
+
+router = APIRouter(prefix="/api", tags=["close-system"], dependencies=[Depends(require_auth)])
 
 # DEMO DATA — static demonstration assets, NOT live pipeline output.
 # data_source field on the response marks this provenance (Constitution §8/§23.4).
