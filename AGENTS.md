@@ -150,7 +150,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-44 + FD-CIW-001..016 (60 total) approved.
+- Founder Decisions #1-44 + FD-CIW-001..016 + FD #45 (61 total) approved.
 
 Current-phase restrictions:
 
