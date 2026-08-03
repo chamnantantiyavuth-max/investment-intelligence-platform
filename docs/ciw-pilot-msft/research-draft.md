@@ -1,11 +1,11 @@
 # CRR-2026-0001 — Bounded Initial Research Draft: Microsoft Corporation (MSFT)
 
-**CIW Research Status:** `Draft` (transition `Researching → Draft`; v0.2 = rework of v0.1 after Independent Challenge FAIL; **NOT yet Independent Review-passed / Founder Review / Published**)
-**Version:** 0.2 (draft, rework)
+**CIW Research Status:** `Draft` (transition `Researching → Draft`; v0.3 = rework of v0.2 after Independent Challenge round-2 FAIL; **NOT yet Independent Review-passed / Founder Review / Published**)
+**Version:** 0.3 (draft, rework round 2)
 **Date:** 2026-08-03
 **Authority:** FD-CIW-011; CRR-2026-0001 (Approved — Research Gate); Source Map (gate PASSED); CIW-RESEARCH-FRAMEWORK; CIW-QUALITY-GATES; CIW-RESULT-CONTRACT; design v0.3
 **Executor:** Parent agent (DeepSeek V4 Flash, main session) — per design §6
-**Independent Challenge record:** v0.1 → **FAIL** (Sol Medium, separate context, direct source inspection; `challenge-review.md` — 8 material findings F1–F8). v0.2 incorporates all required changes; re-review pending.
+**Independent Challenge record:** v0.1 → **FAIL** (round 1: F1–F8, `challenge-review.md`) → v0.2 rework → **FAIL** (round 2: F1–F5/F8 FIXED VERIFIED, F6/F7 PARTIAL, N1 new — `challenge-review.md` round history) → v0.3 rework (F6 methodology published, F7 floor removed, N1 removed, transcript source-ID cleanup). Round-3 narrow confirmation pending.
 **Scope:** Modules A–M, initial depth; Modules N–Q omitted per approved request (justified omissions, CRR §1)
 **Portfolio-blind:** `true` — no holdings, positions, cost basis, or transaction history supplied or used
 
@@ -28,6 +28,7 @@
 | SRC-001 | 10-K FY2026 | 0001193125-26-323660 (`msft-20260630.htm`) | SEC EDGAR (primary) | 2026-07-29 | **Current anchor** (5 days old at retrieval) | `reviewed` — full text converted; Item 1/1A/7/8 read |
 | SRC-002 | 10-Q FY2026 Q3 | 0001193125-26-191507 (`msft-20260331.htm`) | SEC EDGAR (primary) | 2026-04-29 | Current (96 days) | `reviewed` — income statement + segment tables read |
 | SRC-003a | 8-K + Press Release FY26 Q4 | 0001193125-26-323632 (`msft-ex99_1.htm`) | SEC EDGAR / Microsoft IR | 2026-07-29 | **Current anchor** | `reviewed` — press release extracted |
+| SRC-003t | **FY26 Q4 earnings call transcript** (dedicated source ID, v0.3 — was ambiguously `SRC-003a transcript`) | Microsoft IR direct DOCX `TranscriptQandAFY26q4.docx` (386,105 bytes) | Microsoft IR (first-party) | 2026-07-29 | **Current anchor** | `reviewed` — prepared remarks + full Q&A read |
 | SRC-003b | FY26 Q3 earnings release + transcript | 0001193125-26-191457; `TranscriptQandAFY26Q3` (IR docx) | Microsoft IR (first-party) | 2026-04-29 | Current | `reviewed` — transcript text read |
 | SRC-003c | FY26 Q2 earnings release + transcript | 0001193125-26-027198; `TranscriptQandAFY26q2` | Microsoft IR (first-party) | 2026-01-28 | Current (6.5 mo) | `reviewed` — transcript text read |
 | SRC-003d | FY26 Q1 earnings release + transcript | 0001193125-25-256310; `TranscriptFY26Q1.docx` | Microsoft IR (first-party) | 2025-10-29 | Current (9 mo) | `reviewed` — transcript text read |
@@ -55,7 +56,7 @@
 
 - **What the company economically does:** Microsoft develops and licenses software, cloud services, devices, and AI offerings across three reportable segments: Productivity and Business Processes (PBP), Intelligent Cloud (IC), and More Personal Computing (MPC) `[SRC-001 §Item 1 Operating Segments; Note 18]`.
 - **Revenue engine (FY2026):** total revenue $331.8B (+18% YoY, +16% CC); Microsoft Cloud $214.4B (+27%, **nearly 90% of Microsoft Cloud revenue from customers outside frontier-model companies** — the 90% figure applies to Microsoft Cloud revenue, NOT to RPO); segment revenue: PBP $139,996M (+15.9%), IC $137,791M (+29.7%), MPC $54,052M (−1.1%) `[SRC-003a press release; SRC-001 Note 18]`.
-- **Commercial RPO:** $678B (+84% total; **+25% excluding OpenAI**); weighted-average duration 2.3 years; ~30% recognized within 12 months; OpenAI's share of total RPO is not separately disclosed in the cited passages — do not infer diversification of backlog beyond the disclosed ex-OpenAI growth rate `[SRC-001 Note 12; SRC-003a transcript]`.
+- **Commercial RPO:** $678B (+84% total; **+25% excluding OpenAI**); weighted-average duration 2.3 years; ~30% recognized within 12 months; OpenAI's share of total RPO is not separately disclosed in the cited passages — do not infer diversification of backlog beyond the disclosed ex-OpenAI growth rate `[SRC-001 Note 12; SRC-003t]`.
 - **Who pays and why chosen:** enterprises (volume licensing, M365 commercial, Azure consumption, LinkedIn talent/marketing, Dynamics), consumers (M365 consumer, Windows OEM, XBOX, Surface), advertisers (Bing/Search); distribution via direct enterprise sales + indirect partner channel + OEMs + online `[SRC-001 §Item 1 Distribution, Sales, and Marketing]`.
 - **Demand type:** predominantly subscription/annuity + consumption (Azure IaaS/PaaS, Copilot usage-based); RPO $678B implies recurring, contractually committed revenue `[SRC-001 Note 12; SRC-003a]`.
 - **Dependencies:** datacenters depend on permitted land, energy, networking, servers/GPUs; few qualified suppliers for certain components `[SRC-001 §Item 1 Operations]`. OpenAI is a related party — FY26 revenue from commercial arrangements with OpenAI $24.1B (7.3% of total revenue); AR from OpenAI $6.0B `[SRC-001 Note (OpenAI partnership)]`.
@@ -63,7 +64,7 @@
 
 ### Module B — Industry Structure
 
-- **Size/maturity:** cloud infrastructure market highly concentrated (AWS, Azure, GCP); Microsoft Cloud #2 in cloud with accelerating share; PC market mature/declining; search duopoly (Google dominant); gaming competitive with platform consolidation (Activision acquisition) `[SRC-001 §Item 1 Competition; SRC-003a]`.
+- **Size/maturity:** cloud infrastructure market highly concentrated (AWS, Azure, GCP). Microsoft Cloud FY26 revenue $214.4B (+27%) with Azure +41% — revenue scale and growth are reported; **market rank and share trajectory are NOT established by the cited primary sources** (10-K Item 1 names competitors but publishes no market-rank/share series; press release/transcript report revenue growth only — no industry-rank claim is made here; see N1 disposition). PC market mature/declining; search duopoly (Google dominant); gaming competitive with platform consolidation (Activision acquisition) `[SRC-001 §Item 1 Competition; SRC-003a]`.
 - **Supply/demand:** Azure demand **continues to exceed available capacity** — stated consistently Q1–Q4 FY26; capacity is the binding constraint, not demand `[SRC-003b–d, SRC-003a]`.
 - **Capital intensity:** extremely high and rising — capex $115.9B FY26 (vs $64.6B FY25); guided ~$175B **calendar-year 2026** (after finance→operating lease reclassification; originally ~$190B incl. $25B component-pricing impact) `[SRC-XBR; SRC-003a guidance; SRC-003b CY26 ~$190B]`.
 - **Bargaining power:** customers have multi-cloud optionality; OpenAI relationship gives Microsoft exposure but also dependence; regulators (DMA/DSA, antitrust) constrain platform conduct `[SRC-001 §Item 1 Government Regulation; Item 1A]`.
@@ -165,9 +166,13 @@
 
 - **Cycle position:** above mid-cycle for cloud/AI demand; PC/gaming below trend. No temporary distortion of the core annuity engine observed.
 - **Mild stress (qualitative):** Azure growth normalizes from 43% to high-teens (competitive/macro); margins hold; AI capex moderates. Business quality intact; valuation multiple would compress. **No FY2027 revenue/margin/FCF point estimates given** — they would require a rerunnable bridge the approved initial scope does not authorize (F7 disposition: qualitative only).
-- **Severe stress (qualitative):** AI demand disappoints post-contract-rollover; capacity written down; Azure growth mid-single-digit; Copilot adoption stalls; the **$743.8B contractual-obligation stack + $329.1B not-yet-commenced leases** become fixed-cost rigidity (payment obligations continue regardless of demand — $241.9B due FY2027). Still solvent and cash-generative (OCF > $120B), no near-term refinancing risk (net cash position; debt principal $46.1B total with staggered maturities), but **capex flexibility is the key variable**: management states it can slow short-lived CPU/GPU purchases if demand changes (transcript), which partially mitigates the fixed-cost risk `[SRC-001 MD&A Contractual Obligations; SRC-003a Q&A]`.
+- **Severe stress (qualitative):** AI demand disappoints post-contract-rollover; capacity written down; Azure growth mid-single-digit; Copilot adoption stalls; the **$743.8B contractual-obligation stack + $329.1B not-yet-commenced leases** become fixed-cost rigidity (payment obligations continue regardless of demand — $241.9B due FY2027). The company remains solvent and cash-generative on current evidence (FY26 OCF $182.9B, net cash position; debt principal $46.1B total with staggered maturities), **but the stressed level of OCF is unquantified at initial depth — no stress-case cash-flow floor is asserted** (F7: the stress case is qualitative; a period-consistent, rerunnable revenue→margin→working-capital→OCF bridge is not authorized by the approved initial scope). **Capex flexibility is the key variable**: management states it can slow short-lived CPU/GPU purchases if demand changes (transcript), which partially mitigates the fixed-cost risk `[SRC-001 MD&A Contractual Obligations; SRC-003a Q&A]`.
 - **Period-consistency note (F7):** the ~$175B capex figure is management's **CY2026** expectation post-reclassification — it is NOT an FY2027 guidance figure and is not used as one in this draft.
-- **Thesis-break determination:** NOT made — requires predeclared condition or Founder decision (LIFECYCLE §3). **Falsification conditions (F6 — revised, conclusion-linked):** (1) **ex-OpenAI demand/backlog collapse:** RPO ex-OpenAI growth negative for 2+ consecutive quarters with no offsetting new non-OpenAI commitments, OR Microsoft Cloud revenue (ex-frontier-model customers) growth <10% for 2+ quarters; (2) **incremental AI-capital return failure:** measured incremental NOPAT on the FY23–FY26 AI-capital cohort below the company's WACC for a defined 3-year evidence window (reproducible methodology to be specified if adopted); (3) **structural loss of platform control:** regulatory remedy or architectural shift that breaks Windows/Office/Azure bundling or data gravity (e.g., mandated unbundling, loss of default positions, mass customer migration of identity/workloads). **Minimum-evidence rule:** each condition requires 2+ consecutive quarters of primary-source evidence (filings/transcripts); single-quarter noise does not trigger. These conditions are initial-depth proposals for Founder review — they do not constitute an approved monitoring contract (Module Q deferred).
+- **Thesis-break determination:** NOT made — requires predeclared condition or Founder decision (LIFECYCLE §3). **Falsification conditions (F6 — v0.3, conclusion-linked with published methodology):**
+  - **(1) ex-OpenAI demand/backlog collapse:** RPO growth ex-OpenAI negative for **2 consecutive fiscal quarters** (each quarter measured as trailing-12-month growth, ex-OpenAI as disclosed on the Q4 FY26 basis) with no offsetting growth in non-frontier-model Microsoft Cloud revenue; OR Microsoft Cloud revenue from customers outside frontier-model companies grows <10% YoY for 2 consecutive quarters. **Threshold rationale:** FY26 ex-frontier-model Cloud growth was ~27% and management guides double-digit commercial growth into FY27; <10% represents a >60% deceleration from observed growth — a structural demand break, not quarterly noise. **Evidence rule:** quarterly — 10-Q/10-K + earnings-call disclosures; 2 consecutive quarters required (single-quarter noise excluded).
+  - **(2) incremental AI-capital return failure:** **published methodology (v0.3):** compute incremental NOPAT on the AI-capital cohort as: ΔNOPAT = NOPAT(t) − NOPAT(t₀), where t₀ = FY2023 (pre-AI-capex-supercycle base; capex $28.1B vs $115.9B FY26); AI-capital cohort = cumulative capex over FY2023–FY2026 minus estimated maintenance capex (maintenance = D&A per Module G high-case convention — stated, conservative), i.e., incremental invested capital = Σ(capex_t − D&A_t) for t = FY2023..FY2026; incremental ROIC = ΔNOPAT / incremental invested capital; **falsified if incremental ROIC < Microsoft's after-tax WACC (assumed 8–10% — stated assumption, to be confirmed by Founder) evaluated over a 3-year evidence window (FY2027–FY2029 filings)**. **Evidence rule:** annual — measured once per fiscal year from filed 10-K data; needs 3 full years of post-build data to conclude (a single year of pre-scale returns is not conclusive; cohort attribution uses the stated cumulative-capex-minus-D&A proxy, which is the best available from public filings — a more precise cohort attribution (e.g., segment-level AI capex) is a Module Q monitoring-contract item, deferred).
+  - **(3) structural loss of platform control:** regulatory remedy or architectural shift that breaks Windows/Office/Azure bundling or data gravity (e.g., mandated unbundling of Windows/Office from Azure/M365, loss of default search/browser positions, mass migration of enterprise identity/workloads off Microsoft platforms). **Evidence rule:** discrete event — triggered by a final, non-appealable regulatory order or a documented mass-migration event (2+ consecutive quarters of net platform-seat/workload decline in enterprise filings); no quarterly-count threshold applies (this condition is event-based, not trend-based).
+  - **Minimum-evidence rule:** each condition requires primary-source evidence (filings/transcripts); conditions (1) and (2) need the stated consecutive-quarters/annual windows; condition (3) is event-triggered. These conditions are initial-depth proposals for Founder review — they do not constitute an approved monitoring contract (Module Q deferred).
 
 ### Module K — Permanent-Loss Analysis (ranked risks)
 
@@ -213,28 +218,28 @@
 
 ---
 
-## 4. Quality Gates — Self-Check Results (executor-run, v0.2 post-rework; independent re-review PENDING)
+## 4. Quality Gates — Self-Check Results (executor-run; v0.3 post round-2 rework; round-3 narrow confirmation PENDING)
 
-| Gate | v0.1 self-check | Independent (Sol Medium) | v0.2 disposition |
-|---|---|---|---|
-| Source-coverage | PASS | PASS with limitation (regulatory mapping generic) | ✅ retained; regulatory mapping annotated |
-| Primary-source | PASS | PASS | ✅ retained |
-| Contradiction | PASS | **FAIL** (RPO/90% conflation; "no other conflicts" overstated) | ✅ corrected — Module A/D RPO language fixed; conflicts section updated |
-| Unsupported-claim | PASS | **FAIL** (moat mechanisms; Module J ranges; private-owner) | ✅ corrected — moat reframed as issuer-reported indicators; J qualitative; private-owner revised |
-| Stale-source | PASS | **FAIL** ("all sources ≤90 days" false) | ✅ corrected — freshness classes by source purpose (§1) |
-| Accounting red-flag | PASS | **FAIL** ($743.8B obligations + $329.1B leases omitted) | ✅ corrected — Module F/K/L/M updated |
-| Valuation-assumption | PASS | **FAIL** (OE formula wrong; 60% maintenance unsupported) | ✅ corrected — formula fixed; assumption flagged least-supported |
-| Deterministic-calculation | PASS | **FAIL** (SBC double-count; FY23 ETR/ROIC wrong) | ✅ corrected — §6 lineage + component table; recomputed |
-| Per-share | PASS | **FAIL** (OE/share, P/OE wrong) | ✅ corrected — recomputed with 7.453B shares |
-| Dilution | PASS | PASS | ✅ retained |
-| Reverse-DCF | N/A recorded | N/A correctly recorded | ✅ retained |
-| Permanent-loss | PASS | **FAIL** (commitment + related-party not incorporated) | ✅ corrected — Module K revised |
-| Thesis-falsification | PASS | **FAIL** (arbitrary, not conclusion-linked) | ✅ corrected — Module J conditions revised (ex-OpenAI demand, incremental AI-capital return, platform-control loss) |
-| Artifact-lineage | PASS | PASS | ✅ retained |
-| Authority | PASS | PASS | ✅ retained |
-| Scope | PASS | PASS | ✅ retained |
+| Gate | v0.1 self-check | Round 1 (Sol Medium) | Round 2 (Sol Medium) | v0.3 disposition |
+|---|---|---|---|---|
+| Source-coverage | PASS | PASS w/ limitation | PASS w/ limitation | ✅ retained; regulatory mapping annotated |
+| Primary-source | PASS | PASS | PASS | ✅ retained |
+| Contradiction | PASS | **FAIL** (RPO/90% conflation) | PASS | ✅ corrected — Module A/D RPO language fixed |
+| Unsupported-claim | PASS | **FAIL** (moat; J ranges; private-owner) | **FAIL** (OCF>$120B floor; N1 rank/share) | ✅ corrected — v0.2 moat reframed/J qualitative/private-owner revised; v0.3: OCF floor removed (F7), N1 removed (Module B) |
+| Stale-source | PASS | **FAIL** ("all sources ≤90 days" false) | PASS | ✅ corrected — freshness classes by source purpose (§1) |
+| Accounting red-flag | PASS | **FAIL** ($743.8B obligations omitted) | PASS | ✅ corrected — Module F/K/L/M updated |
+| Valuation-assumption | PASS | **FAIL** (OE formula; 60% maintenance unsupported) | PASS w/ limitation | ✅ corrected — formula fixed; assumption flagged least-supported |
+| Deterministic-calculation | PASS | **FAIL** (SBC double-count; FY23 ETR/ROIC) | **FAIL** (OCF floor no bridge) | ✅ corrected — §6 lineage + component table; recomputed; v0.3: OCF floor removed |
+| Per-share | PASS | **FAIL** (OE/share, P/OE wrong) | PASS | ✅ corrected — recomputed with 7.453B shares |
+| Dilution | PASS | PASS | PASS | ✅ retained |
+| Reverse-DCF | N/A recorded | N/A correctly recorded | N/A correctly recorded | ✅ retained |
+| Permanent-loss | PASS | **FAIL** (commitment + related-party not incorporated) | PASS | ✅ corrected — Module K revised |
+| Thesis-falsification | PASS | **FAIL** (arbitrary, not conclusion-linked) | **FAIL** (F6 partial — methodology deferred) | ✅ corrected — v0.2 conditions conclusion-linked; v0.3: incremental-ROIC methodology published (ΔNOPAT/Σ(capex−D&A), FY23 base, 8–10% WACC assumption, 3-yr window), <10% threshold justified, evidence rules tailored per condition |
+| Artifact-lineage | PASS | PASS | PASS w/ limitation (transcript source-ID ambiguity) | ✅ corrected — SRC-003t dedicated transcript ID (§1) |
+| Authority | PASS | PASS | PASS | ✅ retained |
+| Scope | PASS | PASS | PASS | ✅ retained |
 
-**Completion standard (QUALITY-GATES §4):** scope completed ✅ · sources reviewed ✅ · artifacts produced (this draft; challenge-review.md; working files in temp for lineage) ✅ · calculations performed (Modules F/G/H, §6 — corrected) ✅ · checks run (16 gates above; independent re-check pending) ✅ · limitations (below) ✅ · unresolved risks (below) ✅ · disagreements (one recorded source reconciliation; no other material conflicts) ✅ · deviations from approved request (none) ✅ · **review status: FAILED (v0.1) → REWORKED (v0.2) → INDEPENDENT RE-REVIEW PENDING — required before Founder Review**.
+**Completion standard (QUALITY-GATES §4):** scope completed ✅ · sources reviewed ✅ · artifacts produced (this draft; challenge-review.md; working files in temp for lineage) ✅ · calculations performed (Modules F/G/H, §6 — corrected) ✅ · checks run (16 gates above; round-3 independent confirmation pending) ✅ · limitations (below) ✅ · unresolved risks (below) ✅ · disagreements (one recorded source reconciliation; no other material conflicts) ✅ · deviations from approved request (none) ✅ · **review status: FAILED (v0.1, round 1) → REWORKED (v0.2) → FAILED (round 2: F6/F7 PARTIAL, N1) → REWORKED (v0.3) → ROUND-3 NARROW CONFIRMATION PENDING (F6/F7/N1/source-ID) — required before Founder Review**.
 
 ---
 
@@ -243,7 +248,7 @@
 | # | Claim | Source reference |
 |---|---|---|
 | C1 | FY26 revenue $331.8B, +18% (+16% CC) | SRC-003a (PR FY26 results); SRC-001 income statement |
-| C2 | Microsoft Cloud FY26 $214.4B, +27%; ~90% from customers outside frontier-model companies (applies to Cloud revenue, NOT RPO) | SRC-001 MD&A highlights; SRC-003a transcript |
+| C2 | Microsoft Cloud FY26 $214.4B, +27%; ~90% from customers outside frontier-model companies (applies to Cloud revenue, NOT RPO) | SRC-001 MD&A highlights; SRC-003t |
 | C3 | Commercial RPO $678B, +84% total, **+25% ex-OpenAI**, 2.3-yr duration, ~30% <12mo; OpenAI share of RPO not separately disclosed | SRC-003a; SRC-001 Note 12 |
 | C4 | Segment revenue FY26: PBP $139,996M, IC $137,791M, MPC $54,052M; op income $155,237M | SRC-001 Note 18 |
 | C5 | Azure FY26 +41%; Q4 +43%; Q1-FY27 guided ~45% CC | SRC-001 MD&A; SRC-003a |
@@ -331,9 +336,11 @@
 - **Deviations from approved request:** none. Modules N–Q omitted exactly per CRR-2026-0001 §1 justified omissions.
 - **Disagreements:** (1) one recorded source reconciliation — CRR known-evidence advisory valuation baseline (PE 37, base $415) vs real post-earnings market price ($464.72); baseline marked stale for Module M, both kept visible (EVIDENCE-MODEL §7). (2) v0.1 errors corrected per Independent Challenge (F1–F8) — corrections recorded in §4 and this changelog. No other material source conflicts at initial depth.
 
-**v0.1 → v0.2 changelog (Independent Challenge dispositions):** F1 OE formula (SBC double-count removed) · F2 FY23 ETR/ROIC corrected + component table + lease convention · F3 RPO/90% conflation fixed · F4 moat reframed as issuer-reported indicators + missing-evidence list · F5 $743.8B obligations + $329.1B leases added (no double-count) + F/J/K/L/M updated · F6 falsification conditions conclusion-linked + minimum-evidence rule · F7 Module J qualitative + CY26/FY27 period-consistency · F8 freshness classes by source purpose.
+**v0.1 → v0.2 changelog (round-1 dispositions):** F1 OE formula (SBC double-count removed) · F2 FY23 ETR/ROIC corrected + component table + lease convention · F3 RPO/90% conflation fixed · F4 moat reframed as issuer-reported indicators + missing-evidence list · F5 $743.8B obligations + $329.1B leases added (no double-count) + F/J/K/L/M updated · F6 falsification conditions conclusion-linked + minimum-evidence rule · F7 Module J qualitative + CY26/FY27 period-consistency · F8 freshness classes by source purpose.
+
+**v0.2 → v0.3 changelog (round-2 dispositions):** F6 completed — incremental-AI-return falsifier methodology published (ΔNOPAT formula, FY2023 base, cumulative-capex-minus-D&A cohort attribution, 8–10% WACC assumption stated, 3-year evidence window), <10% Cloud growth threshold justified with deceleration rationale, evidence rules tailored per condition (quarterly/annual/event-based) · F7 completed — unsupported `OCF > $120B` severe-stress floor removed, replaced with qualitative statement (stressed OCF level explicitly unquantified) · N1 completed — "Microsoft Cloud #2 in cloud with accelerating share" removed from Module B (no market-rank/share claim made; revenue scale/growth only) · Artifact-lineage cleanup — SRC-003t dedicated source ID for FY26 Q4 transcript (§1), no more ambiguous `SRC-003a transcript` references.
 
 ---
 
-*Draft v0.2 (CRR-2026-0001, bounded initial research — rework after Independent Challenge FAIL). Status: `Draft` — awaiting Independent Challenge RE-REVIEW (Sol Medium, separate context, mandatory per QUALITY-GATES §1), then Founder Review. Sources: SRC-001..006, SRC-XBR, SRC-MKT (see §1). Workflow: CIW v0.2 specs + design v0.3. Portfolio-blind: true.*
-<!-- 2026-08-03 12:30 UTC+7 -->
+*Draft v0.3 (CRR-2026-0001, bounded initial research — rework after Independent Challenge rounds 1–2). Status: `Draft` — awaiting ROUND-3 NARROW CONFIRMATION (Sol Medium, separate context, mandatory per QUALITY-GATES §1), then Founder Review. Sources: SRC-001..006, SRC-XBR, SRC-MKT (see §1). Workflow: CIW v0.2 specs + design v0.3. Portfolio-blind: true.*
+<!-- 2026-08-03 13:00 UTC+7 -->
