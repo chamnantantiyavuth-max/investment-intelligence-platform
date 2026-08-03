@@ -7,8 +7,8 @@
 
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW): PILOT FIRST SLICE + MONITORING + SECOND SLICE COMPLETE (3 Aug 2026)** — MSFT research published (FD-CIW-012) + monitoring contract + Cron Class A live (FD-CIW-013/014) + **valuation second slice PUBLISHED (FD-CIW-016)**. Full implementation (Cron Class B/C, Obsidian sync, expanded tree, schema) remains deferred.
 - Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009). Pilot first slice COMPLETE (3 Aug 2026):** design v0.3 (2R PASSED) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed (real SEC EDGAR) → bounded research (Modules A–M initial) → Independent Challenge PASS (round 5, after 4 FAIL rounds + rework v0.1→v0.5) → Founder-approved publication (FD-CIW-012): `research-result.md` v1 Published / Current Authoritative.
-- Latest FDs: `FD-CIW-015` (Second-Slice EXECUTION AUTHORIZATION — MSFT Valuation, CRR-2026-0002 v0.4) + `FD-CIW-016` (Second-Slice Research Result PUBLISHED — `research-result-2.md` v1). Chain: FD-CIW-001..016 (60 total).
-- Tests: **262/262 all passing** — verified 2 August 2026.
+- Latest FDs: **FD #45 (3 Aug 2026 evening) — AM Findings Resolution + GAP-006 Fix** (FSLR P/E anomaly verified as yfinance artifact; AMD −8.8% verified genuine premium unwind; `V0_TICKERS` extended 5→9 → real EOD coverage 9/9). Prior: FD-CIW-015/016 (second slice). Chain: #1–44 + FD-CIW-001..016 + FD #45 (61 total).
+- Tests: **262/262 all passing** — verified 3 August 2026 (evening, post GAP-006 fix: 90 locked + 56 AM + 42 FO + 25 CS + 49 II).
 
 ## Build Metrics (single source of truth — v3.3.0)
 
@@ -18,8 +18,8 @@
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-02 |
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
 | Commits | 89 on `main` | 2026-08-03 |
-| FDs approved | #1–44 + FD-CIW-001..016 (60) | 2026-08-03 |
-| closeout_status | **completed** (CIW pilot first slice + monitoring contract + Cron Class A live + second slice published) | 2026-08-03 |
+| FDs approved | #1–44 + FD-CIW-001..016 + FD #45 (61) | 2026-08-03 |
+| closeout_status | **completed** (AM findings resolved + GAP-006 fixed, FD #45) | 2026-08-03 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -47,7 +47,7 @@
 
 ## Lifecycle sync
 
-- Last session: 2026-08-03 evening — session start protocol + housekeeping: **2 dead cron jobs repaired** (drift-guard pin: IIP Daily Learning Loop + Nick-Weekly Pipeline Run → deepseek/deepseek-v4-flash; Nick-Weekly skill ref fixed; test-run verified 21/21 PASS, real AM run `AM-V0-20260803-164235` committed `244531f` + pushed) → **CIW direction decision: PAUSED this cycle** (session decision, no numbered FD) → closeout (MEM-IIP-017/018 captured, state synced)
+- Last session: 2026-08-03 evening (AM findings session) — session start protocol → governance sync PASS (v3.7.1 shared↔iip) → cron audit (Nick-Weekly OK pinned; CIW monitor OK; Daily Learning Loop error = pre-pin run 11:18, pin confirmed in place, next run 23:18 tonight) → **3 standing AM findings resolved (Option A, FD #45)**: FSLR P/E anomaly verified as yfinance trailingEps artifact (no adapter bug; no FSLR valuation action until clean refresh; P/E sanity guard deferred); AMD −8.8% verified genuine price-driven premium unwind (observation only); **GAP-006 FIXED — V0_TICKERS 5→9, re-run AM-V0-20260803-171535, real EOD coverage 9/9** → evidence + SRL §8 + FD #45 recorded (repo + vault) → committed `532b1c5` → closeout (obsidian session capture + state sync)
 - Outcome: FD-CIW-010 (design path) → design v0.3 (Phase 2R PASSED) → FD-CIW-011 (pilot execution authorization) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed → bounded research (Modules A–M, initial, real SEC EDGAR + Microsoft IR sources) → Independent Challenge 5 rounds (FAIL ×4 → PASS, findings F1–F8/N1/N2 all disposed, v0.1→v0.5) → **Founder APPROVED publication (FD-CIW-012) → research-result.md v1 Published / Current Authoritative** → FD-CIW-013/014 (monitoring contract + Cron Class A live) → **FD-CIW-015 (second-slice execution authorization, CRR-2026-0002 v0.4 after Phase 2R 3 rounds) → Source Map 2 gate passed → research-draft-2 v0.1→v0.4 (Independent Challenge 4 rounds: FAIL×3 → PASS) → Founder APPROVED (FD-CIW-016) → research-result-2.md v1 Published / Current Authoritative (supplemental; first-slice v1 intact)**
 - Evidence: `docs/ciw-pilot-msft/` — first-slice artifacts (6/6) + second-slice artifacts: CRR-2026-0002-request.md (Approved), source-map-2.md, research-draft-2.md (v0.4 reviewed), challenge-review-2{,-REVIEW,-CONFIRM,-FINAL}.md (rounds 1–4), founder-review-record-2.md, research-result-2.md (Published v1) + `evidence/PHASE-2R-CRR-2026-0002-2026-08-03{,-REVIEW,-CONFIRM}.md` (Phase 2R rounds 1–3)
 - Blockers: none
@@ -59,7 +59,7 @@
 | Field | Value |
 |-------|-------|
 | closeout_status | completed |
-| fd_count | 44 + 16 CIW (60 total) |
-| audit_verdict | FOUNDER DECISION REQUIRED → accepted (CIW Bible Council) → spec v0.2 batch approved (FD-CIW-008) → pilot company selected (FD-CIW-009, MSFT) → design v0.3 Phase 2R PASSED → pilot execution authorized (FD-CIW-011) → Research Gate passed (CRR-2026-0001) → Source Map passed → research → Independent Challenge PASS (round 5) → **Founder-approved publication (FD-CIW-012)** → monitoring contract + Cron Class A (FD-CIW-013/014) → **second-slice execution authorized (FD-CIW-015) → Research Gate CRR-2026-0002 → Source Map 2 → Independent Challenge PASS (round 4) → Founder-approved publication (FD-CIW-016)** → **CIW PAUSED (session decision, no numbered FD, 3 Aug evening)** |
+| fd_count | 44 + 16 CIW + FD #45 (61 total) |
+| audit_verdict | — (no audit this session; governance sync PASS, v3.7.1 shared↔iip) |
 
-<!-- 2026-08-03 17:05 UTC+7 -->
+<!-- 2026-08-03 20:35 UTC+7 -->
