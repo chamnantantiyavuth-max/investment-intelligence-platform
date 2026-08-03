@@ -36,6 +36,31 @@ State:       64 FDs. 301/301 tests. App RELEASED READY WITH ACCEPTED RISKS with 
              AM/FO/II data; CS sole synthetic surface. CIW paused (unchanged).
 ```
 
+## Session Summary (Follow-up — II Surface Consumable, 3 Aug 2026)
+
+```
+Trigger:     "Continue we have some room of session context" → Option B (II nav page + pagination)
+Flow:        Presentation-layer feature on the authorized II surface (non-material):
+             → /ii-signals?limit=&offset= (server-side pagination, backward-compatible,
+               total field added, provenance preserved)
+             → InstitutionalPage /institutional (REAL · sec_edgar_13f · partial_21_51 badge,
+               stats cards, 50-row table with conviction/action color badges, Prev/Next)
+             → +1 locked pagination test (40 locked) → 302/302 total
+             → F3 adapter-registry guard CAUGHT the adapters.py change (hash mismatch) —
+               recomputed registry = guard working as designed
+             → isolation-scan.sh false violation on CLEAN tree found + fixed
+               (empty git status → grep exit 1 → set -euo pipefail abort; || true guard)
+             → Browser: page 1 + page 2 (Page 2 of 505 · 25,246 signals), 0 JS errors
+Deliverables: II page + pagination (3337154) + isolation-scan fix (aacaacc)
+State:       Closes accepted risk #1 (II API-only), mitigates #2 (16.7MB). 64 FDs. 302/302.
+```
+
+## Recommended next action (per Founder request — session end 3 Aug)
+
+**A. Close here (accepted).** Release + II follow-up delivered. Next natural chapter:
+CIW (paused, resumes Q1-FY27) or weekly real-data refresh cadence (FO/II `--real` + AM
+EOD under staleness bounds) when wanted.
+
 ## Decisions Approved
 
 | ID | Decision |
