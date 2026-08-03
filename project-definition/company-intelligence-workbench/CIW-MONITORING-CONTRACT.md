@@ -1,7 +1,8 @@
 # Company Intelligence Workbench — Monitoring Contract (Module Q) — MSFT
 
-**Status:** Approved v0.1 — Founder approval pending (this version + hash; per FD-CIW-013, the monitoring contract requires explicit Founder approval before the observation job is considered live)
-**Version:** 0.1 (draft for approval)
+**Status:** APPROVED v0.1 — Founder approval recorded 2026-08-03 (Option A; approved content SHA-256 `d7ef7168cc3fe89d37ad880a1f828f6ef31a968cb1f3c1cb64b6f661ecfa64e3`, Constitution §21). The observation job (Cron Class A, `ciw-msft-class-a-monitor`) is LIVE as of this approval. Status-metadata update only — analytical content unchanged from the approved version.
+**Approval record:** prior state `Draft (for approval)` → `Approved`; actor: **Founder** (Option A, session 2026-08-03); evidence: this document + FD-CIW-014; timestamp 2026-08-03; workflow version: CIW v0.2 + monitoring contract v0.1.
+**Version:** 0.1 (approved)
 **Date:** 2026-08-03
 **Owner:** Founder
 **Authority:** FD-CIW-013 (Phase 11 implementation slice — Module Q monitoring contract + Cron Class A); FD-CIW-005 (Class A = scheduled observation, output always draft/pending review, never official promotion); CIW-CONCEPT §6 (monitoring deferred to later slice — this contract opens it); CIW-RESEARCH-FRAMEWORK §3 Module Q; `docs/ciw-pilot-msft/research-result.md` v1 (Module J falsification conditions — trigger basis)
@@ -109,5 +110,5 @@ Every note lands at `docs/ciw-pilot-msft/monitoring/YYYY-MM-DD-monitoring-draft.
 
 ---
 
-*Monitoring Contract v0.1 (FD-CIW-013). Status: draft for Founder approval — job is NOT live until the Founder approves this contract (version + hash). Sources: RESEARCH-FRAMEWORK Module Q; research-result v1 Module J; CRR-2026-0001; FD-CIW-005/013.*
-<!-- 2026-08-03 14:45 UTC+7 -->
+*Monitoring Contract v0.1 (FD-CIW-013). Status: APPROVED by Founder 2026-08-03 (Option A; content SHA-256 `d7ef7168cc3fe89d37ad880a1f828f6ef31a968cb1f3c1cb64b6f661ecfa64e3`). Cron Class A observation job `ciw-msft-class-a-monitor` LIVE. Advisory only — outputs are drafts pending Founder review; never official state. Sources: RESEARCH-FRAMEWORK Module Q; research-result v1 Module J; CRR-2026-0001; FD-CIW-005/013/014.*
+<!-- 2026-08-03 15:05 UTC+7 -->
