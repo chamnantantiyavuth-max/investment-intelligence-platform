@@ -553,11 +553,12 @@ def test_adapter_registry_code_hash_bound():
     assert len(adapters.ADAPTER_CODE_HASH) == 64
     # F3: current file hash MUST match the registered immutable hash — else registry contract broken
     assert adapters.ADAPTER_CODE_HASH == adapters.ADAPTER_REGISTRY[adapters.ADAPTER_VERSION]
-    # F3: changing the code without bumping the version must FAIL verification
+    # F3: changing the code without bumping the version must FAIL verification with the
+    # registry guard error (NOT any exception — a NameError would have masked the guard)
     original_hash = adapters.ADAPTER_CODE_HASH
     adapters.ADAPTER_CODE_HASH = "0" * 64  # simulate a source change without a version bump
     try:
-        with pytest.raises(Exception):
+        with pytest.raises(RuntimeError, match="adapter code hash"):
             adapters.verify_adapter_registry()
     finally:
         adapters.ADAPTER_CODE_HASH = original_hash

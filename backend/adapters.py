@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import contextvars
 import hashlib
+import hmac
 import json
 import os
 import re
