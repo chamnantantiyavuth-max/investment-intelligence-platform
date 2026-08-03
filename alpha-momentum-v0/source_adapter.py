@@ -20,7 +20,9 @@ CACHE_DIR = Path(__file__).parent / "data" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Tickers we track in V0
-V0_TICKERS = ["NVDA", "INTC", "AMD", "MDT", "FSLR"]
+# GAP-006 fix (FD #45, 2026-08-03): extended 5 -> 9 — added CRWD, PANW, SMCI, AVGO
+# (previously synthetic-only candidates; real EOD coverage now 9/9)
+V0_TICKERS = ["NVDA", "INTC", "AMD", "MDT", "FSLR", "CRWD", "PANW", "SMCI", "AVGO"]
 
 
 def _cache_path(ticker: str) -> Path:
