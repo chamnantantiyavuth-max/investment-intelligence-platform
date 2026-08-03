@@ -9,7 +9,7 @@ export function Layout() {
       <SidebarProvider defaultOpen={true}>
         <AppSidebar />
         <SidebarInset>
-          <main className="flex-1 overflow-auto p-6">
+          <main className="mx-auto w-full max-w-[1600px] flex-1 overflow-auto p-4 lg:p-6">
             <Outlet />
           </main>
         </SidebarInset>

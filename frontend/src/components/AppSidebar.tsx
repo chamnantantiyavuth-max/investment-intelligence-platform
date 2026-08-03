@@ -10,17 +10,38 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, TrendingUp, Shield, Radio, DollarSign, Building2, Landmark } from "lucide-react"
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Shield,
+  Building2,
+  DollarSign,
+  Landmark,
+  Radio,
+  Filter,
+} from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
-const navItems = [
-  { title: "Strategy Control Center", url: "/", icon: LayoutDashboard },
-  { title: "Alpha Momentum Queue", url: "/am-queue", icon: TrendingUp },
-  { title: "Close System Radar", url: "/cs-radar", icon: Shield },
-  { title: "Fundamental Queue", url: "/fundamental", icon: Building2 },
-  { title: "Cheap & Quality", url: "/cheap-quality", icon: DollarSign },
-  { title: "Institutional Intelligence", url: "/institutional", icon: Landmark },
-  { title: "Weak Signal Inbox", url: "/weak-signals", icon: Radio },
+const navGroups = [
+  {
+    label: "Command Center",
+    items: [{ title: "Strategy Control Center", url: "/", icon: LayoutDashboard }],
+  },
+  {
+    label: "Strategies",
+    items: [
+      { title: "Alpha Momentum", url: "/am-queue", icon: TrendingUp },
+      { title: "Close System Radar", url: "/cs-radar", icon: Shield },
+      { title: "Fundamental Queue", url: "/fundamental", icon: Building2 },
+      { title: "Cheap & Quality", url: "/cheap-quality", icon: DollarSign },
+      { title: "Institutional", url: "/institutional", icon: Landmark },
+      { title: "Weak Signal Inbox", url: "/weak-signals", icon: Radio },
+    ],
+  },
+  {
+    label: "Screening",
+    items: [{ title: "AM Criteria Screener", url: "/am-screener", icon: Filter }],
+  },
 ]
 
 export function AppSidebar() {
@@ -31,11 +52,8 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              render={<Link to="/" />}
-            >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <SidebarMenuButton size="lg" render={<Link to="/" />}>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
                 <TrendingUp className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
@@ -49,25 +67,27 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    isActive={location.pathname === item.url}
-                    tooltip={item.title}
-                    render={<Link to={item.url} />}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      isActive={location.pathname === item.url}
+                      tooltip={item.title}
+                      render={<Link to={item.url} />}
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

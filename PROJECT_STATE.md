@@ -5,9 +5,10 @@
 
 ## Current state
 
+- **UI REDESIGN IN PROGRESS (FD #49/#50, 4 Aug 2026):** full frontend redesign — **v2.1 LIGHT EDITORIAL** (Founder-delegated direction: dark terminal retired; off-white canvas #F7F8FA, ink text, tinted tonal panels, hero-insight + findings anatomy, muted accents #178A63/#C2527B/#B07A1E/#4A7BB5, no neon). B1 tokens/shell/primitives, B2 panels, B3 Dashboard+Login, B4 AM Queue+ThemeCard+Screener (new `/am-screener`) all rebuilt + browser-verified. **FD #50:** §11 falsification read-only schema extension live (alternative_explanations / evidence register / unresolved_counter_evidence; ADAPTER_VERSION v2; Theme Card Falsification tab). **Remaining: B5 CS Radar → B6 FO (Queue/Detail/Cheap&Quality) → B7 II + Weak Signals → B8 a11y+responsive pass + full per-directory test sweep.** CS/FO/II/WeakSignal pages still show pre-redesign style until their batch (expected interim state).
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW): PILOT FIRST SLICE + MONITORING + SECOND SLICE COMPLETE (3 Aug 2026)** — MSFT research published (FD-CIW-012) + monitoring contract + Cron Class A live (FD-CIW-013/014) + **valuation second slice PUBLISHED (FD-CIW-016)**. Full implementation (Cron Class B/C, Obsidian sync, expanded tree, schema) remains deferred.
 - Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009). Pilot first slice COMPLETE (3 Aug 2026):** design v0.3 (2R PASSED) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed (real SEC EDGAR) → bounded research (Modules A–M initial) → Independent Challenge PASS (round 5, after 4 FAIL rounds + rework v0.1→v0.5) → Founder-approved publication (FD-CIW-012): `research-result.md` v1 Published / Current Authoritative.
-- Latest FDs: **FD #48 (3 Aug 2026) — RELEASE ACCEPTED (READY WITH ACCEPTED RISKS):** Final Council round 2 PASS WITH FIXES (evidence/COUNCIL_DECISION-final-2026-08-03.md), final production audit split-lane complete (browser 10/10 + API/oracle 10/10 + DB lineage + CS oracle), accepted risks: II API-only surface / II 16.7MB artifact / CS stays synthetic / single-user loopback auth. Prior: **FD #47 (3 Aug 2026) — D1–D4:** stdlib sqlite3, fail-closed 503 admission, staleness bounds (AM≤7d/FO≤30d/II≤120d), 2R disposition. **FD #46 (3 Aug 2026) — Real-Data Production Path OPENED** (supersedes FD #44 for THIS SCOPE ONLY): AM/FO/II real-pipeline→API wiring (CS stays synthetic-labeled), SQLite persistence (run registry + snapshots + evidence lineage), single-user session auth (all /api/* except health/login/status), provenance labels flip synthetic_demo → real_<source>_<timestamp> where real. Chain: #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 (64 total).
+- Latest FDs: **FD #50 (4 Aug 2026) — Falsification read-only schema extension (mini-FD, Option A):** §11 panel — ThemeSummary + alternative_explanations / evidence register / unresolved_counter_evidence (artifact passthrough, zero rule/DB change; ADAPTER_VERSION v1→v2 + registry hash recomputed (F3); persistence synced; 2 lineage tests pinned to persistence.ADAPTER_VERSION; +1 locked test → 131/131 locked). Prior: **FD #49 (4 Aug 2026) — UI redesign APPROVED (Option A, dark institutional muted)** — subsequently amended by Founder: shadcn-look excluded → editorial tonal panels → **v2.1 LIGHT EDITORIAL** (agent-decided). **FD #48 (3 Aug 2026) — RELEASE ACCEPTED (READY WITH ACCEPTED RISKS).** Chain: #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 + FD #49 + FD #50 (66 total).
 - **Real-Data Production Path COMPLETE + RELEASED (3 Aug 2026, FD #46–48) + II FOLLOW-UP (same day):** AM/FO/II serve real pipeline artifacts (AM REAL EOD hybrid, FO yfinance 8 pkgs, II SEC EDGAR partial_21_51) through auth-protected API with SQLite lineage; CS remains the sole labeled-synthetic surface; provenance labels per component (real/hybrid/synthetic + human_sourced evidence); dashboard CS agreement (2/1) enforced. **II follow-up (commit 3337154/aacaacc):** Institutional Intelligence page (`/institutional` — provenance badge, stats, 50-row table, conviction/action badges) + server-side pagination (`/ii-signals?limit=&offset=`, backward-compatible, `total` added) — closes accepted risk #1 (II API-only) + mitigates #2 (16.7MB artifact); isolation-scan clean-tree false-violation fixed. Gates: 3× Phase 2R (FAIL→folded) + Plan Council Lite (PASS WITH FIXES) + Final Council R1 REWORK (F1–F4 remediated) + R2 PASS WITH FIXES + final production audit (browser + API/oracle + DB lineage + oracle).
 - **Pre-Launch Close Beta Audit CLOSED (3 Aug 2026 evening):** split-lane audit (Parent browser 10/10 + Sol Medium API/oracle) → NOT READY → Option A remediation (CS truth agreement + provenance labels) → re-audit verified → **READY WITH ACCEPTED RISKS** (Founder accepted 2 cosmetic Minors). App is release-ready as a **labeled synthetic demo**; FD #44 boundaries unchanged (real-pipeline wiring/persistence/auth deferred). Artifacts: `qa/prelaunch-audit/`.
 - Tests: **302/302 all passing** — verified 3 August 2026 (post FD #46–48 release + II follow-up: 130 locked (90 old + 40 real-data-api) + 56 AM + 42 FO + 25 CS + 49 II).
@@ -16,12 +17,12 @@
 
 | Metric | Value | Last verified |
 |--------|-------|---------------|
-| Python tests | 302/302 passing | 2026-08-03 |
-| Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-03 |
-| Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
-| Commits | 100 on `main` | 2026-08-03 |
-| FDs approved | #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 (64) | 2026-08-03 |
-| closeout_status | **completed** (FD #46–48 Real-Data Production Path RELEASED — READY WITH ACCEPTED RISKS + II follow-up) | 2026-08-03 |
+| Python tests | 131/131 locked + 131/131 root (full per-directory 302+1 sweep at B8) | 2026-08-04 |
+| Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-04 |
+| Frontend lint | 0 errors (oxlint) | 2026-08-04 |
+| Commits | 101 on `main` (UI redesign commit pending at closeout → see git log) | 2026-08-04 |
+| FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#50 (66 total) | 2026-08-04 |
+| closeout_status | **in_progress** — FD #49/#50 UI redesign: B1–B4 complete; B5–B8 remaining | 2026-08-04 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -36,7 +37,13 @@
 
 ## Next allowed action
 
-**Real-Data Production Path (FD #46) — in execution.** Phase 2 Architecture (SQLite schema + auth design + real-data wiring) → Phase 2R review (Sol Medium, mandatory — auth/schema) → Phase 3 Plan (+ Plan Council Lite) → implement with locked tests → Evidence QA → integration → **Final Council artifact + final production audit** (prelaunch-close-beta split-lane: Parent browser + Sol Medium API/oracle). CS stays synthetic-labeled; CIW remains PAUSED (unchanged — monitoring runs; next CIW decision point Q1-FY27 ~Oct 2026).
+**UI Redesign (FD #49/#50) — in execution, batch B5.** Continue the approved build order with
+v2.1 light-editorial conventions (MASTER.md v2.1 + iip-ui-design skill):
+**B5 Close System Radar** — hero "most interesting product to watch" (commodity/ETF per P2/P3) +
+P1–P3 eligibility + 5-layer synthesis + conviction; SYNTHETIC DEMO label prominent and honest
+(sole synthetic surface, FD #46). Then B6 FO (Queue/Detail/Cheap&Quality), B7 II + Weak Signals,
+B8 a11y+responsive pass + full per-directory test sweep. Each batch: `npm run build` + browser
+verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 2026).
 
 ## Bootstrap sources
 
@@ -64,4 +71,4 @@
 | fd_count | 44 + 16 CIW + FD #45 + FD #46 (62 total) |
 | audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged) |
 
-<!-- 2026-08-03 22:40 UTC+7 -->
+<!-- 2026-08-04 02:35 UTC+7 -->

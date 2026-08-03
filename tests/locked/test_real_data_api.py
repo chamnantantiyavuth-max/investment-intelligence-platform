@@ -238,6 +238,35 @@ def test_am_evidence_provenance_marks_synthetic_sources():
     assert "synthetic" in types  # SRC-SYN evidence must be labeled synthetic
 
 
+def test_am_theme_falsification_fields_passthrough():
+    """Falsification read-only extension (mini-FD, 4 Aug 2026, Constitution §11):
+    alternative_explanations / evidence register / unresolved_counter_evidence
+    map straight from the artifact — never invented, additive DTO fields only."""
+    art = _real_am_artifact()
+    _login()
+    r = client.get("/api/am-queue")
+    body = r.json()
+    themes = body["themes"]
+    # field presence — additive contract on every theme
+    for t in themes:
+        tt = t["theme"]
+        assert "alternative_explanations" in tt
+        assert "evidence" in tt
+        assert "unresolved_counter_evidence" in tt
+    # per-theme alternatives match the artifact (TH-004 carries a real one)
+    t004 = next(t["theme"] for t in themes if t["theme"]["id"] == "TH-004")
+    assert t004["alternative_explanations"] and "TH-004" in t004["alternative_explanations"]
+    # evidence register entries carry id/type/content
+    if t004["evidence"]:
+        ev = t004["evidence"][0]
+        assert {"id", "type", "content"}.issubset(ev.keys())
+    # counter-evidence normalized to a list when present
+    for t in themes:
+        uce = t["theme"]["unresolved_counter_evidence"]
+        if uce:
+            assert isinstance(uce, list) and all(isinstance(x, str) for x in uce)
+
+
 def test_am_theme_detail_shape_and_404():
     art = _real_am_artifact()
     theme_id = art["queue"][0][0]
@@ -532,7 +561,7 @@ def test_endpoint_to_db_lineage_wired():
         assert row is not None
         assert row["status"] == 200
         assert len(row["response_sha256"]) == 64
-        assert row["adapter_version"] == "v1"
+        assert row["adapter_version"] == persistence.ADAPTER_VERSION
         # composite lineage: dashboard read has 3 component runs
         n = conn.execute(
             "SELECT COUNT(*) c FROM api_read_runs ar JOIN api_reads a ON a.id=ar.api_read_id "
@@ -568,7 +597,7 @@ def test_api_reads_lineage_records_real_status_and_hash():
         assert row is not None
         assert row["status"] == 200
         assert row["response_sha256"] == expected_sha, "recorded hash must match actual served bytes"
-        assert row["adapter_version"] == "v1"
+        assert row["adapter_version"] == persistence.ADAPTER_VERSION
     finally:
         conn.close()
 

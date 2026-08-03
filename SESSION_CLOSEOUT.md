@@ -1,3 +1,106 @@
+# Session Closeout — 4 August 2026 (Credential Recovery → FD #49 UI Redesign → v2.1 Light Editorial → FD #50 Falsification Extension)
+
+> **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
+
+## Session Summary (Third Session — UI Redesign, FD #49/#50)
+
+```
+Trigger:     "I accidentally closed the session. please give me a iip dashboard login"
+             → then: "redesign all UI like a legendary Wall Street hedge fund dashboard"
+Flow:        Critical Mode (ui-dashboard-workflow, one phase per turn, Founder approval each):
+             → Credential recovery: old session's env-only creds unrecoverable (no .env/history) →
+               reset via gitignored repo .env + start-backend.sh (restart = bash start-backend.sh)
+             → FD #49 (item 65): UI redesign APPROVED — dark institutional terminal (Option A),
+               MUTED non-neon palette; presentation-layer only; ui-dashboard-workflow all phases
+             → Phase 2.5 Bible-to-UI gap table (P0=15/P1=14/P2=4) APPROVED → Phase 2 metric model
+               APPROVED → Phase 3 architecture (tokens/shell/wireframes/build order) APPROVED
+             → Skill bundle: installed full ui-ux-pro-max-skill repo (design-system/ui-styling/
+               design/brand/banner-design/slides) — core was already the installed port
+             → Founder corrections: (1) "exclude shadcn UI skill — boring borders" → editorial
+               tonal panels; (2) "like marketing pitch: what are the highlights/findings/macro/
+               commodity" → hero-insight + findings anatomy; (3) "no need to be black theme,
+               you decide" → LIGHT EDITORIAL v2.1 (agent-decided: pitch-readability)
+             → B1 tokens/shell/primitives → B2 panels → B3 Dashboard+Login → B4 AM Queue+
+               ThemeCard+Screener (new /am-screener route) — all restyled to v2.1 light editorial
+             → FD #50 (item 66, mini-FD Option A): §11 falsification read-only schema extension —
+               ThemeSummary + alternative_explanations/evidence/unresolved_counter_evidence
+               (artifact passthrough; ADAPTER_VERSION v1→v2 + registry hash recomputed (F3);
+               persistence synced; 2 lineage tests pinned to persistence.ADAPTER_VERSION;
+               new locked test → 131/131 locked) + Theme Card Falsification tab
+Deliverables: .env + start-backend.sh · MASTER.md v2.1 (light editorial) · HeroInsight/
+             FindingCard/EvidencePanel/StatusBadge/ProvenanceChip/ExplainPanel/EmptyState/
+             AdvisoryFooter/StalenessBanner/KpiStrip/PageHeader · lib/insights.ts ·
+             Dashboard/Login/AMQueue/AMThemeCard/AMScreener rebuilt · backend falsification
+             extension (schema+adapter+registry+persistence) · locked test +1
+State:       66 FDs (items 45–66 contiguous). Locked 131/131 + root 131/131, build exit 0,
+             lint 0. B5–B8 REMAINING (CS Radar → FO → II/WeakSignals → a11y sweep).
+```
+
+## Decisions Approved
+
+| ID | Decision |
+|----|----------|
+| D1 | **FD #49 — UI redesign Option A** (dark institutional terminal, muted non-neon) — later amended by D2/D3 |
+| D2 | **Exclude shadcn skill look** — tonal editorial panels, no uniform bordered cards |
+| D3 | **Light editorial v2.1 (Founder-delegated)** — "no need to be black theme, you decide" → light marketing-pitch discovery surface (off-white, ink text, tinted panels, hero+findings anatomy) |
+| D4 | **FD #50 — Falsification read-only schema extension (Option A)** — §11 panel via artifact passthrough |
+
+## Verification (fresh, ad-hoc per batch)
+
+- Locked suite 131/131 (incl. new falsification test + F3 registry guard) — TEST_VERIFIED
+- Root suite 131/131 — TEST_VERIFIED · Frontend build exit 0 — TEST_VERIFIED · Lint 0 errors — TEST_VERIFIED
+- Browser: login/logout round-trip, Dashboard hero+findings, AM Queue, Screener matrices,
+  Theme Card Falsification tab — BROWSER_VERIFIED (vision passes, 0 JS errors)
+- Full per-directory 302+1 sweep deferred to B8 (frontend-only batches: build+lint suffice)
+
+## Git
+
+- Uncommitted at closeout (Founder "save everything") → committed with verification tags (see HEAD).
+- Not pushed (local session).
+
+## Key Learnings (this session)
+
+- **Concurrent-session skills exist**: iip-ui-design + iip-ui-redesign were created by a parallel
+  session capturing this workstream — ALWAYS skill_view them before starting IIP UI work (they now
+  carry the v2.1 light-editorial conventions + resume point).
+- **F3 adapter-registry discipline**: adapters.py change ⇒ bump ADAPTER_VERSION + recompute
+  adapter_registry.json hash + sync persistence.ADAPTER_VERSION + update lineage tests pinned to
+  literal version strings (pin to persistence.ADAPTER_VERSION instead).
+- **Nonce rotation invalidates old cookies**: browser login rotates the session nonce — verify
+  scripts must login fresh, never reuse a cookie from earlier in the session.
+- **Tailwind 4**: dynamic class names (`text-${tone}`) DON'T compile — static maps required.
+  `@theme { --text-hero: 2.75rem }` generates text-hero utilities.
+- **verbatimModuleSyntax**: type-only imports (`import type { ReactNode }`).
+- **search_files quirks**: dotfiles (.env) and `target=files` globs can return 0 — use ls/find.
+
+## Start Next Session
+
+```bash
+cd "C:\Users\Admin\Desktop\Antigravity\investment-intelligence-platform"
+hermes --profile iip
+# servers (if down): bash start-backend.sh  +  cd frontend && npm run dev
+```
+
+### Loop Protocol
+1. อ่าน AGENTS.md (66 FDs; UI redesign FD #49/#50 in progress; B1–B4 done, B5 next)
+2. อ่าน PROJECT_STATE.md (next action below)
+3. อ่าน SESSION_CLOSEOUT.md นี้
+4. Recall obsidian-memory (MEM-IIP-023/024/025, CURRENT-STATE) + skill_view iip-ui-design / iip-ui-redesign
+5. Continue B5 per the approved build order
+
+### Recommended next action (Founder's close request)
+**B5 — Close System Radar (approved build order):** hero "most interesting product to watch"
+(the commodity/ETF question — radar covers gold/copper/silver/semis per P2/P3) + P1–P3 eligibility
++ 5-layer synthesis + conviction, SYNTHETIC DEMO label prominent and honest. Then B6 FO (Queue +
+Detail + Cheap&Quality, hero "cheap & quality vs trap"), B7 II + Weak Signals (hero: biggest NEW
+position / largest ADD / standout anomaly), B8 dark-a11y→light-a11y pass + responsive sweep +
+full per-directory test sweep. Falsification mini-FD DONE. CS pages still show the old bordered
+style until B5 — expected per interim-state doctrine.
+
+<!-- 2026-08-04 02:35 UTC+7 -->
+
+---
+
 # Session Closeout — 3 August 2026 (AM Findings → Production Readiness → Pre-Launch Close Beta Audit → Real-Data Production Path RELEASED)
 
 > **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
@@ -125,5 +228,3 @@ hermes --profile iip
 **C) Small pending items if wanted:** sidebar token fix (8-line `@theme`, accepted
    as cosmetic — optional), FSLR valuation read (blocked until clean refresh shows
    trailingEps vs quarterly consistency), P/E sanity guard (separate FD if desired).
-
-<!-- 2026-08-03 22:40 UTC+7 -->

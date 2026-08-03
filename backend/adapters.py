@@ -22,11 +22,11 @@ from pathlib import Path
 from backend import persistence
 from backend.schemas.responses import (
     AMQueueResponse, CandidateQuality, CandidateSummary, ComponentProvenance, DataConfidence,
-    EntryReadiness, EvidenceProvenance, IISignalsResponse, IISignalSummary, Provenance,
-    ResearchPackageDetail, ResearchPackageSummary, ThemeSummary, ThemeWithCandidates,
+    EntryReadiness, EvidenceProvenance, EvidenceRecord, IISignalsResponse, IISignalSummary,
+    Provenance, ResearchPackageDetail, ResearchPackageSummary, ThemeSummary, ThemeWithCandidates,
 )
 
-ADAPTER_VERSION = "v1"
+ADAPTER_VERSION = "v2"
 # Immutable adapter registry (plan T5 / council F3): version -> committed code hash of adapters.py.
 # Stored in a SEPARATE json so editing the registry cannot change the code hash (no circularity).
 # If adapters.py changes, recompute hash + bump ADAPTER_VERSION. verify_adapter_registry() enforces.
@@ -200,9 +200,40 @@ def _theme_provenance(theme: dict, raw: str, evidence_types: set[str]) -> Proven
                       coverage="9/9", completeness="complete", hybrid=hybrid)
 
 
-def _map_theme(theme: dict, raw: str, evidence_list: list) -> ThemeSummary:
+def _clean_alternatives(alt: object) -> dict[str, str] | None:
+    """Read-only normalization of artifact alternative_explanations (drop None/'None')."""
+    if not isinstance(alt, dict):
+        return None
+    out = {str(k): str(v) for k, v in alt.items() if v not in (None, "None") and str(v).strip()}
+    return out or None
+
+
+def _counter_evidence(parsed: dict) -> list[str] | None:
+    """Collect unresolved counter-evidence from overrides (str or list values)."""
+    out: list[str] = []
+    for o in parsed.get("overrides", []):
+        if not isinstance(o, dict):
+            continue
+        v = o.get("unresolved_counter_evidence")
+        if isinstance(v, str) and v and v != "None":
+            out.append(v)
+        elif isinstance(v, list):
+            out.extend(x for x in v if isinstance(x, str) and x)
+    return out or None
+
+
+def _map_theme(theme: dict, raw: str, evidence_list: list,
+               alt_expl: dict[str, str] | None = None,
+               counter_ev: list[str] | None = None) -> ThemeSummary:
     ev_prov = _classify_evidence(evidence_list, theme["id"])
     types = {e.source_type for e in ev_prov}
+    theme_evidence = [
+        EvidenceRecord(id=str(e.get("id", "")), type=str(e.get("type", "")),
+                       content=str(e.get("content", "")), source=e.get("source"))
+        for e in evidence_list
+        if isinstance(e, dict) and e.get("theme") == theme["id"]
+    ]
+    own_alt = ({theme["id"]: alt_expl[theme["id"]]} if alt_expl and theme["id"] in alt_expl else None)
     return ThemeSummary(
         id=theme["id"], name=theme["name"], sector=theme.get("sector", ""),
         industry=theme.get("industry", ""), lifecycle=theme.get("lifecycle", ""),
@@ -210,6 +241,8 @@ def _map_theme(theme: dict, raw: str, evidence_list: list) -> ThemeSummary:
         confidence=theme.get("confidence", ""), key_tickers=theme.get("key_tickers", []),
         stocks_in_industry=theme.get("stocks_in_industry", 0), why_now=theme.get("why_now", ""),
         provenance=_theme_provenance(theme, raw, types), evidence_provenance=ev_prov,
+        alternative_explanations=own_alt, evidence=theme_evidence or None,
+        unresolved_counter_evidence=counter_ev,
     )
 
 
@@ -250,11 +283,13 @@ def am_queue() -> AMQueueResponse:
     admit("am", parsed)
     raw_str = raw.decode("utf-8", errors="replace")
     evidence_list = parsed.get("evidence", [])
+    alt_expl = _clean_alternatives(parsed.get("alternative_explanations"))
+    counter_ev = _counter_evidence(parsed)
     themes = []
     for item in parsed.get("queue", []):
         theme_id, payload = item[0], item[1]
         themes.append(ThemeWithCandidates(
-            theme=_map_theme(payload.get("theme", {}), raw_str, evidence_list),
+            theme=_map_theme(payload.get("theme", {}), raw_str, evidence_list, alt_expl, counter_ev),
             candidates=[_map_candidate(c, raw_str) for c in payload.get("candidates", [])],
         ))
     return AMQueueResponse(run_id=parsed.get("run_id", ""), point_in_time=parsed.get("point_in_time"),

@@ -5,6 +5,7 @@ import { authStatus } from "@/api/authClient"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import AMQueuePage from "@/pages/AMQueuePage"
+import AMScreenerPage from "@/pages/AMScreenerPage"
 import AMThemeCardPage from "@/pages/AMThemeCardPage"
 import CSRadarPage from "@/pages/CSRadarPage"
 import FundamentalQueuePage from "@/pages/FundamentalQueuePage"
@@ -38,6 +39,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="am-queue" element={<AMQueuePage />} />
+            <Route path="am-screener" element={<AMScreenerPage />} />
             <Route path="am-theme/:id" element={<AMThemeCardPage />} />
             <Route path="cs-radar" element={<CSRadarPage />} />
             <Route path="fundamental" element={<FundamentalQueuePage />} />

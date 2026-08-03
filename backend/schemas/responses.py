@@ -27,6 +27,14 @@ class EvidenceProvenance(BaseModel):
     source_type: str           # real | synthetic | human_sourced
 
 
+class EvidenceRecord(BaseModel):
+    """Full evidence register entry (falsification extension — mini-FD, 4 Aug 2026)."""
+    id: str
+    type: str
+    content: str
+    source: Optional[str] = None
+
+
 # ── Dashboard ────────────────────────────────────────────────────────────────
 class ComponentProvenance(BaseModel):
     run_id: Optional[str] = None
@@ -63,6 +71,11 @@ class ThemeSummary(BaseModel):
     why_now: str
     provenance: Provenance
     evidence_provenance: list[EvidenceProvenance]
+    # Falsification read-only extension (mini-FD 4 Aug 2026, Constitution §11) —
+    # optional passthrough of artifact fields; never a rule change.
+    alternative_explanations: Optional[dict[str, str]] = None
+    evidence: Optional[list[EvidenceRecord]] = None
+    unresolved_counter_evidence: Optional[list[str]] = None
 
 
 class CandidateQuality(BaseModel):

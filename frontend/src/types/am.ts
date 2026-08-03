@@ -14,6 +14,13 @@ export interface EvidenceProvenance {
   source_type: "real" | "synthetic" | "human_sourced";
 }
 
+export interface EvidenceRecord {
+  id: string;
+  type: string;
+  content: string;
+  source: string | null;
+}
+
 export interface ThemeSummary {
   id: string;
   name: string;
@@ -28,6 +35,10 @@ export interface ThemeSummary {
   why_now: string;
   provenance: Provenance;
   evidence_provenance: EvidenceProvenance[];
+  // Falsification read-only extension (mini-FD 4 Aug 2026, Constitution §11)
+  alternative_explanations: Record<string, string> | null;
+  evidence: EvidenceRecord[] | null;
+  unresolved_counter_evidence: string[] | null;
 }
 
 export interface CandidateSummary {

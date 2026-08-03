@@ -1,64 +1,65 @@
 # Design System: Investment Intelligence Platform
 
-**Version:** 1.0 (Standardized — FD #39, 25 July 2026)
-**Stack:** React + Vite + TypeScript + Tailwind CSS + shadcn/ui (frontend/); design tokens below apply across all surfaces
-**Pattern:** Data-Dense Dashboard
+**Version:** 2.1 — Light Editorial (FD #49 amendment, 4 August 2026)
+**Stack:** React + Vite + TypeScript + Tailwind CSS v4 (frontend/); design tokens below apply across all surfaces
+**Pattern:** Light Editorial — marketing-pitch discovery: hero insight → findings (kickers + headlines + big mono numbers) → deep-dive reference tier → methodology → advisory footer
+**Palette rule:** MUTED institutional accents — NO neon. Off-white canvas, ink text, tinted tonal panels (background contrast instead of uniform borders). Typography carries hierarchy; borders minimal.
 
-## Color Tokens
+## Color Tokens (HSL — mapped in frontend/src/index.css :root)
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--bg-page` | `#f5f6f8` | Page background |
-| `--bg-card` | `#ffffff` | Card/surface background |
-| `--bg-sidebar` | `#0f1117` | Sidebar / dark header |
-| `--text-primary` | `#1a1a2e` | Primary text |
-| `--text-secondary` | `#6b7280` | Secondary/muted text |
-| `--text-inverse` | `#ffffff` | Text on dark backgrounds |
-| `--positive` | `#10b981` | Positive / gain (mint green) |
-| `--negative` | `#ec4899` | Negative / loss (pink) |
-| `--warning` | `#f59e0b` | Warning / caution (amber) |
-| `--info` | `#3b82f6` | Info / neutral (blue) |
-| `--border` | `#e5e7eb` | Card/table borders |
-| `--border-strong` | `#d1d5db` | Strong borders |
-| `--radius-sm` | `8px` | Small radius |
-| `--radius-md` | `12px` | Card radius |
-| `--radius-lg` | `16px` | Large radius |
-| `--shadow-card` | `0 1px 3px rgba(0,0,0,0.06)` | Card shadow |
+| Token | HSL | Hex | Usage |
+|---|---|---|---|
+| `--bg-page` | `220 23% 97%` | `#F7F8FA` | Page background |
+| `--bg-card` | `0 0% 100%` | `#FFFFFF` | Card/panel surface |
+| `--bg-elevated` | `220 23% 95%` | `#EFF1F5` | Tonal panel / hover surface |
+| `--bg-sidebar` | `0 0% 100%` | `#FFFFFF` | Sidebar (border-right separates) |
+| `--text-primary` | `221 27% 12%` | `#161B26` | Ink text |
+| `--text-secondary` | `217 13% 40%` | `#5A6474` | Secondary/muted text |
+| `--positive` | `160 71% 32%` | `#178A63` | Positive / gain (deep sage) |
+| `--negative` | `338 48% 54%` | `#C2527B` | Negative / loss (deep muted pink) |
+| `--warning` | `38 71% 40%` | `#B07A1E` | Warning / caution (deep amber) |
+| `--info` | `213 42% 50%` | `#4A7BB5` | Info / neutral (steel blue) |
+| `--border` | `220 19% 91%` | `#E3E6EC` | Hairline borders (deep tier only) |
+| `--radius` | — | `6px` | Base radius (dense); hero/findings use `rounded-2xl` |
 
 ## Typography
 
 | Token | Font | Usage |
 |---|---|---|
 | `--font-body` | `'Inter', system-ui, -apple-system, sans-serif` | All text |
-| `--font-mono` | `'JetBrains Mono', 'Consolas', monospace` | Tickers, data |
+| `--font-mono` | `'JetBrains Mono', 'Consolas', monospace` | Tickers, numbers, page titles |
 | Base size | `14px` | Body |
-| Line height | `1.6` | Body |
+| Display scale | `2.75rem` hero / `2rem` finding value / `1.25rem` finding headline | Editorial hierarchy |
+| Kickers | `11px` uppercase, `0.16em` tracking | Section/finding labels |
 
-## Status Colors
+## Status Colors (display-only mapping — never a rule)
 
-| Status | Color | CSS Class |
-|---|---|---|
-| Positive / High / Confirmed | `#10b981` | `.positive`, `.badge-high` |
-| Negative / Low / Invalidated | `#ec4899` | `.negative`, `.badge-low` |
-| Warning / Moderate | `#f59e0b` | `.warning`, `.badge-moderate` |
-| Info / Neutral | `#3b82f6` | `.info` |
+| Status | Tone |
+|---|---|
+| Emerging / Expansion / Approved / Active Monitoring / Maximum / High / Confirmed / NEW / ADD / Wide / Deep / Stable | `positive` |
+| Deteriorating / Crowded / Late Stage / Rejected / EXIT / COSMETIC / Trap / Narrowing / Shallow / None | `negative` |
+| Under Human Review / Moderate / Dormant / REDUCE / Watch / Medium | `warning` |
+| Experimental / Formation / Detected / MAINTAIN / Unknown | `info` |
+| Everything else | `muted` |
 
 ## Components
 
-- **Cards:** white bg, 12px radius, 1px `--border`, subtle shadow
-- **Tables:** clean, zebra optional, hover highlight on rows
-- **Badges:** pill-shaped (border-radius 20px), 11px font, semi-bold
-- **Metric cards:** centered numbers, uppercase labels, min-width 110px
-- **Headers:** dark sidebar (#0f1117) with white text
-- **Buttons:** none in V0 — this is a display platform, not interactive
+- **HeroInsight:** the single most interesting thing on the page — kicker + headline + big mono display + sub + provenance chips. Tonal fill (6–7% accent), no border.
+- **FindingCard:** discovery panels — kicker dot + kicker + headline + display value + why-it-matters. Featured variant spans 2 columns. Tonal fill, no border.
+- **Reference tier:** engine provenance, matrices, tables — quieter: `bg-elevated/50`, small caps labels; hairline borders allowed here only.
+- **Provenance chips:** mandatory on every surface — `REAL · source · as_of` (positive) vs `SYNTHETIC` (warning).
+- **StatusBadge:** pill, 11px, accent-tinted fill, no invented semantics (display-only tone mapping).
+- **ExplainPanel:** collapsible methodology with spec references. **AdvisoryFooter:** every page ends advisory-only + portfolio-blind. **StalenessBanner:** AM ≤7d / FO ≤30d / II ≤120d (FD #47 D3).
 
 ## Anti-Patterns (Avoid)
 
-- Beige/warm/Claude-inspired palette — use grey-white system above
-- Playfair Display / serif headlines — use Inter only
-- Emoji as icons — use text labels or SVG
-- Ornate design — data comes first
-- Raw hex in components — use CSS variables
+- Neon/bright accents (FD #49) — all accents muted institutional, light-contrast values
+- Dark-mode default — light editorial is the only theme (v2.1)
+- Uniform bordered card grids — tonal panels + typographic hierarchy instead
+- Emoji as icons — lucide-react SVG only
+- Raw hex in components — use tokens/theme colors
+- Faux composite scores — the four quality dimensions stay separate (Constitution §10, §13)
+- Invented thresholds in the screener — criteria come from the approved spec only
 
 ## Page Overrides
 
@@ -67,3 +68,4 @@
 | Alpha Momentum Queue | `pages/am-queue.md` |
 | Alpha Momentum Theme Card | `pages/am-theme-card.md` |
 | Close System Radar | `pages/cs-radar.md` |
+<!-- 2026-08-04 02:10 UTC+7 -->
