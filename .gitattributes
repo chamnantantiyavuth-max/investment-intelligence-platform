@@ -1,0 +1,7 @@
+# CIW pilot artifacts — byte-stable hashes (approved artifacts must not drift on checkout)
+# MEM-IIP-014: git autocrlf converts LF→CRLF on checkout, changing content hashes of approved artifacts
+docs/ciw-pilot-msft/*.md text eol=lf
+docs/ciw-pilot-msft/monitoring/*.md text eol=lf
+evidence/PHASE-2R-*.md text eol=lf
+evidence/COUNCIL_DECISION-*.md text eol=lf
+<!-- 2026-08-03 19:30 UTC+7 -->
