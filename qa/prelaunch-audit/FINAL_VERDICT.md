@@ -41,17 +41,25 @@ not block functional readiness for close-beta use of a labeled synthetic demo.
 | All-pages JS sweep | **PASS** | 0 JS errors across routes post-fix |
 | Build / tests | **PASS** | `npm run build` exit 0; 262/262 tests |
 | No open Critical/Major | **PASS** | both Majors verified fixed |
-| Founder risk acceptance | **REQUIRED** | see accepted-risk list below |
+| Founder risk acceptance | **PASS** | Founder accepted both cosmetic Minors (Option A, 2026-08-03) — acceptance record below |
 
-## Accepted risks (Minors — Founder sign-off requested)
+## Accepted risks (Minors — Founder sign-off)
 
 1. **BROWSER-002** — FO detail tab highlight box vertical alignment (cosmetic CSS).
 2. **BROWSER-004** — sidebar renders light instead of dark #0f1117 (missing
    `--color-sidebar` Tailwind v4 theme token; visual-only, presentation-layer).
-   *Note: also verified today that this is the ONLY remaining spec-token gap —
-   the fix is an 8-line `@theme` block if/when wanted; not release-blocking.*
-3. **Deferred by design (not defects):** real-pipeline-to-API wiring, persistence,
-   auth — all require named FDs per FD #44; the app is a labeled synthetic demo.
+
+**FOUNDER ACCEPTANCE RECORD (2026-08-03, Option A):** Chamnan explicitly accepted
+both cosmetic Minors as-is. No fixes required. Final verdict:
+
+## FINAL VERDICT: **READY WITH ACCEPTED RISKS** (Founder-accepted)
+
+The application is release-ready for close-beta use as a labeled synthetic demo:
+all Critical/Major blockers fixed and re-verified, all provenance contracts
+satisfied, 262/262 tests, build green, 0 JS errors, UI/API/oracle agreement
+confirmed. The two accepted items are cosmetic and carry zero data impact.
+Real-pipeline wiring, persistence, and auth remain deferred by FD #44 (named FDs
+required) — not release blockers for this demo surface.
 
 ## Scope honesty
 
@@ -62,4 +70,4 @@ not block functional readiness for close-beta use of a labeled synthetic demo.
 - Founder acceptance of the two cosmetic Minors is the only remaining authority
   step before this counts as a clean READY.
 
-<!-- 2026-08-03 22:15 UTC+7 -->
+<!-- 2026-08-03 22:30 UTC+7 -->
