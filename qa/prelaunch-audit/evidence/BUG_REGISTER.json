@@ -1,0 +1,108 @@
+{
+  "audit": "IIP Pre-Launch Close Beta Audit — independent API/DB/Oracle lane",
+  "status": "DRAFT_FOR_PARENT_MERGE",
+  "bugs": [
+    {
+      "id": "SOL-001",
+      "severity": "Minor",
+      "route": "GET /api/dashboard/summary",
+      "expected": "Because the adapter declares dashboard data to be synthetic_demo mock data, the response must expose an explicit data_source/provenance marker under FD #44.",
+      "actual": "HTTP 200 and KPI shape are correct, but the response contains no data_source, provenance, or source marker.",
+      "evidence": {
+        "response_snippet": {
+          "total_themes": 143,
+          "approved_themes": 12,
+          "active_signals": 7,
+          "queue_size": 5,
+          "cs_radar_items": 8
+        },
+        "marker_presence": false,
+        "raw_file": "qa/prelaunch-audit/evidence/api/dashboard-summary.json",
+        "source_observation": "backend/main.py returns DashboardSummary(); backend/schemas/responses.py defines static defaults without a provenance field."
+      },
+      "affected_rule": "FD #44 provenance doctrine; AUDIT_MANIFEST.md lines 38-40; IIP-ADAPTER.md line 37.",
+      "reproducibility": "1/1 live request; deterministic static response confirmed by source inspection.",
+      "reproduction": [
+        "curl http://127.0.0.1:8000/api/dashboard/summary",
+        "Inspect the JSON keys.",
+        "Observe no explicit synthetic/demo provenance marker."
+      ]
+    },
+    {
+      "id": "SOL-002",
+      "severity": "Minor",
+      "route": "GET /api/fo-queue; GET /api/fo-cheap-quality; GET /api/fo-package/{company_id}",
+      "expected": "Each FO summary/detail item must carry an explicit SYNTHETIC/DEMO data-source marker because the real FO pipeline runs on synthetic fixtures.",
+      "actual": "All three FO response families omit item-level data_source. The fixture/pipeline source identifies the inputs as synthetic, but the Pydantic response schemas do not expose that provenance field.",
+      "evidence": {
+        "queue_response_snippet": {
+          "id": "AAPL",
+          "name": "Apple Inc.",
+          "sector": "Technology",
+          "industry": "Consumer Electronics",
+          "data_source_present": false
+        },
+        "cheap_quality_response_snippet": {
+          "id": "CRM",
+          "data_source_present": false
+        },
+        "detail_response_snippet": {
+          "id": "AAPL",
+          "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
+          "data_source_present": false
+        },
+        "raw_files": [
+          "qa/prelaunch-audit/evidence/api/fo-queue.json",
+          "qa/prelaunch-audit/evidence/api/fo-cheap-quality.json",
+          "qa/prelaunch-audit/evidence/api/fo-package-AAPL.json"
+        ]
+      },
+      "affected_rule": "FD #44 provenance doctrine; AUDIT_MANIFEST.md known open item 1; IIP-ADAPTER.md lines 37 and 39.",
+      "reproducibility": "3/3 affected endpoint families in this run; deterministic schema omission confirmed by source inspection.",
+      "reproduction": [
+        "GET /api/fo-queue and inspect every item.",
+        "GET /api/fo-cheap-quality and inspect every item.",
+        "Read a real ID from /api/fo-queue, GET /api/fo-package/{id}, and inspect the detail keys.",
+        "Observe no item-level data_source marker."
+      ]
+    },
+    {
+      "id": "SOL-003",
+      "severity": "Major",
+      "route": "GET /api/dashboard/summary compared with GET /api/cs-radar",
+      "expected": "Under WF-01's fixture cross-check, dashboard cs_radar_items should agree with the number of assets exposed by the live CS radar source, unless a different scope/source is explicitly declared.",
+      "actual": "The dashboard response reports cs_radar_items=8 while /api/cs-radar returns exactly 2 assets. No separate eight-item backing fixture or scope declaration was found.",
+      "evidence": {
+        "dashboard_response_snippet": {
+          "cs_radar_items": 8,
+          "cs_qc_met": 3,
+          "cs_regime": "risk-on"
+        },
+        "cs_response_snippet": {
+          "data_source": "synthetic_demo",
+          "asset_count": 2,
+          "tickers": ["BRK.B", "JNJ"]
+        },
+        "raw_files": [
+          "qa/prelaunch-audit/evidence/api/dashboard-summary.json",
+          "qa/prelaunch-audit/evidence/api/cs-radar.json"
+        ]
+      },
+      "affected_rule": "AUDIT_MANIFEST.md WF-01 oracle fixture cross-check; Phase 3 UI/API/oracle agreement requirement.",
+      "reproducibility": "1/1 paired live probe; both values are deterministic static source values.",
+      "reproduction": [
+        "GET /api/dashboard/summary and record cs_radar_items.",
+        "GET /api/cs-radar and count assets.",
+        "Compare 8 with 2."
+      ]
+    }
+  ],
+  "pending_parent_observations": [
+    {
+      "candidate": "Sidebar dark-token defect",
+      "status": "PENDING_PARENT_BROWSER_REVERIFICATION",
+      "static_evidence": "frontend/src/index.css defines --sidebar-background but no Tailwind v4 @theme --color-sidebar mapping; components use bg-sidebar. Computed-style verification belongs to the Parent browser lane."
+    }
+  ],
+  "timestamp_footer": "<!-- 2026-08-03 18:25 UTC+7 -->"
+}

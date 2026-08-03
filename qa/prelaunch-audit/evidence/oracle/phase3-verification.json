@@ -1,0 +1,72 @@
+{
+  "phase": 3,
+  "lane": "api-db-oracle",
+  "captured_at": "2026-08-03 18:25 UTC+7",
+  "database": {
+    "status": "N/A",
+    "reason": "Manifest declares stateless API with no database."
+  },
+  "openapi": {
+    "operation_count": 8,
+    "all_get": true,
+    "adapter_exact_match": true,
+    "missing_live": [],
+    "unexpected_live": []
+  },
+  "am": {
+    "queue_count": 5,
+    "ids": [
+      "theme-ai-infra",
+      "theme-glp1",
+      "theme-semicon",
+      "theme-defense",
+      "theme-grid"
+    ],
+    "all_items_synthetic_demo": true,
+    "real_detail_status": 200,
+    "made_up_detail_status": 404,
+    "pipeline_id_equivalence_required": false,
+    "reason": "Authorized mock API; AM pipeline wiring is deferred."
+  },
+  "cs": {
+    "data_source": "synthetic_demo",
+    "asset_count": 2
+  },
+  "dashboard": {
+    "status": 200,
+    "required_shape_present": true,
+    "explicit_provenance_present": false,
+    "queue_size": 5,
+    "queue_size_matches_am": true,
+    "cs_radar_items": 8,
+    "cs_radar_items_matches_cs_api": false
+  },
+  "fo": {
+    "fixture_ids": ["AAPL", "INTC", "COST", "CRM", "XYZ", "MSFT", "JNJ", "GE"],
+    "api_ids": ["AAPL", "INTC", "COST", "CRM", "XYZ", "MSFT", "JNJ", "GE"],
+    "company_set_match": true,
+    "company_name_match": true,
+    "queue_item_data_source_present": false,
+    "detail_id": "AAPL",
+    "detail_required_sections": {
+      "company_assessment.moat": true,
+      "earnings_quality": true,
+      "conviction": true,
+      "value_trap_verdict": true,
+      "valuation_context": true,
+      "spec_ref": true
+    },
+    "detail_data_source_present": false,
+    "cheap_quality_manual_scores": {
+      "INTC": 0,
+      "CRM": 4,
+      "XYZ": 1,
+      "GE": 2
+    },
+    "cheap_quality_expected_ids": ["CRM"],
+    "cheap_quality_api_ids": ["CRM"],
+    "cheap_quality_match": true
+  },
+  "confirmed_defects": ["SOL-001", "SOL-002", "SOL-003"],
+  "timestamp_footer": "<!-- 2026-08-03 18:25 UTC+7 -->"
+}

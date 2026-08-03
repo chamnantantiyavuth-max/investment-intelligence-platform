@@ -1,0 +1,12 @@
+openapi	GET /openapi.json	200
+health	GET /api/health	200
+dashboard-summary	GET /api/dashboard/summary	200
+am-queue	GET /api/am-queue	200
+am-theme-made-up	GET /api/am-theme/made-up-id	404
+cs-radar	GET /api/cs-radar	200
+fo-queue	GET /api/fo-queue	200
+fo-cheap-quality	GET /api/fo-cheap-quality	200
+am-theme-real	GET /api/am-theme/theme-ai-infra	200
+fo-package-real	GET /api/fo-package/AAPL	200
+fo-package-made-up	GET /api/fo-package/made-up-id	404
+<!-- 2026-08-03 18:25 UTC+7 -->
