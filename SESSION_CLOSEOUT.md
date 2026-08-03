@@ -1,60 +1,71 @@
-# Session Closeout — 3 August 2026 (CIW Phase 11 Design Path + Pilot Authorization)
+# Session Closeout — 3 August 2026 (CIW Pilot First Slice: Research → Challenge → Publication)
 
 > **Profile:** iip | **Model:** deepseek-v4-flash (Parent) | **Repo:** `investment-intelligence-platform`
 
 ## Session Summary
 
 ```
-Trigger:     Open Phase 11 (CIW) Design Path + First-Slice Plan for MSFT (goal-mode prompt, verified state 2 Aug)
-Flow:        Status + options → FD-CIW-010 (design path, Option A) → design v0.3 drafted
-             → Phase 2R (Sol Medium): PASS WITH FIXES → fixes v0.2 → re-review → fixes v0.3
-             → targeted confirmation CONFIRMED → FD-CIW-011 (pilot execution authorization)
-             → CRR-2026-0001 draft → approved (Research Gate) → Source Map (gate PASSED, real SEC EDGAR)
-             → checkpoint closeout (research next session)
-Side items:  CODEBUDDY.md + ChatGPT/ declared · origin pushed (synced) · *.env gitignore gap closed
-Deliverables: docs/CIW-FIRST-SLICE-DESIGN.md v0.3 · evidence/PHASE-2R-CIW-FIRST-SLICE-2026-08-03.md
-             docs/ciw-pilot-msft/CRR-2026-0001-request.md (APPROVED) · docs/ciw-pilot-msft/source-map.md (gate PASSED)
-             FD-CIW-010 + FD-CIW-011 recorded (items 54-55, FOUNDERS-DECISIONS) · vault fd-register updated
-             Memory: MEM-IIP-010 (decision), MEM-IIP-011 (decision), obsidian CURRENT-STATE synced
-State:       Phase 11 DESIGN + PILOT EXECUTION AUTHORIZED (FD-CIW-010/011); pilot first slice IN PROGRESS
-             (next: bounded research Modules A–M); full implementation (Cron/Obsidian/expanded) still deferred
+Trigger:     Continue CIW pilot (morning session already authorized design v0.3 + FD-CIW-011)
+Flow:        Source retrieval (real SEC EDGAR + Microsoft IR: 10-K FY26, 10-Q Q3, DEF 14A,
+             4 earnings releases + 4 transcripts, 5-yr XBRL companyfacts, market quote)
+             → research-draft.md v0.1 (Modules A–M initial, claim lineage, 16 gates)
+             → Independent Challenge round 1 (Sol Medium): FAIL, 8 findings (F1–F8)
+             → rework v0.2 → round 2: FAIL (F6/F7 partial, N1)
+             → rework v0.3 → round 3: FAIL (N2, condition-3 wording, citation IDs)
+             → rework v0.4 → round 4: FAIL (minimum-evidence contradiction)
+             → rework v0.5 → round 5: PASS
+             → versioned proposed research-result.md v1 → Founder APPROVED (FD-CIW-012)
+             → Published / Current Authoritative v1 (Founder-only transition, exact hash)
+Deliverables: docs/ciw-pilot-msft/ 6/6 artifacts:
+             CRR-2026-0001-request.md (approved) · source-map.md (gate passed)
+             research-draft.md (v0.5 review-passed) · challenge-review.md (rounds 1–5, PASS)
+             founder-review-record.md · research-result.md (Published v1, SHA-256 34a1f324…)
+             FD-CIW-012 recorded (item 56) · PROJECT_STATE synced · memory MEM-IIP-013/014
+State:       CIW pilot first slice COMPLETE — workflow feasibility validated end-to-end
+             (Approved Request → Source Map → bounded research → Independent Challenge → Founder Review → Published)
+             Phase 11 full implementation (Cron/Obsidian/expanded tree/schema) STILL DEFERRED
 ```
 
 ## Decisions Approved
 
 | ID | Decision |
 |----|----------|
-| D1 | **FD-CIW-010: Phase 11 (CIW) Design Path OPENED** — supersedes FD #44 for DESIGN purposes only (Option A) |
-| D2 | Design plan outline approved (Option A: design doc → 2R review → Founder approval → FD-CIW-011) |
-| D3 | Side: CODEBUDDY.md + ChatGPT/ declared as governance artifacts (non-authoritative framing) |
-| D4 | Side: push 20 commits to origin |
-| D5 | Side: `*.env` added to .gitignore (secret-scan gap closed) |
-| D6 | **FD-CIW-011: Pilot Execution Authorization** (MSFT first slice, supersedes FD #44 for pilot scope only, Option A) |
-| D7 | CRR-2026-0001 approved at Research Gate (Option A) |
-| D8 | Checkpoint closeout (Option B — bounded research next session) |
+| D1 | **FD-CIW-012: research-result.md v1 PUBLISHED** (Option A — approve exact version + SHA-256 `34a1f324…7168a59`) → Published / Current Authoritative v1 |
 
-## Phase 2R Record
+## Independent Challenge Record (the core governance event)
 
-| Round | Artifact | Verdict | Disposition |
+| Round | Draft | Verdict | Findings → Disposition |
 |---|---|---|---|
-| 1st | design v0.1 | PASS WITH FIXES (6 findings) | → v0.2 (commit 9f5f70e) |
-| Re-review | v0.2 | PASS WITH FIXES (F4 PARTIAL + stale annotation) | → v0.3 (commit 8f75825) |
-| Confirmation | v0.3 | CONFIRMED | Gate PASSED (commit 00b9071) |
+| 1 | v0.1 | **FAIL** | F1–F8 (OE SBC double-count; FY23 ETR/ROIC; RPO/OpenAI conflation; moat framing; $743.8B obligations + $329.1B leases omitted; falsification; stress precision; freshness) |
+| 2 | v0.2 | **FAIL** | F1–F5/F8 FIXED VERIFIED; F6/F7 PARTIAL; N1 new (cloud-rank claim) |
+| 3 | v0.3 | **FAIL** | N2 (threshold rationale invented subgroup growth); condition-3 wording; citation IDs |
+| 4 | v0.4 | **FAIL** | minimum-evidence line contradicted condition-3 routes |
+| 5 | v0.5 | **PASS** | all blockers cleared; thesis-falsification gate PASS; no new material errors |
 
-Evidence: `evidence/PHASE-2R-CIW-FIRST-SLICE-2026-08-03.md` (3 rounds verbatim). Sol Medium via openai-codex ran successfully in all 3 rounds — no Luna fallback needed.
+- **Reviewer:** Sol Medium (gpt-5.6-sol via openai-codex) — separate context every round, direct primary-source inspection (re-fetched 10-K, XBRL, DEF 14A, transcript; SHA-256 verified). All 5 rounds ran on Sol Medium — no Luna fallback.
+- **Lessons:** MEM-IIP-014 — recompute from raw source (typed-formula ETR error), issuer-reported ≠ proof, citation IDs must resolve exactly, approved artifact byte-immutable (watch git autocrlf hash drift), search_files broken on Windows → explicit reviewer tool guidance.
+
+## Key Research Findings (Published result v1 — advisory)
+
+- Business quality HIGH: revenue $331.8B (+18%), Microsoft Cloud $214.4B (+27%), RPO $678B (+84%; +25% ex-OpenAI)
+- Moat Wide/Deep (Phase 8 canonical supported at initial depth, not re-derived); ROIC declining 77%→35%
+- Owner earnings advisory $56.3B/$102.7B/$133.7B — 60% maintenance-split is least-supported assumption
+- $743.8B contractual obligations + $329.1B not-yet-commenced leases = material fixed-cost rigidity
+- Price $464.72 (7/31) → trailing P/E ~25.9×, P/OE base ~33.7× — demanding but contractually visible
+- Honest empty states: valuation_ranges (Module N), monitoring indicators (Module Q), expected-return not-assessable
+- NOT authorized by publication: official state changes, recommendation, MSFT endorsement, Phase 11 implementation
 
 ## Git
 
-- 9 commits this session: `1ebc185` (design v0.1 + FD register 53-54) · `225c50e` (CODEBUDDY/ChatGPT) · `99b8be0` (*.env) · `9f5f70e` (v0.2) · `8f75825` (v0.3) · `00b9071` (2R gate result) · `07e908b` (FD-CIW-011) · `3bd04dc` (CRR draft) · `564247f` (CRR approved + Source Map)
-- Main: 82 commits, synced with origin after closeout push
+- 8 commits this session: `e0a902a` (draft v0.1) · `cb64ae9` (v0.2) · `98b8b01` (v0.3) · `0b883ca` (v0.4) · `2b4d664` (v0.5) · `d748151` (challenge PASS + proposed result) · `c6b9c7f` (FD-CIW-012 publication + state sync)
+- Main: 89 commits. Note: origin push pending (deferred to next session per prior pattern).
 
 ## Key Learnings
 
-- **2R hostile review catches real spec violations** — 6 findings all valid; fixes were mechanical applications of reviewer's own required changes
-- **Sol Medium (openai-codex) reliable** — 3 consecutive successful rounds; the 2 Aug HTTP 400 was intermittent
-- **Memory replace fails on this store** (invisible-char / matching issue, even for ASCII anchors) — use add-only; obsidian is the authoritative memory
-- **SEC EDGAR submissions API** — fast real verification for Source Map (CIK 0000789019, no key needed)
-- **FD register sync gap**: commit c4d4389 (FD-CIW-009) skipped FOUNDERS-DECISIONS.md — always verify register coverage after governance commits
+- **The mandatory independent challenge is the strongest quality mechanism in the workflow** — 8 real material errors caught in round 1 that self-review missed; 5 rounds converged to PASS with bounded rework (no infinite loop).
+- **Byte-immutability of approved artifacts is real** — Windows git autocrlf converts LF→CRLF on checkout, changing content hashes; normalized to LF and verified the published hash matches the approved hash exactly.
+- **Sol Medium reliability confirmed** — 5 consecutive successful challenge rounds; the 2 Aug HTTP 400 was transient.
+- **MSFT FY26 financials are remarkable** — $331.8B revenue, $155.2B op income, $182.9B OCF, but $115.9B capex and $743.8B obligations show the AI build is the swing factor.
 
 ## Start Next Session
 
@@ -64,10 +75,10 @@ hermes --profile iip
 ```
 
 ### Loop Protocol:
-1. อ่าน AGENTS.md (Phase 11 pilot IN PROGRESS checkpoint)
-2. อ่าน PROJECT_STATE.md (next action: bounded research Modules A–M)
+1. อ่าน AGENTS.md (Phase 11 CIW pilot first slice COMPLETE checkpoint)
+2. อ่าน PROJECT_STATE.md (next: second slice / new company / Phase 11 implementation — all need named authorization)
 3. อ่าน SESSION_CLOSEOUT.md นี้
-4. Recall obsidian-memory (MEM-IIP-010/011, CURRENT-STATE)
-5. Continue pilot: retrieve sources (10-K FY2026 accession 0001193125-26-323660, 10-Q chain, DEF 14A, transcripts) → `docs/ciw-pilot-msft/research-draft.md` (Modules A–M initial depth, claim lineage) → Independent Challenge (Sol Medium) → Founder Review → `research-result.md`
+4. Recall obsidian-memory (MEM-IIP-013/014, CURRENT-STATE)
+5. Options for Founder: (a) MSFT second slice (deeper modules / Module Q monitoring contract), (b) next company (JNJ/AAPL/META/NVDA), (c) Phase 11 implementation FD, (d) pause CIW
 
-<!-- 2026-08-03 01:50 UTC+7 -->
+<!-- 2026-08-03 14:25 UTC+7 -->
