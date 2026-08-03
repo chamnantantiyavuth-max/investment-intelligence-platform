@@ -1,11 +1,11 @@
 # CRR-2026-0001 — Bounded Initial Research Draft: Microsoft Corporation (MSFT)
 
-**CIW Research Status:** `Draft` (transition `Researching → Draft`; v0.5 = rework of v0.4 after Independent Challenge round-4 FAIL; **NOT yet Independent Review-passed / Founder Review / Published**)
-**Version:** 0.5 (draft, rework round 4)
+**CIW Research Status:** `Founder Review` — Independent Challenge PASSED (round 5, 2026-08-03); draft v0.5 is the review-passed research basis; **NOT yet Published — Founder approval of the versioned proposed `research-result.md` (exact version/hash) is required** (design §8, PUBLICATION-STANDARD §1/§7)
+**Version:** 0.5 (draft, review-passed)
 **Date:** 2026-08-03
 **Authority:** FD-CIW-011; CRR-2026-0001 (Approved — Research Gate); Source Map (gate PASSED); CIW-RESEARCH-FRAMEWORK; CIW-QUALITY-GATES; CIW-RESULT-CONTRACT; design v0.3
 **Executor:** Parent agent (DeepSeek V4 Flash, main session) — per design §6
-**Independent Challenge record:** v0.1 → FAIL (round 1: F1–F8) → v0.2 → FAIL (round 2: F6/F7 partial, N1) → v0.3 → FAIL (round 3: N2, condition-3 wording, citation IDs) → v0.4 → FAIL (round 4: single blocker — minimum-evidence line said "condition (3) is event-triggered", contradicting migration route's 2-quarter rule) → v0.5 rework (minimum-evidence line now states both routes). Round-5 confirmation pending.
+**Independent Challenge record:** v0.1 → FAIL (round 1: F1–F8) → v0.2 → FAIL (round 2: F6/F7 partial, N1) → v0.3 → FAIL (round 3: N2, condition-3 wording, citation IDs) → v0.4 → FAIL (round 4: minimum-evidence contradiction) → v0.5 → **PASS (round 5, 2026-08-03)** — all findings disposed, no outstanding blockers, scope PASS. Challenge artifact: `challenge-review.md` (rounds 1–5). **Verdict advisory to Founder; not Founder approval.**
 **Scope:** Modules A–M, initial depth; Modules N–Q omitted per approved request (justified omissions, CRR §1)
 **Portfolio-blind:** `true` — no holdings, positions, cost basis, or transaction history supplied or used
 
