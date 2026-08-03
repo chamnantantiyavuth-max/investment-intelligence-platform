@@ -44,8 +44,10 @@
 ## 2B. Workflow State Update (2026-08-03, bounded research)
 
 - Prior state: `Approved for Research` → `Researching` (Source Map gate passed, §3 below).
-- **Bounded initial research COMPLETE (2026-08-03)** → CIW Research Status now `Draft` — `docs/ciw-pilot-msft/research-draft.md` v0.1 (Modules A–M, initial depth; 16 quality gates self-checked; claim lineage + calculation lineage recorded).
-- Next: **Independent Challenge (Sol Medium, separate context — mandatory, QUALITY-GATES §1)** → Founder Review → structured `research-result.md`.
+- **Bounded initial research COMPLETE (2026-08-03)** → CIW Research Status `Draft` — `docs/ciw-pilot-msft/research-draft.md` v0.1 (Modules A–M, initial depth).
+- **Independent Challenge: PASS (round 5, 2026-08-03)** — after rounds 1–4 FAIL + bounded rework (v0.1 → v0.5), all findings (F1–F8, N1, N2) disposed; no outstanding blockers; scope PASS. Artifact: `challenge-review.md` (rounds 1–5).
+- **Founder Review: APPROVED (2026-08-03, Option A)** → `research-result.md` **PUBLISHED — Current Authoritative v1** (Founder-only transition; content SHA-256 `34a1f324b4c159c817d81805ce04e2806266778a338372269961429ef7168a59`; record: `founder-review-record.md`).
+- **Pilot first slice COMPLETE (6/6 artifacts).** Constraint check passed: zero Cron, zero DB/schema, zero new repos/profiles, zero Obsidian sync, zero earnings automation.
 
 ## 3. Source Map Gate Conclusion
 
