@@ -8,7 +8,8 @@
 - Product phase: `IIP-Phase 10` complete (Institutional Intelligence V1). `IIP-Phase 10.5` complete (Real 13F data via FD #42 amendment). All authorized phases (0–10.5) delivered. **Phase 11 (Deep Research Handoff / CIW): PILOT FIRST SLICE + MONITORING + SECOND SLICE COMPLETE (3 Aug 2026)** — MSFT research published (FD-CIW-012) + monitoring contract + Cron Class A live (FD-CIW-013/014) + **valuation second slice PUBLISHED (FD-CIW-016)**. Full implementation (Cron Class B/C, Obsidian sync, expanded tree, schema) remains deferred.
 - Workflow gate: `WF-Phase -1` — Bible Council COMPLETE (CIW proposal): verdict FOUNDER DECISION REQUIRED, 10 Required Changes accepted (Option A), FD-CIW-001..007 approved (all Option A), amendment map drafted. **CIW Spec v0.2 BATCH APPROVED (FD-CIW-008, 2 Aug 2026)** — 7 specs in `project-definition/company-intelligence-workbench/` + amendment map APPROVED + 11 targeted amendments issued (documentation-only; Phase 11 implementation still not opened). **Pilot company selected: MSFT (FD-CIW-009). Pilot first slice COMPLETE (3 Aug 2026):** design v0.3 (2R PASSED) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed (real SEC EDGAR) → bounded research (Modules A–M initial) → Independent Challenge PASS (round 5, after 4 FAIL rounds + rework v0.1→v0.5) → Founder-approved publication (FD-CIW-012): `research-result.md` v1 Published / Current Authoritative.
 - Latest FDs: **FD #45 (3 Aug 2026 evening) — AM Findings Resolution + GAP-006 Fix** (FSLR P/E anomaly verified as yfinance artifact; AMD −8.8% verified genuine premium unwind; `V0_TICKERS` extended 5→9 → real EOD coverage 9/9). Prior: FD-CIW-015/016 (second slice). Chain: #1–44 + FD-CIW-001..016 + FD #45 (61 total).
-- Tests: **262/262 all passing** — verified 3 August 2026 (evening, post GAP-006 fix: 90 locked + 56 AM + 42 FO + 25 CS + 49 II).
+- **Pre-Launch Close Beta Audit CLOSED (3 Aug 2026 evening):** split-lane audit (Parent browser 10/10 + Sol Medium API/oracle) → NOT READY → Option A remediation (CS truth agreement + provenance labels) → re-audit verified → **READY WITH ACCEPTED RISKS** (Founder accepted 2 cosmetic Minors). App is release-ready as a **labeled synthetic demo**; FD #44 boundaries unchanged (real-pipeline wiring/persistence/auth deferred). Artifacts: `qa/prelaunch-audit/`.
+- Tests: **262/262 all passing** — verified 3 August 2026 (evening, post GAP-006 fix + audit remediation: 90 locked + 56 AM + 42 FO + 25 CS + 49 II).
 
 ## Build Metrics (single source of truth — v3.3.0)
 
@@ -19,7 +20,7 @@
 | Frontend lint | 0 errors, 4 warnings (shadcn/ui fast-refresh advisories) | 2026-08-02 |
 | Commits | 89 on `main` | 2026-08-03 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45 (61) | 2026-08-03 |
-| closeout_status | **completed** (AM findings resolved + GAP-006 fixed, FD #45) | 2026-08-03 |
+| closeout_status | **completed** (AM findings resolved + GAP-006 fixed FD #45 + pre-launch audit CLOSED READY WITH ACCEPTED RISKS) | 2026-08-03 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -47,7 +48,7 @@
 
 ## Lifecycle sync
 
-- Last session: 2026-08-03 evening (AM findings session) — session start protocol → governance sync PASS (v3.7.1 shared↔iip) → cron audit (Nick-Weekly OK pinned; CIW monitor OK; Daily Learning Loop error = pre-pin run 11:18, pin confirmed in place, next run 23:18 tonight) → **3 standing AM findings resolved (Option A, FD #45)**: FSLR P/E anomaly verified as yfinance trailingEps artifact (no adapter bug; no FSLR valuation action until clean refresh; P/E sanity guard deferred); AMD −8.8% verified genuine price-driven premium unwind (observation only); **GAP-006 FIXED — V0_TICKERS 5→9, re-run AM-V0-20260803-171535, real EOD coverage 9/9** → evidence + SRL §8 + FD #45 recorded (repo + vault) → committed `532b1c5` → closeout (obsidian session capture + state sync)
+- Last session: 2026-08-03 evening (AM findings → production readiness → pre-launch close-beta audit) — Loop v3 + governance sync PASS → **FD #45: 3 AM findings resolved** (FSLR yfinance artifact verified; AMD genuine unwind; GAP-006 fixed V0_TICKERS 5→9, re-run AM-V0-20260803-171535, coverage 9/9) → production smoke test (found + fixed vite proxy 8001→8000, `e5f4134`) → UI design audit (sidebar token gap parked) → **Full Pre-Launch Close Beta Audit** (split-lane: Parent browser 10/10 + Sol Medium API/oracle) → NOT READY (`a80c237`: SOL-003/BROWSER-003 CS triple disagreement + provenance Minors) → Option A remediation (`f96f0a5`: single-source CS counts, CSRadarPage→API, data_source everywhere) → re-audit + Founder acceptance (`91982a5` `b038b2f`) → **READY WITH ACCEPTED RISKS** → closeout (MEM-IIP-019/020 + state sync)
 - Outcome: FD-CIW-010 (design path) → design v0.3 (Phase 2R PASSED) → FD-CIW-011 (pilot execution authorization) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed → bounded research (Modules A–M, initial, real SEC EDGAR + Microsoft IR sources) → Independent Challenge 5 rounds (FAIL ×4 → PASS, findings F1–F8/N1/N2 all disposed, v0.1→v0.5) → **Founder APPROVED publication (FD-CIW-012) → research-result.md v1 Published / Current Authoritative** → FD-CIW-013/014 (monitoring contract + Cron Class A live) → **FD-CIW-015 (second-slice execution authorization, CRR-2026-0002 v0.4 after Phase 2R 3 rounds) → Source Map 2 gate passed → research-draft-2 v0.1→v0.4 (Independent Challenge 4 rounds: FAIL×3 → PASS) → Founder APPROVED (FD-CIW-016) → research-result-2.md v1 Published / Current Authoritative (supplemental; first-slice v1 intact)**
 - Evidence: `docs/ciw-pilot-msft/` — first-slice artifacts (6/6) + second-slice artifacts: CRR-2026-0002-request.md (Approved), source-map-2.md, research-draft-2.md (v0.4 reviewed), challenge-review-2{,-REVIEW,-CONFIRM,-FINAL}.md (rounds 1–4), founder-review-record-2.md, research-result-2.md (Published v1) + `evidence/PHASE-2R-CRR-2026-0002-2026-08-03{,-REVIEW,-CONFIRM}.md` (Phase 2R rounds 1–3)
 - Blockers: none
@@ -60,6 +61,6 @@
 |-------|-------|
 | closeout_status | completed |
 | fd_count | 44 + 16 CIW + FD #45 (61 total) |
-| audit_verdict | — (no audit this session; governance sync PASS, v3.7.1 shared↔iip) |
+| audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged) |
 
-<!-- 2026-08-03 20:35 UTC+7 -->
+<!-- 2026-08-03 22:40 UTC+7 -->
