@@ -34,3 +34,4 @@ fundamental-opportunity-v0/output/*
 !institutional-intelligence-v0/output/
 institutional-intelligence-v0/output/*
 !institutional-intelligence-v0/output/institutional_signals.json
+/backend/data/artifacts/
