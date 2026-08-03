@@ -31,7 +31,9 @@ echo "=== Isolation Scan (FD #46) ==="
 echo ""
 
 # Scan working tree changes (tracked + untracked)
-CHANGED=$(git status --porcelain | awk '{print $2}' | grep -v '^"')
+# NOTE: `|| true` is REQUIRED — empty `git status` makes grep exit 1, which under
+# `set -euo pipefail` would abort the whole scan on a CLEAN tree (false violation).
+CHANGED=$(git status --porcelain | awk '{print $2}' | grep -v '^"' || true)
 if [ -z "$CHANGED" ]; then
     pass "No working-tree changes to scan"
     exit 0
