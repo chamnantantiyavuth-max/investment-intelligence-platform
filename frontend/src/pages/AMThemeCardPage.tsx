@@ -42,7 +42,7 @@ export default function AMThemeCardPage() {
     const is404 = String(error).includes("NOT_FOUND")
     return (
       <div>
-        <Button variant="ghost" size="icon-sm" aria-label="Back to queue" render={<Link to="/am-queue" />}>
+        <Button variant="ghost" size="icon-sm" nativeButton={false} aria-label="Back to queue" render={<Link to="/am-queue" />}>
           <ArrowLeft className="size-4" />
         </Button>
         <div className="mt-3 rounded-md bg-bg-panel px-5 py-8 text-center">
@@ -63,7 +63,7 @@ export default function AMThemeCardPage() {
   return (
     <div>
       <div className="mb-2">
-        <Button variant="ghost" size="icon-sm" aria-label="Back to queue" render={<Link to="/am-queue" />}>
+        <Button variant="ghost" size="icon-sm" nativeButton={false} aria-label="Back to queue" render={<Link to="/am-queue" />}>
           <ArrowLeft className="size-4" />
         </Button>
       </div>

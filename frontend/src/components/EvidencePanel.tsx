@@ -17,7 +17,7 @@ export function EvidencePanel({ sections }: { sections: EvidenceSection[] }) {
   return (
     <div className="grid gap-2 md:grid-cols-3">
       {sections.map((s) => (
-        <div key={s.title} className="rounded-md border border-border bg-card px-3 py-2">
+        <div key={s.title} className="rounded-md bg-bg-panel px-3 py-2">
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {s.icon}
             {s.title}

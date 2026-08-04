@@ -31,7 +31,7 @@ function ThemeCardView({ tc }: { tc: ThemeWithCandidates }) {
           </div>
           <h3 className="mt-1.5 text-base font-semibold leading-snug text-foreground">{t.name}</h3>
         </div>
-        <Button variant="ghost" size="icon-sm" aria-label={`Open theme ${t.id}`} render={<Link to={`/am-theme/${t.id}`} />}>
+        <Button variant="ghost" size="icon-sm" nativeButton={false} aria-label={`Open theme ${t.id}`} render={<Link to={`/am-theme/${t.id}`} />}>
           <ArrowRight className="size-4" />
         </Button>
       </div>

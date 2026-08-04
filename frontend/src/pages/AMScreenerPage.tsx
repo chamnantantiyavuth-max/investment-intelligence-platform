@@ -71,7 +71,7 @@ function MatrixSection({ title, note, rows, candidates }: { title: string; note:
             <tr className="border-b border-rule">
               <th className="px-3 py-2 text-left font-medium text-ink-2">Criteria</th>
               {candidates.map((c) => (
-                <th key={c.id} className="px-2 py-2 text-center font-mono font-semibold text-foreground">
+                <th key={`${c._theme}:${c.id}`} className="px-2 py-2 text-center font-mono font-semibold text-foreground">
                   {c.ticker}
                   <span className="block text-[10px] font-normal text-ink-2">{c._theme}</span>
                 </th>
@@ -86,7 +86,7 @@ function MatrixSection({ title, note, rows, candidates }: { title: string; note:
                   const bucket = key in c.candidate_quality ? c.candidate_quality : key in c.entry_readiness ? c.entry_readiness : c.data_confidence
                   const v = String((bucket as Record<string, unknown>)[key] ?? "—")
                   return (
-                    <td key={c.id} className="px-2 py-1.5 text-center">
+                    <td key={`${c._theme}:${c.id}`} className="px-2 py-1.5 text-center">
                       {/* council F1: no truncation — full qualitative value visible; table scrolls */}
                       <StatusBadge value={v} className="max-w-[180px] whitespace-normal" />
                     </td>
