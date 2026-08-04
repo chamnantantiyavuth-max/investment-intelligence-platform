@@ -27,12 +27,57 @@ export default function CSRadarPage() {
   );
 
   const assets: CSAsset[] = data?.assets ?? [];
+  // Lead judgment = display ordering from ADMITTED fields only (max opportunity, tie → suitability).
+  // Presentation ordering, never an investment rule (same doctrine as AM rankCandidates).
+  const lead = [...assets].sort(
+    (a, b) => b.dimensions.opportunity - a.dimensions.opportunity || b.dimensions.suitability - a.dimensions.suitability
+  )[0];
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-h2 font-bold tracking-tight">Close System Radar</h1>
 
       <SyntheticDataBanner note="Radar assets are static demonstration data — the Close System pipeline is not yet wired to this API surface." />
+
+      {lead && (
+        <section className="border-b border-rule pb-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Lead judgment · Close System</p>
+          <h2 className="mt-2 max-w-3xl font-display text-hero font-bold leading-[1.12] text-foreground">
+            Most interesting product to watch: {lead.ticker} — {lead.name}
+          </h2>
+          <p className="mt-2 font-mono text-lg font-semibold text-positive">
+            opportunity {lead.dimensions.opportunity} · suitability {lead.dimensions.suitability}
+          </p>
+          <p className="mt-2 max-w-2xl text-sm text-ink-2">
+            Regime {lead.dimensions.regime} · Q-conditions {lead.q_conditions_met}/{lead.q_conditions_total}. Derived
+            from admitted Q-condition/dimension fields — display ordering, not an investment rule.
+          </p>
+        </section>
+      )}
+
+      {/* Council F3: P1–P3 / 5-layer / conviction / risks exist in the CS pipeline artifact but are
+          NOT admitted by this synthetic API surface (FD #46) — honest unavailable states, no invented fields. */}
+      <section className="rounded-md bg-bg-panel px-4 py-3">
+        <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">Eligibility · Synthesis · Conviction</h2>
+        <div className="mt-2 grid gap-x-8 gap-y-1 text-[13px] sm:grid-cols-2">
+          {[
+            ["P1–P3 eligibility", "Unavailable on this surface"],
+            ["5-layer synthesis", "Unavailable on this surface"],
+            ["Conviction (Low–Maximum)", "Unavailable on this surface"],
+            ["Key risks", "Unavailable on this surface"],
+          ].map(([k, v]) => (
+            <div key={k} className="flex justify-between border-b border-rule py-1.5">
+              <span className="text-ink-2">{k}</span>
+              <span className="font-mono text-[11px] text-ink-3">{v}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-ink-2">
+          These fields exist in the CS pipeline artifact (pipeline_result.json: p1_pass/p2_pass/p3_pass, layers,
+          conviction, key_risks) but this synthetic API surface does not admit them yet — wiring requires a separate
+          FD (FD #46 boundary). Not invented here.
+        </p>
+      </section>
 
       <section className="mt-6">
         <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Q-Conditions Screening</h2>

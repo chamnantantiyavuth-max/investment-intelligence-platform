@@ -87,7 +87,8 @@ function MatrixSection({ title, note, rows, candidates }: { title: string; note:
                   const v = String((bucket as Record<string, unknown>)[key] ?? "—")
                   return (
                     <td key={c.id} className="px-2 py-1.5 text-center">
-                      <StatusBadge value={v} className="max-w-[110px] truncate" />
+                      {/* council F1: no truncation — full qualitative value visible; table scrolls */}
+                      <StatusBadge value={v} className="max-w-[180px] whitespace-normal" />
                     </td>
                   )
                 })}

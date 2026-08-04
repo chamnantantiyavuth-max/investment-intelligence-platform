@@ -34,7 +34,7 @@
   /* Lines & inputs */
   --color-border: #DDDED6;         /* hairline separators */
   --color-rule: #DDDED6;
-  --color-input: #FFFFFF;
+  --color-input: #C2C6CB;          /* visible input boundary on paper (council F4) */
   --color-ring: #1F4E79;
 
   /* Semantic */
