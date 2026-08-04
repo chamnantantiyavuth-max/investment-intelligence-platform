@@ -22,7 +22,7 @@
 | Frontend lint | 0 errors (oxlint) | 2026-08-04 |
 | Commits | 127 on `main` (HEAD `62afa9c` — UI redesign B1–B4 committed; cron re-verified 2026-08-04 11:47) | 2026-08-04 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#53 (69 total) | 2026-08-04 |
-| closeout_status | **in_progress** — FD #49/#50 UI redesign: B1–B4 complete; B5–B8 remaining | 2026-08-04 |
+| closeout_status | **in_progress** — session closed 4 Aug 2026: FD #51 redesign ACCEPTED, FD #52/#53 closed (audit C-01/C-02/C-03 done); remaining: C-04 state reconciliation, C-05 vault register rebuild, M-02 FO spec metadata, CIW implementation deferred | 2026-08-04 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -68,7 +68,7 @@ verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 20
 
 | Field | Value |
 |-------|-------|
-| closeout_status | in_progress — FD #49/#50 UI redesign: B1–B4 complete; B5–B8 remaining |
+| closeout_status | in_progress — session closed 4 Aug 2026: FD #51 ACCEPTED, #52/#53 closed; remaining: C-04/C-05 reconciliation, M-02, CIW deferred |
 | fd_count | #1–53 + FD-CIW-001..016 (69 total) |
 | audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged) |
 
