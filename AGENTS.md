@@ -110,7 +110,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. **Phase 11 (CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** — MSFT first slice per docs/CIW-FIRST-SLICE-DESIGN.md v0.3 (Phase 2R PASSED); CRR-2026-0001 approved (Research Gate), Source Map passed; bounded research (Modules A–M) next. Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred.
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. **Phase 11 (CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** — MSFT first slice per docs/CIW-FIRST-SLICE-DESIGN.md v0.3 (Phase 2R PASSED); CRR-2026-0001 approved (Research Gate), Source Map passed; bounded research (Modules A–M) next. Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred. **Real-Data Production Path RELEASED (3 Aug 2026, FD #46–48):** AM/FO/II real-pipeline → API wiring + SQLite lineage + single-user HMAC auth; CS stays synthetic-labeled; Final Council R2 PASS + production audit → READY WITH ACCEPTED RISKS; II follow-up page + server-side pagination. **UI REDESIGN IN PROGRESS (FD #49/#50, 4 Aug 2026):** v2.1 LIGHT EDITORIAL (dark terminal retired; off-white canvas, muted accents); B1–B4 rebuilt (Dashboard/Login/AM Queue/ThemeCard/Screener) + §11 falsification read-only extension (ADAPTER_VERSION v2, +1 locked test); B5–B8 remaining.
 
 Current approved checkpoints:
 
@@ -137,6 +137,8 @@ Current approved checkpoints:
 - fd-43-approved (Profit Rate Trend + Narrative vs Reality Gap — Option B, Marx-inspired signals; 28 July 2026)
 - fd-44-recovery-approved (Full Project Review RETEST → bounded recovery; frontend build restored, synthetic surfaces labeled, AM core AC tests added, 262/262 tests, ADR-001 ratified; 2 August 2026)
 - fd-ciw-010-011-approved (Phase 11 CIW Design Path OPENED + Pilot Execution AUTHORIZED for MSFT first slice per design v0.3, Phase 2R PASSED (3 rounds), CRR-2026-0001 approved at Research Gate, Source Map passed; 3 August 2026)
+- fd-48-release-accepted (Real-Data Production Path RELEASED — AM/FO/II real API wiring + SQLite lineage + auth, READY WITH ACCEPTED RISKS; 3 August 2026)
+- fd-49-50-ui-redesign-approved (UI redesign v2.1 light editorial in progress — B1–B4 complete + falsification §11 extension, B5–B8 remaining; 4 August 2026)
 - fd-26-canonical-theme-roles (Entity-Theme ownership by Shared Core, 23 July 2026)
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 
@@ -150,7 +152,7 @@ Phase governance:
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1-44 + FD-CIW-001..016 + FD #45 (61 total) approved.
+- Founder Decisions #1–50 + FD-CIW-001..016 (66 total) approved.
 
 Current-phase restrictions:
 
@@ -196,7 +198,7 @@ hermes --profile iip
 
 ```
 START → AGENTS.md → Domain Index → PROJECT_STATE.md → CLOSEOUT → Verify → Execute → CLOSEOUT ↩
-```<!-- 2026-07-30 00:15 UTC+7 -->
+```<!-- 2026-08-04 11:50 UTC+7 -->
 
 ## ⚠️ Verify-First Rule (FD-HERMES-003)
 

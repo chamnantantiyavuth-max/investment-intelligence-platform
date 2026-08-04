@@ -20,7 +20,7 @@
 | Python tests | 131/131 locked + 131/131 root (full per-directory 302+1 sweep at B8) | 2026-08-04 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-04 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-04 |
-| Commits | 101 on `main` (UI redesign commit pending at closeout → see git log) | 2026-08-04 |
+| Commits | 127 on `main` (HEAD `62afa9c` — UI redesign B1–B4 committed; cron re-verified 2026-08-04 11:47) | 2026-08-04 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#50 (66 total) | 2026-08-04 |
 | closeout_status | **in_progress** — FD #49/#50 UI redesign: B1–B4 complete; B5–B8 remaining | 2026-08-04 |
 
@@ -56,19 +56,20 @@ verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 20
 
 ## Lifecycle sync
 
-- Last session: 2026-08-03 evening (AM findings → production readiness → pre-launch close-beta audit) — Loop v3 + governance sync PASS → **FD #45: 3 AM findings resolved** (FSLR yfinance artifact verified; AMD genuine unwind; GAP-006 fixed V0_TICKERS 5→9, re-run AM-V0-20260803-171535, coverage 9/9) → production smoke test (found + fixed vite proxy 8001→8000, `e5f4134`) → UI design audit (sidebar token gap parked) → **Full Pre-Launch Close Beta Audit** (split-lane: Parent browser 10/10 + Sol Medium API/oracle) → NOT READY (`a80c237`: SOL-003/BROWSER-003 CS triple disagreement + provenance Minors) → Option A remediation (`f96f0a5`: single-source CS counts, CSRadarPage→API, data_source everywhere) → re-audit + Founder acceptance (`91982a5` `b038b2f`) → **READY WITH ACCEPTED RISKS** → closeout (MEM-IIP-019/020 + state sync)
+- Last session: 2026-08-04 (credential recovery → FD #49 UI redesign (Option A → v2.1 LIGHT EDITORIAL, Founder-delegated) → B1–B4 rebuilt (Dashboard/Login/AM Queue/ThemeCard/Screener) + browser-verified → FD #50 falsification read-only schema extension (ADAPTER_VERSION v2, +1 locked test → 131/131 locked, root 131/131, build exit 0, lint 0) → committed `62afa9c`. Cron review 2026-08-04 11:47: 90/90 old-locked logic + 116/116 module locked re-verified (41 backend API tests blocked by broken pydantic_core in cron-shell python — env issue, not regression; same commit verified 131/131 at closeout); market snapshot latest EOD 2026-07-31; state synced (commits 127, FDs 66). B5–B8 remaining.
+- Prior session: 2026-08-03 evening (AM findings → production readiness → pre-launch close-beta audit) — Loop v3 + governance sync PASS → **FD #45: 3 AM findings resolved** (FSLR yfinance artifact verified; AMD genuine unwind; GAP-006 fixed V0_TICKERS 5→9, re-run AM-V0-20260803-171535, coverage 9/9) → production smoke test (found + fixed vite proxy 8001→8000, `e5f4134`) → UI design audit (sidebar token gap parked) → **Full Pre-Launch Close Beta Audit** (split-lane: Parent browser 10/10 + Sol Medium API/oracle) → NOT READY (`a80c237`: SOL-003/BROWSER-003 CS triple disagreement + provenance Minors) → Option A remediation (`f96f0a5`: single-source CS counts, CSRadarPage→API, data_source everywhere) → re-audit + Founder acceptance (`91982a5` `b038b2f`) → **READY WITH ACCEPTED RISKS** → closeout (MEM-IIP-019/020 + state sync)
 - Outcome: FD-CIW-010 (design path) → design v0.3 (Phase 2R PASSED) → FD-CIW-011 (pilot execution authorization) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed → bounded research (Modules A–M, initial, real SEC EDGAR + Microsoft IR sources) → Independent Challenge 5 rounds (FAIL ×4 → PASS, findings F1–F8/N1/N2 all disposed, v0.1→v0.5) → **Founder APPROVED publication (FD-CIW-012) → research-result.md v1 Published / Current Authoritative** → FD-CIW-013/014 (monitoring contract + Cron Class A live) → **FD-CIW-015 (second-slice execution authorization, CRR-2026-0002 v0.4 after Phase 2R 3 rounds) → Source Map 2 gate passed → research-draft-2 v0.1→v0.4 (Independent Challenge 4 rounds: FAIL×3 → PASS) → Founder APPROVED (FD-CIW-016) → research-result-2.md v1 Published / Current Authoritative (supplemental; first-slice v1 intact)**
 - Evidence: `docs/ciw-pilot-msft/` — first-slice artifacts (6/6) + second-slice artifacts: CRR-2026-0002-request.md (Approved), source-map-2.md, research-draft-2.md (v0.4 reviewed), challenge-review-2{,-REVIEW,-CONFIRM,-FINAL}.md (rounds 1–4), founder-review-record-2.md, research-result-2.md (Published v1) + `evidence/PHASE-2R-CRR-2026-0002-2026-08-03{,-REVIEW,-CONFIRM}.md` (Phase 2R rounds 1–3)
 - Blockers: none
 - Next phase: CIW paused — monitoring only until Q1-FY27 (~Oct 2026) or Founder call (third slice / new company / Phase 11 implementation each require named authorization)
-- Last verified: 2026-08-03
+- Last verified: 2026-08-04
 
 ## Session
 
 | Field | Value |
 |-------|-------|
-| closeout_status | completed |
-| fd_count | 44 + 16 CIW + FD #45 + FD #46 (62 total) |
+| closeout_status | in_progress — FD #49/#50 UI redesign: B1–B4 complete; B5–B8 remaining |
+| fd_count | #1–50 + FD-CIW-001..016 (66 total) |
 | audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged) |
 
-<!-- 2026-08-04 02:35 UTC+7 -->
+<!-- 2026-08-04 11:50 UTC+7 -->
