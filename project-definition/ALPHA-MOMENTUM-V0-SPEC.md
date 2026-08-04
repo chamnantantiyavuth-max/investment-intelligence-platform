@@ -175,6 +175,8 @@ V0 is accepted when it demonstrates all of the following (derived from Constitut
 | AC-9 | **Three candidate axes with correct scoping** | A Candidate–Theme relationship carries Theme Relationship Role(s) and Leadership State. A Candidate–Strategy–Workflow context carries Research State. All three axes are presented separately and scoped correctly — not as global Candidate properties |
 | AC-10 | **No live-data or production-integration contamination** | Only fully synthetic fixtures or Founder-approved fixed historical public snapshots are used. No live feeds, no production ingestion, no broker data, no unlabeled current data, no unapproved licensed feeds. Any provisional technology used for V0 is not claimed as a final stack selection. |
 
+> **AC-6 / AC-8 reclassification (FD #52, 4 Aug 2026 — full-project audit finding C-03):** these two criteria are currently demonstrated at **FIXTURE level only** — locked tests verify a pre-populated override (all 8 fields, original preserved) and transition-array presence in fixture data. The **operational workflow** (recording an override through API/UI with persistence; querying historical lifecycle/approval/monitoring transitions) is **NOT implemented and is NOT claimed complete** — the AM API is GET-only. The AC texts above remain the future acceptance targets; completion requires a separate named FD authorizing persistence + write routes + UI. This note supersedes any earlier "All Gates A–D complete" phrasing for these two criteria.
+
 ## 7. V0 Non-Scope (Explicit)
 
 V0 does **not** include:
