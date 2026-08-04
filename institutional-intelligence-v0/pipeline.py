@@ -11,7 +11,6 @@ from fixtures import FIXTURES
 from analyzer import (
     concentration_to_conviction,
     detect_action,
-    score_signal,
     detect_sector_flows,
 )
 from cusip_mapper import enrich_holdings
@@ -53,7 +52,7 @@ def run_pipeline(filings: list[dict] = None) -> dict:
     signals = []
     fund_stats = defaultdict(lambda: {"filings": 0, "total_positions": 0, "top_conviction": "Minimal"})
     ticker_stats = defaultdict(lambda: {
-        "total_funds": 0, "total_conviction_score": 0,
+        "total_funds": 0, "total_conviction_ordinal": 0,
         "buying_funds": 0, "selling_funds": 0,
         "aggregate_conviction": "Minimal",
     })
@@ -83,9 +82,6 @@ def run_pipeline(filings: list[dict] = None) -> dict:
             is_baseline = prev_filing is None  # Oldest quarter — no prior data
             action = detect_action(pct, prev_pct, is_baseline=is_baseline)
 
-            # Signal score
-            s = score_signal(pct, action["action"], conviction["level"])
-
             signal = {
                 "filer_name": fund_name,
                 "filer_cik": cik,
@@ -99,7 +95,6 @@ def run_pipeline(filings: list[dict] = None) -> dict:
                 "action": action["action"],
                 "action_detail": action["detail"],
                 "change_pct": action.get("change_pct", 0),
-                "signal_score": s,
                 "value_usd": h.get("value_usd", 0),
             }
             signals.append(signal)
@@ -111,19 +106,20 @@ def run_pipeline(filings: list[dict] = None) -> dict:
 
             ts = ticker_stats[ticker]
             ts["total_funds"] += 1
-            ts["total_conviction_score"] += s
+            # FD #53: aggregate conviction via ordinal of the APPROVED level (display derivation,
+            # not an invented score) — Maximum=5 … Minimal=1
+            ts["total_conviction_ordinal"] += {"Maximum": 5, "High": 4, "Moderate": 3, "Low": 2, "Minimal": 1}.get(conviction["level"], 0)
             if action["action"] in ("NEW", "ADD"):
                 ts["buying_funds"] += 1
             elif action["action"] in ("REDUCE", "EXIT"):
                 ts["selling_funds"] += 1
 
-    # Aggregate ticker conviction
+    # Aggregate ticker conviction (ordinal of approved levels → label)
     for ticker, ts in ticker_stats.items():
-        avg_score = ts["total_conviction_score"] / max(ts["total_funds"], 1)
-        ts["aggregate_conviction"] = _score_to_conviction(avg_score)
+        avg_ord = ts["total_conviction_ordinal"] / max(ts["total_funds"], 1)
+        ts["aggregate_conviction"] = _score_to_conviction(avg_ord)
 
-    # Sort signals by score descending
-    signals.sort(key=lambda x: x["signal_score"], reverse=True)
+    # Signals keep pipeline (filing/holding) order — no invented ranking (FD #53)
 
     # Sector flow detection (V1 — no sector map, returns placeholder)
     sector_flows = detect_sector_flows(source)
@@ -138,7 +134,7 @@ def run_pipeline(filings: list[dict] = None) -> dict:
             "fund_stats": dict(fund_stats),
             "ticker_stats": dict(ticker_stats),
             "sector_flows": sector_flows,
-            "top_signals": signals[:10],  # Top 10 by signal score
+            "top_signals": signals[:10],  # first 10 in pipeline order — no invented ranking (FD #53)
         },
         "meta": {
             "version": "v0.1.0",
@@ -151,15 +147,13 @@ def run_pipeline(filings: list[dict] = None) -> dict:
 
 
 def query_signals_by_ticker(ticker: str, signals: list[dict]) -> list[dict]:
-    """Filter signals for a specific ticker, sorted by score."""
-    return sorted([s for s in signals if s["ticker"].upper() == ticker.upper()],
-                  key=lambda x: x["signal_score"], reverse=True)
+    """Filter signals for a specific ticker (pipeline order preserved)."""
+    return [s for s in signals if s["ticker"].upper() == ticker.upper()]
 
 
 def query_signals_by_fund(cik: str, signals: list[dict]) -> list[dict]:
-    """Filter signals for a specific fund CIK, sorted by score."""
-    return sorted([s for s in signals if s["filer_cik"] == cik],
-                  key=lambda x: x["signal_score"], reverse=True)
+    """Filter signals for a specific fund CIK (pipeline order preserved)."""
+    return [s for s in signals if s["filer_cik"] == cik]
 
 
 def query_top_conviction(signals: list[dict], min_conviction: str = "High") -> list[dict]:

@@ -45,7 +45,6 @@ export interface MoatAssessment {
   trend: string;
   types_summary: string;
   moat_narrative: string;
-  moat_score: number;
   conviction_cap: string;
 }
 

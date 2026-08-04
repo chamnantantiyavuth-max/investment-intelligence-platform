@@ -67,19 +67,6 @@ def moat_conviction_cap(moat: dict) -> str:
         return "Moderate"  # None moat = extraordinary earnings required
 
 
-def moat_strength_score(moat: dict) -> int:
-    """Aggregate moat strength into a numeric score for comparisons.
-
-    0-100 scale. Not used for decisions — informational only.
-    """
-    base = {"Wide": 60, "Narrow": 30, "None": 0}.get(moat["width"], 0)
-    depth_bonus = {"Deep": 20, "Moderate": 10, "Shallow": 0}.get(moat["depth"], 0)
-    trend_bonus = {"Widening": 10, "Stable": 5, "Narrowing": -10}.get(moat["trend"], 0)
-    type_bonus = min(moat["active_count"] * 5, 15)
-
-    return min(max(base + depth_bonus + trend_bonus + type_bonus, 0), 100)
-
-
 def moat_narrative(moat: dict) -> str:
     """Generate a one-paragraph moat narrative."""
     if moat["width"] == "None":

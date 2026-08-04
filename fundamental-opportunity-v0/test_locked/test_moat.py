@@ -11,7 +11,6 @@ from fixtures import FIXTURES
 from moat import (
     classify_moat,
     moat_conviction_cap,
-    moat_strength_score,
     moat_narrative,
 )
 
@@ -91,18 +90,13 @@ class TestMoatConvictionCap:
 
 
 class TestMoatStrengthScore:
-    """moat_strength_score returns 0-100 integer."""
+    """FD #53: moat_strength_score (0-100 weighted) removed — no spec basis.
+    Guard: the unapproved function must not exist; approved classification
+    (width/depth/trend + conviction cap) remains the only moat output."""
 
-    def test_score_range_0_to_100(self):
-        """Score is always an integer in [0, 100] for all fixtures."""
-        for fixture in FIXTURES:
-            moat = classify_moat(fixture)
-            score = moat_strength_score(moat)
-            assert isinstance(score, int), f"{fixture['id']}: expected int, got {type(score)}"
-            assert 0 <= score <= 100, f"{fixture['id']}: {score} outside [0, 100]"
-        # Verify specific values
-        assert moat_strength_score(classify_moat(_by_id(FIXTURES, "XYZ"))) == 0
-        assert moat_strength_score(classify_moat(_by_id(FIXTURES, "MSFT"))) == 100
+    def test_moat_strength_score_removed(self):
+        import moat as m
+        assert not hasattr(m, "moat_strength_score"), "moat_strength_score must not exist (FD #53)"
 
 
 class TestMoatNarrative:

@@ -39,7 +39,7 @@ class TestPipelineOutput:
         result = run_pipeline()
         required = [
             "filer_name", "filer_cik", "ticker", "filing_quarter",
-            "pct_of_portfolio", "conviction", "action", "signal_score",
+            "pct_of_portfolio", "conviction", "action",
         ]
         for s in result["signals"]:
             for field in required:

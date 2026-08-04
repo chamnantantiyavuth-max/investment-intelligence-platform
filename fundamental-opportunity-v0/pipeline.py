@@ -15,7 +15,7 @@ Spike version — simplified for V0 concept validation.
 
 from datetime import datetime
 from fixtures import FIXTURES, MACRO_REGIME
-from moat import classify_moat, moat_conviction_cap, moat_strength_score, moat_narrative
+from moat import classify_moat, moat_conviction_cap, moat_narrative
 from earnings_quality import assess_earnings_quality
 from value_trap import is_unusually_cheap, run_value_trap_check, run_profit_rate_trend
 from narrative_gap import run_narrative_gap
@@ -140,7 +140,6 @@ def build_research_package(company: dict, mode: str = "synthetic") -> dict:
             "management": management,
             "conviction_cap": conviction_cap,
             "moat_narrative": moat_narrative(moat),
-            "moat_score": moat_strength_score(moat),
         },
         "earnings_trajectory": earnings_quality,
         "valuation_context": {

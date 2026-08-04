@@ -38,17 +38,17 @@ class TestValueTrapVerdicts:
         assert vt["score"] == 0
         assert vt["verdict"] == "DEFINITE_TRAP"
 
-    def test_crm_is_not_a_trap(self):
-        """CRM: score 4/5 → NOT_A_TRAP.
+    def test_crm_is_mixed(self):
+        """CRM: score 4/5 → MIXED (FD #53 — spec §3.6.2: 3–4 = mixed, deeper research required).
         Only Q2 fails (sector headwind in tech). Earnings growing, moat intact,
-        credible management, no structural problems.
+        credible management — but 4/5 is NOT conclusive, so NOT_A_TRAP is disallowed.
         """
         company = _by_id(FIXTURES, "CRM")
         moat = classify_moat(company)
         vt = run_value_trap_check(company, moat)
         assert vt["triggered"] is True
         assert vt["score"] == 4
-        assert vt["verdict"] == "NOT_A_TRAP"
+        assert vt["verdict"] == "MIXED"
 
     def test_xyz_is_trap(self):
         """XYZ: score 1/5 → TRAP.
@@ -76,11 +76,20 @@ class TestValueTrapVerdicts:
 
 
 class TestIsUnusuallyCheap:
-    """is_unusually_cheap: P/E < 70% of 5Y average."""
+    """is_unusually_cheap: P/E < (5Y avg − 2σ), requires pe_5y_stddev (FD #53, spec §3.6.2)."""
 
-    def test_threshold_detection(self):
-        """INTC (14.0 < 22.0*0.70=15.4) → True; AAPL (31.2 < 28.5*0.70=19.95) → False."""
-        assert is_unusually_cheap(_by_id(FIXTURES, "INTC")) is True
+    def test_threshold_detection_with_sigma(self):
+        """With σ data: 12.0 < 20.0 − 2*3.0=14.0 → True; 25.0 < 20.0−2*3.0=14.0 → False."""
+        c1 = _by_id(FIXTURES, "INTC").copy()
+        c1.update({"pe_ttm": 12.0, "pe_5y_avg": 20.0, "pe_5y_stddev": 3.0})
+        assert is_unusually_cheap(c1) is True
+        c2 = c1.copy()
+        c2["pe_ttm"] = 25.0
+        assert is_unusually_cheap(c2) is False
+
+    def test_no_sigma_returns_false(self):
+        """Fixtures carry no pe_5y_stddev → trigger cannot be asserted → False (no proxy)."""
+        assert is_unusually_cheap(_by_id(FIXTURES, "INTC")) is False
         assert is_unusually_cheap(_by_id(FIXTURES, "AAPL")) is False
 
     def test_division_by_zero_guard(self):
@@ -133,7 +142,8 @@ class TestValueTrapScoring:
             ("INTC", 0, "DEFINITE_TRAP"),
             ("XYZ", 1, "TRAP"),
             ("GE", 2, "SUSPECT"),
-            ("CRM", 4, "NOT_A_TRAP"),
+            # FD #53 (spec §3.6.2): 3–4 = MIXED — deeper research required
+            ("CRM", 4, "MIXED"),
         ]
         for tid, expected_score, expected_verdict in checks:
             company = _by_id(FIXTURES, tid)

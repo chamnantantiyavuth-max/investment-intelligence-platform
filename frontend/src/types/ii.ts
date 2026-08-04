@@ -12,7 +12,6 @@ export interface IISignalSummary {
   conviction: string;
   action: string;
   change_pct: number;
-  signal_score: number;
   value_usd: number;
 }
 

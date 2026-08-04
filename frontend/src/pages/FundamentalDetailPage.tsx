@@ -96,7 +96,7 @@ export default function FundamentalDetailPage() {
                 <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(asString(moat?.trend)))}>{asString(moat?.trend) || "—"}</span></div>
               </div>
               <p className="text-[11px] text-muted-foreground mb-2">
-                Numeric moat score quarantined — derived formula not yet Founder-approved (audit C-02 / decision A-02). Width/depth/trend are the approved qualitative classification (spec §3.4.1).
+                moat_score removed from the system (FD #53 — weighted 0–100 score had no spec basis). Width/depth/trend are the approved qualitative classification (spec §3.4.1).
               </p>
               <Separator className="my-4" />
               <p className="text-sm mb-4">{asString(moat?.moat_narrative) || "No moat narrative."}</p>
@@ -148,7 +148,7 @@ export default function FundamentalDetailPage() {
                   <p className="text-sm font-semibold text-rose-700 mb-2">{asString(vt.verdict)}</p>
                   <p className="text-xs text-rose-600">{asString(vt.action)}</p>
                   <p className="text-[11px] text-rose-500 mt-1">
-                    Numeric score quarantined — trap mapping under Founder review (audit C-02 / decision A-02); verdict shown pending approved formula.
+                    Trap mapping corrected to spec (FD #53 — §3.6.2: 3–4 = MIXED, deeper research required); numeric score removed.
                   </p>
                 </div>
               )}

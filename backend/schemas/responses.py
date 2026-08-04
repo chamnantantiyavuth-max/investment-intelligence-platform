@@ -173,7 +173,6 @@ class IISignalSummary(BaseModel):
     conviction: str
     action: str
     change_pct: float
-    signal_score: float
     value_usd: float
 
 

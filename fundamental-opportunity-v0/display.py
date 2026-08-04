@@ -82,10 +82,6 @@ def render_research_package(pkg: dict) -> str:
                     <span class="dim-label">Trend</span>
                     <span class="dim-value trend-{moat['trend'].lower()}">{moat['trend']}</span>
                 </div>
-                <div class="moat-dim">
-                    <span class="dim-label">Score</span>
-                    <span class="dim-value">{c['company_assessment']['moat_score']}/100</span>
-                </div>
             </div>
             <div class="moat-badges">{moat_badges}</div>
             <p class="moat-narrative">{c['company_assessment']['moat_narrative']}</p>

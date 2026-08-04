@@ -59,26 +59,6 @@ def detect_action(current_pct: float, previous_pct: float | None, is_baseline: b
         return {"action": "MAINTAIN", "detail": f"Position maintained — {change:+.0f}% change vs prior quarter.", "change_pct": round(change, 1)}
 
 
-# ── Signal Scoring ──
-
-def score_signal(pct: float, action: str, conviction: str) -> int:
-    """Compute a 0-100 signal score for ranking/display.
-
-    Combines concentration weight + action direction + conviction level.
-    Informational only — never used for automatic decisions.
-    """
-    # Concentration score (0-50)
-    conc_score = min(pct * 2.0, 50)  # 25% → 50
-
-    # Action score (0-30): NEW/ADD > MAINTAIN > BASELINE > REDUCE/EXIT
-    action_score = {"NEW": 30, "ADD": 25, "MAINTAIN": 10, "BASELINE": 5, "REDUCE": -15, "EXIT": -30}.get(action, 0)
-
-    # Conviction alignment bonus (0-20)
-    conviction_bonus = {"Maximum": 20, "High": 15, "Moderate": 10, "Low": 5, "Minimal": 0}.get(conviction, 0)
-
-    return max(min(int(conc_score + action_score + conviction_bonus), 100), 0)
-
-
 # ── Sector Rotation Detection (Phase 10.5+) ──
 
 def detect_sector_flows(filings: list[dict], ticker_sector_map: dict[str, str] = None) -> dict:

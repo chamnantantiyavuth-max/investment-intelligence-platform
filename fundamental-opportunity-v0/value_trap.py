@@ -9,16 +9,17 @@ from fixtures import MACRO_REGIME
 
 
 def is_unusually_cheap(company: dict) -> bool:
-    """Check if company's valuation is unusually cheap vs own history.
+    """§3.6.2: Unusually Cheap = P/E < (5Y avg − 2σ).
 
-    Trigger: P/E < (5Y avg - 2σ). For synthetic fixtures, we check if
-    current P/E is meaningfully below 5Y average as proxy.
-    """
+    Requires `pe_5y_stddev` in the data. Without σ the trigger cannot be
+    asserted (returns False) — no proxy threshold is invented (FD #53,
+    audit C-02 code-to-spec)."""
     pe_ttm = company.get("pe_ttm", 0)
     pe_5y = company.get("pe_5y_avg", pe_ttm)
-    if pe_5y == 0 or pe_ttm == 0:
-        return False  # insufficient data
-    return pe_ttm < pe_5y * 0.70  # >30% below 5Y avg = unusually cheap
+    sd = company.get("pe_5y_stddev")
+    if not pe_ttm or not pe_5y or sd is None:
+        return False  # insufficient data — honest, no proxy
+    return pe_ttm < pe_5y - 2 * sd
 
 
 def run_profit_rate_trend(company: dict) -> dict:
@@ -89,7 +90,8 @@ def run_value_trap_check(company: dict, moat_assessment: dict) -> dict:
 
     verdict_map = {
         5: ("NOT_A_TRAP", "🟢 Genuinely cheap — business intact. Add to 'Cheap & Quality' watchlist."),
-        4: ("NOT_A_TRAP", "🟢 Genuinely cheap — business intact. Add to 'Cheap & Quality' watchlist."),
+        # FD #53 (spec §3.6.2): 3–4 = mixed — deeper research required, NOT not-a-trap
+        4: ("MIXED", "🟡 Mixed signals — 4/5 checks pass but not conclusive. Deeper research required."),
         3: ("MIXED", "🟡 Mixed signals — some concerns but not trap-level. Deeper research needed."),
         2: ("SUSPECT", "🔴 Likely value trap — structural problems masked by low multiple. Do not add."),
         1: ("TRAP", "🔴 Likely value trap — structural problems masked by low multiple. Do not add."),

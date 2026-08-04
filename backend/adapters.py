@@ -26,7 +26,7 @@ from backend.schemas.responses import (
     Provenance, ResearchPackageDetail, ResearchPackageSummary, ThemeSummary, ThemeWithCandidates,
 )
 
-ADAPTER_VERSION = "v3"
+ADAPTER_VERSION = "v4"
 # Immutable adapter registry (plan T5 / council F3): version -> committed code hash of adapters.py.
 # Stored in a SEPARATE json so editing the registry cannot change the code hash (no circularity).
 # If adapters.py changes, recompute hash + bump ADAPTER_VERSION. verify_adapter_registry() enforces.
@@ -349,13 +349,15 @@ def _fo_summary(pkg: dict, prov: Provenance) -> ResearchPackageSummary:
 
 def _fo_detail(pkg: dict, prov: Provenance) -> ResearchPackageDetail:
     s = _fo_summary(pkg, prov)
+    # FD #53: drop unapproved derived fields at serve time (moat_score has no spec basis)
+    ca = {k: v for k, v in pkg.get("company_assessment", {}).items() if k != "moat_score"}
     return ResearchPackageDetail(**s.model_dump(exclude={"conviction"}), conviction=pkg.get("conviction", {}),
                                  generated_at=pkg.get("generated_at", ""), spec_ref=pkg.get("spec_ref", ""),
                                  thesis_summary=pkg.get("thesis_summary", ""),
                                  thesis_lifecycle=pkg.get("thesis_lifecycle", ""),
                                  macro_context=pkg.get("macro_context", {}),
                                  industry_assessment=pkg.get("industry_assessment", {}),
-                                 company_assessment=pkg.get("company_assessment", {}),
+                                 company_assessment=ca,
                                  earnings_trajectory=pkg.get("earnings_trajectory", {}),
                                  valuation_context=pkg.get("valuation_context", {}),
                                  key_risks=pkg.get("key_risks", []),

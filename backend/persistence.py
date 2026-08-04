@@ -13,7 +13,7 @@ import sqlite3
 from pathlib import Path
 
 SCHEMA_VERSION = 1
-ADAPTER_VERSION = "v3"
+ADAPTER_VERSION = "v4"
 
 _DEFAULT_DB = Path(__file__).resolve().parent / "data" / "iip.db"
 

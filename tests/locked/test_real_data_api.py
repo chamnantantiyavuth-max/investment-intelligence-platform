@@ -391,7 +391,7 @@ def _ii_artifact(mode: str = "REAL 13F", partial: bool = False) -> dict:
             "filer_name": "Scion", "filer_cik": "0001649339", "filer_category": "Legendary",
             "ticker": "JD", "filing_quarter": "2026Q1", "report_date": "2026-03-31",
             "pct_of_portfolio": 37.5, "conviction": "Maximum", "action": "ADD",
-            "change_pct": 29.8, "signal_score": 95, "value_usd": 75000000,
+            "change_pct": 29.8, "value_usd": 75000000,
         }],
         "summary": {"total_funds_tracked": 5, "total_signals": 68, "total_filings": 10},
         "meta": {

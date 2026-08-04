@@ -8,7 +8,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from analyzer import (
     concentration_to_conviction,
     detect_action,
-    score_signal,
     CONVICTION_THRESHOLDS,
 )
 
@@ -109,27 +108,11 @@ class TestActionDetection:
 
 
 class TestSignalScoring:
-    """Signal score 0-100 range and consistency."""
+    """FD #53: signal_score (0-100) removed — no spec basis. Class retained as
+    a guard that the unapproved function is GONE and signals carry only
+    approved fields (conviction/action per FD #42)."""
 
-    def test_max_conviction_new_scores_high(self):
-        s = score_signal(44.8, "NEW", "Maximum")
-        assert s >= 80
-
-    def test_minimal_maintain_scores_low(self):
-        s = score_signal(0.3, "MAINTAIN", "Minimal")
-        assert s < 20
-
-    def test_mid_range_moderate(self):
-        s = score_signal(8.0, "ADD", "Moderate")
-        assert 30 <= s <= 75
-
-    def test_exit_scores_low(self):
-        s = score_signal(5.0, "EXIT", "Moderate")
-        assert s < 30
-
-    def test_score_in_range_0_100(self):
-        for pct in [0.1, 1.0, 5.0, 12.0, 25.0, 50.0]:
-            for action in ["NEW", "ADD", "MAINTAIN", "REDUCE", "EXIT"]:
-                for conv in ["Maximum", "High", "Moderate", "Low", "Minimal"]:
-                    s = score_signal(pct, action, conv)
-                    assert 0 <= s <= 100, f"score_signal({pct},{action},{conv}) = {s} — out of range"
+    def test_score_signal_function_removed(self):
+        import analyzer as a
+        assert not hasattr(a, "score_signal"), "score_signal must not exist (FD #53)"
+        assert not hasattr(a, "signal_score"), "signal_score must not exist (FD #53)"
