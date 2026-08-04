@@ -36,7 +36,7 @@ export default function CSRadarPage() {
 
       <section className="mt-6">
         <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Q-Conditions Screening</h2>
-        <div className="mt-2">
+        <div className="mt-2 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

@@ -27,7 +27,7 @@
   --color-ink: #1A1C1E;
   --color-ink-2: #5A5E63;
   --color-muted-foreground: #5A5E63;
-  --color-ink-3: #8A8E93;
+  --color-ink-3: #7A7F86;         /* tertiary text — ≥4.5:1 on paper (a11y) */
   --color-card-foreground: #1A1C1E;
   --color-popover-foreground: #1A1C1E;
 

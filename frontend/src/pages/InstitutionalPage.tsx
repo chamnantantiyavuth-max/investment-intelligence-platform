@@ -90,7 +90,8 @@ export default function InstitutionalPage() {
           {isError && <div className="py-8 text-center text-sm text-pink-600">Failed to load institutional signals.</div>}
           {!isLoading && !isError && (
             <>
-              <Table>
+              <div className="overflow-x-auto">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Filer</TableHead>
@@ -125,6 +126,7 @@ export default function InstitutionalPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">
                   Page {page + 1} of {pages} · {total.toLocaleString()} signals

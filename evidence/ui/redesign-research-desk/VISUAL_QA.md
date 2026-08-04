@@ -78,6 +78,12 @@ Approved exceptions: inputs, focus rings, chips/badges, semantic banners (synthe
 - `evidence/ui/redesign-research-desk/02-screener-desktop.png` — SCREENSHOT_VERIFIED
 - (Theme Card / CS / II / Weak verified in-browser; full inventory in a11y sweep batch)
 
+## a11y/mobile sweep addendum (post-commit c4ae919)
+
+- **a11y:** `--color-ink-3` darkened `#8A8E93 → #7A7F86` (≥4.5:1 on paper for tertiary text); icon-only buttons gained `aria-label` (AMQueue open-theme, ThemeCard back-to-queue ×2). — STATIC_OBSERVATION
+- **Mobile (code-level):** CS Radar + Institutional tables wrapped in `overflow-x-auto`; existing grids already collapse `grid-cols-1 → md:grid-cols-2`; masthead wraps + run-stamp hidden below md. Real 390×844 browser check **EXTERNAL_NOT_TESTED** (browser tool viewport locked at 1258 — same limitation as audit lane).
+- **Per-directory sweep:** 132 locked + 56 AM + 25 CS + 42 FO + 49 II = **304/304** reconcile exact — TEST_VERIFIED. Build exit 0, lint 0 errors/7 warnings.
+
 ## Evidence tags
 
 BROWSER_VERIFIED · SCREENSHOT_VERIFIED · FUNCTION_TEST_VERIFIED · TEST_VERIFIED (304/304) · STATIC_OBSERVATION · EXTERNAL_NOT_TESTED (mobile)
