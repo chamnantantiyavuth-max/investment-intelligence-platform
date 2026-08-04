@@ -267,6 +267,27 @@ def test_am_theme_falsification_fields_passthrough():
             assert isinstance(uce, list) and all(isinstance(x, str) for x in uce)
 
 
+def test_am_counter_evidence_scoped_per_theme():
+    """Audit C2 fix: unresolved counter-evidence attaches ONLY to the theme whose
+    candidate owns the override (OVR-001 → CAND-002 → TH-004). Unrelated themes
+    (e.g. TH-014 Medical Devices) must NOT receive the INTC/semiconductor record."""
+    art = _real_am_artifact()
+    host = next(
+        tid for tid, pl in art["queue"]
+        if any(c.get("id") == "CAND-002" for c in pl.get("candidates", []))
+    )
+    _login()
+    body = client.get("/api/am-queue").json()
+    assert body["themes"], "queue must not be empty"
+    for t in body["themes"]:
+        uce = t["theme"]["unresolved_counter_evidence"]
+        if t["theme"]["id"] == host:
+            assert uce, f"host theme {host} must carry OVR-001 counter-evidence"
+            assert any("EV-003" in x for x in uce)
+        else:
+            assert not uce, f"unrelated theme {t['theme']['id']} must not carry OVR-001 counter-evidence"
+
+
 def test_am_theme_detail_shape_and_404():
     art = _real_am_artifact()
     theme_id = art["queue"][0][0]

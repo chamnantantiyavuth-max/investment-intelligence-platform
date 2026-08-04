@@ -1,9 +1,9 @@
 # Design System: Investment Intelligence Platform
 
-**Version:** 2.1 — Light Editorial (FD #49 amendment, 4 August 2026)
+**Version:** 3.0 — Research Desk (FD #51 direction A, 4 August 2026)
 **Stack:** React + Vite + TypeScript + Tailwind CSS v4 (frontend/); design tokens below apply across all surfaces
-**Pattern:** Light Editorial — marketing-pitch discovery: hero insight → findings (kickers + headlines + big mono numbers) → deep-dive reference tier → methodology → advisory footer
-**Palette rule:** MUTED institutional accents — NO neon. Off-white canvas, ink text, tinted tonal panels (background contrast instead of uniform borders). Typography carries hierarchy; borders minimal.
+**Pattern:** Research Desk — quiet institutional research workspace: paper canvas, ink text, serif display headlines (FT-style), dense ledgers, hairline separators, one muted steel-blue accent. Typography establishes hierarchy before containers; borderless-by-default (0–2 full-perimeter outlines per viewport).
+**Canonical tokens:** `frontend/src/index.css` (`@theme` — Tailwind v4 semantic `--color-*` set; audit C1 fix) + `design/UI_TOKENS.md` + `design/UI_DIRECTION.md`. Supersedes v2.1 Light Editorial (retired by FD #51).
 
 ## Color Tokens (HSL — mapped in frontend/src/index.css :root)
 

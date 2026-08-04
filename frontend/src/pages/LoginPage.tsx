@@ -1,9 +1,8 @@
-// Login page (FD #46 — single-user session auth gate; FD #49 dark redesign)
+// Login page (FD #46 — single-user session auth gate; Research Desk v3.0, FD #51)
 import { useState } from "react"
 import { login } from "@/api/authClient"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, Shield, Building2 } from "lucide-react"
 
 export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState("founder")
@@ -23,54 +22,51 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Product intro — answers "what is this app" at first sight (FD #49) */}
-      <div className="hidden flex-1 flex-col justify-center gap-6 border-r border-border p-12 lg:flex">
+      {/* Product intro — answers "what is this app" at first sight */}
+      <div className="hidden flex-1 flex-col justify-center gap-8 border-r border-rule p-12 lg:flex">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <TrendingUp className="size-5" />
-            </div>
-            <span className="font-mono text-lg font-semibold text-foreground">IIP</span>
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Investment Intelligence Platform
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+            Momentum-first opportunity discovery
           </p>
+          <h1 className="mt-3 max-w-md font-display text-4xl font-bold leading-[1.12] tracking-[-0.01em] text-foreground">
+            The Investment Intelligence Platform
+          </h1>
         </div>
-        <div className="max-w-md space-y-3 text-sm leading-relaxed text-muted-foreground">
+        <div className="max-w-md space-y-4 text-sm leading-relaxed text-ink-2">
           <p className="text-foreground">
-            A decision-desk for opportunity discovery — it reduces the global investment search
-            space while preserving evidence, uncertainty, and dissent.
+            A decision-desk that reduces the global investment search space while preserving
+            evidence, uncertainty, and dissent.
           </p>
-          <p>It answers one question: <span className="text-foreground">what deserves further investigation?</span></p>
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-2">
-              <Shield className="size-4 text-info" />
-              <span>Advisory only — no buy/sell/allocate. No broker connectivity.</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Building2 className="size-4 text-info" />
-              <span>Portfolio-blind: the system never sees your holdings (§23.8.1).</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="size-4 text-info" />
-              <span>Evidence-first: every surface carries a real/synthetic provenance label.</span>
-            </div>
+          <p>
+            It answers one question:{" "}
+            <span className="font-semibold text-foreground">what deserves further investigation?</span>
+          </p>
+          <div className="space-y-2 border-t border-rule pt-4">
+            <p className="flex items-center gap-2">
+              <span className="text-ink-3">—</span> Advisory only — no buy/sell/allocate. No broker connectivity.
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-ink-3">—</span> Portfolio-blind: the system never sees your holdings (§23.8.1).
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-ink-3">—</span> Evidence-first: every surface carries a real/hybrid/synthetic provenance label.
+            </p>
           </div>
         </div>
-        <p className="font-mono text-[11px] text-muted-foreground/70">
+        <p className="font-mono text-[11px] text-ink-3">
           Alpha Momentum · Close System · Fundamental &amp; Opportunity — one shared intelligence core
         </p>
       </div>
 
-      {/* Sign-in */}
+      {/* Sign-in — one independent action = the page's single allowed outline */}
       <div className="flex flex-1 items-center justify-center p-6">
-        <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-md border border-border bg-card p-6">
+        <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-md border border-rule bg-card p-6">
           <div>
-            <h1 className="font-mono text-lg font-semibold text-foreground">IIP — Sign in</h1>
-            <p className="text-xs text-muted-foreground">Single-user loopback session (FD #47)</p>
+            <h2 className="font-display text-xl font-bold text-foreground">Sign in</h2>
+            <p className="mt-1 text-xs text-ink-2">Private research workspace — advisory intelligence, not advice.</p>
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="username" className="text-xs font-medium text-muted-foreground">
+            <label htmlFor="username" className="text-xs font-medium text-ink-2">
               Username
             </label>
             <Input
@@ -81,7 +77,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="password" className="text-xs font-medium text-muted-foreground">
+            <label htmlFor="password" className="text-xs font-medium text-ink-2">
               Password
             </label>
             <Input
@@ -92,7 +88,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               autoComplete="current-password"
             />
           </div>
-          {error && <p className="text-sm text-negative">Invalid credentials</p>}
+          {error && <p className="text-sm text-negative">Invalid credentials — try again.</p>}
           <Button type="submit" disabled={busy} className="w-full">
             {busy ? "Signing in…" : "Sign in"}
           </Button>

@@ -1,13 +1,6 @@
 import type { ReactNode } from "react"
 import type { InsightTone } from "@/components/HeroInsight"
-
-const toneBg: Record<InsightTone, string> = {
-  positive: "bg-positive/[0.06]",
-  negative: "bg-negative/[0.06]",
-  warning: "bg-warning/[0.06]",
-  info: "bg-info/[0.06]",
-  neutral: "bg-elevated",
-}
+import { ExternalLink } from "lucide-react"
 
 const toneText: Record<InsightTone, string> = {
   positive: "text-positive",
@@ -17,17 +10,10 @@ const toneText: Record<InsightTone, string> = {
   neutral: "text-foreground",
 }
 
-const toneDot: Record<InsightTone, string> = {
-  positive: "bg-positive",
-  negative: "bg-negative",
-  warning: "bg-warning",
-  info: "bg-info",
-  neutral: "bg-muted-foreground",
-}
-
 /**
- * FINDING CARD — a discovery panel: kicker + headline + display value + why-it-matters.
- * Marketing-pitch rhythm; tonal fill instead of borders (FD #49 amendment).
+ * FINDING ROW (Research Desk v3.0) — ledger row, not a card: kicker + serif headline
+ * + mono value + why. Hairline separator only (FD #51 direction A; audit C6: no
+ * default containment). Audit C4 fix: optional evidence reference line.
  */
 export function FindingCard({
   kicker,
@@ -36,6 +22,7 @@ export function FindingCard({
   why,
   tone = "neutral",
   featured = false,
+  evidenceRef,
 }: {
   kicker: string
   headline: string
@@ -43,24 +30,26 @@ export function FindingCard({
   why?: string
   tone?: InsightTone
   featured?: boolean
+  evidenceRef?: string
 }) {
   return (
-    <article className={`rounded-2xl px-5 py-4 ${toneBg[tone]} ${featured ? "sm:col-span-2" : ""}`}>
-      <div className="flex items-center gap-1.5">
-        <span className={`size-1.5 rounded-full ${toneDot[tone]}`} />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {kicker}
-        </span>
+    <article className={`border-b border-rule py-4 ${featured ? "sm:col-span-2" : ""}`}>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">{kicker}</span>
       </div>
-      <h2 className="mt-2 text-finding font-semibold leading-snug tracking-tight text-foreground">
+      <h2 className="mt-1.5 font-display text-finding font-bold leading-snug tracking-tight text-foreground">
         {headline}
       </h2>
       {value && (
-        <div className={`mt-1.5 font-mono ${featured ? "text-display" : "text-xl"} font-semibold leading-tight ${toneText[tone]}`}>
-          {value}
+        <div className={`mt-1.5 font-mono text-lg font-semibold leading-tight ${toneText[tone]}`}>{value}</div>
+      )}
+      {why && <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-2">{why}</p>}
+      {evidenceRef && (
+        <div className="mt-1.5 flex items-center gap-1 font-mono text-[10.5px] text-ink-3">
+          <ExternalLink className="size-3" />
+          <span>evidence: {evidenceRef}</span>
         </div>
       )}
-      {why && <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{why}</p>}
     </article>
   )
 }

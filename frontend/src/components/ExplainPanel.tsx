@@ -1,8 +1,9 @@
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { Info, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 
-/** Collapsible methodology panel — the WHY behind a page's logic, with spec refs. */
+/** Collapsible methodology panel (Research Desk v3.0) — tonal, no border (C6).
+ *  The WHY behind a page's logic, with spec refs. */
 export function ExplainPanel({
   title = "Methodology",
   children,
@@ -12,22 +13,17 @@ export function ExplainPanel({
 }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="mt-4 rounded-md border border-border bg-card">
+    <div className="mt-6 rounded-md bg-bg-panel">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left"
       >
-        <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <Info className="size-3.5" />
-          {title}
-        </span>
-        <ChevronDown className={`size-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="text-[11px] font-bold uppercase tracking-wider text-ink-2">{title}</span>
+        <ChevronDown className={`size-3.5 text-ink-3 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="border-t border-border px-3 py-2.5 text-[13px] leading-relaxed text-muted-foreground">
-          {children}
-        </div>
+        <div className="border-t border-rule px-3 py-3 text-[13px] leading-relaxed text-ink-2">{children}</div>
       )}
     </div>
   )

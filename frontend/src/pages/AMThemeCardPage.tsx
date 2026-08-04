@@ -6,8 +6,6 @@ import { StatusBadge } from "@/components/StatusBadge"
 import { EvidencePanel, supportingSection, contradictingSection, missingSection } from "@/components/EvidencePanel"
 import { ExplainPanel } from "@/components/ExplainPanel"
 import { EmptyState } from "@/components/EmptyState"
-import { AdvisoryFooter } from "@/components/AdvisoryFooter"
-import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -16,13 +14,13 @@ import { getAMTheme } from "@/api/amClient"
 
 function DimPanel({ title, note, rows }: { title: string; note: string; rows: [string, string][] }) {
   return (
-    <div className="rounded-2xl bg-elevated/50 px-4 py-3">
+    <div className="rounded-md bg-bg-panel px-4 py-3">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="text-[11px] text-muted-foreground">{note}</p>
+      <p className="text-[11px] text-ink-2">{note}</p>
       <div className="mt-2 space-y-1">
         {rows.map(([k, v]) => (
           <div key={k} className="flex items-center justify-between gap-2 text-xs">
-            <span className="text-muted-foreground">{k}</span>
+            <span className="text-ink-2">{k}</span>
             <StatusBadge value={v} className="max-w-[62%] whitespace-normal text-right" />
           </div>
         ))}
@@ -47,18 +45,14 @@ export default function AMThemeCardPage() {
         <Button variant="ghost" size="icon-sm" render={<Link to="/am-queue" />}>
           <ArrowLeft className="size-4" />
         </Button>
-        <Card className="mt-3">
-          <CardContent className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {is404 ? `Theme '${id}' not found.` : "Failed to load theme."}
-            </p>
-            {!is404 && (
-              <button onClick={() => refetch()} className="mt-2 text-sm text-info underline">
-                Retry
-              </button>
-            )}
-          </CardContent>
-        </Card>
+        <div className="mt-3 rounded-md bg-bg-panel px-5 py-8 text-center">
+          <p className="text-sm font-medium text-foreground">{is404 ? `Theme '${id}' not found.` : "Failed to load theme."}</p>
+          {!is404 && (
+            <button onClick={() => refetch()} className="mt-2 text-sm text-primary underline">
+              Retry
+            </button>
+          )}
+        </div>
       </div>
     )
   }
@@ -80,9 +74,10 @@ export default function AMThemeCardPage() {
         display={theme.confidence}
         tone="positive"
         sub={theme.why_now}
+        evidenceRef={`${theme.id} · ${theme.provenance.source}`}
         chips={
           <ProvenanceChip
-            mode={theme.provenance.mode}
+            mode={theme.provenance.hybrid ? "hybrid" : theme.provenance.mode}
             source={theme.provenance.source}
             asOf={theme.provenance.as_of}
           />
@@ -93,7 +88,7 @@ export default function AMThemeCardPage() {
         <StatusBadge value={theme.lifecycle} />
         <StatusBadge value={theme.approval_status} />
         <StatusBadge value={theme.monitoring_status} />
-        <span className="ml-auto font-mono text-[11px] text-muted-foreground">
+        <span className="ml-auto font-mono text-[11px] text-ink-2">
           {theme.sector} / {theme.industry} · {theme.stocks_in_industry} stocks ·{" "}
           {theme.key_tickers.length} key tickers · {candidates.length} candidates
         </span>
@@ -102,7 +97,7 @@ export default function AMThemeCardPage() {
       <Tabs defaultValue="dimensions">
         <TabsList>
           <TabsTrigger value="dimensions">Quality Dimensions</TabsTrigger>
-          <TabsTrigger value="falsification">Falsification (§11)</TabsTrigger>
+          <TabsTrigger value="falsification">Falsification</TabsTrigger>
           <TabsTrigger value="candidates">Candidates ({candidates.length})</TabsTrigger>
           <TabsTrigger value="evidence">Evidence ({theme.evidence_provenance.length})</TabsTrigger>
         </TabsList>
@@ -168,6 +163,11 @@ export default function AMThemeCardPage() {
         </TabsContent>
 
         <TabsContent value="falsification" className="space-y-3 pt-4">
+          <p className="text-[11px] text-ink-2">
+            Scoped §11 panel (FD #50, 4 Aug 2026): alternative explanations, evidence register, and
+            unresolved counter-evidence — read-only passthrough from the admitted artifact. Milestones
+            and invalidation conditions are not yet represented.
+          </p>
           <EvidencePanel
             sections={[
               supportingSection([]),
@@ -184,14 +184,14 @@ export default function AMThemeCardPage() {
             ]}
           />
           {theme.alternative_explanations && (
-            <div className="rounded-2xl bg-elevated/50 px-4 py-3">
+            <div className="rounded-md bg-bg-panel px-4 py-3">
               <h3 className="text-sm font-semibold text-foreground">Alternative Explanations</h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-ink-2">
                 What could make this thesis wrong — kept visible, never erased (§11, §22)
               </p>
               <ul className="mt-2 space-y-1">
                 {Object.entries(theme.alternative_explanations).map(([k, v]) => (
-                  <li key={k} className="text-[13px] leading-relaxed text-foreground/90">
+                  <li key={k} className="text-[13px] leading-relaxed text-ink-2">
                     {v}
                   </li>
                 ))}
@@ -199,21 +199,21 @@ export default function AMThemeCardPage() {
             </div>
           )}
           {theme.evidence && theme.evidence.length > 0 && (
-            <div className="rounded-2xl bg-elevated/50 px-4 py-3">
+            <div className="rounded-md bg-bg-panel px-4 py-3">
               <h3 className="text-sm font-semibold text-foreground">
                 Evidence Register ({theme.evidence.length})
               </h3>
-              <p className="text-[11px] text-muted-foreground">
-                Raw records from the admitted artifact — read-only passthrough (mini-FD, 4 Aug 2026)
+              <p className="text-[11px] text-ink-2">
+                Raw records from the admitted artifact — read-only passthrough (FD #50, 4 Aug 2026)
               </p>
               <ul className="mt-2 space-y-1.5">
                 {theme.evidence.map((e) => (
                   <li key={e.id} className="text-[13px] leading-relaxed">
                     <span className="font-mono text-xs font-semibold text-foreground">{e.id}</span>{" "}
                     <StatusBadge value={e.type} className="mx-1" />
-                    <span className="text-foreground/90">{e.content}</span>
+                    <span className="text-ink-2">{e.content}</span>
                     {e.source && (
-                      <span className="ml-1 font-mono text-[11px] text-muted-foreground">({e.source})</span>
+                      <span className="ml-1 font-mono text-[11px] text-ink-2">({e.source})</span>
                     )}
                   </li>
                 ))}
@@ -226,24 +226,27 @@ export default function AMThemeCardPage() {
           {candidates.length === 0 ? (
             <EmptyState message="No candidates in this theme." />
           ) : (
-            <div className="space-y-2">
-              {candidates.map((c) => (
-                <Card key={c.id}>
-                  <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 text-xs">
-                    <span className="font-mono text-sm font-semibold text-foreground">{c.ticker}</span>
-                    <StatusBadge value={c.research_state} />
-                    <StatusBadge value={c.conviction_level} />
-                    <span className="text-muted-foreground">
-                      RS {c.candidate_quality.relative_strength} · Trend {c.candidate_quality.trend_quality}
-                    </span>
-                    <span className="text-muted-foreground">
-                      Base {c.entry_readiness.base_quality} · Breakout {c.entry_readiness.breakout_proximity}
-                    </span>
-                    <span className="font-mono text-muted-foreground">
-                      dc: {c.data_confidence.freshness} · {c.data_confidence.completeness}
-                    </span>
-                  </CardContent>
-                </Card>
+            <div>
+              {candidates.map((c, i) => (
+                <div
+                  key={c.id}
+                  className={`flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-rule py-3 text-xs ${
+                    i === 0 ? "border-t" : ""
+                  }`}
+                >
+                  <span className="font-mono text-sm font-semibold text-foreground">{c.ticker}</span>
+                  <StatusBadge value={c.research_state} />
+                  <StatusBadge value={c.conviction_level} />
+                  <span className="text-ink-2">
+                    RS {c.candidate_quality.relative_strength} · Trend {c.candidate_quality.trend_quality}
+                  </span>
+                  <span className="text-ink-2">
+                    Base {c.entry_readiness.base_quality} · Breakout {c.entry_readiness.breakout_proximity}
+                  </span>
+                  <span className="font-mono text-ink-2">
+                    dc: {c.data_confidence.freshness} · {c.data_confidence.completeness}
+                  </span>
+                </div>
               ))}
             </div>
           )}
@@ -259,10 +262,10 @@ export default function AMThemeCardPage() {
               ))}
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-ink-2">
             Evidence source labels from the real artifact — synthetic and human-sourced entries are marked
             individually; no blanket label over mixed content. Contradicting-evidence fields land with the
-            read-only schema extension (pending mini-FD, §11 falsification panel).
+            read-only schema extension (FD #50, §11 falsification panel).
           </p>
         </TabsContent>
       </Tabs>
@@ -275,8 +278,6 @@ export default function AMThemeCardPage() {
         (FD #26, §13): Confirmed Leader, Emerging Challenger, Direct Beneficiary, Enabler, Bottleneck
         Owner, Second-order Beneficiary, Watchlist Member, Former Leader, Deteriorating Member.
       </ExplainPanel>
-
-      <AdvisoryFooter provenance={`${theme.id} · ${theme.provenance.source} · V0.5 development only`} />
     </div>
   )
 }

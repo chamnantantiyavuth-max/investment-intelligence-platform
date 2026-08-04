@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCSRadar, type CSAsset } from "@/api/csClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { QConditionGrid } from "@/components/QConditionGrid";
@@ -21,24 +20,23 @@ export default function CSRadarPage() {
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
   if (error) return (
-    <Card className="border-rose-200 bg-rose-50">
-      <CardContent className="p-6 text-center text-rose-700">Failed to load. <button onClick={() => refetch()} className="underline">Retry</button></CardContent>
-    </Card>
+    <div className="rounded-md bg-bg-panel px-5 py-6 text-center">
+      <p className="text-sm font-medium text-negative">Failed to load.</p>
+      <button onClick={() => refetch()} className="mt-1 text-sm text-primary underline">Retry</button>
+    </div>
   );
 
   const assets: CSAsset[] = data?.assets ?? [];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Close System Radar</h1>
+      <h1 className="font-display text-h2 font-bold tracking-tight">Close System Radar</h1>
 
       <SyntheticDataBanner note="Radar assets are static demonstration data — the Close System pipeline is not yet wired to this API surface." />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Product Radar — Q-Conditions Screening</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-0">
+      <section className="mt-6">
+        <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Q-Conditions Screening</h2>
+        <div className="mt-2">
           <Table>
             <TableHeader>
               <TableRow>
@@ -81,8 +79,8 @@ export default function CSRadarPage() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

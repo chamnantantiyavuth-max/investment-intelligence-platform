@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIP — Direction C: Editorial Report (premium, magazine)</title>
+<style>
+  :root{
+    --paper:#F7F5F0; --paper-2:#EFECE4; --ink:#141414; --ink-2:#4A4A46; --ink-3:#8B887F;
+    --rule:#D8D4C8; --accent:#7A2E2E; --pos:#2E5E4E; --neg:#8E3B46; --warn:#8A6D1F;
+    --mono:'JetBrains Mono','Consolas',monospace; --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+    --sans:'Inter',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:15px;line-height:1.55}
+  /* Masthead — newspaper of record */
+  .mast{text-align:center;padding:22px 24px 14px;border-bottom:3px double var(--ink)}
+  .mast .name{font-family:var(--serif);font-size:34px;font-weight:700;letter-spacing:0.01em}
+  .mast .name em{font-style:italic;color:var(--accent)}
+  .mast .rule-top{font-family:var(--sans);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+  .mast .sub{font-family:var(--sans);font-size:11px;color:var(--ink-2);display:flex;justify-content:space-between;max-width:920px;margin:8px auto 0;border-top:1px solid var(--rule);padding-top:8px}
+  .nav{display:flex;justify-content:center;gap:26px;font-family:var(--sans);font-size:11px;text-transform:uppercase;letter-spacing:0.12em;padding:10px 0;border-bottom:1px solid var(--rule)}
+  .nav .on{color:var(--accent);font-weight:700;border-bottom:2px solid var(--accent);padding-bottom:2px}
+  /* Layout */
+  .wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;max-width:1160px;margin:0 auto;padding:32px 36px;gap:44px}
+  /* Lead story — cover style */
+  .kicker{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .lead h1{font-size:44px;line-height:1.08;letter-spacing:-0.015em;font-weight:700;max-width:720px}
+  .lead .deck{font-size:19px;color:var(--ink-2);font-style:italic;margin-top:14px;max-width:640px}
+  .byline{font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:16px;display:flex;gap:18px;border-top:1px solid var(--rule);padding-top:10px;max-width:720px}
+  .byline .prov{color:var(--pos);font-weight:700}
+  .lead .body{margin-top:18px;font-size:16px;color:var(--ink);max-width:640px}
+  .lead .body p{margin-bottom:12px}
+  .drop::first-letter{font-size:52px;float:left;line-height:0.85;padding-right:8px;font-weight:700;color:var(--accent)}
+  /* Findings — numbered editorial list */
+  .sect{margin-top:40px}
+  .sect h2{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;border-top:3px solid var(--ink);padding-top:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:baseline}
+  .sect h2 .src{font-weight:400;letter-spacing:0.04em;text-transform:none;font-size:12px;color:var(--ink-3);font-style:italic}
+  .find{display:grid;grid-template-columns:56px 1fr;gap:18px;padding:16px 0;border-bottom:1px solid var(--rule)}
+  .find .n{font-family:var(--serif);font-size:30px;font-weight:700;color:var(--accent);line-height:1}
+  .find h3{font-size:19px;font-weight:700;letter-spacing:-0.01em}
+  .find .d{font-size:14px;color:var(--ink-2);margin-top:4px;max-width:560px}
+  .find .src-line{font-family:var(--sans);font-size:11px;color:var(--ink-3);margin-top:8px;display:flex;gap:10px;align-items:center}
+  .tag{font-family:var(--sans);font-size:9.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
+  .tag.real{color:var(--pos);background:rgba(46,94,78,.10)}
+  .tag.hyb{color:var(--accent);background:rgba(122,46,46,.08)}
+  .tag.syn{color:var(--warn);background:rgba(138,109,31,.10)}
+  .num-mono{font-family:var(--mono);font-size:13px}
+  /* Right rail */
+  .rail{border-left:1px solid var(--rule);padding-left:36px}
+  .rail .box{margin-bottom:30px}
+  .rail .box h4{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:12px}
+  .rail .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+  .rail .row .k{color:var(--ink-2)} 
+  .cs .banner{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:0.1em;background:var(--warn);color:#fff;padding:3px 9px;border-radius:2px;display:inline-block;margin-bottom:8px}
+  .cs .line{font-size:14.5px;margin-bottom:6px}
+  .cs .line b{font-weight:700}
+  /* Footer */
+  .foot{border-top:3px double var(--ink);margin-top:48px;padding:16px 36px 30px;font-family:var(--sans);font-size:11px;color:var(--ink-3);display:flex;justify-content:space-between;max-width:1160px;margin-left:auto;margin-right:auto}
+</style>
+</head>
+<body>
+  <header class="mast">
+    <div class="rule-top">Momentum-first Opportunity Discovery · Advisory Intelligence</div>
+    <div class="name">The Investment <em>Intelligence</em> Report</div>
+    <div class="sub"><span>Friday, July 31, 2026</span><span>Vol. I · No. 3</span><span>Alpha Momentum · Close System · Fundamental · Institutional</span></div>
+  </header>
+  <nav class="nav">
+    <span class="on">Dashboard</span><span>Alpha Momentum</span><span>Close System</span><span>Fundamental</span><span>Institutional</span>
+  </nav>
+
+  <div class="wrap">
+    <main>
+      <section class="lead">
+        <div class="kicker">Lead Insight — Alpha Momentum</div>
+        <h1>The Most Interesting Setup Right Now: Semiconductor Capacity Tightens as Demand Curves Steepen</h1>
+        <p class="deck">Six pipeline stages agree — the binding constraint is entry readiness, not the thesis. Leadership is real and concentrated; the strongest single name sits one confirmation away from a breakout.</p>
+        <div class="byline">
+          <span>TH-004 · AI Infrastructure</span>
+          <span>Conviction: High</span>
+          <span>Lifecycle: Confirming</span>
+          <span class="prov">REAL — EOD hybrid evidence</span>
+          <span>As of 2026-07-31</span>
+        </div>
+        <div class="body">
+          <p class="drop">The queue's central finding is not a new idea — it is the convergence of four independently-sourced facts. Candidate quality is broad and rising; price leadership is confined to three names carrying 71% of queue weight; five of seven candidates are waiting on stage-five confirmation; and one name is unwinding without damage to its thesis.</p>
+          <p>This is a portfolio-blind, advisory read. It recommends nothing. It exists to say: here is what the evidence shows, here is what would change our mind, and here is where the open questions live.</p>
+        </div>
+      </section>
+
+      <section class="sect">
+        <h2>Findings <span class="src">from the AM queue — coverage 9/9 · run AM-V0-20260803-171535</span></h2>
+        <div class="find">
+          <div class="n">01</div>
+          <div><h3>Closest to a confirmed breakout</h3>
+          <p class="d">Relative-strength rank #1; price above 20/50/200-day averages; stage-6 gate satisfied.</p>
+          <div class="src-line"><span class="num-mono">TH-004 · RS 87</span><span class="tag hyb">Hybrid</span><span>EOD + human-sourced evidence</span></div></div>
+        </div>
+        <div class="find">
+          <div class="n">02</div>
+          <div><h3>Leadership is concentrated</h3>
+          <p class="d">Three names carry 71% of queue weight — breadth is narrow even as quality is broad.</p>
+          <div class="src-line"><span class="num-mono">TH-020</span><span class="tag real">Real</span><span>EOD 2026-07-31</span></div></div>
+        </div>
+        <div class="find">
+          <div class="n">03</div>
+          <div><h3>Entry readiness lags the thesis</h3>
+          <p class="d">Five of seven candidates await stage-five confirmation; the setup is early, not late.</p>
+          <div class="src-line"><span class="num-mono">TH-014 · 2/7</span><span class="tag real">Real</span><span>run AM-V0-20260803</span></div></div>
+        </div>
+        <div class="find">
+          <div class="n">04</div>
+          <div><h3>One genuine unwind, observation only</h3>
+          <p class="d">Premium compression of −8.8% verified as price-driven; thesis intact; no action.</p>
+          <div class="src-line"><span class="num-mono">TH-010 · −8.8%</span><span class="tag real">Real</span><span>verified 2026-08-03</span></div></div>
+        </div>
+      </section>
+
+      <section class="sect">
+        <h2>Close System Radar <span class="src">synthetic demo surface — not live data</span></h2>
+        <div class="find">
+          <div class="n">★</div>
+          <div><h3>Most interesting product to watch: Gold ETF (GLD)</h3>
+          <p class="d">Risk-on regime, P2 eligibility; five-layer synthesis (P1+P2+P3+macro+regime) complete; Q-condition ratio 2/1.</p>
+          <div class="src-line"><span class="tag syn">Synthetic demo</span><span>Labeled honestly — sole non-real surface per FD #46</span></div></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="rail">
+      <div class="box">
+        <h4>Data Provenance</h4>
+        <div class="row"><span class="k">Alpha Momentum</span><span class="num-mono" style="color:var(--pos)">REAL EOD</span></div>
+        <div class="row"><span class="k">Fundamental</span><span class="num-mono" style="color:var(--pos)">REAL yfinance</span></div>
+        <div class="row"><span class="k">Institutional</span><span class="num-mono" style="color:var(--pos)">REAL 13F</span></div>
+        <div class="row"><span class="k">Close System</span><span class="num-mono" style="color:var(--warn)">SYNTHETIC</span></div>
+      </div>
+      <div class="box">
+        <h4>Watchlist</h4>
+        <div class="row"><span class="k">TH-004 · AI Infra</span><span class="num-mono">87</span></div>
+        <div class="row"><span class="k">TH-014 · Edge</span><span class="num-mono">64</span></div>
+        <div class="row"><span class="k">TH-020 · Cloud</span><span class="num-mono">61</span></div>
+        <div class="row"><span class="k">TH-030 · Semi</span><span class="num-mono">55</span></div>
+        <div class="row"><span class="k">TH-010 · Data</span><span class="num-mono" style="color:var(--neg)">31</span></div>
+      </div>
+      <div class="box cs">
+        <h4>Falsification · §11</h4>
+        <span class="banner">SYNTHETIC DEMO — NOT LIVE</span>
+        <div class="row"><span class="k">Alternative explanations</span><span class="num-mono">2</span></div>
+        <div class="row"><span class="k">Evidence register</span><span class="num-mono">6 items</span></div>
+        <div class="row"><span class="k">Unresolved counter-evidence</span><span class="num-mono" style="color:var(--neg)">1 open</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <span>Advisory only — no buy/sell/allocate. No broker connectivity (Constitution §23.8.1).</span>
+    <span>Sample data for direction selection — not investment advice.</span>
+  </footer>
+</body>
+</html>
+<!-- 2026-08-04 16:30 UTC+7 -->

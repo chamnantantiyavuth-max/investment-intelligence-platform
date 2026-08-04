@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIP — Direction B: Dark Terminal (Bloomberg-grade)</title>
+<style>
+  :root{
+    --bg:#0B0E14; --panel:#11151D; --panel-2:#161B26; --grid:#1E2430; --ink:#D7DCE4; --ink-2:#8A93A2; --ink-3:#5A6270;
+    --acc:#4A7BB5; --pos:#3FBF8F; --neg:#E0657B; --warn:#D9A441; --info:#6FA8DC;
+    --mono:'JetBrains Mono','Consolas',monospace; --sans:'Inter',system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.45}
+  /* Command strip */
+  .strip{background:var(--panel);border-bottom:1px solid var(--grid);display:flex;align-items:center;gap:16px;padding:8px 18px;font-family:var(--mono);font-size:11px}
+  .strip .logo{color:var(--pos);font-weight:700;letter-spacing:0.02em}
+  .strip .sym{color:var(--ink-2)} .strip .v{color:var(--pos)} .strip .tickers{display:flex;gap:18px;overflow:hidden;white-space:nowrap;color:var(--ink-3)}
+  /* Layout: 3 columns */
+  .app{display:grid;grid-template-columns:190px 1fr 260px;min-height:calc(100vh - 34px)}
+  .nav{border-right:1px solid var(--grid);padding:14px 0;font-size:12px}
+  .nav .item{padding:7px 16px;color:var(--ink-2);display:flex;justify-content:space-between}
+  .nav .item.on{background:var(--panel-2);color:var(--ink);border-left:2px solid var(--pos)}
+  .nav .item .k{color:var(--ink-3)}
+  .nav h5{font-size:9px;letter-spacing:0.12em;color:var(--ink-3);text-transform:uppercase;padding:14px 16px 6px}
+  .main{padding:18px 22px;overflow:hidden}
+  /* Hero panel */
+  .hero{background:var(--panel);border:1px solid var(--grid);border-radius:6px;padding:18px 20px}
+  .hero .row1{display:flex;justify-content:space-between;align-items:baseline}
+  .hero .th{font-family:var(--mono);font-size:13px;color:var(--pos);font-weight:600}
+  .hero .conv{font-size:11px;color:var(--ink-3)}
+  .hero h1{font-size:22px;line-height:1.25;font-weight:650;letter-spacing:-0.01em;margin:10px 0 8px;max-width:820px}
+  .hero .why{font-size:12px;color:var(--ink-2);max-width:700px}
+  .hero .meta{display:flex;gap:14px;margin-top:12px;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border-top:1px solid var(--grid);padding-top:10px}
+  .meta .prov-real{color:var(--pos)} .meta .prov-hyb{color:var(--info)}
+  /* Findings as terminal rows */
+  .sect{margin-top:20px}
+  .sect h2{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--grid);padding-bottom:6px;margin-bottom:4px}
+  .rows{display:flex;flex-direction:column}
+  .frow{display:grid;grid-template-columns:1fr 110px 90px 150px;gap:12px;padding:9px 6px;border-bottom:1px solid var(--grid);align-items:center}
+  .frow:hover{background:var(--panel)}
+  .frow .t{font-size:12px} .frow .t b{font-weight:600}
+  .frow .num{font-family:var(--mono);text-align:right}
+  .frow .tag{font-size:9px;text-transform:uppercase;letter-spacing:0.08em;padding:2px 6px;border-radius:2px;text-align:center}
+  .tag.real{color:var(--pos);border:1px solid rgba(63,191,143,.35)}
+  .tag.hyb{color:var(--info);border:1px solid rgba(106,168,220,.35)}
+  .tag.syn{color:var(--warn);border:1px solid rgba(217,164,65,.35)}
+  .pos{color:var(--pos)} .neg{color:var(--neg)} .warn{color:var(--warn)}
+  /* Right rail */
+  .rail{border-left:1px solid var(--grid);padding:14px;display:flex;flex-direction:column;gap:14px}
+  .box{background:var(--panel);border-radius:6px;padding:12px}
+  .box h5{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;display:flex;justify-content:space-between}
+  .cs .banner{color:var(--warn);font-weight:700}
+  .box .row{display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--grid)}
+  .box .row:last-child{border-bottom:none}
+  .box .row .k{color:var(--ink-3)} .box .row .v{font-family:var(--mono)}
+  /* Footer */
+  .foot{border-top:1px solid var(--grid);padding:10px 18px;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3);font-family:var(--mono)}
+</style>
+</head>
+<body>
+  <div class="strip">
+    <span class="logo">IIP://</span>
+    <span class="tickers">
+      <span>SPX <span class="v">+0.4%</span></span><span>QQQ <span class="v">+0.6%</span></span>
+      <span>VIX <span class="neg">12.4</span></span><span>GLD <span class="v">+0.2%</span></span>
+      <span>DXY 104.2</span><span>US10Y 4.08</span>
+    </span>
+    <span class="sym" style="margin-left:auto">EOD 2026-07-31 · run AM-V0-20260803-171535</span>
+  </div>
+  <div class="app">
+    <nav class="nav">
+      <h5>Modules</h5>
+      <div class="item on">Dashboard <span class="k">DASH</span></div>
+      <div class="item">Alpha Momentum <span class="k">AM</span></div>
+      <div class="item">Close System <span class="k">CS</span></div>
+      <div class="item">Fundamental <span class="k">FO</span></div>
+      <div class="item">Institutional <span class="k">II</span></div>
+      <h5>Watchlist</h5>
+      <div class="item">TH-004 <span class="k pos">87</span></div>
+      <div class="item">TH-014 <span class="k">64</span></div>
+      <div class="item">TH-020 <span class="k">61</span></div>
+      <div class="item">TH-030 <span class="k">55</span></div>
+      <div class="item">TH-010 <span class="k neg">31</span></div>
+    </nav>
+
+    <main class="main">
+      <div class="hero">
+        <div class="row1"><span class="th">TH-004 · AI INFRASTRUCTURE</span><span class="conv">conviction HIGH · lifecycle CONFIRMING</span></div>
+        <h1>The most interesting setup right now: semiconductor capacity tightening while demand curves steepen</h1>
+        <p class="why">Entry readiness is the binding constraint, not the thesis. Candidate quality broad; the queue's strongest single name is closest to a confirmed breakout; leadership concentrated in three names.</p>
+        <div class="meta">
+          <span>AS-OF 2026-07-31</span>
+          <span>PROV <span class="prov-hyb">REAL/HYBRID</span></span>
+          <span>STAGES S1–S6 ✓</span>
+          <span>COVERAGE 9/9</span>
+          <span style="margin-left:auto">FALSIFICATION §11 →</span>
+        </div>
+      </div>
+
+      <div class="sect">
+        <h2>Findings — AM Queue</h2>
+        <div class="rows">
+          <div class="frow"><div class="t"><b>Closest to confirmed breakout</b> — RS #1, price &gt; 20/50/200</div><div class="num">TH-004</div><div class="num pos">RS 87</div><span class="tag hyb">HYBRID</span></div>
+          <div class="frow"><div class="t"><b>Leadership concentrated</b> — top 3 names = 71% queue weight</div><div class="num">TH-020</div><div class="num">—</div><span class="tag real">REAL</span></div>
+          <div class="frow"><div class="t"><b>Entry readiness lags thesis</b> — 5/7 candidates wait on stage-5</div><div class="num">TH-014</div><div class="num warn">2/7</div><span class="tag real">REAL</span></div>
+          <div class="frow"><div class="t"><b>Genuine unwind</b> — thesis intact, observation only</div><div class="num">TH-010</div><div class="num neg">−8.8%</div><span class="tag real">REAL</span></div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <h2>Close System Radar</h2>
+        <div class="rows">
+          <div class="frow"><div class="t"><b>Most interesting product to watch</b></div><div class="num" style="text-align:left">GLD — Gold ETF</div><div class="num">P2</div><span class="tag syn">SYNTHETIC DEMO</span></div>
+          <div class="frow"><div class="t"><b>Regime / Q-condition ratio</b></div><div class="num">Risk-on</div><div class="num">2/1</div><span class="tag syn">SYNTHETIC DEMO</span></div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="rail">
+      <div class="box cs">
+        <h5>CS Radar <span class="banner">DEMO</span></h5>
+        <div class="row"><span class="k">Regime</span><span class="v">Risk-on · P2</span></div>
+        <div class="row"><span class="k">Q-ratio</span><span class="v">2 / 1</span></div>
+        <div class="row"><span class="k">Synthesis</span><span class="v">5-layer</span></div>
+      </div>
+      <div class="box">
+        <h5>Data Provenance</h5>
+        <div class="row"><span class="k">AM</span><span class="v pos">REAL EOD</span></div>
+        <div class="row"><span class="k">FO</span><span class="v pos">REAL yfinance</span></div>
+        <div class="row"><span class="k">II</span><span class="v pos">REAL 13F</span></div>
+        <div class="row"><span class="k">CS</span><span class="v warn">SYNTHETIC</span></div>
+      </div>
+      <div class="box">
+        <h5>Falsification §11</h5>
+        <div class="row"><span class="k">Alternatives</span><span class="v">2</span></div>
+        <div class="row"><span class="k">Evidence</span><span class="v">6</span></div>
+        <div class="row"><span class="k">Counter</span><span class="v neg">1 open</span></div>
+      </div>
+    </aside>
+  </div>
+  <footer class="foot">
+    <span>ADVISORY ONLY — NO BUY/SELL/ALLOCATE · NO BROKER CONNECTIVITY (CONST. §23.8.1)</span>
+    <span>SAMPLE DATA FOR DIRECTION SELECTION</span>
+  </footer>
+</body>
+</html>
+<!-- 2026-08-04 16:30 UTC+7 -->

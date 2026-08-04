@@ -4,8 +4,6 @@ import { ProvenanceChip } from "@/components/ProvenanceChip"
 import { StatusBadge } from "@/components/StatusBadge"
 import { ExplainPanel } from "@/components/ExplainPanel"
 import { EmptyState } from "@/components/EmptyState"
-import { AdvisoryFooter } from "@/components/AdvisoryFooter"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getAMQueue } from "@/api/amClient"
 import type { CandidateSummary } from "@/types/am"
@@ -61,30 +59,29 @@ const DIMENSIONS: { title: string; note: string; rows: Dim[] }[] = [
   },
 ]
 
-function MatrixCard({ title, note, rows, candidates }: { title: string; note: string; rows: Dim[]; candidates: (CandidateSummary & { _theme: string })[] }) {
+/** Open reference-tier matrix — no Card containment, no stage boxes (audit C6 fix). */
+function MatrixSection({ title, note, rows, candidates }: { title: string; note: string; rows: Dim[]; candidates: (CandidateSummary & { _theme: string })[] }) {
   return (
-    <Card>
-      <CardHeader className="space-y-0 pb-2">
-        <CardTitle className="text-sm">{title}</CardTitle>
-        <p className="text-[11px] text-muted-foreground">{note}</p>
-      </CardHeader>
-      <CardContent className="overflow-x-auto p-0">
+    <section className="mt-6">
+      <h2 className="font-display text-finding font-bold text-foreground">{title}</h2>
+      <p className="text-[11px] text-ink-2">{note}</p>
+      <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[560px] border-collapse text-xs">
           <thead>
-            <tr className="border-b border-border">
-              <th className="sticky left-0 bg-card px-3 py-2 text-left font-medium text-muted-foreground">Criteria</th>
+            <tr className="border-b border-rule">
+              <th className="px-3 py-2 text-left font-medium text-ink-2">Criteria</th>
               {candidates.map((c) => (
                 <th key={c.id} className="px-2 py-2 text-center font-mono font-semibold text-foreground">
                   {c.ticker}
-                  <span className="block text-[10px] font-normal text-muted-foreground">{c._theme}</span>
+                  <span className="block text-[10px] font-normal text-ink-2">{c._theme}</span>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map(([label, key]) => (
-              <tr key={label} className="border-b border-border/60 last:border-0">
-                <td className="sticky left-0 bg-card px-3 py-1.5 text-muted-foreground">{label}</td>
+              <tr key={label} className="border-b border-rule last:border-0">
+                <td className="px-3 py-1.5 text-ink-2">{label}</td>
                 {candidates.map((c) => {
                   const bucket = key in c.candidate_quality ? c.candidate_quality : key in c.entry_readiness ? c.entry_readiness : c.data_confidence
                   const v = String((bucket as Record<string, unknown>)[key] ?? "—")
@@ -98,9 +95,15 @@ function MatrixCard({ title, note, rows, candidates }: { title: string; note: st
             ))}
           </tbody>
         </table>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
+}
+
+const storyToneClass: Record<string, string> = {
+  warning: "text-warning",
+  negative: "text-negative",
+  info: "text-info",
 }
 
 export default function AMScreenerPage() {
@@ -114,9 +117,9 @@ export default function AMScreenerPage() {
   if (error)
     return (
       <div>
-        <h1 className="font-mono text-lg font-semibold">AM Criteria Screener</h1>
-        <div className="mt-3 rounded-2xl bg-negative/[0.06] px-5 py-6 text-center">
-          <p className="text-sm text-negative">Failed to load screener data.</p>
+        <h1 className="font-display text-h2 font-bold">AM Criteria Screener</h1>
+        <div className="mt-3 rounded-md bg-bg-panel px-5 py-6 text-center">
+          <p className="text-sm font-medium text-negative">Failed to load screener data.</p>
         </div>
       </div>
     )
@@ -164,10 +167,17 @@ export default function AMScreenerPage() {
         display={`${candidates.length} × 18`}
         tone="info"
         sub={`${candidates.length} candidates assessed on 18 approved criteria — 7 candidate-quality, 6 entry-readiness, 5 data-confidence (spec §4.2). Every cell is the pipeline's qualitative string; nothing is summed into a score.`}
-        chips={<ProvenanceChip mode={provenance?.mode} source={provenance?.source} asOf={data?.point_in_time} />}
+        evidenceRef={data?.run_id}
+        chips={
+          <ProvenanceChip
+            mode={provenance?.hybrid ? "hybrid" : provenance?.mode}
+            source={provenance?.source}
+            asOf={data?.point_in_time}
+          />
+        }
       />
 
-      <div className="mb-4 rounded-2xl bg-warning/[0.06] px-5 py-3 text-xs text-warning">
+      <div className="mb-4 rounded-md bg-warning/10 px-5 py-3 text-xs text-warning">
         Criteria source: ALPHA-MOMENTUM-V0-SPEC.md v0.1 (approved, FD #19/#20) — rendered as-is. Exact
         formulas, weights, and thresholds remain deferred (spec §4.3). No invented rules.
       </div>
@@ -175,50 +185,42 @@ export default function AMScreenerPage() {
       {dataStories.length > 0 && (
         <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {dataStories.map((s) => (
-            <div key={s.headline} className="rounded-2xl bg-elevated/50 px-4 py-3">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <div key={s.headline} className="rounded-md bg-bg-panel px-4 py-3">
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-2">
                 {s.kicker}
               </span>
               <p className="mt-1 text-sm font-semibold text-foreground">{s.headline}</p>
-              <p className="mt-0.5 font-mono text-xs text-warning">{s.value}</p>
+              {/* M8 fix: story tone drives the value color */}
+              <p className={`mt-0.5 font-mono text-xs ${storyToneClass[s.tone] ?? "text-ink-2"}`}>{s.value}</p>
             </div>
           ))}
         </section>
       )}
 
-      <Card className="mb-3">
-        <CardHeader className="space-y-0 pb-2">
-          <CardTitle className="text-sm">Pipeline Stages (spec §4.1)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {STAGES.map((s, i) => (
-              <span key={s.stage} className="flex items-center gap-1.5">
-                <span
-                  className="rounded-md border border-border bg-card px-2 py-1 text-[11px] font-medium text-foreground"
-                  title={`${s.desc} — owner: ${s.owner}`}
-                >
-                  {s.stage}
-                </span>
-                {i < STAGES.length - 1 && <span className="text-muted-foreground">→</span>}
+      <section className="mt-6">
+        <h2 className="font-display text-finding font-bold text-foreground">Pipeline Stages (spec §4.1)</h2>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {STAGES.map((s, i) => (
+            <span key={s.stage} className="flex items-center gap-1.5">
+              <span className="rounded bg-bg-panel px-2 py-1 text-[11px] font-medium text-foreground" title={`${s.desc} — owner: ${s.owner}`}>
+                {s.stage}
               </span>
-            ))}
-          </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            Theme-linked demonstration boundary only — future versions preserve stock-first discovery
-            (spec §4.4). Feature computations are deterministic and reproducible (Constitution §20).
-          </p>
-        </CardContent>
-      </Card>
+              {i < STAGES.length - 1 && <span className="text-ink-2">→</span>}
+            </span>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-ink-2">
+          Theme-linked demonstration boundary only — future versions preserve stock-first discovery
+          (spec §4.4). Feature computations are deterministic and reproducible (Constitution §20).
+        </p>
+      </section>
 
       {candidates.length === 0 ? (
         <EmptyState message="No candidates to screen." sub="The controlled set currently has no admitted candidates." />
       ) : (
-        <div className="space-y-3">
-          {DIMENSIONS.map((d) => (
-            <MatrixCard key={d.title} title={d.title} note={d.note} rows={d.rows} candidates={candidates} />
-          ))}
-        </div>
+        DIMENSIONS.map((d) => (
+          <MatrixSection key={d.title} title={d.title} note={d.note} rows={d.rows} candidates={candidates} />
+        ))
       )}
 
       <ExplainPanel title="How to read the matrix">
@@ -228,8 +230,6 @@ export default function AMScreenerPage() {
         Candidate Quality, Entry Readiness, Data Confidence here, Theme Quality on the Theme Card. A
         "pass" is not a recommendation — entry readiness is not a buy signal (Constitution §1).
       </ExplainPanel>
-
-      <AdvisoryFooter provenance={`${data?.run_id ?? "—"} · REAL EOD — YAHOO FINANCE — V0.5 development only`} />
     </div>
   )
 }

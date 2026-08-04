@@ -75,7 +75,7 @@ export default function FundamentalQueuePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Fundamental Queue</h1>
+          <h1 className="font-display text-h2 font-bold">Fundamental Queue</h1>
           <p className="text-sm text-muted-foreground">
             {data.length} companies · Fundamental & Opportunity Intelligence V1
           </p>

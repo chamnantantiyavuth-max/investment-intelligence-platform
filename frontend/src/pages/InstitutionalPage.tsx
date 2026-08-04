@@ -54,7 +54,7 @@ export default function InstitutionalPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Institutional Intelligence</h1>
+          <h1 className="font-display text-h2 font-bold tracking-tight">Institutional Intelligence</h1>
           <p className="text-sm text-muted-foreground">
             {total.toLocaleString()} signals · 13F filings · {String(meta.data_source ?? "n/a")}
           </p>
@@ -101,7 +101,6 @@ export default function InstitutionalPage() {
                     <TableHead>Conviction</TableHead>
                     <TableHead>Action</TableHead>
                     <TableHead>Δ</TableHead>
-                    <TableHead>Score</TableHead>
                     <TableHead className="text-right">Value</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -118,12 +117,11 @@ export default function InstitutionalPage() {
                       <TableCell className={s.change_pct > 0 ? "text-emerald-600" : s.change_pct < 0 ? "text-pink-600" : "text-muted-foreground"}>
                         {s.change_pct === 0 ? "—" : `${s.change_pct > 0 ? "+" : ""}${s.change_pct.toFixed(1)}%`}
                       </TableCell>
-                      <TableCell>{s.signal_score}</TableCell>
                       <TableCell className="text-right">{fmtUSD(s.value_usd)}</TableCell>
                     </TableRow>
                   ))}
                   {data?.signals?.length === 0 && (
-                    <TableRow><TableCell colSpan={10} className="py-8 text-center text-sm text-muted-foreground">No signals in this range.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={9} className="py-8 text-center text-sm text-muted-foreground">No signals in this range.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>

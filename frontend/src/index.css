@@ -5,80 +5,99 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 
-/* IIP Design System v2.1 — LIGHT EDITORIAL (FD #49 amendment, 4 Aug 2026)
-   Direction change (Founder-delegated decision): dark terminal -> light marketing-pitch
-   editorial. Off-white canvas, ink text, tonal panels, muted institutional accents
-   (sage/pink/amber/steel at light-contrast values). No neon, borders minimal. */
+/* IIP Design System v3.0 — RESEARCH DESK (FD #51 direction A, 4 Aug 2026)
+   Quiet institutional research desk: paper canvas, ink text, serif display
+   headlines (FT-style), dense ledgers, hairline separators, one muted accent.
+   Borderless-by-default; typography establishes hierarchy before containers.
+   NOTE (audit C1 fix): every semantic color is a Tailwind v4 --color-* token
+   inside @theme so utilities (bg-card, text-muted-foreground, border-border…)
+   actually resolve. No HSL channel strings in :root. */
 @theme {
-  --color-positive: hsl(160 71% 32%);   /* #178A63 deep sage */
-  --color-negative: hsl(338 48% 54%);   /* #C2527B deep muted pink */
-  --color-warning: hsl(38 71% 40%);     /* #B07A1E deep amber */
-  --color-info: hsl(213 42% 50%);       /* #4A7BB5 steel blue */
+  /* Surfaces */
+  --color-background: #FAFAF7;     /* paper canvas */
+  --color-bg-page: #FAFAF7;
+  --color-bg-panel: #F1F1EA;       /* tonal secondary panel — no outline */
+  --color-bg-elevated: #F1F1EA;
+  --color-bg-card: #FFFFFF;        /* raised surface (empty states, inputs) */
+  --color-card: #FFFFFF;
+  --color-popover: #FFFFFF;
 
-  /* Editorial display scale (marketing-pitch hierarchy) */
-  --text-hero: 2.75rem;
-  --text-heroline: 1.5rem;
-  --text-display: 2rem;
-  --text-finding: 1.25rem;
+  /* Ink */
+  --color-foreground: #1A1C1E;
+  --color-ink: #1A1C1E;
+  --color-ink-2: #5A5E63;
+  --color-muted-foreground: #5A5E63;
+  --color-ink-3: #8A8E93;
+  --color-card-foreground: #1A1C1E;
+  --color-popover-foreground: #1A1C1E;
+
+  /* Lines & inputs */
+  --color-border: #DDDED6;         /* hairline separators */
+  --color-rule: #DDDED6;
+  --color-input: #FFFFFF;
+  --color-ring: #1F4E79;
+
+  /* Semantic */
+  --color-primary: #1F4E79;        /* steel blue accent — CTA, links, kickers */
+  --color-primary-foreground: #FFFFFF;
+  --color-accent: #F1F1EA;
+  --color-accent-foreground: #1A1C1E;
+  --color-secondary: #F1F1EA;
+  --color-secondary-foreground: #1A1C1E;
+  --color-muted: #F1F1EA;
+
+  --color-positive: #2E7D5B;       /* sage — positive / REAL provenance */
+  --color-negative: #A34A4A;       /* muted rose — negative / loss */
+  --color-warning: #8A6D1F;        /* amber — warning / SYNTHETIC provenance */
+  --color-info: #1F4E79;           /* steel blue — info */
+  --color-destructive: #A34A4A;
+  --color-destructive-foreground: #FFFFFF;
+
+  /* Sidebar (compat — masthead replaced sidebar; tokens kept for ui/sidebar) */
+  --color-sidebar-background: #FFFFFF;
+  --color-sidebar-foreground: #1A1C1E;
+  --color-sidebar-primary: #1F4E79;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #F1F1EA;
+  --color-sidebar-accent-foreground: #1A1C1E;
+  --color-sidebar-border: #DDDED6;
+  --color-sidebar-ring: #1F4E79;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --font-display: Georgia, 'Times New Roman', serif;
+
+  /* Type scale (Research Desk) */
+  --text-hero: 2.5rem;             /* display serif headline */
+  --text-heroline: 1.35rem;        /* hero supporting line */
+  --text-display: 1.75rem;
+  --text-finding: 1.125rem;
+  --text-h2: 1.375rem;
 }
 
 @layer base {
-  :root {
-    --background: 220 23% 97%;          /* #F7F8FA off-white page bg */
-    --foreground: 221 27% 12%;          /* #161B26 ink text */
-    --card: 0 0% 100%;                  /* #FFFFFF panel */
-    --card-foreground: 221 27% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 221 27% 12%;
-    --primary: 160 71% 32%;             /* deep sage — positive */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 23% 95%;           /* #EFF1F5 tonal surface */
-    --secondary-foreground: 221 27% 12%;
-    --muted: 220 23% 95%;
-    --muted-foreground: 217 13% 40%;    /* #5A6474 secondary text */
-    --accent: 220 23% 95%;
-    --accent-foreground: 221 27% 12%;
-    --destructive: 338 48% 54%;         /* deep muted pink — negative */
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 19% 91%;              /* #E3E6EC */
-    --input: 220 19% 91%;
-    --ring: 213 42% 50%;
-    --radius: 0.375rem;                 /* 6px — dense */
-
-    /* Chart colors */
-    --chart-1: 213 42% 50%;
-    --chart-2: 38 71% 40%;
-    --chart-3: 160 71% 32%;
-    --chart-4: 338 48% 54%;
-    --chart-5: 219 14% 60%;
-
-    /* Sidebar — light, border-right carries the separation */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 221 27% 12%;
-    --sidebar-primary: 160 71% 32%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 23% 95%;
-    --sidebar-accent-foreground: 221 27% 12%;
-    --sidebar-border: 220 19% 91%;
-    --sidebar-ring: 213 42% 50%;
-
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
-  }
-
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--color-border);
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
 
-  ::selection {
-    background-color: hsl(var(--primary) / 0.25);
+  /* Research Desk masthead double rule */
+  .masthead {
+    border-bottom: 2px solid var(--color-foreground);
+  }
+  .masthead::after {
+    content: "";
+    display: block;
+    border-bottom: 1px solid var(--color-rule);
+    margin-top: 2px;
   }
 }

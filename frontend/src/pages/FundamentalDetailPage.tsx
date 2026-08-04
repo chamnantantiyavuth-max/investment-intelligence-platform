@@ -90,12 +90,14 @@ export default function FundamentalDetailPage() {
         <TabsContent value="moat" className="space-y-4">
           <Card>
             <CardContent className="p-6">
-              <div className="grid grid-cols-4 gap-4 text-center mb-6">
+              <div className="grid grid-cols-3 gap-4 text-center mb-6">
                 <div><span className="text-xs text-muted-foreground uppercase block">Width</span><span className={cn("text-2xl font-bold", moatColor(asString(moat?.width)))}>{asString(moat?.width) || "—"}</span></div>
                 <div><span className="text-xs text-muted-foreground uppercase block">Depth</span><span className={cn("text-2xl font-bold", depthColor(asString(moat?.depth)))}>{asString(moat?.depth) || "—"}</span></div>
                 <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(asString(moat?.trend)))}>{asString(moat?.trend) || "—"}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Score</span><span className="text-2xl font-bold">{asNumber(moat?.moat_score)}/100</span></div>
               </div>
+              <p className="text-[11px] text-muted-foreground mb-2">
+                Numeric moat score quarantined — derived formula not yet Founder-approved (audit C-02 / decision A-02). Width/depth/trend are the approved qualitative classification (spec §3.4.1).
+              </p>
               <Separator className="my-4" />
               <p className="text-sm mb-4">{asString(moat?.moat_narrative) || "No moat narrative."}</p>
               <div className="flex flex-wrap gap-2">
@@ -143,8 +145,11 @@ export default function FundamentalDetailPage() {
               {vt && asBool(vt.triggered) && (
                 <div className="border border-rose-200 bg-rose-50 rounded-lg p-4">
                   <h4 className="font-bold text-rose-700 mb-2">⚠️ Value Trap Detector</h4>
-                  <p className="text-sm font-semibold text-rose-700 mb-2">Score: {asNumber(vt.score)}/5 — {asString(vt.verdict)}</p>
+                  <p className="text-sm font-semibold text-rose-700 mb-2">{asString(vt.verdict)}</p>
                   <p className="text-xs text-rose-600">{asString(vt.action)}</p>
+                  <p className="text-[11px] text-rose-500 mt-1">
+                    Numeric score quarantined — trap mapping under Founder review (audit C-02 / decision A-02); verdict shown pending approved formula.
+                  </p>
                 </div>
               )}
             </CardContent>

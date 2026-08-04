@@ -29,7 +29,7 @@ export default function CheapQualityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Cheap & Quality Watchlist</h1>
+        <h1 className="font-display text-h2 font-bold">Cheap & Quality Watchlist</h1>
         <p className="text-sm text-muted-foreground">
           Companies that are unusually cheap vs own history AND passed Value Trap detection
         </p>

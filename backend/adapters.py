@@ -26,7 +26,7 @@ from backend.schemas.responses import (
     Provenance, ResearchPackageDetail, ResearchPackageSummary, ThemeSummary, ThemeWithCandidates,
 )
 
-ADAPTER_VERSION = "v2"
+ADAPTER_VERSION = "v3"
 # Immutable adapter registry (plan T5 / council F3): version -> committed code hash of adapters.py.
 # Stored in a SEPARATE json so editing the registry cannot change the code hash (no circularity).
 # If adapters.py changes, recompute hash + bump ADAPTER_VERSION. verify_adapter_registry() enforces.
@@ -208,11 +208,16 @@ def _clean_alternatives(alt: object) -> dict[str, str] | None:
     return out or None
 
 
-def _counter_evidence(parsed: dict) -> list[str] | None:
-    """Collect unresolved counter-evidence from overrides (str or list values)."""
+def _counter_evidence_for(parsed: dict, theme_id: str, cand_theme: dict[str, str]) -> list[str] | None:
+    """Unresolved counter-evidence SCOPED to this theme's candidates (audit C2 fix:
+    overrides belong to a candidate; their counter-evidence must never leak to
+    unrelated themes — OVR-001/CAND-002 lands on TH-004 only, not TH-014)."""
     out: list[str] = []
     for o in parsed.get("overrides", []):
         if not isinstance(o, dict):
+            continue
+        cid = o.get("candidate_id")
+        if cand_theme.get(cid) != theme_id:
             continue
         v = o.get("unresolved_counter_evidence")
         if isinstance(v, str) and v and v != "None":
@@ -284,10 +289,16 @@ def am_queue() -> AMQueueResponse:
     raw_str = raw.decode("utf-8", errors="replace")
     evidence_list = parsed.get("evidence", [])
     alt_expl = _clean_alternatives(parsed.get("alternative_explanations"))
-    counter_ev = _counter_evidence(parsed)
+    # candidate_id -> theme_id map for counter-evidence scoping (audit C2)
+    cand_theme: dict[str, str] = {}
+    for item in parsed.get("queue", []):
+        _tid, payload = item[0], item[1]
+        for c in payload.get("candidates", []):
+            cand_theme[c.get("id")] = _tid
     themes = []
     for item in parsed.get("queue", []):
         theme_id, payload = item[0], item[1]
+        counter_ev = _counter_evidence_for(parsed, theme_id, cand_theme)
         themes.append(ThemeWithCandidates(
             theme=_map_theme(payload.get("theme", {}), raw_str, evidence_list, alt_expl, counter_ev),
             candidates=[_map_candidate(c, raw_str) for c in payload.get("candidates", [])],

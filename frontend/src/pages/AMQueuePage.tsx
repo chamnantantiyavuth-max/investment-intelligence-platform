@@ -6,7 +6,6 @@ import { ProvenanceChip } from "@/components/ProvenanceChip"
 import { StatusBadge } from "@/components/StatusBadge"
 import { ExplainPanel } from "@/components/ExplainPanel"
 import { EmptyState } from "@/components/EmptyState"
-import { AdvisoryFooter } from "@/components/AdvisoryFooter"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -20,11 +19,11 @@ function ThemeCardView({ tc }: { tc: ThemeWithCandidates }) {
   const t = tc.theme
   const candidates = tc.candidates ?? []
   return (
-    <div className="rounded-2xl bg-elevated/50 px-5 py-4">
+    <div className="rounded-md bg-bg-panel px-5 py-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="font-mono text-[11px] text-muted-foreground">{t.id}</span>
+            <span className="font-mono text-[11px] text-ink-2">{t.id}</span>
             <StatusBadge value={t.lifecycle} />
             <StatusBadge value={t.approval_status} />
             <StatusBadge value={t.monitoring_status} />
@@ -36,33 +35,33 @@ function ThemeCardView({ tc }: { tc: ThemeWithCandidates }) {
           <ArrowRight className="size-4" />
         </Button>
       </div>
-      <p className="mt-2 text-[13px] leading-relaxed text-foreground/85">{t.why_now}</p>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+      <p className="mt-2 text-[13px] leading-relaxed text-ink-2">{t.why_now}</p>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-2">
         <span>
-          <span className="font-mono">{t.stocks_in_industry}</span> stocks in industry
+          <span className="font-mono text-foreground">{t.stocks_in_industry}</span> stocks in industry
         </span>
         <span>
-          <span className="font-mono">{t.key_tickers.join(", ")}</span> key tickers
+          <span className="font-mono text-foreground">{t.key_tickers.join(", ")}</span> key tickers
         </span>
         <span>
-          <span className="font-mono">{candidates.length}</span> candidate{candidates.length === 1 ? "" : "s"}
+          <span className="font-mono text-foreground">{candidates.length}</span> candidate{candidates.length === 1 ? "" : "s"}
         </span>
       </div>
       {candidates.length > 0 && (
-        <div className="mt-2 space-y-1.5 border-t border-border/60 pt-2">
+        <div className="mt-2 space-y-1.5 border-t border-rule pt-2">
           {candidates.map((c) => (
             <div key={c.id} className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px] lg:grid-cols-3">
               <div className="flex items-center gap-1.5">
                 <span className="font-mono text-xs font-semibold text-foreground">{c.ticker}</span>
                 <StatusBadge value={c.conviction_level} />
               </div>
-              <span className="text-muted-foreground">
-                RS <span className="font-mono text-foreground/90">{c.candidate_quality.relative_strength}</span>
-                {" · "}Trend <span className="font-mono text-foreground/90">{c.candidate_quality.trend_quality}</span>
+              <span className="text-ink-2">
+                RS <span className="font-mono text-foreground">{c.candidate_quality.relative_strength}</span>
+                {" · "}Trend <span className="font-mono text-foreground">{c.candidate_quality.trend_quality}</span>
               </span>
-              <span className="text-muted-foreground">
-                Base <span className="font-mono text-foreground/90">{c.entry_readiness.base_quality}</span>
-                {" · "}Breakout <span className="font-mono text-foreground/90">{c.entry_readiness.breakout_proximity}</span>
+              <span className="text-ink-2">
+                Base <span className="font-mono text-foreground">{c.entry_readiness.base_quality}</span>
+                {" · "}Breakout <span className="font-mono text-foreground">{c.entry_readiness.breakout_proximity}</span>
               </span>
             </div>
           ))}
@@ -80,6 +79,9 @@ export default function AMQueuePage() {
   })
 
   const top = useMemo(() => (data ? rankCandidates(data.themes)[0] : undefined), [data])
+  // C4 fix: provenance from the RANKED theme, not themes[0]
+  const topTheme = useMemo(() => data?.themes.find((t) => t.theme.id === top?.themeId), [data, top])
+  const topProv = topTheme?.theme.provenance
   const lifecycle = useMemo(() => (data ? lifecycleCounts(data.themes) : []), [data])
   const leaders = useMemo(() => (data ? leadershipCount(data.themes) : 0), [data])
 
@@ -87,10 +89,11 @@ export default function AMQueuePage() {
   if (error)
     return (
       <div>
-        <h1 className="font-mono text-lg font-semibold">Alpha Momentum Queue</h1>
-        <div className="mt-3 rounded-2xl bg-negative/[0.06] px-5 py-6 text-center">
-          <p className="text-sm text-negative">Failed to load Alpha Momentum Queue</p>
-          <button onClick={() => refetch()} className="mt-2 text-sm text-info underline">
+        <h1 className="font-display text-h2 font-bold">Alpha Momentum Queue</h1>
+        <div className="mt-3 rounded-md bg-bg-panel px-5 py-6 text-center">
+          <p className="text-sm font-medium text-negative">Failed to load Alpha Momentum Queue</p>
+          <p className="mt-1 text-xs text-ink-2">What failed: the AM queue endpoint (fail-closed 503). Nothing else is affected.</p>
+          <button onClick={() => refetch()} className="mt-2 text-sm text-primary underline">
             Retry
           </button>
         </div>
@@ -101,6 +104,7 @@ export default function AMQueuePage() {
   const candidatesTotal = themes.reduce((n, t) => n + (t.candidates?.length ?? 0), 0)
   const prov = themes[0]?.theme.provenance
   const topStage = lifecycle[0]
+  const runId = data?.run_id
 
   return (
     <div>
@@ -111,7 +115,14 @@ export default function AMQueuePage() {
           display={top.ticker}
           tone="positive"
           sub={`${top.conviction} conviction · ${top.themeName} (${top.lifecycle}) · RS ${top.rs} · Base ${top.base} · Breakout ${top.breakout}. ${top.whyNow}`}
-          chips={<ProvenanceChip mode={prov?.mode} source={prov?.source} asOf={data?.point_in_time} />}
+          evidenceRef={`${runId} · ${top.themeId}`}
+          chips={
+            <ProvenanceChip
+              mode={topProv?.hybrid ? "hybrid" : topProv?.mode}
+              source={topProv?.source}
+              asOf={data?.point_in_time}
+            />
+          }
         />
       ) : (
         <HeroInsight
@@ -123,7 +134,7 @@ export default function AMQueuePage() {
         />
       )}
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-x-10 gap-y-1 md:grid-cols-2">
         <FindingCard
           featured
           kicker="Finding 01 · Momentum"
@@ -131,13 +142,15 @@ export default function AMQueuePage() {
           value={`${leaders}/${themes.length} themes`}
           tone="positive"
           why={`${leaders} of ${themes.length} themes sit in Emerging Leadership or Expansion — the stages where the strongest candidates concentrate.`}
+          evidenceRef={runId}
         />
         <FindingCard
           kicker="Finding 02 · Data"
           headline="Coverage on this run"
           value={prov?.coverage ?? "—"}
           tone="info"
-          why="Real EOD from Yahoo Finance, point-in-time 2026-08-03. Data confidence is per-candidate and always visible."
+          why={`Source: ${prov?.source ?? "—"} · point-in-time ${data?.point_in_time ?? "—"}. Data confidence is per-candidate and always visible.`}
+          evidenceRef={runId}
         />
         <FindingCard
           kicker="Finding 03 · Queue"
@@ -149,6 +162,7 @@ export default function AMQueuePage() {
               ? `Most common lifecycle stage: ${topStage[0]} (${topStage[1]} theme${topStage[1] === 1 ? "" : "s"}).`
               : "Theme-first queue with adaptive capacity (Constitution §14)."
           }
+          evidenceRef={runId}
         />
       </section>
 
@@ -158,8 +172,8 @@ export default function AMQueuePage() {
           sub="Queue capacity is adaptive — it may return zero high-priority candidates (Constitution §14)."
         />
       ) : (
-        <section className="mt-6">
-          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <section className="mt-8">
+          <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
             Reference · Themes
           </h2>
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -176,13 +190,11 @@ export default function AMQueuePage() {
         assessed on 7 quality, 6 entry-readiness, and 5 data-confidence dimensions — all qualitative
         badges, never a composite score (Constitution §10, CANDIDATE §2.5). The queue is Theme-first
         (§14). Exact formulas and thresholds are deferred (spec §4.3). See the{" "}
-        <Link to="/am-screener" className="text-info underline">
+        <Link to="/am-screener" className="text-primary underline">
           criteria screener
         </Link>
         .
       </ExplainPanel>
-
-      <AdvisoryFooter provenance={`run ${data?.run_id ?? "—"} · REAL EOD — YAHOO FINANCE — V0.5 development only`} />
     </div>
   )
 }
