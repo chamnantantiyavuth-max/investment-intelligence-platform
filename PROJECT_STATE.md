@@ -11,16 +11,16 @@
 - Latest FDs: **FD #50 (4 Aug 2026) — Falsification read-only schema extension (mini-FD, Option A):** §11 panel — ThemeSummary + alternative_explanations / evidence register / unresolved_counter_evidence (artifact passthrough, zero rule/DB change; ADAPTER_VERSION v1→v2 + registry hash recomputed (F3); persistence synced; 2 lineage tests pinned to persistence.ADAPTER_VERSION; +1 locked test → 131/131 locked). Prior: **FD #49 (4 Aug 2026) — UI redesign APPROVED (Option A, dark institutional muted)** — subsequently amended by Founder: shadcn-look excluded → editorial tonal panels → **v2.1 LIGHT EDITORIAL** (agent-decided). **FD #48 (3 Aug 2026) — RELEASE ACCEPTED (READY WITH ACCEPTED RISKS).** Chain: #1–44 + FD-CIW-001..016 + FD #45 + FD #46 + FD #47 + FD #48 + FD #49 + FD #50 + **FD #51 (4 Aug 2026 — WHOLE-UI REDESIGN: Founder not satisfied with v2.1 result; both prior directions retired; new direction TBD; B5–B8 paused)** + **FD #52 (4 Aug 2026 — AM AC-6/AC-8 reclassified as fixture demonstration; operational override/history workflow deferred)** + **FD #53 (4 Aug 2026 — FO/II unapproved formulas removed: moat_score/score_signal deleted, −2σ trigger, trap 4 = MIXED, ADAPTER_VERSION v4; audit C-02 CLOSED)** (69 total).
 - **Real-Data Production Path COMPLETE + RELEASED (3 Aug 2026, FD #46–48) + II FOLLOW-UP (same day):** AM/FO/II serve real pipeline artifacts (AM REAL EOD hybrid, FO yfinance 8 pkgs, II SEC EDGAR partial_21_51) through auth-protected API with SQLite lineage; CS remains the sole labeled-synthetic surface; provenance labels per component (real/hybrid/synthetic + human_sourced evidence); dashboard CS agreement (2/1) enforced. **II follow-up (commit 3337154/aacaacc):** Institutional Intelligence page (`/institutional` — provenance badge, stats, 50-row table, conviction/action badges) + server-side pagination (`/ii-signals?limit=&offset=`, backward-compatible, `total` added) — closes accepted risk #1 (II API-only) + mitigates #2 (16.7MB artifact); isolation-scan clean-tree false-violation fixed. Gates: 3× Phase 2R (FAIL→folded) + Plan Council Lite (PASS WITH FIXES) + Final Council R1 REWORK (F1–F4 remediated) + R2 PASS WITH FIXES + final production audit (browser + API/oracle + DB lineage + oracle).
 - **Pre-Launch Close Beta Audit CLOSED (3 Aug 2026 evening):** split-lane audit (Parent browser 10/10 + Sol Medium API/oracle) → NOT READY → Option A remediation (CS truth agreement + provenance labels) → re-audit verified → **READY WITH ACCEPTED RISKS** (Founder accepted 2 cosmetic Minors). App is release-ready as a **labeled synthetic demo**; FD #44 boundaries unchanged (real-pipeline wiring/persistence/auth deferred). Artifacts: `qa/prelaunch-audit/`.
-- Tests: **302/302 all passing** — verified 3 August 2026 (post FD #46–48 release + II follow-up: 130 locked (90 old + 40 real-data-api) + 56 AM + 42 FO + 25 CS + 49 II).
+- Tests: **301/301 all passing** — verified 4 August 2026 evening closeout (post FD #51–53: 132 locked (90 logic + 42 real-data-api) + 56 AM + 25 CS + 43 FO + 45 II; −4 unapproved-score tests +1 σ test vs 304).
 
 ## Build Metrics (single source of truth — v3.3.0)
 
 | Metric | Value | Last verified |
 |--------|-------|---------------|
-| Python tests | 131/131 locked + 131/131 root (full per-directory 302+1 sweep at B8) | 2026-08-04 |
+| Python tests | 301/301 (132 locked: 90 logic + 42 real-data-api; 56 AM + 25 CS + 43 FO + 45 II) — cron re-verified 259/259 non-API 2026-08-04 23:53 | 2026-08-04 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-04 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-04 |
-| Commits | 127 on `main` (HEAD `62afa9c` — UI redesign B1–B4 committed; cron re-verified 2026-08-04 11:47) | 2026-08-04 |
+| Commits | 136 on `main` (HEAD `8735a48` — Research Desk redesign + FD #51–53 closeout; cron re-verified 2026-08-04 23:53) | 2026-08-04 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#53 (69 total) | 2026-08-04 |
 | closeout_status | **in_progress** — session closed 4 Aug 2026: FD #51 redesign ACCEPTED, FD #52/#53 closed (audit C-01/C-02/C-03 done); remaining: C-04 state reconciliation, C-05 vault register rebuild, M-02 FO spec metadata, CIW implementation deferred | 2026-08-04 |
 
@@ -37,13 +37,12 @@
 
 ## Next allowed action
 
-**UI Redesign (FD #49/#50) — in execution, batch B5.** Continue the approved build order with
-v2.1 light-editorial conventions (MASTER.md v2.1 + iip-ui-design skill):
-**B5 Close System Radar** — hero "most interesting product to watch" (commodity/ETF per P2/P3) +
-P1–P3 eligibility + 5-layer synthesis + conviction; SYNTHETIC DEMO label prominent and honest
-(sole synthetic surface, FD #46). Then B6 FO (Queue/Detail/Cheap&Quality), B7 II + Weak Signals,
-B8 a11y+responsive pass + full per-directory test sweep. Each batch: `npm run build` + browser
-verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 2026).
+**UI Redesign (FD #51 Research Desk) — COMPLETE + ACCEPTED (4 Aug 2026).** All 11 pages rebuilt,
+Founder-accepted, council 2× RETEST closed. A-02 resolved via FD #53. **Remaining (next decisions):**
+A-01 (AM override/history scope — deferred per FD #52, needs separate FD) + closeout leftovers:
+C-04 state reconciliation (README/AGENTS checkpoints/ROADMAP stale mirrors), C-05 vault fd-register
+rebuild (~46/69 rows) + `({text` 0-byte stray deletion (needs approval), M-02 FO spec metadata.
+CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 2026).
 
 ## Bootstrap sources
 
@@ -56,7 +55,7 @@ verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 20
 
 ## Lifecycle sync
 
-- Last session: 2026-08-04 (credential recovery → FD #49 UI redesign (Option A → v2.1 LIGHT EDITORIAL, Founder-delegated) → B1–B4 rebuilt (Dashboard/Login/AM Queue/ThemeCard/Screener) + browser-verified → FD #50 falsification read-only schema extension (ADAPTER_VERSION v2, +1 locked test → 131/131 locked, root 131/131, build exit 0, lint 0) → committed `62afa9c`. Cron review 2026-08-04 11:47: 90/90 old-locked logic + 116/116 module locked re-verified (41 backend API tests blocked by broken pydantic_core in cron-shell python — env issue, not regression; same commit verified 131/131 at closeout); market snapshot latest EOD 2026-07-31; state synced (commits 127, FDs 66). B5–B8 remaining.
+- Last session: 2026-08-04 evening (full project audit → FD #51 whole-UI redesign ACCEPTED (Research Desk, 11 pages, council 2× RETEST) → FD #52 AC-6/8 fixture reclass → FD #53 FO/II formula removal; 10 commits c4ae919→8735a48, 301/301 tests). Cron review 2026-08-04 23:53: 259/259 non-API re-verified (90 locked logic + 56 AM + 25 CS + 43 FO + 45 II; 42 backend API tests blocked by broken pydantic_core in cron-shell python — env issue, not regression; same commit verified 301/301 at closeout); market snapshot latest completed EOD 2026-08-03 (live Aug-4 session in progress — INTC +10.07% intraday above ±10% watch threshold, AMD +8.05% reversing the FD #45 unwind, FSLR +20.91% 5d); state synced (commits 136, FDs 69). Remaining: C-04/C-05/M-02 + A-01 deferred.
 - Prior session: 2026-08-03 evening (AM findings → production readiness → pre-launch close-beta audit) — Loop v3 + governance sync PASS → **FD #45: 3 AM findings resolved** (FSLR yfinance artifact verified; AMD genuine unwind; GAP-006 fixed V0_TICKERS 5→9, re-run AM-V0-20260803-171535, coverage 9/9) → production smoke test (found + fixed vite proxy 8001→8000, `e5f4134`) → UI design audit (sidebar token gap parked) → **Full Pre-Launch Close Beta Audit** (split-lane: Parent browser 10/10 + Sol Medium API/oracle) → NOT READY (`a80c237`: SOL-003/BROWSER-003 CS triple disagreement + provenance Minors) → Option A remediation (`f96f0a5`: single-source CS counts, CSRadarPage→API, data_source everywhere) → re-audit + Founder acceptance (`91982a5` `b038b2f`) → **READY WITH ACCEPTED RISKS** → closeout (MEM-IIP-019/020 + state sync)
 - Outcome: FD-CIW-010 (design path) → design v0.3 (Phase 2R PASSED) → FD-CIW-011 (pilot execution authorization) → CRR-2026-0001 approved (Research Gate) → Source Map gate passed → bounded research (Modules A–M, initial, real SEC EDGAR + Microsoft IR sources) → Independent Challenge 5 rounds (FAIL ×4 → PASS, findings F1–F8/N1/N2 all disposed, v0.1→v0.5) → **Founder APPROVED publication (FD-CIW-012) → research-result.md v1 Published / Current Authoritative** → FD-CIW-013/014 (monitoring contract + Cron Class A live) → **FD-CIW-015 (second-slice execution authorization, CRR-2026-0002 v0.4 after Phase 2R 3 rounds) → Source Map 2 gate passed → research-draft-2 v0.1→v0.4 (Independent Challenge 4 rounds: FAIL×3 → PASS) → Founder APPROVED (FD-CIW-016) → research-result-2.md v1 Published / Current Authoritative (supplemental; first-slice v1 intact)**
 - Evidence: `docs/ciw-pilot-msft/` — first-slice artifacts (6/6) + second-slice artifacts: CRR-2026-0002-request.md (Approved), source-map-2.md, research-draft-2.md (v0.4 reviewed), challenge-review-2{,-REVIEW,-CONFIRM,-FINAL}.md (rounds 1–4), founder-review-record-2.md, research-result-2.md (Published v1) + `evidence/PHASE-2R-CRR-2026-0002-2026-08-03{,-REVIEW,-CONFIRM}.md` (Phase 2R rounds 1–3)
@@ -72,4 +71,4 @@ verify. CIW remains PAUSED (monitoring only; next decision point Q1-FY27 ~Oct 20
 | fd_count | #1–53 + FD-CIW-001..016 (69 total) |
 | audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged) |
 
-<!-- 2026-08-04 16:15 UTC+7 -->
+<!-- 2026-08-04 23:53 UTC+7 -->
