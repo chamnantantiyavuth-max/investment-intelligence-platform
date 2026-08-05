@@ -51,8 +51,16 @@
 
 | # | Finding | Fix | Verified |
 |---|---|---|---|
-| 1 | pipeline.py S5 omitted Maximum from conviction_order + conviction_breakdown → breakdown 4/5, SLV demoted behind TLT | `close_system/pipeline.py` S5: conviction_order = {Maximum:0, High:1, Moderate:2, Low:3} (spec §5.1) + Maximum in breakdown; locked pipeline tests: breakdown sums to input_count, Maximum == 1, priority test (SLV before TLT) | Artifact regenerated CS-V0-20260805-173858; S5 breakdown {Maximum:1, High:1, Moderate:2, Low:1} = 5/5; radar order SLV first; pipeline 26/26; API test order updated; suite **311/311** |
+| 1 | pipeline.py S5 omitted Maximum from conviction_order + conviction_breakdown → breakdown 4/5, SLV demoted behind TLT | `close_system/pipeline.py` S5: conviction_order = {Maximum:0, High:1, Moderate:2, Low:3} (spec §5.1) + Maximum in breakdown; locked pipeline tests: breakdown sums to input_count, Maximum == 1, priority test (SLV before TLT) | Artifact regenerated CS-V0-20260805-180430; S5 breakdown {Maximum:1, High:1, Moderate:2, Low:1} = 5/5; radar order SLV first; pipeline 26/26; API test order updated; suite **311/311** |
 | 2 | Screenshot 05 + VISUAL_QA stale (High wording predated regeneration) | Screenshot 05 re-captured (SLV Maximum lead + first row); VISUAL_QA wording updated | Browser: "Maximum conviction · 5/5 layers aligned", SLV row first |
+
+## Post-council note (18:05 UTC+7)
+
+Emoji de-AI-pattern cleanup (shared/templates/base.html + close_system/templates/radar.html) required one more
+regeneration → artifact run **CS-V0-20260805-180430** (point_in_time 2026-08-05T18:04:30.174454; identical data,
+only run metadata + radar.html PASS/FAIL text badges changed). Locked test run pins updated; the dashboard test
+also became self-sufficient (`_real_am_artifact()` mirror — no order dependency). Suite 311/311, v5 adapter hash
+unchanged (`71dd8fe8…`). The council artifact documents the review at HEAD `34acfc9` (run CS-V0-20260805-173858) — data identical.
 
 ## Verdict
 

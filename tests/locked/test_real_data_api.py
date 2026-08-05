@@ -500,6 +500,7 @@ def test_cs_product_detail_and_404():
 
 # ── 7. Dashboard ──────────────────────────────────────────────────────────────
 def test_dashboard_per_component_provenance_and_cs_agreement():
+    _real_am_artifact()  # mirror real AM artifact — this test is self-sufficient (no order dependency)
     _write_artifact("fo", _fo_envelope())
     _write_artifact("ii", _ii_artifact())
     _login()
@@ -512,8 +513,8 @@ def test_dashboard_per_component_provenance_and_cs_agreement():
     assert body["components"]["ii"]["data_source"].startswith("real")
     # CS: pipeline-linked synthetic surface (FD #57) — run_id/point_in_time from the artifact
     cs = body["components"]["cs"]
-    assert cs["run_id"] == "CS-V0-20260805-173858"
-    assert cs["point_in_time"] == "2026-08-05T17:38:58.222393"
+    assert cs["run_id"] == "CS-V0-20260805-180430"
+    assert cs["point_in_time"] == "2026-08-05T18:04:30.174454"
     assert cs["data_source"] == "synthetic_demo"
     assert cs["source"] == "close_system_pipeline"
     # SOL-003 triple agreement preserved: dashboard CS counts == /api/cs-radar via the adapter;
