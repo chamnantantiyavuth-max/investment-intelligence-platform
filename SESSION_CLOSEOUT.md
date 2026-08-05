@@ -1,42 +1,52 @@
-# Session Closeout — 5 August 2026 (org-pack integration, FD #54)
+# Session Closeout — 5 August 2026 (Research Workflow UI, FD #55/#56)
 
-**Session type:** Critical-mode implementation (material governance + multi-file + runtime profile installation)
-**Branch:** `org-pack-v0.1` → merged to `main` `0e0370d` (fast-forward) + pushed to origin
-**Closeout status:** completed (5 Aug 2026, 16:05 UTC+7)
+**Session type:** Critical-mode implementation (data-layer + UI, multi-file, council-gated)
+**Branch:** `main` — commits `b101575` (UI-0) → `d9e0abd` (UI-1/2) → `7b2a87f` (council artifact) + closeout, all pushed
+**Closeout status:** completed (5 Aug 2026, 17:10 UTC+7)
 
 ## What happened (plain language)
 
-Founder approved the IIP Hermes AI Workforce plan (Q1 as proposed / Q2 Holds org-workflow-only / Q3 Option C zero-profile pilot), then accepted the implementation (A) after the pre-merge review. The proposed "organization pack" from _staging was turned into a proper subordinate operating standard in the repo, 10 thin Principal Hermes profiles were installed and verified, and a dry-run pilot passed 8/8 checks. Merged to main, nothing pending.
+Founder shared ChatGPT's IA recommendation for the Research Workflow UI. I read it against the real repo
+(fit-gap: what data actually exists vs what the proposal assumed), then we approved it stepwise:
+D1 → read-only org-workflow API (kanban cards, holds, CIW artifact registry) — built with 8 locked tests;
+D3/D4 → 3 page blueprints approved; then UI-1 (Briefing upgrade) + UI-2 (Research Desk + artifact detail)
+built, verified in the browser, and run through 3 rounds of independent visual council (RETEST → RETEST → PASS).
+Founder accepted (A).
 
 ## Key decisions (recorded immediately)
 
-- FD #54 (repo register + vault fd-register): full scope — demotion to operating standard, canonical state contract (two-axis Theme governance), Hold grants (org-workflow scope), IC Secretary gate, 10 Principal profiles, repo kanban, 13 templates, no cron, Option C pilot.
-- Pilot deviations disclosed: delegated subagent completed post-fallback (5/5 constraint checks PASS; output preserved as *-delegated.md); write race → L1 single-writer lesson.
+- FD #55 — UI-0 read-only org-workflow adapter (D1, Option A): /org-queue, /org-holds,
+  /research-artifacts + detail; operational tracking only; no writes/schema; 8 locked tests → 309/309.
+- FD #56 — UI scope + naming (D3/D4, Option A): Briefing (renamed Dashboard) + Research Desk + artifact
+  detail; labels "Briefing" + "Research Desk"; Audit Trail deferred to UI-4; CS Product Detail gated by D2.
+- Data finding recorded: `kanban/board.md` display table says "Closed (pilot complete)" while card YAML
+  still holds In Research/Triage/Cross-Review — UI follows card YAML (contract source); board upkeep is
+  the CoS/IC Secretary write domain, not this task.
 
 ## Verification evidence
 
-- `evidence/organization/ORG-INTEGRATION-FIT-GAP-v0.1.md` (4C/9H/6M/4L findings)
-- `evidence/organization/RUNTIME-VERIFICATION-2026-08-05.md` (stages 1–5 + ad-hoc 30/30)
-- `evidence/organization/pilot/` (8 artifacts + PILOT-REPORT.md PASS 8/8)
-- Runtime: `hermes profile list` = 18 profiles; sync idempotent; 8 pre-existing SOUL hashes UNCHANGED; watchdog 16 cores clean; 0 secrets in org profiles
+- Backend suite **309/309** (8 new locked org-workflow tests); `npm run build` exit 0; lint 0 errors
+  (7 pre-existing warnings); browser console 0 errors on all new routes.
+- Ad-hoc hermes-verify: 17/17 (UI-0) · 11/11 (UI-1/2 contract) · 12/12 (R1 fixes) · 11/11 (R2 fixes).
+- Visual Council (Sol Medium, 3 rounds): R1 RETEST 7/7 → R2 RETEST 2/2 → **R3 PASS** — artifact
+  `evidence/COUNCIL_DECISION-ui-2026-08-05.md` (HEAD-bound `d9e0abd`).
+- Screenshots + VISUAL_QA: `evidence/ui/research-workflow/` (01 briefing, 02 research desk,
+  03 artifact detail, 04 decision history).
+- Gates: gate-check All passed; isolation-scan clean.
 
-## Closeout checklist
+## Session capture (obsidian-memory)
 
-- [x] FDs recorded — FD #54 (repo + vault), registered immediately at approval
-- [x] Bible updated — no domain-rule change (docs/operational only); AGENTS.md checkpoints + PROJECT_STATE synced
-- [x] PROJECT_STATE.md updated — Current state, Latest FDs, Build Metrics (commits 145, FDs 70), Next allowed action, closeout_status: completed
-- [x] Verify-First — every claim backed by executed commands (hashes, greps, profile list, sync runs)
-- [x] Verification tags — TEST_VERIFIED / STATIC_OBSERVATION / INFERENCE in evidence files
-- [x] Acceptance lock — no locked tests touched (docs-only change)
-- [x] Closeout status toggled — completed
-- [x] Gate check — org-pack gates: Stage 0 Founder decision ✓ → Stages 1–4 implemented ✓ → pilot PASS 8/8 ✓ → Founder acceptance (A) ✓ → merged ✓. (Final Council not run — Founder accepted directly via option A; available on request before any further rollout.)
-
-## Remaining (unchanged or optional)
-
-- C-04 state reconciliation (README/ROADMAP stale mirrors), C-05 vault fd-register rebuild (~46/70), M-02 FO spec metadata, A-01 deferred, CIW paused (Q1-FY27)
-- Org-pack optional follow-ups: R3 source-map licensing backfill, L1 kanban single-writer lock field, L2 delegation-retry clause (each via 14-CHANGE-REQUEST)
+- Vault fd-register updated: FD-54, FD-55, FD-56 rows now current (partially closes C-05).
+- `_Hermes-Memory` project capture: this session's log appended per Closeout Checklist (decisions in
+  `Decisions/`, session log in `Sessions/`).
 
 ## Recommended next action
 
-Run the org in bounded mode (e.g., a real intake through the kanban with one Principal + the IC Secretary gate), or close the R3/L1/L2 follow-ups. CIW remains paused.
-<!-- 2026-08-05 16:05 UTC+7 -->
+**D2 — approve CS pipeline-field admission** (p1–p3, layers L1–L5, discount/demand details, conviction,
+key_risks, recommendation — all verified present in `close_system/output/pipeline_result.json`) as a
+separate FD + F3 adapter flow → unlocks **UI-3 CS Product Detail** (`/cs-radar/:productId`).
+Alternatives: (a) park UI-3 until real CS data exists (keeps the synthetic-only surface minimal);
+(b) pick up C-04/C-05/M-02 closeout leftovers first; (c) start the org-workflow's first real research
+request (via Research Desk intake) so the new pages get live data.
+
+<!-- 2026-08-05 17:10 UTC+7 -->
