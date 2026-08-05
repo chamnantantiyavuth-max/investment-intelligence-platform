@@ -27,6 +27,9 @@ nul
 output/
 data/cache/*.json
 
+# Reference books (FD #58): static PDFs stay out of git; extracted notes live in docs/industry-outlook/
+docs/Books/
+
 # Order matters: un-ignore AFTER the `output/` rule so the exceptions win (FD #46)
 !fundamental-opportunity-v0/output/
 fundamental-opportunity-v0/output/*
