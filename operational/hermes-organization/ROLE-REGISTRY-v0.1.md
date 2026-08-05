@@ -1,0 +1,34 @@
+# IIP AI Organization — Role Registry
+
+**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05)
+**Version:** 0.1
+**Authority:** Subordinate to the IIP Constitution + `AI-ORGANIZATION-OPERATING-STANDARD-v0.1.md`; detailed contracts in `ROLE-MAPPING-v0.1.md` + `roles/`.
+
+## Registry
+
+| # | Role (Principal) | Hermes profile (installed) | Assistant (bounded subagent) | Approved logical responsibility (source) | Primary artifacts (mapped) |
+|---|---|---|---|---|---|
+| 1 | Founder Chief of Staff | `org-cos` | Executive Research Coordinator | Research Orchestrator (OM §3); Decision Gate queueing (OM §9) | Daily Work Queue, Founder Action Brief, Weekly Operating Review, Dependency/Blocker Log |
+| 2 | Investment Committee Secretary | `org-ic-secretary` | Committee Records Assistant | Founder Decision Gate recordkeeping (OM §9); CIW founder-review-record precedent | IC Decision Pack, Founder Review Pack, Decision/Transition Register |
+| 3 | Commodity Product Analyst | `org-commodity-analyst` | Commodity Research Assistant | OM §5.3 Product Analysis (V1+); Close System product suitability (§15) | Product Dossier, Cost-Curve Note, Supply-Demand Balance, Close-System Eligibility Memo |
+| 4 | Global Macro Strategist | `org-macro-strategist` | Macro Research Assistant | OM §5.1 Macro Analysis (V1+); Momentum §6.1 Market Regime | Macro Regime Map, Scenario/Trigger Matrix, Transmission Note, Policy/Event Brief |
+| 5 | Equity Alpha Analyst | `org-equity-analyst` | Equity Research Assistant | OM §5.4/§5.5; Momentum §6.3–6.8; FO pipeline (Phase 8); CIW bounded-consumption only (F-09) | Company Research Paper (CIW-mapped), Candidate Card, Valuation Assumption Sheet, Earnings Update, Thesis/Falsification Register |
+| 6 | Options Strategist | `org-options-strategist` | Options Research Assistant | Close System Instrument Structure (§15); OM §5.3 | Options Strategy Memo, Payoff/Greek Map, IV/Skew/Term Note, Scenario Decision Tree |
+| 7 | Chief Risk Officer | `org-cro` | Risk Research Assistant | Independent Challenge (OM §7); Close System risk dimensions (§15); Phase 8 §4 | Risk Challenge Memo, Research Risk Register, Scenario Checklist, Residual Risk Acceptance Request |
+| 8 | Quant & Model Validator | `org-quant-validator` | Quant Research Assistant | Shared Core deterministic verification (OM §4); VERIFICATION-DOCTRINE; Evidence QA | Quant Validation Report, Reproduction Log, Model Card, Sensitivity Appendix |
+| 9 | Data Steward | `org-data-steward` | Data Quality Assistant | Shared Core: Evidence Acquisition, Data Validation, provenance, Data Confidence (EVIDENCE-MODEL §5/§9) | Dataset Card, Data Quality Report, Lineage Record, Source/Licensing Register |
+| 10 | Internal Auditor / Red Team | `org-auditor` | Audit Evidence Assistant | Audit discipline (FD-HERMES-007 Sol Medium execution; governance-audit; LLM Council) | Audit Plan, Audit Finding, Red-Team Memo, Root-Cause Analysis, Remediation Verification |
+
+## Rules
+
+1. Each role is an **operator of an existing approved logical responsibility** — no role creates domain logic, states, rules, or authorities beyond FD #54 scope.
+2. Assistants are **bounded delegated subagents/worker prompts** under their Principal (topology per FD #54 Q1/Q3) — no Assistant profiles are installed.
+3. Portfolio-blind (Constitution §23.8.1): no role or Assistant receives holdings/positions/cost basis/transactions/account data.
+4. CIW boundary: role 5 consumes published CIW results only; no CIW-path research/automation without a separate named FD (FD #44 discipline).
+5. Audit execution (role 10) routes through Sol Medium per FD-HERMES-007.
+6. All roles read the Operating Standard + their PRINCIPAL.md at startup (PROFILE-STARTUP-CONTRACT).
+
+---
+
+*Role Registry v0.1 — FD #54.*
+<!-- 2026-08-05 14:45 UTC+7 -->
