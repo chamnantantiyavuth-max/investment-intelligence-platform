@@ -467,8 +467,9 @@ def test_cs_radar_pipeline_synthetic_demo():
     assets = body["assets"]
     assert isinstance(assets, list)
     tickers = [a["ticker"] for a in assets]
-    # eligible radar products from the committed v0.1 pipeline artifact, list order preserved
-    assert tickers == ["TLT", "SLV", "GDX", "XLE"], tickers
+    # eligible radar products from the committed v0.1 pipeline artifact, conviction-priority order
+    # (Maximum SLV first per spec §5.1)
+    assert tickers == ["SLV", "TLT", "GDX", "XLE"], tickers
     # admitted pipeline fields (FD #57)
     slv = next(a for a in assets if a["ticker"] == "SLV")
     assert slv["p1_pass"] is True and slv["p2_pass"] is True and slv["p3_pass"] is True
@@ -511,8 +512,8 @@ def test_dashboard_per_component_provenance_and_cs_agreement():
     assert body["components"]["ii"]["data_source"].startswith("real")
     # CS: pipeline-linked synthetic surface (FD #57) — run_id/point_in_time from the artifact
     cs = body["components"]["cs"]
-    assert cs["run_id"] == "CS-V0-20260805-173203"
-    assert cs["point_in_time"] == "2026-08-05T17:32:03.294078"
+    assert cs["run_id"] == "CS-V0-20260805-173858"
+    assert cs["point_in_time"] == "2026-08-05T17:38:58.222393"
     assert cs["data_source"] == "synthetic_demo"
     assert cs["source"] == "close_system_pipeline"
     # SOL-003 triple agreement preserved: dashboard CS counts == /api/cs-radar via the adapter;

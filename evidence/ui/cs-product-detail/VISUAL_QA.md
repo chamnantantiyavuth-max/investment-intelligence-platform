@@ -47,8 +47,15 @@
 | 1 | target_discount_entry null rendered as empty row on Product Thesis | `CSProductDetailPage.tsx` Row fallback `"Not specified in pipeline artifact"` | Browser + screenshot 06 re-captured; console clean |
 | 2 | SLV conviction "High" contradicted its rationale ("rare Maximum conviction candidate") | `close_system/fixtures.py` SLV conviction → **Maximum** (spec §5.1: 5/5 aligned + hidden corroboration + discount confirmed = Maximum); artifact regenerated via `python close_system/run.py` (run CS-V0-20260805-173203, point_in_time 2026-08-05T17:32:03; output/ is gitignored generated output — diff = run_id/point_in_time + conviction only); locked test pins updated + conviction==Maximum assertion | Suite 310/310, browser header "Maximum conviction" |
 
+## Council round 2 → PASS WITH FIXES (2026-08-05) — 2 findings, both remediated + re-verified
+
+| # | Finding | Fix | Verified |
+|---|---|---|---|
+| 1 | pipeline.py S5 omitted Maximum from conviction_order + conviction_breakdown → breakdown 4/5, SLV demoted behind TLT | `close_system/pipeline.py` S5: conviction_order = {Maximum:0, High:1, Moderate:2, Low:3} (spec §5.1) + Maximum in breakdown; locked pipeline tests: breakdown sums to input_count, Maximum == 1, priority test (SLV before TLT) | Artifact regenerated CS-V0-20260805-173858; S5 breakdown {Maximum:1, High:1, Moderate:2, Low:1} = 5/5; radar order SLV first; pipeline 26/26; API test order updated; suite **311/311** |
+| 2 | Screenshot 05 + VISUAL_QA stale (High wording predated regeneration) | Screenshot 05 re-captured (SLV Maximum lead + first row); VISUAL_QA wording updated | Browser: "Maximum conviction · 5/5 layers aligned", SLV row first |
+
 ## Verdict
 
-**PASS (implementer claim after council fixes)** — pipeline fields admitted with F3 discipline, mock-only values absent, honest empties + spec-true conviction reconciliation, detail page renders real admitted data, console clean. Independent visual review round 2 (focused retest) pending.
+**PASS (implementer claim after council round-2 fixes)** — pipeline S5 conviction scale now spec-true end-to-end (fixture → pipeline → artifact → API → UI), breakdown totals input, priority order Maximum-first, evidence fresh. Independent visual review round 3 (final retest) pending.
 
-<!-- 2026-08-05 17:50 UTC+7 -->
+<!-- 2026-08-05 18:05 UTC+7 -->

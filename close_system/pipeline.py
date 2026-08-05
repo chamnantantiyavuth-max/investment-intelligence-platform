@@ -207,7 +207,8 @@ def stage_synthesis(products, p2_results, p3_results):
         synthesized.append(entry)
 
     # Sort: eligible first by conviction, then by recommendation rank
-    conviction_order = {"High": 0, "Moderate": 1, "Low": 2}
+    # Conviction scale per spec §5.1: Low < Moderate < High < Maximum
+    conviction_order = {"Maximum": 0, "High": 1, "Moderate": 2, "Low": 3}
     synthesized.sort(key=lambda s: (
         0 if s["eligible"] else 1,
         conviction_order.get(s["conviction"], 9),
@@ -221,6 +222,7 @@ def stage_synthesis(products, p2_results, p3_results):
         "eligible_count": len([s for s in synthesized if s["eligible"]]),
         "ineligible_count": len([s for s in synthesized if not s["eligible"]]),
         "conviction_breakdown": {
+            "Maximum": len([s for s in synthesized if s["conviction"] == "Maximum"]),
             "High": len([s for s in synthesized if s["conviction"] == "High"]),
             "Moderate": len([s for s in synthesized if s["conviction"] == "Moderate"]),
             "Low": len([s for s in synthesized if s["conviction"] == "Low"]),

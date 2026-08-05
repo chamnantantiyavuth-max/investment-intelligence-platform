@@ -217,9 +217,23 @@ class TestS5Synthesis:
             stage_p2_discount(PRODUCTS)[1],
             stage_p3_demand(PRODUCTS)[1])
         cb = s5["conviction_breakdown"]
-        assert cb["High"] >= 1    # SLV
+        # Breakdown must account for every input product (spec §5.1 4-level scale)
+        assert sum(cb.values()) == s5["input_count"]
+        assert cb["Maximum"] == 1  # SLV — 5/5 layers + hidden corroboration + discount confirmed
+        assert cb["High"] >= 1    # TLT
         assert cb["Moderate"] >= 2  # GDX, XLE
         assert cb["Low"] >= 1      # COPPER
+
+    def test_conviction_priority_order(self):
+        # Maximum must sort ahead of High in the prioritized eligible bucket (spec §5.1)
+        s5, synthesized = stage_synthesis(PRODUCTS,
+            stage_p2_discount(PRODUCTS)[1],
+            stage_p3_demand(PRODUCTS)[1])
+        eligible = [s for s in synthesized if s["eligible"]]
+        slv_idx = next(i for i, s in enumerate(eligible) if s["ticker"] == "SLV")
+        tlt_idx = next(i for i, s in enumerate(eligible) if s["ticker"] == "TLT")
+        assert eligible[slv_idx]["conviction"] == "Maximum"
+        assert slv_idx < tlt_idx
 
 
 class TestS6Radar:
