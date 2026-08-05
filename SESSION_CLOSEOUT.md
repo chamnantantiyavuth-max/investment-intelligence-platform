@@ -34,19 +34,21 @@ Founder accepted (A).
   03 artifact detail, 04 decision history).
 - Gates: gate-check All passed; isolation-scan clean.
 
-## Session capture (obsidian-memory)
+## Session 3 (evening continuation) — CS Product Detail (FD #57, D2), 18:20 UTC+7
 
-- Vault fd-register updated: FD-54, FD-55, FD-56 rows now current (partially closes C-05).
-- `_Hermes-Memory` project capture: this session's log appended per Closeout Checklist (decisions in
-  `Decisions/`, session log in `Sessions/`).
+**What happened:** Founder said "Start D2" → CS surface switched from the static demo mock to the actual
+v0.1 pipeline artifact: adapters cs_radar/cs_product (ADAPTER_VERSION v5 + registry + persistence sync),
+mock-only q_conditions/dimensions/rule_pack removed (no spec/pipeline basis — Q-conditions belong to AM),
+/cs-radar (4 products + lead judgment = display ordering) + /cs-radar/:productId (5 tabs; Options Overlay
+deferred honest note). Visual council 3 rounds: R1 PASS WITH FIXES (2: target empty row → honest fallback;
+SLV conviction High vs rationale → Maximum per spec §5.1) → R2 PASS WITH FIXES (2: pipeline S5 omitted
+Maximum from conviction_order/breakdown → spec-true end-to-end, SLV first; stale evidence → recaptured)
+→ R3 **PASS** (HEAD-bound `34acfc9`). Founder ACCEPTED (A). Commits eefad48/34acfc9/a2a93fa.
+Suite **311/311** (26 CS pipeline locked incl. new priority test), 152 commits, 73 FDs.
 
-## Recommended next action
+**Recommended next action:** (a) org-workflow real intake — first real research request through the
+Research Desk kanban (write domain = CoS/IC Secretary) so new pages run live data; (b) UI-4 Decision/
+Model/Audit registers (needs git-history endpoint); (c) closeout leftovers C-04/C-05/M-02.
+Alternatives: A-01 (FD #52) or CS Options Overlay (needs options pipeline — deferred).
 
-**D2 — approve CS pipeline-field admission** (p1–p3, layers L1–L5, discount/demand details, conviction,
-key_risks, recommendation — all verified present in `close_system/output/pipeline_result.json`) as a
-separate FD + F3 adapter flow → unlocks **UI-3 CS Product Detail** (`/cs-radar/:productId`).
-Alternatives: (a) park UI-3 until real CS data exists (keeps the synthetic-only surface minimal);
-(b) pick up C-04/C-05/M-02 closeout leftovers first; (c) start the org-workflow's first real research
-request (via Research Desk intake) so the new pages get live data.
-
-<!-- 2026-08-05 17:10 UTC+7 -->
+<!-- 2026-08-05 18:20 UTC+7 -->
