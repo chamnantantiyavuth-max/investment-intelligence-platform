@@ -1,15 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { getCSRadar, type CSAsset } from "@/api/csClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { QConditionGrid } from "@/components/QConditionGrid";
-import { ConfidenceGauge } from "@/components/ConfidenceGauge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SyntheticDataBanner from "@/components/SyntheticDataBanner";
 
-// Audit SOL-003/BROWSER-003 fix: page now consumes the CS API (single source of
-// truth = backend /api/cs-radar mock). The hardcoded frontend asset array was
-// removed because it disagreed with the API (dashboard=8 / API=2 / UI=3).
+// FD #57: radar serves the v0.1 pipeline artifact (SYNTHETIC). Lead judgment =
+// display ordering from admitted fields only (conviction ordinal, then layer
+// alignment) — presentation, never an investment rule (AM rankCandidates doctrine).
+
+const CONVICTION_ORDER = ["Low", "Moderate", "High", "Maximum"];
+
+function convictionRank(a: CSAsset): number {
+  return CONVICTION_ORDER.indexOf(a.conviction);
+}
 
 export default function CSRadarPage() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -27,17 +31,15 @@ export default function CSRadarPage() {
   );
 
   const assets: CSAsset[] = data?.assets ?? [];
-  // Lead judgment = display ordering from ADMITTED fields only (max opportunity, tie → suitability).
-  // Presentation ordering, never an investment rule (same doctrine as AM rankCandidates).
   const lead = [...assets].sort(
-    (a, b) => b.dimensions.opportunity - a.dimensions.opportunity || b.dimensions.suitability - a.dimensions.suitability
+    (a, b) => convictionRank(b) - convictionRank(a) || b.layers_aligned - a.layers_aligned
   )[0];
 
   return (
     <div className="space-y-6">
       <h1 className="font-display text-h2 font-bold tracking-tight">Close System Radar</h1>
 
-      <SyntheticDataBanner note="Radar assets are static demonstration data — the Close System pipeline is not yet wired to this API surface." />
+      <SyntheticDataBanner note="Radar products come from the v0.1 Close System pipeline artifact — labeled synthetic (FD #46), never disguised." />
 
       {lead && (
         <section className="border-b border-rule pb-6">
@@ -46,80 +48,48 @@ export default function CSRadarPage() {
             Most interesting product to watch: {lead.ticker} — {lead.name}
           </h2>
           <p className="mt-2 font-mono text-lg font-semibold text-positive">
-            opportunity {lead.dimensions.opportunity} · suitability {lead.dimensions.suitability}
+            {lead.conviction} conviction · {lead.layers_aligned}/5 layers aligned
           </p>
           <p className="mt-2 max-w-2xl text-sm text-ink-2">
-            Regime {lead.dimensions.regime} · Q-conditions {lead.q_conditions_met}/{lead.q_conditions_total}. Derived
-            from admitted Q-condition/dimension fields — display ordering, not an investment rule.
+            {lead.recommendation}. Derived from admitted pipeline fields — display ordering, not an investment rule.
           </p>
         </section>
       )}
 
-      {/* Council F3: P1–P3 / 5-layer / conviction / risks exist in the CS pipeline artifact but are
-          NOT admitted by this synthetic API surface (FD #46) — honest unavailable states, no invented fields. */}
-      <section className="rounded-md bg-bg-panel px-4 py-3">
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">Eligibility · Synthesis · Conviction</h2>
-        <div className="mt-2 grid gap-x-8 gap-y-1 text-[13px] sm:grid-cols-2">
-          {[
-            ["P1–P3 eligibility", "Unavailable on this surface"],
-            ["5-layer synthesis", "Unavailable on this surface"],
-            ["Conviction (Low–Maximum)", "Unavailable on this surface"],
-            ["Key risks", "Unavailable on this surface"],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between border-b border-rule py-1.5">
-              <span className="text-ink-2">{k}</span>
-              <span className="font-mono text-[11px] text-ink-3">{v}</span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-2 text-[11px] text-ink-2">
-          These fields exist in the CS pipeline artifact (pipeline_result.json: p1_pass/p2_pass/p3_pass, layers,
-          conviction, key_risks) but this synthetic API surface does not admit them yet — wiring requires a separate
-          FD (FD #46 boundary). Not invented here.
-        </p>
-      </section>
-
       <section className="mt-6">
-        <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Q-Conditions Screening</h2>
+        <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Eligibility &amp; Synthesis</h2>
         <div className="mt-2 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[120px]">Ticker</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Q-Conditions</TableHead>
-                <TableHead className="text-center">Suitability</TableHead>
-                <TableHead className="text-center">Opportunity</TableHead>
-                <TableHead>Regime</TableHead>
-                <TableHead>Confidence</TableHead>
+                <TableHead className="text-center">P1–P3</TableHead>
+                <TableHead className="text-center">Layers</TableHead>
+                <TableHead>Conviction</TableHead>
+                <TableHead>Recommendation</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {assets.map((a) => (
-                <TableRow key={a.ticker}>
-                  <TableCell className="font-mono font-bold">{a.ticker}</TableCell>
+                <TableRow key={a.id ?? a.ticker}>
+                  <TableCell className="font-mono font-bold">
+                    <Link to={`/cs-radar/${a.ticker}`} className="text-primary hover:underline">
+                      {a.ticker}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     {a.name}
-                    <div className="text-xs text-muted-foreground">{a.sector}</div>
+                    <div className="text-xs text-muted-foreground">{a.category}</div>
                   </TableCell>
-                  <TableCell>
-                    <QConditionGrid conditions={a.q_details} />
-                    <span className="text-xs text-muted-foreground">{a.q_conditions_met}/{a.q_conditions_total} met</span>
+                  <TableCell className="text-center font-mono text-[11px]">
+                    {a.p1_pass && a.p2_pass && a.p3_pass ? "P1·P2·P3" : `${a.p1_pass ? "P1" : ""}${a.p2_pass ? "P2" : ""}${a.p3_pass ? "P3" : ""}`}
                   </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-semibold">{a.dimensions.suitability}</span>
+                  <TableCell className="text-center font-mono text-[11px]">
+                    {a.layers_aligned}/{Object.keys(a.layers).length}
                   </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-semibold">{a.dimensions.opportunity}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={a.dimensions.regime === "compatible" ? "secondary" : "outline"}>
-                      {a.dimensions.regime}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <ConfidenceGauge value={a.dimensions.data_confidence * 10} size="sm" />
-                  </TableCell>
+                  <TableCell>{a.conviction}</TableCell>
+                  <TableCell className="max-w-[220px] whitespace-normal">{a.recommendation}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

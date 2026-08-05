@@ -155,10 +155,14 @@ async def get_dashboard_summary(request: Request):
         else:
             components[key] = c
 
-    # CS counts derived from the exact served mock bytes (SOL-003 fix)
-    cs_assets = cs_routes._MOCK_ASSETS
-    cs_radar_items = len(cs_assets)
-    cs_qc_met = sum(1 for a in cs_assets if a["q_conditions_met"] == a["q_conditions_total"])
+    # CS counts from the pipeline adapter (FD #57 — SOL-003 agreement preserved)
+    try:
+        cs_prods = adapters.cs_radar()
+        cs_radar_items = len(cs_prods)
+        cs_qc_met = sum(1 for p in cs_prods if p.get("layers_aligned") == 5)
+    except adapters.ArtifactUnavailable:
+        cs_radar_items = 0
+        cs_qc_met = 0
 
     # Total themes / queue size from admitted AM run (real artifact), else 0
     total_themes = 0

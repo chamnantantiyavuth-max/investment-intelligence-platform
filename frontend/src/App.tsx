@@ -10,6 +10,7 @@ import AMQueuePage from "@/pages/AMQueuePage"
 import AMScreenerPage from "@/pages/AMScreenerPage"
 import AMThemeCardPage from "@/pages/AMThemeCardPage"
 import CSRadarPage from "@/pages/CSRadarPage"
+import CSProductDetailPage from "@/pages/CSProductDetailPage"
 import FundamentalQueuePage from "@/pages/FundamentalQueuePage"
 import FundamentalDetailPage from "@/pages/FundamentalDetailPage"
 import CheapQualityPage from "@/pages/CheapQualityPage"
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="am-screener" element={<AMScreenerPage />} />
             <Route path="am-theme/:id" element={<AMThemeCardPage />} />
             <Route path="cs-radar" element={<CSRadarPage />} />
+            <Route path="cs-radar/:id" element={<CSProductDetailPage />} />
             <Route path="fundamental" element={<FundamentalQueuePage />} />
             <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
             <Route path="cheap-quality" element={<CheapQualityPage />} />

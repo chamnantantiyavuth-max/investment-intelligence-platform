@@ -26,7 +26,7 @@ from backend.schemas.responses import (
     Provenance, ResearchPackageDetail, ResearchPackageSummary, ThemeSummary, ThemeWithCandidates,
 )
 
-ADAPTER_VERSION = "v4"
+ADAPTER_VERSION = "v5"
 # Immutable adapter registry (plan T5 / council F3): version -> committed code hash of adapters.py.
 # Stored in a SEPARATE json so editing the registry cannot change the code hash (no circularity).
 # If adapters.py changes, recompute hash + bump ADAPTER_VERSION. verify_adapter_registry() enforces.
@@ -396,6 +396,7 @@ def fo_cheap_quality() -> list[ResearchPackageSummary]:
 
 # ── II mapping ────────────────────────────────────────────────────────────────
 def ii_signals(limit: int = 0, offset: int = 0) -> IISignalsResponse:
+    """Real SEC EDGAR 13F signals (FD #46)."""
     raw, parsed = load_snapshot("ii")
     if not isinstance(parsed, dict):
         raise ArtifactUnavailable("ii", "corrupt", "II artifact must be a dict")
@@ -410,6 +411,47 @@ def ii_signals(limit: int = 0, offset: int = 0) -> IISignalsResponse:
 
 
 # ── Dashboard (per-component admission, NF7) ──────────────────────────────────
+# ── CS mapping (FD #57: v0.1 pipeline artifact surface, SYNTHETIC) ───────────
+CS_PIPELINE = _repo_root() / "close_system" / "output" / "pipeline_result.json"
+_CS_LIST_ORDER = ("present_to_founder", "deep_research", "radar_watchlist")
+
+
+def _load_cs_pipeline() -> dict:
+    try:
+        data = json.loads(CS_PIPELINE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        raise ArtifactUnavailable("cs", "pipeline artifact unreadable", str(e)) from e
+    if not isinstance(data, dict):
+        raise ArtifactUnavailable("cs", "corrupt", "CS pipeline artifact must be a dict")
+    return data
+
+
+def _cs_products(data: dict) -> list[dict]:
+    """Eligible radar products in list order; ineligible (e.g. COPPER) excluded."""
+    radar = data.get("radar", {})
+    products: list[dict] = []
+    seen: set[str] = set()
+    for key in _CS_LIST_ORDER:
+        for item in radar.get(key, []):
+            pid = item.get("id") or item.get("ticker")
+            if pid in seen or not item.get("eligible", False):
+                continue
+            seen.add(pid)
+            products.append(item)
+    return products
+
+
+def cs_radar() -> list[dict]:
+    return _cs_products(_load_cs_pipeline())
+
+
+def cs_product(product_id: str) -> dict | None:
+    return next(
+        (p for p in cs_radar() if p.get("id") == product_id or p.get("ticker") == product_id),
+        None,
+    )
+
+
 def dashboard_components() -> dict[str, ComponentProvenance | None]:
     out: dict[str, ComponentProvenance | None] = {}
     for module in ("am", "fo", "ii"):
@@ -423,12 +465,17 @@ def dashboard_components() -> dict[str, ComponentProvenance | None]:
                 data_source=f"real_{prov.source}", state="available")
         except ArtifactUnavailable:
             out[module] = None  # unadmitted -> explicit null/unavailable (never silent synthetic)
-    # CS: exact served mock bytes; explicit null lineage; NOT linked to CS pipeline artifact (NF3)
-    from backend.api import cs_routes
-    assets = cs_routes._MOCK_ASSETS
-    qmet = sum(1 for a in assets if a["q_conditions_met"] == a["q_conditions_total"])
-    out["cs"] = ComponentProvenance(run_id=None, point_in_time=None,
-                                    data_source="synthetic_demo", source="backend_static_mock")
-    out["_cs_counts"] = ComponentProvenance(
-        data_source=f"{len(assets)}:{qmet}", source="backend_static_mock")  # SOL-003 triple agreement
+    # CS: v0.1 pipeline artifact surface (FD #57) — synthetic, pipeline-linked lineage
+    try:
+        data = _load_cs_pipeline()
+        products = _cs_products(data)
+        full_aligned = sum(1 for p in products if p.get("layers_aligned") == 5)
+        out["cs"] = ComponentProvenance(
+            run_id=data.get("run_id"), point_in_time=data.get("point_in_time"),
+            data_source="synthetic_demo", source="close_system_pipeline")
+        out["_cs_counts"] = ComponentProvenance(
+            data_source=f"{len(products)}:{full_aligned}", source="close_system_pipeline")  # SOL-003 agreement
+    except ArtifactUnavailable:
+        out["cs"] = None
+        out["_cs_counts"] = None
     return out

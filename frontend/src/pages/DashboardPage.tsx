@@ -239,7 +239,7 @@ export default function DashboardPage() {
           headline="Regime reads risk-on"
           value={data.cs_regime}
           tone="warning"
-          why={`${data.cs_qc_met}/${data.cs_radar_items} radar items meet Q-conditions. Synthetic demo — labeled, never disguised (FD #46).`}
+          why={`${data.cs_qc_met}/${data.cs_radar_items} radar products show full 5-layer alignment. Synthetic pipeline — labeled, never disguised (FD #46/57).`}
         />
         <FindingCard
           kicker="Finding 04 · Queue"

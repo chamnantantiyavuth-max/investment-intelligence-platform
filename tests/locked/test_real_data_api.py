@@ -457,14 +457,44 @@ def test_ii_stale_artifact_rejected_503():
     assert client.get("/api/ii-signals").status_code == 503
 
 
-# ── 6. CS ─────────────────────────────────────────────────────────────────────
-def test_cs_radar_unchanged_synthetic_demo():
+# ── 6. CS — v0.1 pipeline artifact surface (FD #57: mock replaced) ───────────
+def test_cs_radar_pipeline_synthetic_demo():
     _login()
     r = client.get("/api/cs-radar")
     assert r.status_code == 200
     body = r.json()
     assert body["data_source"] == "synthetic_demo"
-    assert isinstance(body["assets"], list)
+    assets = body["assets"]
+    assert isinstance(assets, list)
+    tickers = [a["ticker"] for a in assets]
+    # eligible radar products from the committed v0.1 pipeline artifact, list order preserved
+    assert tickers == ["TLT", "SLV", "GDX", "XLE"], tickers
+    # admitted pipeline fields (FD #57)
+    slv = next(a for a in assets if a["ticker"] == "SLV")
+    assert slv["p1_pass"] is True and slv["p2_pass"] is True and slv["p3_pass"] is True
+    assert slv["layers_aligned"] == 5 and slv["layers_contradicting"] == 0
+    # conviction reconciled with the recommendation rationale (council F2): 5/5 aligned +
+    # hidden corroboration + confirmed discount = Maximum per spec §5.1
+    assert slv["conviction"] == "Maximum" and slv["recommendation"] == "Present to Founder"
+    assert "L1_macro" in slv["layers"] and "L5_hidden" in slv["layers"]
+    assert slv["layers"]["L1_macro"]["signal"] in ("supporting", "neutral", "contradicting")
+    assert slv["discount_detail"] and slv["demand_detail"] and slv["key_risks"]
+    # mock-only fields removed — no spec/pipeline basis (FD #57; Q-conditions belong to AM)
+    for key in ("q_conditions_met", "q_conditions_total", "q_details",
+                "dimensions", "rule_pack", "instrument", "liquidity", "capital_lockup"):
+        assert key not in slv, key
+
+
+def test_cs_product_detail_and_404():
+    _login()
+    r = client.get("/api/cs-radar/SLV")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["data_source"] == "synthetic_demo"
+    assert body["asset"]["ticker"] == "SLV"
+    assert body["asset"]["discount_detail"]["signal"]
+    assert body["asset"]["demand_detail"]  # product-specific breakdown (solar/electronics/supply for SLV)
+    assert client.get("/api/cs-radar/NOPE").status_code == 404
 
 
 # ── 7. Dashboard ──────────────────────────────────────────────────────────────
@@ -479,18 +509,19 @@ def test_dashboard_per_component_provenance_and_cs_agreement():
     assert body["components"]["am"]["data_source"].startswith("real")
     assert body["components"]["fo"]["data_source"].startswith("real")
     assert body["components"]["ii"]["data_source"].startswith("real")
-    # CS: explicit null lineage, static mock source, NOT linked to CS pipeline artifact
+    # CS: pipeline-linked synthetic surface (FD #57) — run_id/point_in_time from the artifact
     cs = body["components"]["cs"]
-    assert cs["run_id"] is None and cs["point_in_time"] is None
+    assert cs["run_id"] == "CS-V0-20260805-173203"
+    assert cs["point_in_time"] == "2026-08-05T17:32:03.294078"
     assert cs["data_source"] == "synthetic_demo"
-    assert cs["source"] == "backend_static_mock"
-    # SOL-003 triple agreement: dashboard CS counts == /api/cs-radar collection + Q-met
+    assert cs["source"] == "close_system_pipeline"
+    # SOL-003 triple agreement preserved: dashboard CS counts == /api/cs-radar via the adapter;
+    # cs_qc_met = display derivation, count of products with full 5-layer alignment (FD #57)
     cs_radar = client.get("/api/cs-radar").json()["assets"]
     expected_items = len(cs_radar)
-    expected_qmet = sum(1 for a in cs_radar if a["q_conditions_met"] == a["q_conditions_total"])
-    assert body["cs_radar_items"] == expected_items
-    assert body["cs_qc_met"] == expected_qmet
-    assert not (body["cs_radar_items"] == 8 and body["cs_qc_met"] == 3)  # hardcoded regression guard
+    expected_aligned = sum(1 for a in cs_radar if a["layers_aligned"] == 5)
+    assert body["cs_radar_items"] == expected_items == 4
+    assert body["cs_qc_met"] == expected_aligned == 1
 
 
 def test_dashboard_unadmitted_component_is_null():

@@ -268,7 +268,7 @@ PRODUCTS = [
         },
         "layers_aligned": 5,
         "layers_contradicting": 0,
-        "conviction": "High",
+        "conviction": "Maximum",
 
         "key_risks": [
             "Gold selloff drags silver down (silver = leveraged gold in downturns)",
