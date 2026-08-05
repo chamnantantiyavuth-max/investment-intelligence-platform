@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Landmark, BarChart3, DollarSign, Swords, AlertTriangle, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function moatColor(width: string) { return { Wide: "text-emerald-600", Narrow: "text-amber-600", None: "text-rose-600" }[width] || ""; }
@@ -60,10 +60,10 @@ export default function FundamentalDetailPage() {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="moat">🏰 Moat</TabsTrigger>
-          <TabsTrigger value="earnings">📊 Earnings</TabsTrigger>
-          <TabsTrigger value="valuation">💰 Valuation</TabsTrigger>
-          <TabsTrigger value="analysis">⚔️ Analysis</TabsTrigger>
+          <TabsTrigger value="moat"><Landmark className="mr-1.5 inline h-3.5 w-3.5" />Moat</TabsTrigger>
+          <TabsTrigger value="earnings"><BarChart3 className="mr-1.5 inline h-3.5 w-3.5" />Earnings</TabsTrigger>
+          <TabsTrigger value="valuation"><DollarSign className="mr-1.5 inline h-3.5 w-3.5" />Valuation</TabsTrigger>
+          <TabsTrigger value="analysis"><Swords className="mr-1.5 inline h-3.5 w-3.5" />Analysis</TabsTrigger>
         </TabsList>
 
         {/* Overview */}
@@ -144,7 +144,7 @@ export default function FundamentalDetailPage() {
               </div>
               {vt && asBool(vt.triggered) && (
                 <div className="border border-rose-200 bg-rose-50 rounded-lg p-4">
-                  <h4 className="font-bold text-rose-700 mb-2">⚠️ Value Trap Detector</h4>
+                  <h4 className="font-bold text-rose-700 mb-2"><AlertTriangle className="mr-1.5 inline h-4 w-4" />Value Trap Detector</h4>
                   <p className="text-sm font-semibold text-rose-700 mb-2">{asString(vt.verdict)}</p>
                   <p className="text-xs text-rose-600">{asString(vt.action)}</p>
                   <p className="text-[11px] text-rose-500 mt-1">
@@ -159,7 +159,7 @@ export default function FundamentalDetailPage() {
         {/* Analysis */}
         <TabsContent value="analysis" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle className="text-base text-rose-600">⚔️ Independent Challenge</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base text-rose-600"><Swords className="mr-1.5 inline h-4 w-4" />Independent Challenge</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-2">
                 {pkg.independent_challenge.map((ch, i) => <li key={i} className="text-sm text-rose-700">• {ch}</li>)}
@@ -167,7 +167,7 @@ export default function FundamentalDetailPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle className="text-base text-amber-600">⚠️ Key Risks</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base text-amber-600"><AlertTriangle className="mr-1.5 inline h-4 w-4" />Key Risks</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-2">
                 {pkg.key_risks.map((r, i) => <li key={i} className="text-sm text-amber-700">• {r}</li>)}
@@ -176,16 +176,16 @@ export default function FundamentalDetailPage() {
           </Card>
           <div className="grid grid-cols-2 gap-4">
             <Card>
-              <CardHeader><CardTitle className="text-base text-emerald-600">✅ Supporting Evidence</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base text-emerald-600"><CheckCircle2 className="mr-1.5 inline h-4 w-4" />Supporting Evidence</CardTitle></CardHeader>
               <CardContent>{pkg.supporting_evidence.map((e, i) => <p key={i} className="text-xs text-muted-foreground mb-1">{e}</p>)}</CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base text-rose-600">❌ Contradicting</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base text-rose-600"><XCircle className="mr-1.5 inline h-4 w-4" />Contradicting</CardTitle></CardHeader>
               <CardContent>{pkg.contradicting_evidence.map((e, i) => <p key={i} className="text-xs text-muted-foreground mb-1">{e}</p>)}</CardContent>
             </Card>
           </div>
           <Card>
-            <CardHeader><CardTitle className="text-base">❓ Open Questions</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base"><HelpCircle className="mr-1.5 inline h-4 w-4" />Open Questions</CardTitle></CardHeader>
             <CardContent>
               <ul className="space-y-2">{pkg.open_questions.map((q, i) => <li key={i} className="text-sm text-muted-foreground">• {q}</li>)}</ul>
             </CardContent>
