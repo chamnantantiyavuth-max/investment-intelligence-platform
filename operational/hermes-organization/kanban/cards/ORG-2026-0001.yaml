@@ -1,0 +1,28 @@
+card_id: ORG-2026-0001
+title: Pilot — bounded review of research-result.md v1 (MSFT)
+research_question: What decision-relevant intelligence does the published CIW result (CRR-2026-0001) carry, and what can it NOT support?
+decision_user: Founder
+workflow_column: In Research
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: EQUITY
+principal_owner: Equity Alpha Analyst (simulated)
+assistant_owner: Equity Research Assistant (simulated)
+priority: P1
+materiality: M1
+created_at: 2026-08-05
+required_by: 2026-08-05 (pilot)
+expected_artifact: evidence/organization/pilot/EQUITY-RESEARCH-BRIEF.md
+evidence_standard: cite artifact sections only; no new research
+data_status: DATA READY WITH LIMITATIONS (per source map)
+validation_status: PENDING
+risk_status: NOT REVIEWED
+audit_status: n/a
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: Cross-Review (CRO) + Data Steward review
+last_updated: 2026-08-05

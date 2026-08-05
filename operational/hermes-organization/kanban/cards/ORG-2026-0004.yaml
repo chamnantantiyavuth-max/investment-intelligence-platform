@@ -1,0 +1,28 @@
+card_id: ORG-2026-0004
+title: Pilot — Founder decision pack assembly
+research_question: Is the pilot packet administratively complete for Founder review (D5 gate)?
+decision_user: Founder
+workflow_column: Founder Review
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: GOVERNANCE
+principal_owner: IC Secretary (simulated)
+assistant_owner: Committee Records Assistant (simulated)
+priority: P1
+materiality: M2
+created_at: 2026-08-05
+required_by: 2026-08-05 (pilot)
+expected_artifact: evidence/organization/pilot/IC-DECISION-PACK.md
+evidence_standard: packet completeness checklist
+data_status: DATA READY WITH LIMITATIONS
+validation_status: PENDING
+risk_status: REVIEWED WITH OPEN RISKS
+audit_status: n/a
+open_decision_slots: []
+dependencies: [ORG-2026-0001, ORG-2026-0002, ORG-2026-0003]
+blocked_reason: null
+next_action: Founder review (simulated)
+last_updated: 2026-08-05

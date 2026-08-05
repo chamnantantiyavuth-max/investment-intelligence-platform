@@ -1,0 +1,28 @@
+card_id: ORG-2026-0003
+title: Pilot — risk challenge of equity brief
+research_question: Does the equity brief recognize the failure modes required by Constitution §15 + Phase 8 §4?
+decision_user: Founder
+workflow_column: Cross-Review
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: RISK
+principal_owner: Chief Risk Officer (simulated)
+assistant_owner: Risk Research Assistant (simulated)
+priority: P1
+materiality: M1
+created_at: 2026-08-05
+required_by: 2026-08-05 (pilot)
+expected_artifact: evidence/organization/pilot/RISK-CHALLENGE-MEMO.md
+evidence_standard: brief claims + artifact sections
+data_status: DATA READY WITH LIMITATIONS
+validation_status: NOT REQUIRED
+risk_status: REVIEWED WITH OPEN RISKS (expected)
+audit_status: n/a
+open_decision_slots: []
+dependencies: [ORG-2026-0001]
+blocked_reason: null
+next_action: challenge answers recorded; packet assembly
+last_updated: 2026-08-05
