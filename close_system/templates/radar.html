@@ -1,11 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Close System Product Radar — {{ run_id }}{% endblock %}
 
+{% macro icon(name, size=14) -%}
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px;">
+{%- if name == 'target' %}
+  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+{%- elif name == 'clipboard' %}
+  <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/>
+{%- elif name == 'search' %}
+  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+{%- elif name == 'percent' %}
+  <line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+{%- elif name == 'bar-chart' %}
+  <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+{%- elif name == 'layers' %}
+  <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
+{%- elif name == 'alert' %}
+  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+{%- elif name == 'check' %}
+  <path d="M20 6 9 17l-5-5"/>
+{%- elif name == 'x' %}
+  <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+{%- endif %}
+</svg>
+{%- endmacro %}
+
+
 {% block content %}
 <div class="page">
 
   <div class="page-header">
-    <h1>Close System Product Radar</h1>
+    <h1>{{ icon('target', 18) }}Close System Product Radar</h1>
     <div class="subtitle">Spec: {{ spec_ref }} · {{ point_in_time }}</div>
   </div>
 
@@ -20,7 +45,7 @@
   </div>
 
   <!-- Radar Table -->
-  <div class="section-title">Product Radar</div>
+  <div class="section-title">{{ icon('clipboard') }}Product Radar</div>
   <table>
     <thead>
       <tr>
@@ -41,9 +66,9 @@
         <td>{{ p.category }}</td>
         <td style="font-weight:600;">${{ p.current_price }}</td>
         <td>
-          <span class="badge {{ 'badge-pass' if p.p1_pass else 'badge-fail' }}">{{ 'PASS' if p.p1_pass else 'FAIL' }}</span>
-          <span class="badge {{ 'badge-pass' if p.p2_pass else 'badge-fail' }}">{{ 'PASS' if p.p2_pass else 'FAIL' }}</span>
-          <span class="badge {{ 'badge-pass' if p.p3_pass else 'badge-fail' }}">{{ 'PASS' if p.p3_pass else 'FAIL' }}</span>
+          <span class="badge {{ 'badge-pass' if p.p1_pass else 'badge-fail' }}">{{ icon('check', 12) if p.p1_pass else icon('x', 12) }}</span>
+          <span class="badge {{ 'badge-pass' if p.p2_pass else 'badge-fail' }}">{{ icon('check', 12) if p.p2_pass else icon('x', 12) }}</span>
+          <span class="badge {{ 'badge-pass' if p.p3_pass else 'badge-fail' }}">{{ icon('check', 12) if p.p3_pass else icon('x', 12) }}</span>
         </td>
         <td>
           {% set depth = p.discount_depth %}
@@ -62,7 +87,7 @@
   </table>
 
   <!-- Synthesis Cards -->
-  <div class="section-title">Synthesis Cards</div>
+  <div class="section-title">{{ icon('search') }}Synthesis Cards</div>
   {% for p in products %}
   {% set rec_key = p.recommendation.split(' ')[0] if ' ' in p.recommendation else '' %}
   <div class="card">
@@ -83,7 +108,7 @@
 
     <div class="grid-2">
       <div>
-        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">Discount Assessment (P2)</h4>
+        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">{{ icon('percent') }}Discount Assessment (P2)</h4>
         <p style="font-size:13px;margin-bottom:6px;"><strong>Type:</strong> {{ p.discount_type }} · <strong>Depth:</strong> <span style="color:{% if p.discount_depth == 'Maximum' %}#8b5cf6{% elif p.discount_depth == 'Strong' %}var(--negative){% elif p.discount_depth == 'Moderate' %}var(--warning){% else %}var(--text-secondary){% endif %};font-weight:600;">{{ p.discount_depth }}</span></p>
         {% if p.target_discount_entry %}<p style="font-size:13px;margin-bottom:6px;"><strong>Target Entry:</strong> {{ p.target_discount_entry }}</p>{% endif %}
         <ul class="info-list" style="font-size:12px;">
@@ -93,7 +118,7 @@
         </ul>
       </div>
       <div>
-        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">Demand Assessment (P3)</h4>
+        <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin-bottom:8px;">{{ icon('bar-chart') }}Demand Assessment (P3)</h4>
         <p style="font-size:13px;margin-bottom:6px;"><strong>Type:</strong> {{ p.demand_type }}</p>
         <ul class="info-list" style="font-size:12px;">
           {% for key, val in p.demand_detail.items() %}
@@ -104,7 +129,7 @@
     </div>
 
     <!-- Layer Table -->
-    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">5-Layer Cross-Synthesis</h4>
+    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">{{ icon('layers') }}5-Layer Cross-Synthesis</h4>
     <table style="box-shadow:none;border:1px solid var(--border);">
       <thead><tr><th>Layer</th><th>Signal</th><th>Evidence</th></tr></thead>
       <tbody>
@@ -121,7 +146,7 @@
     </table>
 
     <!-- Key Risks -->
-    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">Key Risks</h4>
+    <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);margin:20px 0 8px;">{{ icon('alert') }}Key Risks</h4>
     <ul class="info-list" style="font-size:13px;">
       {% for risk in p.key_risks %}<li>{{ risk }}</li>{% endfor %}
     </ul>

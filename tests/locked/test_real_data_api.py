@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -511,10 +512,13 @@ def test_dashboard_per_component_provenance_and_cs_agreement():
     assert body["components"]["am"]["data_source"].startswith("real")
     assert body["components"]["fo"]["data_source"].startswith("real")
     assert body["components"]["ii"]["data_source"].startswith("real")
-    # CS: pipeline-linked synthetic surface (FD #57) — run_id/point_in_time from the artifact
+    # CS: pipeline-linked synthetic surface (FD #57) — run lineage from the artifact.
+    # Run stamp is regenerated output (close_system/output/ is gitignored) — pin the
+    # STRUCTURE (CS-V0-<run stamp>, ISO point-in-time), not the ephemeral run value.
     cs = body["components"]["cs"]
-    assert cs["run_id"] == "CS-V0-20260805-180430"
-    assert cs["point_in_time"] == "2026-08-05T18:04:30.174454"
+    assert re.fullmatch(r"CS-V0-\d{8}-\d{6}", cs["run_id"]), cs["run_id"]
+    from datetime import datetime as _dt
+    assert _dt.fromisoformat(cs["point_in_time"]) is not None, cs["point_in_time"]
     assert cs["data_source"] == "synthetic_demo"
     assert cs["source"] == "close_system_pipeline"
     # SOL-003 triple agreement preserved: dashboard CS counts == /api/cs-radar via the adapter;
