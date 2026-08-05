@@ -4,6 +4,9 @@ import { FindingCard } from "@/components/FindingCard"
 import { ProvenanceChip } from "@/components/ProvenanceChip"
 import { StalenessBanner } from "@/components/StalenessBanner"
 import { ExplainPanel } from "@/components/ExplainPanel"
+import { DecisionRequiredLedger } from "@/components/DecisionRequiredLedger"
+import { MaterialChangePanel } from "@/components/MaterialChangePanel"
+import { HoldBanner } from "@/components/HoldBanner"
 import { TrendingUp, Shield, Building2, Landmark } from "lucide-react"
 import {
   getDashboardSummary,
@@ -11,7 +14,9 @@ import {
   type ComponentProvenance,
 } from "@/api/dashboardClient"
 import { getAMQueue } from "@/api/amClient"
+import { getOrgQueue, getResearchArtifacts, type OrgQueue, type ResearchArtifact } from "@/api/orgClient"
 import { rankCandidates, lifecycleCounts, leadershipCount } from "@/lib/insights"
+import { cardsInView, isHeldOrBlocked, latestCardUpdate } from "@/lib/researchWorkflow"
 
 // Operational staleness bounds (FD #47 D3 — not investment rules)
 const STALE_BOUNDS: Record<string, number> = { am: 7, fo: 30, ii: 120 }
@@ -36,6 +41,12 @@ const lifecycleBarTone: Record<string, string> = {
   Expansion: "bg-positive",
   "Crowded / Late Stage": "bg-warning",
   Deterioration: "bg-negative",
+}
+
+/** Mono provenance stamp for a data section (design-system mandate — every
+ *  surface carries source + as-of; derived from admitted fields only). */
+function SectionStamp({ text }: { text: string }) {
+  return <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">{text}</p>
 }
 
 function EngineChip({
@@ -80,14 +91,25 @@ export default function DashboardPage() {
   const [am, setAm] = useState<Awaited<ReturnType<typeof getAMQueue>> | null>(null)
   const [amError, setAmError] = useState(false)
   const [error, setError] = useState(false)
+  const [org, setOrg] = useState<OrgQueue | null>(null)
+  const [orgError, setOrgError] = useState(false)
+  const [artifacts, setArtifacts] = useState<ResearchArtifact[]>([])
+  const [artifactsError, setArtifactsError] = useState(false)
 
   const load = () => {
     setError(false)
     setAmError(false)
+    setOrgError(false)
+    setArtifactsError(false)
     getDashboardSummary().then(setData).catch(() => setError(true))
     getAMQueue().then(setAm).catch(() => {
       setAmError(true)
       setAm(null)
+    })
+    getOrgQueue().then(setOrg).catch(() => setOrgError(true))
+    getResearchArtifacts().then((r) => setArtifacts(r.artifacts)).catch(() => {
+      setArtifactsError(true)
+      setArtifacts([])
     })
   }
   useEffect(load, [])
@@ -123,6 +145,10 @@ export default function DashboardPage() {
   const maxLifecycle = Math.max(1, ...lifecycle.map(([, n]) => n))
   const candidatesTotal = (am?.themes ?? []).reduce((n, t) => n + (t.candidates?.length ?? 0), 0)
   const runId = am?.run_id
+  const orgLatest = org ? latestCardUpdate(org.cards) : "…"
+  const regLatest = artifactsError
+    ? "unavailable"
+    : artifacts.map((a) => a.modified).filter(Boolean).sort().pop() ?? "unavailable"
 
   return (
     <div>
@@ -168,6 +194,28 @@ export default function DashboardPage() {
         />
       )}
 
+      <section className="mt-8">
+        <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+          Decisions required
+        </h2>
+        <SectionStamp text={`org_workflow_kanban · operational · as-of ${orgLatest}`} />
+        {orgError ? (
+          <p className="text-xs text-ink-2">Org-workflow queue unavailable — API error. Retry with the button above.</p>
+        ) : org ? (
+          <DecisionRequiredLedger cards={org.cards} artifacts={artifacts} />
+        ) : (
+          <p className="text-xs text-ink-2">Loading decisions…</p>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+          Material changes since last review
+        </h2>
+        <SectionStamp text={`research_artifact_registry · REAL per artifact · as-of ${regLatest}`} />
+        <MaterialChangePanel artifacts={artifacts} error={artifactsError} />
+      </section>
+
       <section className="grid grid-cols-1 gap-x-10 gap-y-1 md:grid-cols-2">
         <FindingCard
           featured
@@ -201,6 +249,70 @@ export default function DashboardPage() {
           why="Theme-first queue with adaptive capacity — it may return zero high-priority candidates (Constitution §14)."
           evidenceRef={runId}
         />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+          Holds &amp; exceptions
+        </h2>
+        <SectionStamp text={`org_workflow_holds · ${org ? `${org.holds.length} recorded` : "…"} · as-of unavailable`} />
+        {orgError ? (
+          <p className="text-xs text-ink-2">Holds unavailable — org-workflow API error.</p>
+        ) : org ? (
+          (() => {
+            const active = org.holds.filter((h) => h.status !== "CLEARED");
+            const cleared = org.holds.filter((h) => h.status === "CLEARED");
+            return active.length === 0 ? (
+              <div>
+                <p className="text-xs text-ink-2">
+                  No active holds · {cleared.length} cleared{" "}
+                  {cleared.length > 0 && `(${cleared.map((h) => h.hold_id).join(", ")})`}
+                </p>
+                {cleared.map((h) => (
+                  <HoldBanner key={h.hold_id} hold={h} active={false} />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {active.map((h) => (
+                  <HoldBanner key={h.hold_id} hold={h} />
+                ))}
+              </div>
+            );
+          })()
+        ) : (
+          <p className="text-xs text-ink-2">Loading holds…</p>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
+          Research throughput
+        </h2>
+        <SectionStamp text={`org_workflow_kanban · derived from card workflow_column · as-of ${orgLatest}`} />
+        {orgError ? (
+          <p className="text-xs text-ink-2">Throughput unavailable — org-workflow API error.</p>
+        ) : org ? (
+          <div className="grid gap-x-8 gap-y-1 text-[13px] sm:grid-cols-2">
+            {[
+              ["New Requests", cardsInView(org.cards, "Inbox").length],
+              ["Active Research", cardsInView(org.cards, "Active Research").length],
+              ["In Review", cardsInView(org.cards, "Review Queue").length],
+              ["Founder Review", cardsInView(org.cards, "Founder Review").length],
+              ["Held / Blocked", org.cards.filter(isHeldOrBlocked).length],
+              ["Monitoring", org.cards.filter((c) => c.workflow_column === "Monitoring").length],
+              ["Closed", org.cards.filter((c) => c.workflow_column === "Closed").length],
+              ["Research Results (registry)", artifacts.filter((a) => a.artifact_type === "research-result").length],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between border-b border-rule py-1.5">
+                <span className="text-ink-2">{k}</span>
+                <span className="font-mono text-[11px] text-ink-3">{v}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-ink-2">Loading throughput…</p>
+        )}
       </section>
 
       <section className="mt-8">

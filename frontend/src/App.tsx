@@ -4,6 +4,8 @@ import { Layout } from "@/components/Layout"
 import { authStatus } from "@/api/authClient"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
+import ResearchDeskPage from "@/pages/ResearchDeskPage"
+import ResearchArtifactDetailPage from "@/pages/ResearchArtifactDetailPage"
 import AMQueuePage from "@/pages/AMQueuePage"
 import AMScreenerPage from "@/pages/AMScreenerPage"
 import AMThemeCardPage from "@/pages/AMThemeCardPage"
@@ -38,6 +40,8 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<DashboardPage />} />
+            <Route path="research" element={<ResearchDeskPage />} />
+            <Route path="research/*" element={<ResearchArtifactDetailPage />} />
             <Route path="am-queue" element={<AMQueuePage />} />
             <Route path="am-screener" element={<AMScreenerPage />} />
             <Route path="am-theme/:id" element={<AMThemeCardPage />} />

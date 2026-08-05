@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom"
 
 const NAV = [
-  { to: "/", label: "Dashboard", end: true },
+  { to: "/", label: "Briefing", end: true },
+  { to: "/research", label: "Research Desk" },
   { to: "/am-queue", label: "Alpha Momentum" },
   { to: "/cs-radar", label: "Close System" },
   { to: "/fundamental", label: "Fundamental" },
