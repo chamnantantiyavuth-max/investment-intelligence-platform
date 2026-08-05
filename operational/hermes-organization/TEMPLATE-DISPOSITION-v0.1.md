@@ -1,0 +1,44 @@
+# IIP × Hermes Organization Pack — Template Disposition
+
+**Status:** PROPOSED — FOUNDER REVIEW REQUIRED
+**Version:** 0.1 (draft for review — NOT approved, NOT canonical)
+**Date:** 2026-08-05
+**Method:** every source template compared against existing IIP / CIW / Evidence / Theme / FD / audit / shared-template artifacts. Classification is exactly one of: **REUSE EXISTING** · **EXTEND EXISTING** · **CREATE NEW** · **REJECT AS DUPLICATE OR CONFLICTING** (task constraint H).
+
+---
+
+## 1. Disposition Table
+
+| # | Pack template | Classification | Canonical source / conflict | Action |
+|---|---|---|---|---|
+| 00 | TEMPLATE-INDEX | **CREATE NEW** | No org template index exists (operational templates are standalone: coverage-gap-template, emergent-rule-template, self-reflection-template) | Keep as thin index inside org `templates/` README — do not duplicate `03-OPERATIONAL-DOCUMENTS-INDEX.md` |
+| 01 | RESEARCH-REQUEST | **EXTEND EXISTING** | `CIW-REQUEST-CONTRACT.md` (approved v0.2) is the deep-research request contract (request_id, universe, portfolio_blind, source gate, approval flow). Pack version lacks: universe, portfolio_blind, source gate, approval_status | Org intake form = light triage (task/scope/decision-user/non-goals/expected artifact); **deep research** must use CIW REQUEST-CONTRACT (CRR) — single contract, no parallel |
+| 02 | EVIDENCE-RECORD | **EXTEND EXISTING** | `EVIDENCE-MODEL.md` §2 taxonomy (13 canonical types) + §5 provenance (12 fields) + CIW claim lineage (RESULT-CONTRACT §4). Pack's 9-value classification (Verified Fact / Source-Reported Claim / … / Unsupported Narrative) **conflicts** with the canonical taxonomy | Rewrite classification field to canonical types (Raw Source Record / Observed Fact / Claim {AI Extraction, AI Classification} / Normalized Fact / Derived Metric / Statistical Signal / Founder Knowledge Record; epistemic records reference, never masquerade as evidence); carry §5 provenance fields; add claim-level source references |
+| 03 | RESEARCH-BRIEF | **CREATE NEW** | No existing brief template; CIW `research-draft.md` + `monitoring/2026-08-03-monitoring-draft.md` are precedent artifacts but no reusable form | Adopt with canonical alignment (evidence separations, data/validation/risk status, falsification, disposition). Thin operational brief |
+| 04 | DEEP-DIVE-RESEARCH-PAPER | **REJECT AS DUPLICATE OR CONFLICTING** | CIW-RESULT-CONTRACT (structured result) + Phase 8 §8 (13-section Fundamental Research Package) are the approved deep-research artifacts; CIW Master Paper is **deferred** (FD-CIW-011/012 — "Master Paper" explicitly not authorized) | Do NOT create a 20-section parallel paper standard. Deep research outputs = CIW Research Result + Phase 8 package. Narrative Master Paper only after Phase 11 Master Paper authorization |
+| 05 | THEME-HYPOTHESIS-CARD | **REJECT AS DUPLICATE OR CONFLICTING** | `THEME-MODEL.md` §7 Theme Card is canonical (why-now, supporting/contradicting/missing evidence, alternative explanations, lifecycle, confidence, crowding, approval_status, monitoring_status, leaders/challengers/beneficiaries). Pack card uses the flat pack governance_state + pack lifecycle (**F-02/F-05 conflicts**) | Reuse canonical Theme Card. If an org intake view is needed, it is a thin form mapping to THEME-MODEL §7 fields with BOTH axes — never a replacement |
+| 06 | DATA-QUALITY-REPORT | **EXTEND EXISTING** | `EVIDENCE-MODEL.md` §5 provenance + §9 Data Confidence (freshness, completeness, reliability, conflicts, missing data); CIW-RESULT-CONTRACT §3 source-coverage statuses; Data-Source Admission (SECURITY-AND-UNTRUSTED-CONTENT) | Adopt, aligning status vocabulary with canonical Data Confidence dimensions + source-coverage statuses (reviewed / missing_required / failed_retrieval / incomplete / conflicting / derived_duplicate / not_yet_published / reviewed_clear) |
+| 07 | QUANT-VALIDATION-REPORT | **EXTEND EXISTING** | `VERIFICATION-DOCTRINE.md` (material domain logic: golden fixtures, boundary/failure cases, point-in-time + lineage, independent review, reproducible commands); project-workflow Evidence QA 10-point + mutation testing (v3.7.1) | Adopt as the org validation form, mapping each section to Verification Doctrine requirements; sign-off = independent validator (never the author) |
+| 08 | RISK-CHALLENGE-MEMO | **EXTEND EXISTING** | Constitution §15 risk dimensions (suitability, opportunity, regime, instrument structure, lock-up, structural decay, liquidity, operational complexity, data confidence); OM §7 challenge domains; Phase 8 §4 (8 challenge domains) | Adopt, mapping sections to Close System risk dimensions + Phase 8 challenge domains; keep "residual risks requiring Founder acceptance" (matches CIW/Founder-acceptance precedent) |
+| 09 | OPTIONS-STRATEGY-RESEARCH-MEMO | **CREATE NEW** | No existing options artifact; Constitution §15 Instrument Structure + OM §5.3 define the domain | Adopt as-is (research-only clause + bounded-risk + mechanics + data limitations already present and correct). First org template for the Options role |
+| 10 | IC-DECISION-PACK | **EXTEND EXISTING** | `docs/ciw-pilot-msft/founder-review-record.md` precedent (exact artifact + version + SHA-256 per Constitution §21; explicit non-meaning; dissent preserved) + FOUNDERS-DECISIONS.md format + FD register (vault) | Adopt, aligning "Explicit Non-Meaning" (already present — good) with CIW precedent; add artifact hash + prior/new state audit fields |
+| 11 | FOUNDER-DECISION-RECORD | **REUSE EXISTING** (intake form only) | Canonical = `operational/FOUNDERS-DECISIONS.md` (FD format: ID, date, exact decision, scope, exclusions, rationale, accepted risk, dissent, conditions, rule version, required updates) + vault `fd-register.md` + CIW founder-review-record. **No third register** (F-07) | Pack form maps 1:1 to the canonical FD format (it was clearly modeled on it). Keep as org intake/recording form; canonical register remains FOUNDERS-DECISIONS.md + vault fd-register; recorder = IC Secretary, verification = Internal Auditor |
+| 12 | WEEKLY-INTELLIGENCE-BRIEF | **CREATE NEW** | Precedent: `evidence/DAILY-REVIEW-*.md` (daily cadence artifact, existing cron) + SESSION_CLOSEOUT. No weekly multi-domain brief exists | Adopt as org cadence artifact, aligned with DAILY-REVIEW structure; advisory only; no state change implied |
+| 13 | AUDIT-FINDING | **EXTEND EXISTING** | Audit evidence format: `evidence/FULL-AUDIT-*.md`, governance-audit skill, `audit-gap-remediation` skill, COUNCIL_DECISION contract (verdict/findings/required changes/evidence gaps/decisions/minority warning/scope check) | Adopt, mapping to governance-audit finding schema (severity/condition/evidence/impact/root cause/remediation/owner/verification/closure authority); findings must carry evidence links + verify method (council validity rule) |
+| 14 | CHANGE-REQUEST | **EXTEND EXISTING** | `operational/CHANGE-CONTROL-AND-APPROVAL.md` — 12-field material change proposal (title/ID, problem, affected authoritative documents, proposed behavior, alternatives, domain/user impact, data/migration impact, security/privacy impact, verification plan, rollback plan, unresolved risks, exact approval requested) + Constitution §21 amendment process | Adopt, ADD the missing fields: affected authoritative documents, data/migration impact, rollback/recovery plan, exact approval requested; Internal Auditor review retained; Founder decision reference retained |
+| 15 | ASSISTANT-WORKLOG | **CREATE NEW** | No existing assistant-worklog artifact; complements delegated-subagent reporting + session logs + `ASSISTANT DRAFT — PRINCIPAL REVIEW REQUIRED` label contract (F-17) | Adopt as-is (task ID, scope, sources, timestamps, assumptions, conflicts, checks, open questions, next action, artifact paths) |
+
+---
+
+## 2. Resulting Org Template Set (7 forms, after disposition)
+
+Kept (REUSE/EXTEND/CREATE, all mapped): `01-RESEARCH-REQUEST` (intake), `02-EVIDENCE-RECORD` (mapped), `03-RESEARCH-BRIEF`, `06-DATA-QUALITY-REPORT` (mapped), `07-QUANT-VALIDATION-REPORT` (mapped), `08-RISK-CHALLENGE-MEMO` (mapped), `09-OPTIONS-STRATEGY-RESEARCH-MEMO`, `10-IC-DECISION-PACK` (mapped), `12-WEEKLY-INTELLIGENCE-BRIEF`, `11-FOUNDER-DECISION-RECORD` (intake form), `13-AUDIT-FINDING` (mapped), `14-CHANGE-REQUEST` (mapped), `15-ASSISTANT-WORKLOG` → **13 forms kept, 2 rejected (04, 05), index folded into README.** (Correction to the earlier count: 04 and 05 rejected as duplicates/conflicting; the rest map to canonical sources.)
+
+**Not carried:** 04 (Master Paper deferred — REJECT), 05 (canonical Theme Card exists — REJECT).
+
+**Do not add all proposed templates merely to make the tree look complete** (task constraint): the tree contains only the 13 mapped forms.
+
+---
+
+*Proposed draft for Founder review. Not approved, not canonical, not committed.*
+<!-- 2026-08-05 14:26 UTC+7 -->
