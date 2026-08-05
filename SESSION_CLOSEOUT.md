@@ -62,4 +62,36 @@ Commits 2e998e3/978ab23/7fa3420 · 159 commits · 73 FDs · 311/311 · gates all
 Research Desk pattern); (b) org-workflow real intake (first real research request); (c) UI-4 registers;
 (d) C-04/C-05/M-02 leftovers. A-01 + Options Overlay deferred.
 
-<!-- 2026-08-05 18:45 UTC+7 -->
+## Session 5 (late evening → 6 Aug) — Industry Outlook reference layer (FD #58) — ✅ COMPLETED
+
+**Branch:** `main` · **Commit:** `fd2cbc3` · **Status:** COMPLETED + CLOSED (commit `fd2cbc3`, 6 Aug 2026)
+
+**What happened:** Founder opened the industry-outlook discussion (EV demand → silver shortage; gold-coin
+accumulation; sugar-factory shutdown analogue — "does the Bible mention applying industry outlook?").
+Verified: Bible zero hits for those keywords → Theme Intelligence files consulted → direction approved:
+build an industry-outlook **reference layer** from the Investopedia Industry Handbooks (2015 PDFs in
+`docs/Books/`). **FD #58 (Must Rule):** all quantitative figures in reference books are point-in-time
+(publication date only) — MUST NOT be treated as current; re-verify against current sources before
+research/theme/evidence/pipeline use; durable value = structural/conceptual. Encoded in
+`operational/EVIDENCE-DOCTRINE.md` (Aging section) + register item 74. `.gitignore` adds `docs/Books/`
+(static PDFs stay out of git; notes live in `docs/industry-outlook/`).
+
+**Founder decisions (recorded):** "Apply only to commodities" (Direct Commodity Investment section
+commodity-only rule — only Precious Metals + Oil Services get it) → "A" (expand remaining 5 handbooks) →
+No new org agent/assistant (roles 3/4/5 already cover outlook consumption) → "A commit and end session".
+
+**Delivered (all 7 handbooks, `fd2cbc3`):** `docs/industry-outlook/README.md` (format contract: Source /
+Supply chain / What to measure / Where to look / Analyst insight / Porter's 5 Forces / Direct Commodity
+Investment / Theme mapping; numbers marked [2015] + TODO-UPDATE; commodity-only rule) + notes for
+Precious Metals, Semiconductors, Oil Services, Biotechnology, Internet, Telecommunications, Utilities.
+Direct Commodity section (physical/ETFs/futures/options + CS P2 signals: AISC proximity, dislocation/coin
+premium, backwardation/contango) on PM + Oil only. All theme mappings verified against the controlled set
+(TH-004..144). 13 TODO-UPDATE markers across notes. Verification: ad-hoc script (hermes-verify-*)
+confirmed gitignore match + FD #58 encoding 5/5.
+
+**Recommended next action:** (a) kanban VISUAL board (the open question — columns+cards, read-only,
+Research Desk pattern); (b) org-workflow real intake (first real research request); (c) UI-4 registers;
+(d) C-04/C-05/M-02 leftovers; (e) industry-outlook next step: refresh stale figures (TODO-UPDATE) with
+current data when the outlook layer is actually used. A-01 + Options Overlay deferred.
+
+<!-- 2026-08-06 01:15 UTC+7 -->
