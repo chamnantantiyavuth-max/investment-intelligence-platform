@@ -53,9 +53,13 @@ git diff --stat HEAD -- docs/ciw-pilot-msft/ → empty (no CIW mutations)
 3. **R3 (open, Low):** source-map licensing field backfill — optional follow-up task (Founder decision).
 4. **L1/L2 (process):** single-writer discipline + delegation reliability (see §1) — recommended card-schema lock field + delegation-retry clause.
 
-## 6. Verdict
+## 7. Delegation Completion Addendum (post-report)
 
-**PILOT PASS** — all 8 pass criteria met. The org workflow (handoffs, evidence lineage, Holds, dissent preservation, Founder packet completeness, portfolio-blind, CIW boundary) is mechanically sound at org-workflow scope. The pilot validates workflow feasibility only — NOT methodology validity, NOT MSFT endorsement, NOT the org standard itself (that remains PROPOSED pending pre-merge acceptance).
+The Round-1 delegated subagent (`delegate_task`, gpt-5.6-sol, 17 API calls, ~405s) **completed after the in-window fallback**: it produced the same two artifact paths (EQUITY-RESEARCH-BRIEF.md, WORKLOG-ASSISTANT-EQUITY.md), which were superseded on disk by the in-session versions (L1 write race). Its returned summary independently confirms **5/5 constraint checks PASS** — portfolio-blind, CIW boundary, Unresolved Decision Protection, untrusted-input handling, pilot/state boundary — and its executive finding matches the on-disk brief (HIGH quality, WIDE/DEEP/WIDENING moat, net cash, no valuation verdict). Conclusion: the **bounded delegation topology executed successfully and independently**; the pilot's fallback was a timing artifact, not a topology failure. The subagent also flagged a status-wording nuance (file header says "proposed v1" while FD-CIW-012 records Published v1 — both correct: the approved artifact is never mutated post-approval, PUBLICATION-STANDARD §5).
+
+## 8. Verdict
+
+**PILOT PASS** — all 8 pass criteria met. The org workflow (handoffs, evidence lineage, Holds, dissent preservation, Founder packet completeness, portfolio-blind, CIW boundary) is mechanically sound at org-workflow scope, and the bounded delegation topology is independently confirmed. The pilot validates workflow feasibility only — NOT methodology validity, NOT MSFT endorsement, NOT the org standard itself (that remains PROPOSED pending pre-merge acceptance).
 
 ---
 
