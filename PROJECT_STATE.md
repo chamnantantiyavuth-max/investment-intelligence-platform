@@ -21,7 +21,7 @@
 | Python tests | 309/309 (140 locked: 90 logic + 42 real-data-api + 8 org-workflow; 56 AM + 25 CS + 43 FO + 45 II) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-04 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-04 |
-| Commits | 145 on `main` (HEAD `0e0370d` — org-pack integration merged + pushed 5 Aug 2026; +8 vs 137) | 2026-08-05 |
+| Commits | 146 on `main` (HEAD `b101575` — FD #55 UI-0 org-workflow adapter committed + pushed 5 Aug 2026; +1 vs 145) | 2026-08-05 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#55 (71 total) | 2026-08-05 |
 | closeout_status | **completed** — session closed 5 Aug 2026: FD #54 org-pack INTEGRATED + MERGED (docs-only; no code/schema/domain change); remaining (unchanged): C-04 state reconciliation, C-05 vault register rebuild, M-02 FO spec metadata, A-01 deferred, CIW deferred, org-pack follow-ups R3/L1/L2 optional | 2026-08-05 |
 
