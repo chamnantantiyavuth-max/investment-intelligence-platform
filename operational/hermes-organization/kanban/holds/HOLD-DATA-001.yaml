@@ -1,0 +1,17 @@
+hold_id: HOLD-DATA-001
+type: DATA HOLD
+issuer: Data Steward (simulated)
+artifact: docs/ciw-pilot-msft/research-result.md v1 source map (card ORG-2026-0002)
+scope: org-workflow promotion of the source map as DATA READY for canonical-adjacent use (FD #54 Q2 — org-workflow scope only; no canonical state impact)
+triggering_condition: licensing/retention status not systematically documented per EVIDENCE-MODEL §5 field set
+evidence: result §8 source map rows lack explicit licensing/retention field for SRC-XBR and secondary rows
+remediation_required: document licensing/retention per row (public-filing assumption + tombstone capability) — completed in evidence/organization/pilot/DATA-QUALITY-REPORT.md
+owner: Data Steward
+review_condition: remediation documented + Steward sign-off
+partial_work_allowed: true (bounded consumption continues under DATA READY WITH LIMITATIONS)
+status: CLEARED
+clear_record:
+  cleared_by: Data Steward (issuing role only)
+  date: 2026-08-05
+  basis: licensing/retention documented in DATA-QUALITY-REPORT.md (ORG-2026-0002-DQR); sign-off recorded
+override_record: null

@@ -1,0 +1,17 @@
+hold_id: HOLD-RISK-001
+type: RISK HOLD
+issuer: Chief Risk Officer (simulated)
+artifact: evidence/organization/pilot/EQUITY-RESEARCH-BRIEF.md (card ORG-2026-0003)
+scope: org-workflow promotion of the equity brief to Founder Review until recovery-time/path-dependency dimension documented (FD #54 Q2 — org-workflow scope only; no canonical state impact)
+triggering_condition: Constitution §15 risk dimensions "Capital Lock-up Risk" + "Recovery-duration risk" absent from the brief's risk section
+evidence: RISK-CHALLENGE-MEMO.md (ORG-2026-0003-RCM) — brief contains no recovery-assumption/time-to-recovery analysis
+remediation_required: document recovery-time assessment for the dominant impairment mechanism (valuation-driven) — completed in RISK-CHALLENGE-MEMO.md "Recovery Assumptions and Time Risk"
+owner: Chief Risk Officer
+review_condition: remediation documented + CRO sign-off (REVIEWED WITH OPEN RISKS)
+partial_work_allowed: true (packet assembly may proceed with the open-risk register attached)
+status: CLEARED
+clear_record:
+  cleared_by: Chief Risk Officer (issuing role only)
+  date: 2026-08-05
+  basis: recovery-time dimension documented in RISK-CHALLENGE-MEMO.md; residual risks remain OPEN (Founder awareness) — hold cleared, risks retained
+override_record: null

@@ -10,11 +10,11 @@ Inbox → Triage → Scoped → Data Ready → In Research → Cross-Review → 
 
 | Card | Title | Column | Owner | Status |
 |---|---|---|---|---|
-| ORG-2026-0001 | Pilot: bounded review of research-result.md v1 (MSFT) | In Research | Equity Alpha (simulated) | open |
-| ORG-2026-0002 | Pilot: data readiness of source map (8 sources) | In Research | Data Steward (simulated) | open |
-| ORG-2026-0003 | Pilot: risk challenge of equity memo | Cross-Review | CRO (simulated) | open |
-| ORG-2026-0004 | Pilot: Founder decision pack assembly | Founder Review | IC Secretary (simulated) | open |
-| ORG-2026-0005 | Pilot: governance/lineage verification | Triage | Internal Auditor (simulated) | open |
+| ORG-2026-0001 | Pilot: bounded review of research-result.md v1 (MSFT) | Closed (pilot complete) | Equity Alpha (simulated) | PILOT PASS |
+| ORG-2026-0002 | Pilot: data readiness of source map (8 sources) | Closed (pilot complete) | Data Steward (simulated) | PILOT PASS |
+| ORG-2026-0003 | Pilot: risk challenge of equity memo | Closed (pilot complete) | CRO (simulated) | PILOT PASS |
+| ORG-2026-0004 | Pilot: Founder decision pack assembly | Founder Review (simulated) | IC Secretary (simulated) | READY FOR FOUNDER REVIEW |
+| ORG-2026-0005 | Pilot: governance/lineage verification | Closed (pilot complete) | Internal Auditor (simulated) | PILOT PASS |
 
 ## Rules
 
