@@ -1,30 +1,42 @@
-# SESSION_CLOSEOUT — 4 Aug 2026 (evening session)
+# Session Closeout — 5 August 2026 (org-pack integration, FD #54)
 
-## What happened this session (plain language)
+**Session type:** Critical-mode implementation (material governance + multi-file + runtime profile installation)
+**Branch:** `org-pack-v0.1` → merged to `main` `0e0370d` (fast-forward) + pushed to origin
+**Closeout status:** completed (5 Aug 2026, 16:05 UTC+7)
 
-**1. Full project audit (Objective Alignment + UI Design + Narrative UI)** — delegated 2 lanes to GPT-5.6 Sol Medium per FD-HERMES-007. Verdict: **NOT CLEAN, 13 criticals** (reports: `evidence/FULL-AUDIT-OBJECTIVE-2026-08-04.md`, `evidence/FULL-AUDIT-UI-2026-08-04.md`). Parent re-verified every claim before presenting.
+## What happened (plain language)
 
-**2. Whole-UI redesign (FD #51)** — Founder rejected the v2.1 result → 3 HTML mockups → picked **A — Research Desk** (light, dense, paper; FT/research-note). Built via ui-dashboard-workflow v4.0.0 FOUNDATION mode: 10 design artifacts in `design/`, all 11 pages rebuilt, audit fixes C1–C6 + M1/M3/M6/M8 + C-02 UI quarantine + backend C2 fix (counter-evidence per-theme scoping, ADAPTER_VERSION v3). Independent visual council: 2 rounds RETEST → all findings fixed → Parent round-3 re-verify (console 0 errors, 0 visible outlines). **ACCEPTED by Founder.** Evidence: `evidence/ui/redesign-research-desk/` + `evidence/COUNCIL_DECISION-ui-2026-08-04.md`.
+Founder approved the IIP Hermes AI Workforce plan (Q1 as proposed / Q2 Holds org-workflow-only / Q3 Option C zero-profile pilot), then accepted the implementation (A) after the pre-merge review. The proposed "organization pack" from _staging was turned into a proper subordinate operating standard in the repo, 10 thin Principal Hermes profiles were installed and verified, and a dry-run pilot passed 8/8 checks. Merged to main, nothing pending.
 
-**3. A-01 → FD #52:** AM AC-6/AC-8 reclassified as fixture demonstration (audit C-03). Spec §6 note added; completeness claim retracted; operational override/history workflow deferred (needs separate FD).
+## Key decisions (recorded immediately)
 
-**4. A-02 → FD #53:** FO/II unapproved formulas removed (audit C-02, code-to-spec): `moat_score` deleted (fn/pipeline/display/adapter strip, ADAPTER_VERSION v4), Unusually Cheap restored to spec `P/E < 5Yavg − 2σ` (requires pe_5y_stddev; no σ → False honest — **Cheap & Quality watchlist now empty until σ data exists**), value-trap 4/5 → MIXED (spec 3–4 mixed), II `signal_score` deleted (fn/schema/sort). Locked tests updated to approved oracle + absence guards.
+- FD #54 (repo register + vault fd-register): full scope — demotion to operating standard, canonical state contract (two-axis Theme governance), Hold grants (org-workflow scope), IC Secretary gate, 10 Principal profiles, repo kanban, 13 templates, no cron, Option C pilot.
+- Pilot deviations disclosed: delegated subagent completed post-fallback (5/5 constraint checks PASS; output preserved as *-delegated.md); write race → L1 single-writer lesson.
 
-## Verification summary
-- Tests: **301/301** (was 304 — removed 4 unapproved-score tests, +1 σ test) · Build: exit 0 · Lint: 0 errors (7 warnings debt)
-- Browser: 11/11 pages, 0 JS errors (cleared-console traversal) · gate-check exit 0 · isolation-scan clean
-- Commits today (10): `c4ae919` → `7ed63e6`
+## Verification evidence
 
-## Decisions recorded (FDs 67→69)
-- FD #51 whole-UI redesign (direction A Research Desk) · FD #52 AC-6/8 fixture reclass · FD #53 FO/II formula removal
-- FDs approved: #1–53 + FD-CIW-001..016 = **69 total**
+- `evidence/organization/ORG-INTEGRATION-FIT-GAP-v0.1.md` (4C/9H/6M/4L findings)
+- `evidence/organization/RUNTIME-VERIFICATION-2026-08-05.md` (stages 1–5 + ad-hoc 30/30)
+- `evidence/organization/pilot/` (8 artifacts + PILOT-REPORT.md PASS 8/8)
+- Runtime: `hermes profile list` = 18 profiles; sync idempotent; 8 pre-existing SOUL hashes UNCHANGED; watchdog 16 cores clean; 0 secrets in org profiles
 
-## Remaining (next session — audit leftovers)
-- **C-04:** state reconciliation (README/AGENTS.md checkpoints/ROADMAP stale mirrors — partially fixed en route)
-- **C-05:** vault fd-register rebuild (currently ~46/69 rows) + `({text` stray 0-byte file deletion (needs approval)
-- M-02: FO spec metadata (Approved vs TBD) reconciliation
-- CIW Phase 11 full implementation remains deferred (FD-CIW-010 gated)
+## Closeout checklist
+
+- [x] FDs recorded — FD #54 (repo + vault), registered immediately at approval
+- [x] Bible updated — no domain-rule change (docs/operational only); AGENTS.md checkpoints + PROJECT_STATE synced
+- [x] PROJECT_STATE.md updated — Current state, Latest FDs, Build Metrics (commits 145, FDs 70), Next allowed action, closeout_status: completed
+- [x] Verify-First — every claim backed by executed commands (hashes, greps, profile list, sync runs)
+- [x] Verification tags — TEST_VERIFIED / STATIC_OBSERVATION / INFERENCE in evidence files
+- [x] Acceptance lock — no locked tests touched (docs-only change)
+- [x] Closeout status toggled — completed
+- [x] Gate check — org-pack gates: Stage 0 Founder decision ✓ → Stages 1–4 implemented ✓ → pilot PASS 8/8 ✓ → Founder acceptance (A) ✓ → merged ✓. (Final Council not run — Founder accepted directly via option A; available on request before any further rollout.)
+
+## Remaining (unchanged or optional)
+
+- C-04 state reconciliation (README/ROADMAP stale mirrors), C-05 vault fd-register rebuild (~46/70), M-02 FO spec metadata, A-01 deferred, CIW paused (Q1-FY27)
+- Org-pack optional follow-ups: R3 source-map licensing backfill, L1 kanban single-writer lock field, L2 delegation-retry clause (each via 14-CHANGE-REQUEST)
 
 ## Recommended next action
-**Continue C-04/C-05 reconciliation** (vault register rebuild + README/AGENTS sync + M-02) to close the audit completely — reco + alternatives: (a) close audit leftovers first, (b) start A-01 operational override workflow (new FD), (c) CIW second slice continuation.
-<!-- 2026-08-04 18:05 UTC+7 -->
+
+Run the org in bounded mode (e.g., a real intake through the kanban with one Principal + the IC Secretary gate), or close the R3/L1/L2 follow-ups. CIW remains paused.
+<!-- 2026-08-05 16:05 UTC+7 -->
