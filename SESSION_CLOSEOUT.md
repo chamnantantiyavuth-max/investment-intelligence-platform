@@ -46,9 +46,20 @@ Maximum from conviction_order/breakdown → spec-true end-to-end, SLV first; sta
 → R3 **PASS** (HEAD-bound `34acfc9`). Founder ACCEPTED (A). Commits eefad48/34acfc9/a2a93fa.
 Suite **311/311** (26 CS pipeline locked incl. new priority test), 152 commits, 73 FDs.
 
-**Recommended next action:** (a) org-workflow real intake — first real research request through the
-Research Desk kanban (write domain = CoS/IC Secretary) so new pages run live data; (b) UI-4 Decision/
-Model/Audit registers (needs git-history endpoint); (c) closeout leftovers C-04/C-05/M-02.
-Alternatives: A-01 (FD #52) or CS Options Overlay (needs options pipeline — deferred).
+## Session 4 (evening end) — Icon replacement + kanban answer, 18:45 UTC+7
 
-<!-- 2026-08-05 18:20 UTC+7 -->
+**What happened:** Founder clarified "change icons, not delete" → emoji replaced with **lucide line SVG
+icons** everywhere (same family as shadcn/React): radar.html Jinja icon macro (target/clipboard/search/
+percent/bar-chart/layers/alert + Check/X P1-P3 badges), base.html banner alert icon, FundamentalDetailPage
+already lucide. Zero emoji project-wide (verified by scan). CS run pins → structural contract
+(CS-V0-\d{8}-\d{6} + ISO; regenerated output is gitignored → exact pins brittle, broke twice).
+**Kanban answer:** kanban is FILE-ONLY (operational/hermes-organization/kanban/board.md + cards + holds);
+NOT rendered as a board anywhere; Research Desk shows derived ledger views, not columns. Founder's open
+question: approve a read-only kanban VISUAL board view (reuse D1 endpoints).
+Commits 2e998e3/978ab23/7fa3420 · 159 commits · 73 FDs · 311/311 · gates all passed.
+
+**Recommended next action:** (a) kanban VISUAL board (the open question — columns+cards, read-only,
+Research Desk pattern); (b) org-workflow real intake (first real research request); (c) UI-4 registers;
+(d) C-04/C-05/M-02 leftovers. A-01 + Options Overlay deferred.
+
+<!-- 2026-08-05 18:45 UTC+7 -->

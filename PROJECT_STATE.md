@@ -23,7 +23,7 @@
 | Python tests | 311/311 (26 CS pipeline locked + 285 API/other locked+suite; 140 pre-existing locked: 90 logic + 42 real-data-api + 8 org-workflow) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-04 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-04 |
-| Commits | 152 on `main` (HEAD `a2a93fa` — council artifact; UI-3 `eefad48`/`34acfc9`; UI-1/2 `d9e0abd`; UI-0 `b101575`) | 2026-08-05 |
+| Commits | 159 on `main` (HEAD `7fa3420` — lucide icon replacement; UI-3 `eefad48`/`34acfc9`; UI-1/2 `d9e0abd`; UI-0 `b101575`) | 2026-08-05 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#57 (73 total) | 2026-08-05 |
 | closeout_status | **completed** — session closed 5 Aug 2026: Research Workflow UI full chain SHIPPED + ACCEPTED (UI-0 `b101575` → UI-1/2 `d9e0abd` → UI-3 `eefad48`/`34acfc9` → council artifacts `7b2a87f`/`a2a93fa`, 152 commits, 73 FDs, 311/311); remaining: UI-4 deferred (Decision/Model/Audit registers), A-01 deferred, C-04/C-05/M-02 leftovers, org-workflow real intake (kanban) for live Research Desk data, CS Options Overlay deferred | 2026-08-05 |
 
@@ -39,14 +39,14 @@
 - No schema or migration without explicit authorization.
 ## Next allowed action
 
-**Research Workflow UI full chain SHIPPED + ACCEPTED (5 Aug 2026, FD #55/#56/#57).** UI-0 adapter +
-Briefing + /research + artifact detail + CS Product Detail live at HEAD `a2a93fa` (152 commits, 73 FDs,
-311/311). **Next candidates (one at a time):** (a) **org-workflow real intake** — start the first real
-research request through the Research Desk kanban so the new pages run live data (write domain = CoS/IC
-Secretary); (b) **UI-4** Decision Register / Model Registry / Audit Center — deferred until real artifacts
-accumulate (needs git-history endpoint); (c) closeout leftovers C-04/C-05/M-02; (d) A-01 deferred (FD #52).
-Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred (no options pipeline), org-pack
-follow-ups R3/L1/L2 optional.
+**Research Workflow UI full chain SHIPPED + ACCEPTED (5 Aug 2026, FD #55/#56/#57) + icon cleanup done.**
+HEAD `7fa3420` (159 commits, 73 FDs, 311/311). **Next candidates (one at a time):** (a) **kanban VISUAL
+board** — Founder asked "is it shown anywhere?" → answer: file-only (board.md), no rendered board exists;
+approve a read-only columns+cards board view (reuse D1 endpoints, Research Desk pattern) — the open
+question at session end; (b) **org-workflow real intake** — first real research request through the
+Research Desk kanban (write domain = CoS/IC Secretary); (c) **UI-4** Decision Register / Model Registry /
+Audit Center (needs git-history endpoint); (d) closeout leftovers C-04/C-05/M-02; (e) A-01 deferred (FD #52).
+Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred (no options pipeline).
 
 ## Bootstrap sources
 
@@ -71,8 +71,9 @@ follow-ups R3/L1/L2 optional.
 
 | Field | Value |
 |-------|-------|
-| closeout_status | **completed** — 5 Aug 2026: Research Workflow UI chain SHIPPED + ACCEPTED (UI-0→UI-3, councils R3 PASS ×2, 152 commits, 73 FDs, 311/311); remaining: UI-4 deferred, A-01 deferred, C-04/C-05/M-02, org real intake, Options Overlay deferred |
+| closeout_status | **completed** — 5 Aug 2026 session CLOSED: Research Workflow UI chain SHIPPED + ACCEPTED (UI-0→UI-3, councils R3 PASS ×2) + AI-pattern emoji replaced with lucide line SVG icons project-wide (presentation-layer per §19; radar.html icon macro + base.html banner + FundamentalDetailPage; CS run pins → structural contract); 159 commits, 73 FDs, 311/311; remaining: kanban VISUAL board (open question — Founder asked, not yet approved), UI-4 registers deferred, A-01 deferred, C-04/C-05/M-02, org real intake, Options Overlay deferred |
 | fd_count | #1–53 + FD-CIW-001..016 + FD #54..#57 (73 total) |
 | audit_verdict | **Pre-Launch Close Beta Audit CLOSED — READY WITH ACCEPTED RISKS** (split-lane: Parent browser 10/10 + Sol Medium API/oracle; initial NOT READY → Option A remediation `f96f0a5` → re-audit verified → Founder accepted 2 cosmetic Minors `b038b2f`; app release-ready as labeled synthetic demo; FD #44 boundaries unchanged). **Visual Councils (Research Workflow UI + CS Product Detail) R3 PASS ×2 (`7b2a87f`, `a2a93fa`)** |
+| lifecycle_sync | PROJECT_STATE ✅ · SESSION_CLOSEOUT ✅ · AGENTS.md ✅ (fd-55-56-57 checkpoint) · vault fd-register ✅ (FD-54..57) · _Hermes-Memory ✅ (MEM-IIP-027/028) · FOUNDERS-DECISIONS ✅ (items 70–73) |
 
-<!-- 2026-08-05 18:20 UTC+7 -->
+<!-- 2026-08-05 18:45 UTC+7 -->
