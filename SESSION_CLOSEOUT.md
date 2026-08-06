@@ -39,4 +39,10 @@ FD #69 — Apple Moat Note PUBLISHED — Publish with Dissent (Option B). (No ne
 (c) Apple evidence upgrades (Q1/Q2 FY26 10-Q, transcripts, IDC/Counterpoint — evidence-log §9) or next research mandate.
 Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, UI-4/A-01/C-04/C-05/M-02/org-workflow intake, industry-outlook stale-figure refresh.
 
-<!-- 2026-08-06 17:55 UTC+7 -->
+## Post-closeout addendum (org diagram + IPM-FD-003, ~17:45–17:56)
+
+- Founder asked for a full visualization of the IIP + IPM agent organization → delivered `C:\Users\Admin\Desktop\Antigravity\IIP-IPM-agent-organization-diagram.html` + `.pdf` (dark SVG: Founder band, IIP research-org region with 10 Principals + Plan A §6 pipeline + cadence + Sol Medium review layer, IPM portfolio-office region with PM/assistants/ledger; browser-verified, PDF rasterized + verified, 1 page).
+- Founder: "IPM should use source from IIP. If not, what's the point build IIP?" → **Option A approved — IPM-FD-003 (standing research input)**: IPM Constitution v0.2 (§1/§6/§8), letter templates + "IIP reports considered", AGENTS.md, IPM fd-register row; IIP FD #70 (register item 86) + PROJECT_STATE WP3 note; diagram + PDF refreshed (emerald standing-flow arrow, v0.2 subtitle, 194 commits / 86 FDs). Commits: IPM `98f21fb` · IIP `b37d67b`.
+- Closeout re-check: FDs recorded ✅ (IPM-FD-003 + FD #70) · PROJECT_STATE ✅ · memory capture ✅ (MEM-IPM-002 + IIP CURRENT-STATE MEM-IIP-040 + IPM CURRENT-STATE + MEMORY-MAP IPM entry) · SESSION_CLOSEOUT ✅ (this addendum) · Bible: no IIP change (IPM Constitution amended under its own authority).
+
+<!-- 2026-08-06 17:56 UTC+7 -->
