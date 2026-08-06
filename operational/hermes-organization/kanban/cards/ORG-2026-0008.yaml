@@ -2,12 +2,12 @@ card_id: ORG-2026-0008
 title: "Radar: Hawkish Fed, resilient gold"
 research_question: Are conflict- and inflation-risk flows overpowering the traditional real-yield drag on gold as the Federal Reserve turns more hawkish?
 decision_user: Founder
-workflow_column: Scoped
+workflow_column: Published
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
-artifact_state: Draft
+artifact_state: Published
 domain: CROSS-ASSET
 principal_owner: org-macro-strategist
 assistant_owner: Macro Research Assistant
@@ -17,14 +17,14 @@ created_at: 2026-08-06
 required_by: triage
 expected_artifact: macro regime note / cross-asset transmission analysis
 evidence_standard: point-in-time (FD #58); figures sourced + dated
-data_status: NOT ASSESSED
-validation_status: NOT REQUIRED
-risk_status: NOT REVIEWED
-audit_status: null
+data_status: ASSESSED
+validation_status: COMPLETE
+risk_status: REVIEWED
+audit_status: CLEARED FOR FOUNDER REVIEW (2026-08-07, after audit #1 MAJOR → re-audit → final confirmation)
 radar_observation: "FOMC 2026-07-29 held fed funds 3.50-3.75% by 9-3 vote (all 3 dissents preferred +25bp hike). 2y/10y/10y-real yields 2026-08-04: 4.20%/4.63%/2.40% — up 73/45/47bp since 2025-12-31. Yet LBMA gold PM $4,206.60/oz 2026-08-05 (+24.6% YoY) while Fed broad dollar only -1.7% YoY; June CPI/core 3.46%/2.57% YoY. Gold resilience alongside higher real yields + hawkish vote = possible changing transmission mechanism."
 radar_source: "federalreserve.gov 2026-07-29; FRED DGS2/DGS10/DFII10 2026-08-04; LBMA gold_pm.json 2026-08-05; FRED CPIAUCSL/CPILFESL"
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "TRIAGED (Founder A, 6 Aug) — macro review: gold vs real-rate transmission regime note. Non-goals: no buy/sell, no rate forecast. Data sources: FRED (DGS2/DGS10/DFII10), LBMA, FOMC statements, CPI."
-last_updated: 2026-08-06
+next_action: "PUBLISHED (Founder gate A, 7 Aug) — reports/gold-transmission-regime-2026-08-06.md + CRO companion gold-transmission-regime-opposing-2026-08-06.md. Hardest audit chain yet: audit #1 MAJOR (6 corrections: companion+cover note, horizon caveat thesis+conclusion, CPI narrowed, raw FRED levels reproduced -1.6576%/3.4635%/2.5658%, cut-off, provenance) → re-audit FURTHER (3 fixes) → final confirmation CLEARED. Verdict: flow-dominance hypothesis (consistent with, not established); no flow identified/ranked; permanent break not established; CRO argues structural break."
+last_updated: 2026-08-07
