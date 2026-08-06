@@ -19,6 +19,7 @@ Blocking defect: chronology/provenance language — 10-Q filed 2026-07-31 PRECED
 
 ## Process provenance
 - Dispatch IDs: deleg_642a9263 (analyst note) · deleg_d8b48521 (cross-exam + CRO) · deleg_b16dd5a4 (audit #1)
+- 2026-08-07 — re-audit (deleg_6aa53bfd): 7/7 corrections APPLIED → **CLEARED FOR FOUNDER REVIEW** (final-confirmation.md)
 - Artifact hashes (git hash-object, computed at commit): analyst-note v2, cross-examination.md, cro-opposing-essay.md, audit-note.md, reports (final + companion) — recorded at commit
 - Transcripts: `C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\delegation\live\` + `subagent-summary-*.txt`. Chronology self-attested; hashes fillable from `git hash-object` at any time.
 
