@@ -1,90 +1,82 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Lightbulb, Zap } from "lucide-react"
-import SyntheticDataBanner from "@/components/SyntheticDataBanner"
+import { cn } from "@/lib/utils";
+
+/** Weak signal inbox (P2 — institutional standard, FD #60).
+ *  Demonstration items shown as a plain ledger — no dead buttons; actions
+ *  arrive with the experimental pipeline. */
 
 const ANOMALIES = [
   { id: 1, title: "Sector rotation into Utilities", age: "New", desc: "Defensive sector volume 3σ above 20-day average. No credible explanation yet." },
   { id: 2, title: "Small-cap breadth divergence", age: "2d", desc: "Russell 2000 advance/decline line diverging from price. Liquidity signal?" },
   { id: 3, title: "Treasury yield curve steepening", age: "New", desc: "2s10s spread widening rapidly. End-of-cycle or reflation?" },
-]
+];
 
 const HYPOTHESES = [
   { id: 1, title: "Grid Modernization Supercycle", status: "Experimental", confidence: 62, evidence: 8, entities: ["GE", "VRT", "ETN", "HUBB"] },
   { id: 2, title: "Nuclear Renaissance for AI Power", status: "Experimental", confidence: 45, evidence: 5, entities: ["CEG", "BWXT", "LEU"] },
   { id: 3, title: "Insurance Hard Market Cycle", status: "Under Review", confidence: 71, evidence: 12, entities: ["BRK.B", "TRV", "CB"] },
   { id: 4, title: "Reshoring Capex Cycle", status: "Experimental", confidence: 55, evidence: 7, entities: ["CAT", "URI", "PWR"] },
-]
+];
+
+function SectionKicker({ n: num, title }: { n: string; title: string }) {
+  return (
+    <div className="mt-8 border-b border-rule pb-2">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-3">
+        {num} · {title}
+      </p>
+    </div>
+  );
+}
 
 export default function WeakSignalInboxPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="font-display text-h2 font-bold tracking-tight">Weak Signal Inbox</h1>
+    <div className="mx-auto max-w-[880px]">
+      <header className="border-b border-rule pb-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Theme intelligence</p>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Weak signal inbox</h1>
+        <p className="mt-1 max-w-[680px] text-[12px] leading-relaxed text-ink-2">
+          Early, unexplained moves and emerging hypotheses worth watching. These are demonstration items — the
+          experimental pipeline is not yet connected, and actions (propose, dismiss, review) will arrive with it.
+        </p>
+      </header>
 
-      <SyntheticDataBanner note="Anomalies and hypotheses are demonstration data — the experimental pipeline is not yet connected to this page." />
-
-      <Tabs defaultValue="anomalies">
-        <TabsList>
-          <TabsTrigger value="anomalies">
-            <Zap className="mr-1 size-3" />
-            Unexplained Anomalies ({ANOMALIES.length})
-          </TabsTrigger>
-          <TabsTrigger value="hypotheses">
-            <Lightbulb className="mr-1 size-3" />
-            Theme Hypotheses ({HYPOTHESES.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="anomalies" className="space-y-3 pt-4">
+      <section>
+        <SectionKicker n="01" title="Unexplained anomalies" />
+        <div className="mt-3">
           {ANOMALIES.map((a) => (
-            <Card key={a.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm">{a.title}</CardTitle>
-                  <Badge variant="outline" className="text-xs">{a.age}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">{a.desc}</p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="xs" disabled title="Pending implementation — no backend endpoint">Propose Hypothesis</Button>
-                  <Button variant="ghost" size="xs" disabled title="Pending implementation — no backend endpoint">Dismiss</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div key={a.id} className="border-b border-rule/60 py-2.5">
+              <p className="flex items-baseline gap-2">
+                <span className="font-display text-[14px] font-semibold tracking-tight text-foreground">{a.title}</span>
+                <span className="rounded-sm bg-bg-panel px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-ink-2">{a.age}</span>
+              </p>
+              <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-2">{a.desc}</p>
+            </div>
           ))}
-        </TabsContent>
+        </div>
+      </section>
 
-        <TabsContent value="hypotheses" className="space-y-3 pt-4">
+      <section>
+        <SectionKicker n="02" title="Theme hypotheses" />
+        <div className="mt-3">
           {HYPOTHESES.map((h) => (
-            <Card key={h.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm">{h.title}</CardTitle>
-                  <Badge variant="secondary" className="text-xs">{h.status}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex gap-4 text-xs text-muted-foreground">
-                  <span>Confidence: <strong>{h.confidence}%</strong></span>
-                  <span>Evidence: <strong>{h.evidence} items</strong></span>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {h.entities.map((e) => (
-                    <Badge key={e} variant="outline" className="font-mono text-xs">{e}</Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="xs" disabled title="Pending implementation — no backend endpoint">Request Review</Button>
-                  <Button variant="ghost" size="xs" disabled title="Pending implementation — no backend endpoint">Add Evidence</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div key={h.id} className="border-b border-rule/60 py-2.5">
+              <p className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                <span className="font-display text-[14px] font-semibold tracking-tight text-foreground">{h.title}</span>
+                <span
+                  className={cn(
+                    "text-[10.5px] font-semibold uppercase tracking-[0.1em]",
+                    h.status === "Under Review" ? "text-warning" : "text-ink-3"
+                  )}
+                >
+                  {h.status}
+                </span>
+                <span className="font-mono text-[11.5px] text-ink-2">confidence {h.confidence}%</span>
+                <span className="font-mono text-[11.5px] text-ink-2">evidence {h.evidence} items</span>
+              </p>
+              <p className="mt-1 font-mono text-[11.5px] text-ink-2">{h.entities.join(" · ")}</p>
+            </div>
           ))}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </section>
     </div>
-  )
+  );
 }
