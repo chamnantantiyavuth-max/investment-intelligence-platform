@@ -9,7 +9,7 @@
 
 | Filing | Period end | Filed | Accession | Primary doc | Use |
 |---|---|---|---|---|---|
-| 10-K FY2025 | 2025-09-27 | 2025-10-31 | 0000320193-25-000079 | aapl-20250927.htm | Business (Item 1), Risk Factors (1A), MD&A (7), Financials (8), Segment Note 18 |
+| 10-K FY2025 | 2025-09-27 | 2025-10-31 | 0000320193-25-000079 | aapl-20250927.htm | Business (Item 1), Risk Factors (1A), MD&A (7), Financials (8), Segment Note 13 |
 | 10-Q Q3 FY2026 | 2026-06-27 | 2026-07-31 | 0000320193-26-000020 | aapl-20260627.htm | Latest quarter — services momentum, segment check |
 | 10-Q Q2 FY2026 | 2026-03-28 | 2026-05-01 | 0000320193-26-000013 | aapl-20260328.htm | Interim trend |
 | 10-Q Q1 FY2026 | 2025-12-27 | 2026-01-30 | 0000320193-26-000006 | aapl-20251227.htm | Interim trend |
