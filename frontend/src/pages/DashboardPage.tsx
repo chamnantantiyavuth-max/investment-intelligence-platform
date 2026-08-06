@@ -353,11 +353,11 @@ export default function DashboardPage() {
 
       <ExplainPanel title="What is this app">
         IIP reduces the global investment search space while preserving evidence, uncertainty, and
-        dissent (Constitution §1). It answers “what deserves further investigation?” — not what to
-        buy. Three strategy worlds: Alpha Momentum (momentum &amp; market leadership), Close System
-        (product radar), Fundamental &amp; Opportunity. Experimental surfaces never touch official
-        rankings, filters, or scores (§6). The hero and findings above are display derivations of
-        approved pipeline outputs — never composite scores (Constitution §10).
+        dissent. It answers “what deserves further investigation?” — not what to buy. Three strategy
+        worlds: Alpha Momentum (momentum &amp; market leadership), Close System (product radar),
+        Fundamental &amp; Opportunity. Experimental surfaces never touch official rankings, filters,
+        or scores. The hero and findings above are display derivations of approved pipeline outputs —
+        never composite scores.
       </ExplainPanel>
     </div>
   )

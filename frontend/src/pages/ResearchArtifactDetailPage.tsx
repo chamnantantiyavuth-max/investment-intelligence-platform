@@ -293,8 +293,8 @@ export default function ResearchArtifactDetailPage() {
             <p className="text-xs text-negative">Artifact registry unavailable — source coverage cannot be listed.</p>
           )}
           <p className="text-xs text-ink-2">
-            Freshness, completeness, conflicts, and restatements (EVIDENCE-MODEL §9) are recorded in data-quality
-            reports (template 06) as the org-workflow produces them.
+            Freshness, completeness, conflicts, and restatements are recorded in data-quality
+            reports as the research workflow produces them.
           </p>
         </div>
       )}
