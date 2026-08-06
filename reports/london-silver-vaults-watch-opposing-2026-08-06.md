@@ -4,8 +4,8 @@ type: product
 subject: "Silver (precious metals)"
 date: 2026-08-07
 author: "Chief Risk Officer (ORG-2026-0009) — companion dissent"
-status: review
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A)
 summary: "Companion to 'London Silver Vaults: First Watch-Item Test'. The CRO's preserved opposing case: the 902.843 Moz reading measures gross custody, not lendable free float; the rebuild may be the deposit side of the same dislocation; a deficit financed by mobilization is the mechanism the inventory-liquidity thesis predicts. Advisory, portfolio-blind, not a buy/sell call."
 ---
 

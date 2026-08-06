@@ -4,8 +4,8 @@ type: product
 subject: "Silver (precious metals)"
 date: 2026-08-07
 author: "Commodity Strategy (ORG-2026-0009, RADAR-001 round 2) — IC Secretary synthesis"
-status: review
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A)
 summary: "First watch-item test of the published silver deficit challenge memo: London vault holdings rose to 902.843 Moz (June 2026) — the highest observation in the supplied May 2025–June 2026 LBMA extract, +18.04% YoY — materially weakening the visible-inventory depletion proxy while leaving the available-stock watch item and liquidity normalization unresolved. October 2025's +53.8 Moz vault jump corroborates the Survey's 'squeeze eased as metal returned to London.' CRO dissent published as companion."
 ---
 
