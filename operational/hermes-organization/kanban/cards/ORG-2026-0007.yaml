@@ -2,12 +2,12 @@ card_id: ORG-2026-0007
 title: "Radar: Apple repurchases lag operating acceleration"
 research_question: Is the 12% year-over-year decline in nine-month cash paid for repurchases merely settlement timing, or the start of a durable reduction in Apple's capital-return pace?
 decision_user: Founder
-workflow_column: Scoped
+workflow_column: Published
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
-artifact_state: Draft
+artifact_state: Published
 domain: EQUITY
 principal_owner: org-equity-analyst
 assistant_owner: Equity Research Assistant
@@ -17,14 +17,14 @@ created_at: 2026-08-06
 required_by: triage
 expected_artifact: equity note / Apple moat report watch-item update (buyback mask test)
 evidence_standard: point-in-time (FD #58); figures sourced + dated
-data_status: NOT ASSESSED
-validation_status: NOT REQUIRED
-risk_status: NOT REVIEWED
-audit_status: null
+data_status: ASSESSED
+validation_status: COMPLETE
+risk_status: REVIEWED
+audit_status: CLEAN WITH MINORS (2026-08-06)
 radar_observation: "Q3 FY26 (ended 2026-06-27): revenue $109.4B (+16%), EPS $2.02 (+29%), Services +12.1% to $30.739B, derived Services GM essentially flat 75.62% vs 75.58%. But nine-month cash paid for repurchases fell to $62.094B from $70.579B (derived -12.0%) — buyback spend down despite record revenue/EPS. Tests the Apple moat report's 'buyback mask' claim (CRO opposing essay)."
 radar_source: "Apple newsroom 2026-07-30 — https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/ ; FY26 Q3 consolidated financial statements PDF"
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "TRIAGED (Founder A, 6 Aug) — research intake: Apple watch-item update (buyback mask test vs published moat report). Non-goals: no full moat re-analysis, no valuation. Data sources: FY26 Q3 10-Q + cash-flow statement + authorization disclosures."
+next_action: "PUBLISHED (Founder gate A, 6 Aug) — reports/apple-buyback-mask-test-2026-08-06.md + CRO companion apple-buyback-mask-test-opposing-2026-08-06.md. Full pipeline: evidence (10-Q on disk) → analyst note → cross-exam (C2/C4/C7 UPHELD) → CRO → audit CLEAN WITH MINORS (10/10 corrections verified) → synthesis → gate → publish. Browser-verified typeset. Verdict: ASR timing = leading working hypothesis; deceleration unresolved; mask on but +1.3-1.7pp."
 last_updated: 2026-08-06
