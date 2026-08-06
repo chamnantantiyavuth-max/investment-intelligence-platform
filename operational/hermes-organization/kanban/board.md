@@ -18,9 +18,9 @@ Inbox → Triage → Scoped → Data Ready → In Research → Cross-Review → 
 | ORG-2026-0006 | Radar (RADAR-001): Silver deficit changes character | Published | Commodity Analyst | PUBLISHED (gate A, 6 Aug) — silver-deficit-challenge + CRO companion |
 | ORG-2026-0007 | Radar (RADAR-001): Apple repurchases lag operating acceleration | Published | Equity Analyst | PUBLISHED (gate A, 6 Aug) — apple-buyback-mask-test + CRO companion |
 | ORG-2026-0008 | Radar (RADAR-001): Hawkish Fed, resilient gold | Published | Macro Strategist | PUBLISHED (gate A, 7 Aug) — gold-transmission-regime + CRO companion |
-| ORG-2026-0009 | Radar (R2): London silver vault holdings rise to series high | Inbox | Commodity Analyst | AWAITING TRIAGE (round 2, 7 Aug) |
-| ORG-2026-0010 | Radar (R2): Apple Services margin now directly testable | Inbox | Equity Analyst | AWAITING TRIAGE (round 2, 7 Aug) |
-| ORG-2026-0011 | Radar (R2): Apple share-count contraction persists | Inbox | Equity Analyst | AWAITING TRIAGE (round 2, 7 Aug) |
+| ORG-2026-0009 | Radar (R2): London silver vault holdings rise to series high | Scoped | Commodity Analyst | RESEARCH INTAKE (Founder A, 7 Aug) |
+| ORG-2026-0010 | Radar (R2): Apple Services margin now directly testable | Scoped | Equity Analyst | RESEARCH INTAKE (Founder A, 7 Aug) |
+| ORG-2026-0011 | Radar (R2): Apple share-count contraction persists | Scoped | Equity Analyst | FOLDED INTO 0010 (Founder A, 7 Aug) |
 
 ## Rules
 

@@ -2,7 +2,7 @@ card_id: ORG-2026-0010
 title: "Radar: Apple Services margin now directly testable from disclosed lines"
 research_question: Do Apple's newly disclosed Services sales and cost lines substantiate the previously unverified Services gross-margin claim (≈75.6% from the CRO buyback dissent), and how should tariff refunds and the absence of category-level operating expenses constrain its interpretation?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ radar_source: "https://www.apple.com/newsroom/2026/07/apple-reports-third-quarte
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "RADAR-001 round 2 — awaiting triage. Non-goals: no full moat re-analysis, no valuation. Required: derive Services GM from disclosed lines + reconcile with tariff-refund effect + segment cost allocations (moat report used 'derived' 75.62%/75.58% series)."
+next_action: "TRIAGED (Founder A, 7 Aug) — research intake: Services GM verification (derived ≈75.62% vs CRO dissent claim flagged unverified). 0011 folded into this intake (share-count continuation). Non-goals: no full moat re-analysis, no valuation. Required: derive Services GM from disclosed lines + reconcile tariff-refund effect + segment allocations."
 last_updated: 2026-08-07

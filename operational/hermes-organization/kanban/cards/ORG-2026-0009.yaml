@@ -2,7 +2,7 @@ card_id: ORG-2026-0009
 title: "Radar: London silver vault holdings rise to series high"
 research_question: Does the rise in reported London silver-vault holdings through June 2026 indicate easing physical availability, inventory relocation, or a change in the relationship between visible stocks and lease-market liquidity?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ radar_source: "https://www.lbma.org.uk/prices-and-data/london-vault-data (LBMA L
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "RADAR-001 round 2 — awaiting triage. Non-goals: no price target, no buy/sell. Required to resolve: lease rates, COMEX deliverable stocks, Shanghai premium persistence (CME failed this pass — re-pull)."
+next_action: "TRIAGED (Founder A, 7 Aug) — research intake: SLV watch-framework test (London vaults vs deficit). Non-goals: no price target, no buy/sell. Required evidence: lease rates, COMEX deliverable stocks, Shanghai premium persistence (CME failed in scan — re-pull); World Silver Survey inventory context."
 last_updated: 2026-08-07
