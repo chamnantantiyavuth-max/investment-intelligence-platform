@@ -4,8 +4,8 @@ type: company
 subject: "AAPL"
 date: 2026-08-06
 author: "Chief Risk Officer (ORG-2026-0007) — companion dissent"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Companion to 'Apple's Buyback Mask: First Test — Q3 FY26'. The CRO's preserved opposing case: the 12.0% nine-month decline in cash-paid repurchases is the first observable evidence of durable deceleration and mask thinning — the observed fact is lower deployment; 'timing' is the hypothesis. Several dissent claims are not source-cleared by the review register. Advisory, portfolio-blind, not a buy/sell call."
 ---
 

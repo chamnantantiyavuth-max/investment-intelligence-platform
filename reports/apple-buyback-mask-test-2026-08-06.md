@@ -4,8 +4,8 @@ type: company
 subject: "AAPL"
 date: 2026-08-06
 author: "Equity Research (ORG-2026-0007, RADAR-001) — IC Secretary synthesis"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Apple's nine-month cash paid for repurchases fell 12.0% YoY (FY26 $62.094B vs FY25 $70.579B) in a quarter of 16.4% revenue growth — the first observable test of the moat report's 'buyback mask' claim. The decline does not establish a 12% cut in intent: ASR settlement timing is the leading working hypothesis, the program was expanded ($100B added April 2026; $138B remaining), and Q3 activity was ≈$25.8B. The mask is still on but contributed only ≈+1.3–1.7pp of +28.7% EPS growth. Durable deceleration remains unresolved; CRO dissent published as companion."
 ---
 
