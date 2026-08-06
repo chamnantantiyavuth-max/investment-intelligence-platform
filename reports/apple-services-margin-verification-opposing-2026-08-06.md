@@ -4,8 +4,8 @@ type: company
 subject: "AAPL"
 date: 2026-08-07
 author: "Chief Risk Officer (ORG-2026-0010) — companion dissent"
-status: review
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A)
 summary: "Companion to 'Apple Services Margin: Verification of the Reported Claim'. The CRO's preserved opposing case: two Q3 point-matches do not validate the moat report's FY2023→FY2025 derived trend; the ~75.6% level is cleared but not the flattening inference; the unknown tariff-refund segment allocation sits inside the numerator and may inflate the margin; 'verified ex post' wording risks laundering derived series into primary-source fact. Advisory, portfolio-blind, not a buy/sell call."
 ---
 

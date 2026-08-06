@@ -4,8 +4,8 @@ type: company
 subject: "AAPL"
 date: 2026-08-07
 author: "Equity Research (ORG-2026-0010, RADAR-001 round 2) — IC Secretary synthesis"
-status: review
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A)
 summary: "Verification note: Apple's Q3 FY2026 Form 10-Q (filed 2026-07-31) Services lines reproduce the previously published Q3 Services gross-margin figures — Q3 FY26 75.6205% (75.62%) and Q3 FY25 75.5752% (75.58%) — confirming the reported quarterly arithmetic and source-clearing the CRO dissent's ~75.6% level claim (the noun, not the flattening verb). Bounded by three constraints: no category-level opex (GM ≠ profitability), unknown tariff-refund segment allocation (an unresolved variable inside the numerator), and no subcategory composition. Annual FY2023→FY2025 trend remains derived, not validated. NAND/DRAM + AI-compute constraints source-cleared from Item 1A; SC granted Epic cert 30 Jun 2026. CRO dissent published as companion."
 ---
 
