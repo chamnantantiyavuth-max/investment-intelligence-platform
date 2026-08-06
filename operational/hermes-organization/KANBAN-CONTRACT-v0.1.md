@@ -105,7 +105,7 @@ A blocked card must state: exact blocker; owner of resolution; whether the block
 
 ## 8. Board Swimlanes (filtered views)
 
-1. Theme Intelligence · 2. Alpha Momentum / Market Leadership · 3. Commodity Product Research · 4. Macro Regime Research · 5. Equity Alpha Research · 6. Options and Volatility Research · 7. Quant and Model Validation · 8. Data Quality and Lineage · 9. Risk Challenges · 10. Governance and Audit
+1. Theme Intelligence · 2. Alpha Momentum / Market Leadership · 3. Commodity Product Research · 4. Macro Regime Research · 5. Equity Alpha Research · 6. Options and Volatility Research · 7. Quant and Model Validation · 8. Data Quality and Lineage · 9. Risk Challenges · 10. Governance and Audit · 11. Radar Intake (Task Idea Cards — FD #71)
 
 ## 9. Weekly Board Review
 

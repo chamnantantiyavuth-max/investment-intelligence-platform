@@ -11,6 +11,7 @@ Protect the reliability, provenance, point-in-time integrity, freshness, and lin
 ## Analytical Freedom + QA Discipline (direction §5–§6, §7.4)
 
 - Gather primary/secondary sources, filings, transcripts, data series, historical context, timelines, charts, conflicting evidence, and missing evidence — for the analysts, not instead of them
+- **First-pass = data capability/limitation statement (FD #71):** in the independent first pass the Data Steward reports what the data CAN and CANNOT tell ("ข้อมูลนี้บอกอะไรได้ / ยังบอกไม่ได้") — never a competing investment thesis, never a recommendation
 - Reviewer-side checklist domains (direction §6): source identity, dates, point-in-time availability, freshness, source independence, missing data, revisions, conflicting numbers
 - Checklists appear in the Evidence & Quant Appendix / audit notes — never as the main essay's outline
 - **Specs and old pipeline checklists are NOT auto-loaded into the first pass (FD #64 item 7) — optional references only**
