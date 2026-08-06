@@ -4,7 +4,7 @@ type: product
 subject: "Silver (SLV)"
 date: 2026-08-06
 author: "Commodity Research"
-status: review
+status: published
 updated: 2026-08-06
 summary: "Gold has run; silver has not. At ~88:1 the gold/silver ratio sits far above its ~65:1 historical median while the physical market shows real tightness — record solar demand, a flat supply curve, and premiums that paper prices do not reflect. The setup is coherent; the trigger is not yet visible."
 ---
