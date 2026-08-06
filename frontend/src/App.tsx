@@ -6,6 +6,8 @@ import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import ResearchDeskPage from "@/pages/ResearchDeskPage"
 import KanbanBoardPage from "@/pages/KanbanBoardPage"
+import LibraryPage from "@/pages/LibraryPage"
+import ReportArticlePage from "@/pages/ReportArticlePage"
 import ResearchArtifactDetailPage from "@/pages/ResearchArtifactDetailPage"
 import AMQueuePage from "@/pages/AMQueuePage"
 import AMScreenerPage from "@/pages/AMScreenerPage"
@@ -44,6 +46,8 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="research" element={<ResearchDeskPage />} />
             <Route path="kanban" element={<KanbanBoardPage />} />
+            <Route path="library" element={<LibraryPage />} />
+            <Route path="library/:slug" element={<ReportArticlePage />} />
             <Route path="research/*" element={<ResearchArtifactDetailPage />} />
             <Route path="am-queue" element={<AMQueuePage />} />
             <Route path="am-screener" element={<AMScreenerPage />} />
