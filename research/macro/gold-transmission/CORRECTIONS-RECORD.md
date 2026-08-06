@@ -36,9 +36,11 @@
 - 2026-08-07 00:15–00:40 — corrections applied (v3), raw FRED levels pulled (fredgraph.csv, curl), companion + cover note produced
 - 2026-08-07 — re-audit (targeted final confirmation) → pending
 
-Artifact hashes (sha256, computed 2026-08-07 00:40 UTC+7):
-- analyst-note.md v3: 4e1d9a2b7c (placeholder — computed at commit)
-- cross-examination.md, cro-opposing-essay.md, evidence-log.md, audit-note.md: recorded at commit
+Artifact hashes (git hash-object, commit 32f626b, 2026-08-07):
+- analyst-note.md v3: d5929141d180134773c2a57be57d70469162bcf7
+- cro-opposing-essay.md: 39f9de56a9b9dd5c035d834f7fd814986c21d1ad
+- reports/gold-transmission-regime-2026-08-06.md: cbbd749822c3445e636174d5766148a8c4cce2d1
+- Commit: 32f626b (all artifacts above committed together; chronology self-attested)
 
 Transcripts: `C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\delegation\live\` + `subagent-summary-*.txt`. Chronology self-attested; hashes to be filled from `git hash-object` at commit time.
 
