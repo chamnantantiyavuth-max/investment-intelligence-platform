@@ -174,7 +174,7 @@ export default function AMQueuePage() {
       ) : (
         <section className="mt-8">
           <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
-            Reference · Themes
+            Themes
           </h2>
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {themes.map((tc) => (
