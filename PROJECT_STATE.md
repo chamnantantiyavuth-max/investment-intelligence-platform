@@ -29,9 +29,10 @@
 | Python tests | 311/311 (26 CS pipeline locked + 285 API/other locked+suite; 140 pre-existing locked: 90 logic + 42 real-data-api + 8 org-workflow) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-06 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-06 |
-| Commits | 204 on `main` (HEAD `42b3e2c` — Weekly Intelligence Letter #1 published; radar layer + FD #71) | 2026-08-06 |
+| Commits | 253 on `main` (HEAD `5dc8b59` — RADAR-001 pilot + round 2 complete: 6/6 radar cards published) | 2026-08-07 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#72 (88 total) | 2026-08-06 |
 | closeout_status | **completed** — closed 6 Aug 2026 (WP2+WP3 session) + post-closeout work same day: FD #70 (IPM standing input) + FD #71 (radar layer live, role 11 installed, RADAR-001 pilot, 3 cards triaged) + Weekly Intelligence Letter #1 PUBLISHED (gate A) + FD #72 (blog design approved as-is); next = radar research execution (0006 Silver first) → IPM Week 1 letter → Weekly Intelligence Letter #2 | 2026-08-06 |
+| closeout_status | **completed** — closed 7 Aug 2026 (overnight radar research-execution marathon): RADAR-001 pilot COMPLETE (0006/0007/0008 published, all + CRO companions) + RADAR-001 round 2 COMPLETE (0009 London vaults / 0010 Services margin published, 0011 folded into 0010) — 6/6 radar cards → published reports; audit chain: 0008 MAJOR→CLEARED, 0010 MAJOR→CLEARED, 0009 CLEAN WITH MINORS; 88 FDs; library = 12 published; skill pitfalls updated (correction-marker leak; placeholder ×3). **Next: IPM Week 1 letter (IPM-FD-003 test) → Weekly Letter #2 → radar round 3 on request** | 2026-08-07 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
