@@ -4,8 +4,8 @@ type: product
 subject: "Silver (SLV)"
 date: 2026-08-06
 author: "Chief Risk Officer (ORG-2026-0006) — companion dissent"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Companion to 'Silver's Deficit: Persisting Without Demand Growth'. The CRO's strongest opposing case: the ratio/price mismatch is a timestamp failure that may make silver cheaper than claimed; deficits under falling demand and costs confirm supply inelasticity; a resolved squeeze does not negate tightness. Advisory, portfolio-blind, not a buy/sell call."
 ---
 

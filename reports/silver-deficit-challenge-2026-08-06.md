@@ -4,8 +4,8 @@ type: product
 subject: "Silver (SLV)"
 date: 2026-08-06
 author: "Commodity Research (ORG-2026-0006, RADAR-001) — IC Secretary synthesis"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "The 2025 actual and 2026 forecast silver deficits (40.3Moz / 46.3Moz) persist while industrial demand contracts roughly 3% — the published note's demand-growth framing fails; the replacement explanation (supply responsiveness, investment absorption, inventory/liquidity) is a working hypothesis pending synchronized pricing, stock-and-flow data, and the solar split. CRO dissent published as companion."
 ---
 
