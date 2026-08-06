@@ -2,12 +2,12 @@ card_id: ORG-2026-0011
 title: "Radar: Apple share-count contraction persists despite lower repurchase spend"
 research_question: Is Apple's continuing share-count contraction becoming less dependent on current-period repurchase spending, and what settlement timing, employee-equity issuance, or authorization usage would explain the observed relationship?
 decision_user: Founder
-workflow_column: Scoped
+workflow_column: Published
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
-artifact_state: Draft
+artifact_state: Published
 domain: EQUITY
 principal_owner: org-equity-analyst
 assistant_owner: Equity Research Assistant
@@ -17,14 +17,14 @@ created_at: 2026-08-07
 required_by: triage
 expected_artifact: watch-item update on apple-buyback-mask-test (buyback mask trajectory)
 evidence_standard: point-in-time (FD #58); figures sourced + dated
-data_status: NOT ASSESSED
-validation_status: NOT REQUIRED
-risk_status: NOT REVIEWED
-audit_status: null
+data_status: ASSESSED
+validation_status: COMPLETE
+risk_status: REVIEWED
+audit_status: CLEARED VIA ORG-2026-0010 (2026-08-07 — folded intake; covered by 0010's audit chain)
 radar_observation: "9M FY26 (ended 2026-06-27): repurchases of common stock $62.094B vs $70.579B (9M FY25); basic weighted-avg shares 14.692515B vs 14.992898B; diluted 14.750302B vs 15.051726B. Q3 FY26 basic weighted-avg 14.656110B vs 14.902886B (Q3 FY25). Continued share-count contraction despite lower cash outlay — extends ORG-2026-0007's buyback mask test: the mask remains operative; whether the relationship is decoupling (settlement timing, employee equity, authorization usage) is the open question."
 radar_source: "https://www.apple.com/newsroom/pdfs/fy2026q3/FY26_Q3_Consolidated_Financial_Statements.pdf (pulled 2026-08-07, deleg_ec2298ce)"
 open_decision_slots: []
 dependencies: [ORG-2026-0007]
 blocked_reason: null
-next_action: "TRIAGED (Founder A, 7 Aug) — FOLDED INTO ORG-2026-0010 (Services GM verification intake): share-count/share-count-vs-buyback relationship reviewed as part of 0010's evidence set. M1 continuation of the published buyback mask test."
+next_action: "PUBLISHED VIA ORG-2026-0010 (Founder gate A, 7 Aug) — share-count continuation evidence delivered inside reports/apple-services-margin-verification-2026-08-06.md (14,594,180,000 shares outstanding 2026-07-17 vs 14,608,963,000 at 2026-06-27; continued contraction consistent with the published buyback mask test). M1 follow-up closed with 0010."
 last_updated: 2026-08-07
