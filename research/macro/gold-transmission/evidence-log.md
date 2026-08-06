@@ -39,3 +39,13 @@
 S1–S5 from radar pass deleg_c98d7277 (browser-verified public sources). S6 derived. Analysis is advisory-only, portfolio-blind — no rate forecast, no price target, no buy/sell. The macro layer is a single-line assessment per dimension — directionally indicative, not a full forecast.
 
 <!-- 2026-08-07 00:15 UTC+7 -->
+
+## Raw endpoint observations (added 2026-08-07, audit correction 4 — independent reproduction)
+
+| Series | Current level | Prior-year level | YoY (computed) | Reported | Status |
+|---|---|---|---|---|---|
+| DTWEXBGS (broad dollar) | 119.7034 (2026-07-31) | 121.7210 (2025-07-31) | −1.6576% | −1.7% | REPRODUCED (119.7034/121.7210−1) |
+| CPIAUCSL (headline CPI) | 332.568 (2026-06) | 321.435 (2025-06) | +3.4635% | 3.46% | REPRODUCED (332.568/321.435−1) |
+| CPILFESL (core CPI) | 336.065 (2026-06) | 327.658 (2025-06) | +2.5658% | 2.57% | REPRODUCED (336.065/327.658−1) |
+
+Source: FRED fredgraph.csv (pulled 2026-08-07, curl). All three radar-reported percentages independently reproduced — no discrepancy.
