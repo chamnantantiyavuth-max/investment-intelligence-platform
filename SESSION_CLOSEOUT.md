@@ -1,47 +1,42 @@
-# Session Closeout — 2026-08-06 (WP2: Apple Research Pilot — Full Sprint to Publication)
+# Session Closeout — 2026-08-06 (WP2 Apple Pilot → WP3 IPM Foundation → Blog Design Review)
 
-**Status:** COMPLETE — WP2 (RM-2026-0001) executed end-to-end, audit-cleaned, published (FD #69). Session ends clean.
+**Status:** COMPLETE — WP2 published (FD #69), WP3 stood up, blog design review delivered (decision pending). Session ends clean.
 
 ## What happened this session
 
-1. **WP2 full sprint (Plan A §6 workflow, ~1.5h):** continued from the reconstitution closeout's "next = WP2 research sprint."
-2. **Evidence build COMPLETE (`a12da30`):** Note 13 segments (3yr), gross margin architecture (Services GM 75.4% = 42.2% of gross profit), Services narrative, Item 1A risk factors, Q3 FY2026 8-K (rev +16.4%, iPhone +21.7%, China +22.4%), XBRL FY21–25 series (GM 41.8→46.9%, cumulative buybacks $438.6B, shares −10.1%).
-3. **Independent first pass — 6 isolated Principal views** (`deleg_89b7126c`, gpt-5.6-sol, anti-anchoring: only evidence packet per view, none read another). Saved to `research/companies/AAPL/first-pass/` with dispatch record.
-4. **Deep analysis essay** — thesis: moat carried by Share of Mind/Switching Cost/Intangible Assets (low-to-medium confidence); genuine erosion = AI disintermediation + regulatory opening compound, hollowing Services economics while installed base persists.
-5. **Cross-examination (10 corrections) + CRO opposing essay + audit #1** (`deleg_126c455c`) — audit returned **MAJOR FINDINGS** (11 corrections): footer timestamps future-dated (provenance defect), €500M DMA fine mis-sourced to Item 1A (correct = Item 3/10-Q Item 1), buyback terminology, overconfident claims (recession-survival assertion, "none of ingredients present"), missing Q3 FY26 10-Q.
-6. **Q3 FY2026 10-Q extracted + reconciled** — added: €500M DMA fine detail + Article 6(4) preliminary findings (up to 10% fines), DOJ suit, Epic injunctions (SCOTUS cert 2026-06-30), Google licensing risk, NAND/DRAM supply constraints "expected to intensify," AI-compute dependence, Siri AI interoperability risk, new $100B buyback program (April 2026) + $10B ASRs, shares 14.594B (2026-07-17).
-7. **CORRECTIONS-RECORD** (Constitution §23.9 — preserve erroneous metadata, correct forward) + all 11 corrections applied (`6f140d1`).
-8. **Re-audit** (`deleg_127f9b61`) → REMAINS BLOCKED with 4 bounded residuals (RA-1 derived formulas, RA-2 thesis/conclusion language, RA-3 premature attestation, RA-4 source inventory) → all applied (`bf8f58c`).
-9. **Final targeted confirmation** (`deleg_2e47ba02`) → **CLEARED FOR SYNTHESIS + FOUNDER REVIEW** (arithmetic re-performed 57.66%/13.76%/81.37%, zero regressions).
-10. **Secretary synthesis** — one coherent article preserving CRO dissent (`secretary-synthesis.md`, status=review).
-11. **Founder gate passed (Option B — publish with dissent; Founder: "choose as your recommendation") → PUBLISHED (`fbd66bc`):** `reports/apple-moat-2026-08-06.md` + `reports/apple-moat-opposing-2026-08-06.md` (both type=company, subject=AAPL, series cross-linked). Verified: backend /api/reports 3 published, /library index, both article pages typeset (no markdown leak, series footer, console 0 errors).
-12. **FD #69 registered** (repo item 85 + vault row FD-69). PROJECT_STATE updated (191 commits, 85 FDs, closeout completed, next = WP3).
+1. **WP2 full sprint (Plan A §6, ~1.5h):** continued from reconstitution closeout. Evidence build (10-K FY25 + 8-K Q3 FY26 + 10-Q Q3 FY26 + XBRL FY21–25) → 6 isolated first-pass views (anti-anchoring, `deleg_89b7126c`) → deep analysis essay → cross-exam (10 corrections) + CRO opposing essay + audit #1 (**MAJOR FINDINGS** — 11 corrections: future-dated footers, €500M fine mis-sourced, overconfident claims, missing 10-Q) → CORRECTIONS-RECORD (§23.9) → re-audit (RA-1..RA-4) → **final confirmation CLEARED** (arithmetic re-performed 57.66%/13.76%/81.37%).
+2. **Founder gate → PUBLISHED (Option B — publish with dissent, FD #69):** `reports/apple-moat-2026-08-06.md` + `reports/apple-moat-opposing-2026-08-06.md` (series, cross-linked, browser/API verified, console 0 errors). FD #69 registered (repo item 85 + vault row). Commits `a12da30`…`fbd66bc`.
+3. **WP3 — IPM foundation (Plan B, P-1/P-2):** separate repo `C:\Users\Admin\Desktop\Antigravity\independent-portfolio-manager` (root `1495553`) + own Hermes profile `ipm` (own SOUL.md, inherits nothing). IPM Constitution v0.1, AGENTS.md, Mudley baseline, opening ledger USD 200,000.00 (reconcile.py exit 0, ad-hoc verified 6/6: tamper/fail-closed detection), IBKR eligibility baseline (grid RESEARCH.md 2026-07-10 re-verified per FD #58), roles + 3 letter templates, PM Letter Week 0 (cash as position), project FD register. Verified: no IIP path/authority references.
+4. **Blog design review (FD #62 deliverable, `b827ed7`):** /library + article pages vision-verified **institutional-grade** (zero defects, console 0 errors), mobile code-level audit (fluid containers, mobile-safe), catalog = 3 published reports. Findings D1–D4 all cosmetic. **Approval options A–D presented — decision PENDING (Founder chose session close instead).**
 
 ## FDs recorded this session
 
-FD #69 — Apple Moat Note PUBLISHED — Publish with Dissent (Option B).
+FD #69 — Apple Moat Note PUBLISHED — Publish with Dissent (Option B). (No new FD for WP3/blog — WP3 ran on approved P-1/P-2; blog review is a pending decision.)
 
 ## Artifacts
 
-- `research/companies/AAPL/` — evidence-log, source-inventory, evidence-quant-appendix, first-pass/ (6 views + README dispatch record), main-research-essay.md (v2), cross-examination.md, cro-opposing-essay.md, audit-note.md, re-audit-note.md, final-confirmation.md, CORRECTIONS-RECORD.md, secretary-synthesis.md
-- `reports/apple-moat-2026-08-06.md` + `reports/apple-moat-opposing-2026-08-06.md` (PUBLISHED)
-- Raw filings: /tmp/apl-evidence/ (10-K, 8-K, 10-Q, XBRL)
-- Commits: a12da30 → f9bdd05 → 6f140d1 → bf8f58c → 0a2cdf9 → fbd66bc (6 commits this session; 191 total)
+- IIP: `research/companies/AAPL/` (evidence-log, appendix, first-pass/, essay v2, cross-exam, CRO essay, audit/re-audit/final-confirmation, CORRECTIONS-RECORD, secretary synthesis) · `reports/apple-moat-*.md` (published) · `design/blog-design-review-2026-08-06.md`
+- IPM: `C:\Users\Admin\Desktop\Antigravity\independent-portfolio-manager\` (Constitution, AGENTS, philosophy, ledger + reconcile.py, roles/templates, weekly letter, fd-register, IBKR baseline) + profile `ipm`
+- Commits: IIP `a12da30`…`b827ed7` (13 this session; 194 total) · IPM root `1495553`
+- Raw filings: /tmp/apl-evidence/
 
 ## Closeout checklist
 
-- [x] FDs recorded? #69 (repo item 85 + vault row + PROJECT_STATE)
-- [x] Bible updated? No — IIP Constitution + DNA deliberately UNCHANGED (R-1; research artifacts are not constitutional changes)
-- [x] PROJECT_STATE.md updated? Yes — WP2 COMPLETE bullet, metrics (191 commits, 85 FDs), next action WP3, closeout_status completed
-- [x] Verify-First? Every claim file-verified (accessions, grep, arithmetic re-performance by independent auditor)
-- [x] Verification tags? Audit chain artifacts: audit-note (MAJOR), re-audit-note (BLOCKED→fixed), final-confirmation (CLEARED) + browser/API verification of publish
-- [x] Acceptance lock respected? N/A (no code/test changes — research artifacts + reports only)
-- [x] Council gates fired? Audit delegation chain (independent Sol Medium ×4: first-pass 6, challenge 3, re-audit, final confirmation) — research-cell governance per Plan A §6; no Bible/Milestone/Final council trigger (no code/schema/architecture change)
+- [x] FDs recorded? #69 (repo item 85 + vault row + PROJECT_STATE + _Hermes-Memory MEM-IIP-038). Pending: blog design review decision (A/B/C/D) — logged in PROJECT_STATE next-action, NOT an FD until Founder decides
+- [x] Bible updated? No — IIP Constitution + DNA deliberately UNCHANGED (R-1)
+- [x] PROJECT_STATE.md updated? Yes — WP2 + WP3 bullets, metrics (194 commits, 85 FDs), next-action (blog decision → cadence pilots), closeout_status completed
+- [x] Verify-First? Every claim file-verified (accessions, greps, arithmetic re-performance by independent auditor)
+- [x] Verification tags? Audit chain artifacts (audit MAJOR → re-audit → final confirmation CLEARED) + ad-hoc verification (IPM reconcile 6/6) + browser/API verification of publish
+- [x] Acceptance lock respected? N/A (no code/test changes — research + governance artifacts; blog review is presentation-only proposal)
+- [x] Council gates fired? Research-cell audit delegations ×4 (independent Sol Medium) per Plan A §6; no Bible/Milestone/Final council trigger (no code/schema/architecture change)
 - [x] SESSION_CLOSEOUT written? This file
 
 ## Recommended next action
 
-**WP3 — IPM setup (Plan B, separate project):** own repo + Hermes profile + IPM Constitution; opening ledger USD 200k (no-trade reconciliation exactly 200,000); Mudley philosophy baseline; 3 letter artifacts (Portfolio Finding / Investment Decision / Portfolio Manager Letter); initial cadence = Weekly Portfolio Review + Event-driven Review. Per FD #64/#67/#68 this is a SEPARATE Founder-level project — needs its own workspace, not the IIP repo.
-Alternatives: (a) Weekly Intelligence Letter pilot (research-org cadence, Plan A §7); (b) Apple evidence upgrades (Q1/Q2 FY26 10-Qs, earnings-call transcripts, IDC/Counterpoint share data — evidence-log §9); (c) blog design review / other frozen-platform leftovers.
+**Blog design review decision (A/B/C/D — presented, pending):** A accept as-is (recommended) / B +selects / C +selects+series hint / D return. THEN:
+(a) **Weekly Intelligence Letter pilot** (research-org cadence, Plan A §7 — IC Secretary, first letter this week);
+(b) **IPM own cadence** (profile `ipm`: `cd C:\Users\Admin\Desktop\Antigravity\independent-portfolio-manager && hermes -p ipm` — Weekly PM Letter + Event-driven; cash is the position until a genuinely investable, IBKR-verified idea appears);
+(c) Apple evidence upgrades (Q1/Q2 FY26 10-Q, transcripts, IDC/Counterpoint — evidence-log §9) or next research mandate.
+Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, UI-4/A-01/C-04/C-05/M-02/org-workflow intake, industry-outlook stale-figure refresh.
 
-<!-- 2026-08-06 17:15 UTC+7 -->
+<!-- 2026-08-06 17:55 UTC+7 -->

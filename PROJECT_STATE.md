@@ -28,9 +28,9 @@
 | Python tests | 311/311 (26 CS pipeline locked + 285 API/other locked+suite; 140 pre-existing locked: 90 logic + 42 real-data-api + 8 org-workflow) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-06 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-06 |
-| Commits | 191 on `main` (HEAD `fbd66bc` — Apple moat note PUBLISHED, FD #69; WP2 complete) | 2026-08-06 |
+| Commits | 194 on `main` (HEAD `b827ed7` — blog design review FD #62 deliverable; prior `fbd66bc` Apple publish) | 2026-08-06 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#69 (85 total) | 2026-08-06 |
-| closeout_status | **completed** — closed 6 Aug 2026 (WP2 Apple pilot session): full Plan A §6 workflow → audit chain CLEANED (audit #1 MAJOR → CORRECTIONS-RECORD §23.9 → re-audit → final confirmation CLEARED) → Founder gate passed (Option B publish with dissent, FD #69) → main essay + CRO companion PUBLISHED + browser/API verified → FD #69 registered (repo item 85 + vault row) → PROJECT_STATE updated; next = WP3 IPM setup | 2026-08-06 |
+| closeout_status | **completed** — closed 6 Aug 2026 (WP2+WP3 session): WP2 Apple pilot PUBLISHED (FD #69, audit chain cleaned) → WP3 IPM foundation stood up (separate repo + `ipm` profile) → blog design review delivered (FD #62, decision A–D **PENDING**); FD #69 registered; SESSION_CLOSEOUT written; next = blog decision → cadence pilots | 2026-08-06 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -46,9 +46,10 @@
 
 **RECONSTITUTION (FD #63–69, 6 Aug 2026):** WP1 (role amendments) COMPLETE · **WP2 (Apple pilot RM-2026-0001) COMPLETE + PUBLISHED (FD #69)** · **WP3 (IPM foundation) COMPLETE** — all three execution tracks done.
 Next in order:
-(a) **Research-org cadence pilot (Plan A §7):** Weekly Intelligence Letter (IC Secretary) — first letter this week; on-demand deep research per future mandates.
-(b) **IPM cadence (separate project, own profile `ipm`):** Weekly Portfolio Review (one PM Letter) + Event-driven Review; first real decision only when a genuinely investable, IBKR-verified idea appears — cash is the position.
-(c) Frozen-platform leftovers unchanged: blog design review, UI-4, A-01, C-04/C-05/M-02, org-workflow intake; Apple evidence upgrades (Q1/Q2 FY26 10-Q, transcripts, IDC/Counterpoint — evidence-log §9).
+(a) **Blog design review DECISION (PENDING — `design/blog-design-review-2026-08-06.md`):** A accept as-is (recommended) / B +selects restyle / C +selects+series hint / D return. FD #62 deliverable.
+(b) **Research-org cadence pilot (Plan A §7):** Weekly Intelligence Letter (IC Secretary) — first letter this week; on-demand deep research per future mandates.
+(c) **IPM cadence (separate project, own profile `ipm`):** Weekly Portfolio Review (one PM Letter) + Event-driven Review; first real decision only when a genuinely investable, IBKR-verified idea appears — cash is the position.
+(d) Frozen-platform leftovers unchanged: UI-4, A-01, C-04/C-05/M-02, org-workflow intake; Apple evidence upgrades (Q1/Q2 FY26 10-Q, transcripts, IDC/Counterpoint — evidence-log §9).
 Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, industry-outlook stale-figure refresh when used.
 
 ## Bootstrap sources
@@ -74,9 +75,9 @@ Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, industry
 
 | Field | Value |
 |-------|-------|
-| closeout_status | **completed** (re-closed by 6 Aug WP2 session) — FD #69 Apple moat note PUBLISHED (publish with dissent) captured: PROJECT_STATE updated, SESSION_CLOSEOUT written, vault fd-register row FD-69, repo FOUNDERS-DECISIONS item 85, _Hermes-Memory sync; open: WP3 IPM setup, Weekly Intelligence Letter pilot, blog design review, UI-4, A-01, C-04/C-05/M-02, org-workflow intake |
+| closeout_status | **completed** (closed by 6 Aug WP2+WP3 session) — FD #69 Apple moat note PUBLISHED (publish with dissent) + WP3 IPM foundation stood up + blog design review delivered (FD #62, decision A–D PENDING); captured: PROJECT_STATE updated, SESSION_CLOSEOUT written, vault fd-register row FD-69, repo FOUNDERS-DECISIONS item 85, _Hermes-Memory (MEM-IIP-038/039 + IPM MEM-IPM-001); open: blog design review decision, Weekly Intelligence Letter pilot, IPM cadence, UI-4, A-01, C-04/C-05/M-02, org-workflow intake |
 | fd_count | #1–44 + FD-CIW-001..016 + FD #45..#69 (85 total) |
 | audit_verdict | **RM-2026-0001 audit chain CLEANED** — audit #1 MAJOR FINDINGS (11 corrections) → CORRECTIONS-RECORD §23.9 → re-audit (RA-1..RA-4) → final targeted confirmation **CLEARED FOR SYNTHESIS + FOUNDER REVIEW** (arithmetic re-performed, zero regressions). Prior: Pre-Launch Close Beta Audit READY WITH ACCEPTED RISKS (3 Aug) |
 | lifecycle_sync | PROJECT_STATE ✅ (this session) · SESSION_CLOSEOUT ✅ (this session) · AGENTS.md ✅ (unchanged this session — WP2 artifacts not checkpoints; FD #69 noted in commit) · vault fd-register ✅ (FD-69 row) · _Hermes-Memory ✅ (session capture pending this closeout) · FOUNDERS-DECISIONS ✅ (item 85) |
 
-<!-- 2026-08-06 17:30 UTC+7 -->
+<!-- 2026-08-06 17:55 UTC+7 -->
