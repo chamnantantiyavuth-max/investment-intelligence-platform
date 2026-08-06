@@ -1,0 +1,30 @@
+card_id: ORG-2026-0008
+title: "Radar: Hawkish Fed, resilient gold"
+research_question: Are conflict- and inflation-risk flows overpowering the traditional real-yield drag on gold as the Federal Reserve turns more hawkish?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: CROSS-ASSET
+principal_owner: org-macro-strategist (suggestion)
+assistant_owner: Scanning Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-06
+required_by: triage
+expected_artifact: macro regime note / cross-asset transmission analysis
+evidence_standard: point-in-time (FD #58); figures sourced + dated
+data_status: NOT ASSESSED
+validation_status: NOT REQUIRED
+risk_status: NOT REVIEWED
+audit_status: null
+radar_observation: "FOMC 2026-07-29 held fed funds 3.50-3.75% by 9-3 vote (all 3 dissents preferred +25bp hike). 2y/10y/10y-real yields 2026-08-04: 4.20%/4.63%/2.40% — up 73/45/47bp since 2025-12-31. Yet LBMA gold PM $4,206.60/oz 2026-08-05 (+24.6% YoY) while Fed broad dollar only -1.7% YoY; June CPI/core 3.46%/2.57% YoY. Gold resilience alongside higher real yields + hawkish vote = possible changing transmission mechanism."
+radar_source: "federalreserve.gov 2026-07-29; FRED DGS2/DGS10/DFII10 2026-08-04; LBMA gold_pm.json 2026-08-05; FRED CPIAUCSL/CPILFESL"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: CoS D1 triage → decide research intake
+last_updated: 2026-08-06

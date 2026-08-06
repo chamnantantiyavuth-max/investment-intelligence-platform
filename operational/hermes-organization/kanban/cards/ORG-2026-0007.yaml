@@ -1,0 +1,30 @@
+card_id: ORG-2026-0007
+title: "Radar: Apple repurchases lag operating acceleration"
+research_question: Is the 12% year-over-year decline in nine-month cash paid for repurchases merely settlement timing, or the start of a durable reduction in Apple's capital-return pace?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: EQUITY
+principal_owner: org-equity-analyst (suggestion)
+assistant_owner: Scanning Assistant
+priority: P1
+materiality: M2
+created_at: 2026-08-06
+required_by: triage
+expected_artifact: equity note / Apple moat report watch-item update (buyback mask test)
+evidence_standard: point-in-time (FD #58); figures sourced + dated
+data_status: NOT ASSESSED
+validation_status: NOT REQUIRED
+risk_status: NOT REVIEWED
+audit_status: null
+radar_observation: "Q3 FY26 (ended 2026-06-27): revenue $109.4B (+16%), EPS $2.02 (+29%), Services +12.1% to $30.739B, derived Services GM essentially flat 75.62% vs 75.58%. But nine-month cash paid for repurchases fell to $62.094B from $70.579B (derived -12.0%) — buyback spend down despite record revenue/EPS. Tests the Apple moat report's 'buyback mask' claim (CRO opposing essay)."
+radar_source: "Apple newsroom 2026-07-30 — https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/ ; FY26 Q3 consolidated financial statements PDF"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: CoS D1 triage → decide research intake
+last_updated: 2026-08-06
