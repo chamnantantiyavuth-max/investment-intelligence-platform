@@ -2,29 +2,65 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { getFOPackage } from "@/api/foClient";
 import type { MoatType, ConvictionDetail } from "@/types/fo";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Landmark, BarChart3, DollarSign, Swords, AlertTriangle, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { ProvenanceChip } from "@/components/ProvenanceChip";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-function moatColor(width: string) { return { Wide: "text-emerald-600", Narrow: "text-amber-600", None: "text-rose-600" }[width] || ""; }
-function depthColor(d: string) { return { Deep: "text-emerald-600", Moderate: "text-amber-600", Shallow: "text-rose-600" }[d] || ""; }
-function trendColor(t: string) { return { Widening: "text-emerald-600", Stable: "text-blue-600", Narrowing: "text-rose-600" }[t] || ""; }
-function qualityColor(r: string) { return { HIGH: "bg-emerald-100 text-emerald-700", MEDIUM: "bg-amber-100 text-amber-700", LOW: "bg-rose-100 text-rose-700", COSMETIC: "bg-rose-200 text-rose-800 line-through" }[r] || ""; }
+/** Company research note (P2 reference — institutional standard, FD #60).
+ *  Narrative-led: investment question first, then evidence, then honest limits.
+ *  No internal jargon; provenance is a discreet chip; numbers are the story. */
 
-function asString(v: unknown): string { return typeof v === "string" ? v : ""; }
-function asNumber(v: unknown): number { return typeof v === "number" ? v : 0; }
-function asBool(v: unknown): boolean { return typeof v === "boolean" ? v : false; }
-function asMoatTypes(v: unknown): MoatType[] { return Array.isArray(v) ? (v as MoatType[]) : []; }
+function s(v: unknown): string {
+  return typeof v === "string" ? v : "";
+}
+function n(v: unknown): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+}
+function pct(x: number): string {
+  return `${(x * 100).toFixed(1)}%`;
+}
+function mult(x: number): string {
+  return `${x.toFixed(2)}x`;
+}
+function truthy(x: number, f: (v: number) => string): string {
+  return x ? f(x) : "—";
+}
 function asConviction(v: unknown): ConvictionDetail {
   if (v && typeof v === "object") {
     const o = v as Record<string, unknown>;
-    return { level: asString(o.level), cap: asString(o.cap), rationale: asString(o.rationale) };
+    return { level: s(o.level), cap: s(o.cap), rationale: s(o.rationale) };
   }
   return { level: "", cap: "", rationale: "" };
+}
+function asMoatTypes(v: unknown): MoatType[] {
+  return Array.isArray(v) ? (v as MoatType[]) : [];
+}
+
+function SectionKicker({ n: num, title }: { n: string; title: string }) {
+  return (
+    <div className="mt-10 border-b border-rule pb-2">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-3">
+        {num} · {title}
+      </p>
+    </div>
+  );
+}
+
+function Row({ k, v, tone }: { k: string; v: string; tone?: "pos" | "neg" | "warn" }) {
+  return (
+    <div className="flex items-baseline justify-between gap-6 border-b border-rule/60 py-1.5 last:border-b-0">
+      <span className="text-[12px] text-ink-2">{k}</span>
+      <span
+        className={cn(
+          "font-mono text-[12.5px] tabular-nums",
+          tone === "pos" ? "text-positive" : tone === "neg" ? "text-negative" : tone === "warn" ? "text-warning" : "text-foreground"
+        )}
+      >
+        {v}
+      </span>
+    </div>
+  );
 }
 
 export default function FundamentalDetailPage() {
@@ -36,162 +72,269 @@ export default function FundamentalDetailPage() {
   });
 
   if (isLoading) return <Skeleton className="h-96 w-full" />;
-  if (error) return (
-    <Card className="border-rose-200 bg-rose-50"><CardContent className="p-6 text-center text-rose-700">Failed to load package. <button onClick={() => refetch()} className="underline">Retry</button></CardContent></Card>
-  );
-  if (!pkg) return <Card><CardContent className="p-12 text-center text-muted-foreground">Company not found.</CardContent></Card>;
+  if (error)
+    return (
+      <div className="rounded-md bg-bg-panel px-4 py-8">
+        <p className="text-sm font-medium text-negative">Could not load this research note.</p>
+        <button type="button" onClick={() => refetch()} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
+          Retry →
+        </button>
+      </div>
+    );
+  if (!pkg) return <div className="rounded-md bg-bg-panel px-4 py-8 text-sm text-ink-2">Company not found.</div>;
 
-  const moat = pkg.company_assessment?.moat as Record<string, unknown> | undefined;
-  const eq = pkg.earnings_trajectory;
-  const val = pkg.valuation_context as Record<string, unknown>;
-  const vt = val?.value_trap as Record<string, unknown> | undefined;
+  const moat = (pkg.company_assessment?.moat ?? {}) as Record<string, unknown>;
+  const fq = (pkg.company_assessment?.financial_quality ?? {}) as Record<string, unknown>;
+  const ca = (pkg.company_assessment?.capital_allocation ?? {}) as Record<string, unknown>;
+  const macro = pkg.macro_context ?? {};
+  const ind = pkg.industry_assessment ?? {};
+  const val = pkg.valuation_context ?? {};
+  const vt = (val?.value_trap ?? {}) as Record<string, unknown>;
   const conviction = asConviction(pkg.conviction);
+  const moatTypes = asMoatTypes(moat?.types);
+  const price = n(val?.current_price);
+  const peTtm = n(val?.pe_ttm);
+  const pe5y = n(val?.pe_5y_avg);
+  const premium = peTtm && pe5y ? (peTtm / pe5y - 1) * 100 : 0;
+  const scenarioMissing = !n(val?.scenario_bull) && !n(val?.scenario_base) && !n(val?.scenario_bear);
+  const risks = pkg.key_risks ?? [];
+  const challenges = pkg.independent_challenge ?? [];
+  const supporting = pkg.supporting_evidence ?? [];
+  const contradicting = pkg.contradicting_evidence ?? [];
+  const openQuestions = pkg.open_questions ?? [];
+  const hasDataGaps =
+    moatTypes.length === 0 ||
+    scenarioMissing ||
+    !s(pkg.earnings_trajectory?.surprise_direction) ||
+    risks.length === 0 ||
+    challenges.length === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link to="/fundamental" className="text-muted-foreground hover:text-foreground"><ArrowLeft className="size-5" /></Link>
-        <div>
-          <h1 className="text-2xl font-bold">{pkg.name} <span className="text-muted-foreground text-base font-normal">({pkg.id})</span></h1>
-          <p className="text-sm text-muted-foreground">{pkg.sector} · {pkg.industry} · Thesis: {pkg.thesis_lifecycle}</p>
+    <div className="mx-auto max-w-[880px]">
+      <Link to="/fundamental" className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 hover:text-foreground">
+        <ArrowLeft className="size-3.5" /> Fundamental queue
+      </Link>
+
+      <header className="mt-4 border-b border-rule pb-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-ink-3">{s(ind?.sector)} · {s(ind?.industry)}</span>
+          <span className="rounded-sm bg-bg-panel px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-ink-2">
+            {s(ind?.position)}
+          </span>
+          <ProvenanceChip mode={pkg.provenance?.mode} source={pkg.provenance?.source} asOf={pkg.provenance?.as_of} />
         </div>
-      </div>
+        <h1 className="mt-2 font-display text-h1 font-bold leading-tight tracking-tight">
+          {pkg.name} <span className="text-ink-3">({pkg.id})</span>
+        </h1>
+        <p className="mt-1 font-mono text-[12px] text-ink-2">
+          {price ? `US$${price.toFixed(2)}` : "Price n/a"} · {s(macro?.regime)} · thesis {s(pkg.thesis_lifecycle).toLowerCase()}
+        </p>
+      </header>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="moat"><Landmark className="mr-1.5 inline h-3.5 w-3.5" />Moat</TabsTrigger>
-          <TabsTrigger value="earnings"><BarChart3 className="mr-1.5 inline h-3.5 w-3.5" />Earnings</TabsTrigger>
-          <TabsTrigger value="valuation"><DollarSign className="mr-1.5 inline h-3.5 w-3.5" />Valuation</TabsTrigger>
-          <TabsTrigger value="analysis"><Swords className="mr-1.5 inline h-3.5 w-3.5" />Analysis</TabsTrigger>
-        </TabsList>
-
-        {/* Overview */}
-        <TabsContent value="overview" className="space-y-4">
-          <Card><CardHeader><CardTitle className="text-base">Thesis Summary</CardTitle></CardHeader><CardContent><p className="text-sm">{pkg.thesis_summary}</p></CardContent></Card>
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <span className="text-xs text-muted-foreground uppercase">Conviction</span>
-                <p className="text-2xl font-bold">{conviction.level}</p>
-                {conviction.cap && <p className="text-xs text-muted-foreground">Cap: {conviction.cap}</p>}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <span className="text-xs text-muted-foreground uppercase">Thesis Lifecycle</span>
-                <p className="text-2xl font-bold">{pkg.thesis_lifecycle}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Moat */}
-        <TabsContent value="moat" className="space-y-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-3 gap-4 text-center mb-6">
-                <div><span className="text-xs text-muted-foreground uppercase block">Width</span><span className={cn("text-2xl font-bold", moatColor(asString(moat?.width)))}>{asString(moat?.width) || "—"}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Depth</span><span className={cn("text-2xl font-bold", depthColor(asString(moat?.depth)))}>{asString(moat?.depth) || "—"}</span></div>
-                <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(asString(moat?.trend)))}>{asString(moat?.trend) || "—"}</span></div>
-              </div>
-              <p className="text-[11px] text-muted-foreground mb-2">
-                Moat classification is qualitative — width, depth, and trend. A numeric score is not used.
-              </p>
-              <Separator className="my-4" />
-              <p className="text-sm mb-4">{asString(moat?.moat_narrative) || "No moat narrative."}</p>
-              <div className="flex flex-wrap gap-2">
-                {asMoatTypes(moat?.types).map((t, i) => (
-                  <Badge key={i} variant="secondary" className={cn("text-xs font-medium", t.strength === "Strong" ? "bg-emerald-100 text-emerald-700" : t.strength === "Moderate" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700")}>
-                    {t.type} ({t.strength})
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Earnings */}
-        <TabsContent value="earnings" className="space-y-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge className={cn("text-sm font-bold px-3 py-1", qualityColor(eq?.rating || ""))}>{eq?.rating}</Badge>
-                <span className="text-sm text-muted-foreground">{eq?.conviction_impact}</span>
-              </div>
-              <p className="text-sm mb-4">{eq?.narrative}</p>
-              <div className="grid grid-cols-3 gap-3 text-xs">
-                <div><span className="text-muted-foreground">Surprise:</span> <span className="font-semibold">{eq?.surprise_direction} ({eq?.surprise_magnitude_pct?.toFixed(1)}%)</span></div>
-                <div><span className="text-muted-foreground">Revenue Quality:</span> <span className="font-semibold">{eq?.revenue_quality}</span></div>
-                <div><span className="text-muted-foreground">Margin Quality:</span> <span className="font-semibold">{eq?.margin_quality}</span></div>
-                <div><span className="text-muted-foreground">FCF Conversion:</span> <span className="font-semibold">{eq?.fcf_conversion?.toFixed(2)}x</span></div>
-                <div><span className="text-muted-foreground">One-Time Items:</span> <span className="font-semibold">{eq?.one_time_items ? "Yes" : "No"}</span></div>
-                <div><span className="text-muted-foreground">Guidance:</span> <span className="font-semibold">{eq?.guidance_direction}</span></div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Valuation */}
-        <TabsContent value="valuation" className="space-y-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-                <div><span className="text-muted-foreground">P/E (TTM):</span> <span className="font-semibold">{asNumber(val?.pe_ttm) ? asNumber(val?.pe_ttm).toFixed(1) : "—"}x</span></div>
-                <div><span className="text-muted-foreground">P/E (5Y avg):</span> <span className="font-semibold">{asNumber(val?.pe_5y_avg) ? asNumber(val?.pe_5y_avg).toFixed(1) : "—"}x</span></div>
-                <div><span className="text-muted-foreground">EV/EBITDA:</span> <span className="font-semibold">{asNumber(val?.ev_ebitda) ? asNumber(val?.ev_ebitda).toFixed(1) : "—"}x</span></div>
-                <div><span className="text-muted-foreground">FCF Yield:</span> <span className="font-semibold">{(asNumber(val?.fcf_yield) * 100).toFixed(1)}%</span></div>
-              </div>
-              {vt && asBool(vt.triggered) && (
-                <div className="border border-rose-200 bg-rose-50 rounded-lg p-4">
-                  <h4 className="font-bold text-rose-700 mb-2"><AlertTriangle className="mr-1.5 inline h-4 w-4" />Value Trap Detector</h4>
-                  <p className="text-sm font-semibold text-rose-700 mb-2">{asString(vt.verdict)}</p>
-                  <p className="text-xs text-rose-600">{asString(vt.action)}</p>
-                  <p className="text-[11px] text-rose-500 mt-1">
-                    Value-trap mapping: scores 3–4 are mixed — deeper research required.
-                  </p>
-                </div>
+      <section>
+        <SectionKicker n="01" title="The question" />
+        <h2 className="mt-3 font-display text-[22px] font-semibold leading-snug tracking-tight">
+          Does {pkg.name} deserve further investigation?
+        </h2>
+        <p className="mt-2 max-w-[720px] text-[13.5px] leading-relaxed text-ink-2">
+          {conviction.level ? (
+            <>
+              The pipeline's current assessment is <span className="font-semibold text-foreground">{conviction.level.toLowerCase()} conviction</span>
+              {conviction.rationale ? ` — ${conviction.rationale.replace(/\.+$/, "").toLowerCase()}` : ""}. Position in its industry:{" "}
+              <span className="font-semibold text-foreground">{s(ind?.position).toLowerCase()}</span>. It trades{" "}
+              {premium > 0 ? (
+                <>
+                  at a <span className="font-semibold text-warning">{Math.round(premium)}% premium</span> to its own five-year average P/E
+                </>
+              ) : peTtm ? (
+                "at or below its own five-year average P/E"
+              ) : (
+                "at a valuation the pipeline could not yet compare"
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              , and the value-trap screen is {s(vt?.verdict) ? <span className="font-semibold text-foreground">{s(vt.verdict).toLowerCase()}</span> : "not triggered"}.
+            </>
+          ) : (
+            "The pipeline has not produced a conviction assessment for this company yet."
+          )}
+        </p>
+      </section>
 
-        {/* Analysis */}
-        <TabsContent value="analysis" className="space-y-4">
-          <Card>
-            <CardHeader><CardTitle className="text-base text-rose-600"><Swords className="mr-1.5 inline h-4 w-4" />Independent Challenge</CardTitle></CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {pkg.independent_challenge.map((ch, i) => <li key={i} className="text-sm text-rose-700">• {ch}</li>)}
-              </ul>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle className="text-base text-amber-600"><AlertTriangle className="mr-1.5 inline h-4 w-4" />Key Risks</CardTitle></CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {pkg.key_risks.map((r, i) => <li key={i} className="text-sm text-amber-700">• {r}</li>)}
-              </ul>
-            </CardContent>
-          </Card>
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardHeader><CardTitle className="text-base text-emerald-600"><CheckCircle2 className="mr-1.5 inline h-4 w-4" />Supporting Evidence</CardTitle></CardHeader>
-              <CardContent>{pkg.supporting_evidence.map((e, i) => <p key={i} className="text-xs text-muted-foreground mb-1">{e}</p>)}</CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base text-rose-600"><XCircle className="mr-1.5 inline h-4 w-4" />Contradicting</CardTitle></CardHeader>
-              <CardContent>{pkg.contradicting_evidence.map((e, i) => <p key={i} className="text-xs text-muted-foreground mb-1">{e}</p>)}</CardContent>
-            </Card>
+      <section>
+        <SectionKicker n="02" title="Business & macro backdrop" />
+        <div className="mt-3 grid grid-cols-2 gap-x-10 md:grid-cols-3">
+          <Row k="Industry" v={s(ind?.industry) || "—"} />
+          <Row k="Position" v={s(ind?.position) || "—"} />
+          <Row k="Macro regime" v={s(macro?.regime) || "—"} />
+          <Row k="GDP growth" v={truthy(n(macro?.gdp_growth), pct)} />
+          <Row k="Inflation" v={truthy(n(macro?.inflation), pct)} />
+          <Row k="Fed funds" v={truthy(n(macro?.fed_funds), pct)} />
+        </div>
+        {s(macro?.sector_implication) && (
+          <p className="mt-3 max-w-[720px] text-[13px] leading-relaxed text-ink-2">{s(macro?.sector_implication)}</p>
+        )}
+      </section>
+
+      <section>
+        <SectionKicker n="03" title="Financial quality & capital allocation" />
+        <div className="mt-3 grid grid-cols-2 gap-x-10 md:grid-cols-3">
+          <Row k="Gross margin" v={truthy(n(fq?.gross_margin), pct)} />
+          <Row k="Operating margin" v={truthy(n(fq?.operating_margin), pct)} />
+          <Row k="Return on equity" v={truthy(n(fq?.roe), pct)} />
+          <Row k="FCF conversion" v={truthy(n(fq?.fcf_conversion), mult)} />
+          <Row k="Debt / equity" v={truthy(n(fq?.debt_to_equity), (x) => x.toFixed(2))} />
+          <Row k="Revenue growth (3y)" v={truthy(n(fq?.revenue_growth_3y), pct)} />
+          <Row k="Capital allocation" v={s(ca?.quality) || "—"} tone={s(ca?.quality) === "GOOD" ? "pos" : undefined} />
+          <Row k="Free cash flow" v={ca?.fcf_available === true ? "available" : "—"} />
+          <Row k="Buyback impact" v={truthy(n(ca?.buyback_impact), pct)} />
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker n="04" title="Moat" />
+        <div className="mt-3 grid grid-cols-3 gap-x-10">
+          <Row k="Width" v={s(moat?.width) || "—"} tone={s(moat?.width) === "Wide" ? "pos" : s(moat?.width) === "None" ? "warn" : undefined} />
+          <Row k="Depth" v={s(moat?.depth) || "—"} tone={s(moat?.depth) === "Deep" ? "pos" : s(moat?.depth) === "Shallow" ? "warn" : undefined} />
+          <Row k="Trend" v={s(moat?.trend) || "—"} tone={s(moat?.trend) === "Widening" ? "pos" : s(moat?.trend) === "Narrowing" ? "neg" : undefined} />
+        </div>
+        {moatTypes.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {moatTypes.map((t, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "rounded-sm px-2 py-0.5 text-[11px] font-medium",
+                  t.strength === "Strong" ? "bg-positive/10 text-positive" : t.strength === "Moderate" ? "bg-warning/10 text-warning" : "bg-negative/10 text-negative"
+                )}
+              >
+                {t.type} · {t.strength}
+              </span>
+            ))}
           </div>
-          <Card>
-            <CardHeader><CardTitle className="text-base"><HelpCircle className="mr-1.5 inline h-4 w-4" />Open Questions</CardTitle></CardHeader>
-            <CardContent>
-              <ul className="space-y-2">{pkg.open_questions.map((q, i) => <li key={i} className="text-sm text-muted-foreground">• {q}</li>)}</ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        ) : (
+          <p className="mt-3 max-w-[720px] text-[12.5px] leading-relaxed text-ink-2">
+            The current model has not identified qualitative moat types for this company. The quantitative
+            foundation above (margins, returns, cash conversion) is the evidence available today; a
+            qualitative moat narrative is not yet produced.
+          </p>
+        )}
+        {s(moat?.moat_narrative) && <p className="mt-3 max-w-[720px] text-[13px] leading-relaxed text-ink-2">{s(moat?.moat_narrative)}</p>}
+      </section>
+
+      <section>
+        <SectionKicker n="05" title="Earnings trajectory" />
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className={cn("text-[13px] font-semibold", s(pkg.earnings_trajectory?.rating) === "HIGH" ? "text-positive" : s(pkg.earnings_trajectory?.rating) === "LOW" ? "text-negative" : "text-foreground")}>
+            {s(pkg.earnings_trajectory?.rating) || "—"} quality
+          </span>
+          {s(pkg.earnings_trajectory?.conviction_impact) && <span className="text-[13px] text-ink-2">{s(pkg.earnings_trajectory?.conviction_impact)}</span>}
+        </div>
+        {s(pkg.earnings_trajectory?.narrative) && (
+          <p className="mt-2 max-w-[720px] text-[13px] leading-relaxed text-ink-2">{s(pkg.earnings_trajectory?.narrative)}</p>
+        )}
+        <div className="mt-3 grid grid-cols-2 gap-x-10 md:grid-cols-4">
+          <Row k="Surprise" v={s(pkg.earnings_trajectory?.surprise_direction) || "—"} />
+          <Row k="FCF conversion" v={truthy(n(pkg.earnings_trajectory?.fcf_conversion), mult)} />
+          <Row k="One-time items" v={pkg.earnings_trajectory?.one_time_items ? "yes" : "no"} />
+          <Row k="Guidance" v={s(pkg.earnings_trajectory?.guidance_direction) || "—"} />
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker n="06" title="Valuation" />
+        <div className="mt-3 grid grid-cols-2 gap-x-10 md:grid-cols-4">
+          <Row k="P/E (ttm)" v={truthy(peTtm, (x) => `${x.toFixed(1)}x`)} />
+          <Row k="P/E (5y avg)" v={truthy(pe5y, (x) => `${x.toFixed(1)}x`)} />
+          <Row k="EV / EBITDA" v={truthy(n(val?.ev_ebitda), (x) => `${x.toFixed(1)}x`)} />
+          <Row k="FCF yield" v={truthy(n(val?.fcf_yield), pct)} />
+        </div>
+        {premium > 0 && (
+          <p className="mt-3 max-w-[720px] text-[12.5px] leading-relaxed text-warning">
+            Trading at a {Math.round(premium)}% premium to its own five-year average P/E — the valuation carries
+            an expectation of continued growth.
+          </p>
+        )}
+        {scenarioMissing && (
+          <p className="mt-2 max-w-[720px] text-[12.5px] leading-relaxed text-ink-2">
+            Scenario valuation (bull / base / bear) is not yet produced for this company.
+          </p>
+        )}
+        {s(vt?.verdict) && (
+          <div className="mt-3 rounded-md bg-bg-panel px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-2">Value-trap screen</p>
+            <p className="mt-1 text-[13px] text-foreground">{s(vt.verdict)}</p>
+            {s(vt?.action) && <p className="mt-0.5 text-[12px] text-ink-2">{s(vt.action)}</p>}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <SectionKicker n="07" title="Risks, challenge & evidence" />
+        <div className="mt-3 space-y-4">
+          {risks.length > 0 ? (
+            <ul className="space-y-1.5">
+              {risks.map((r, i) => (
+                <li key={i} className="text-[13px] leading-relaxed text-ink-2">• {r}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[12.5px] text-ink-3">No risks assessed from available data.</p>
+          )}
+          {challenges.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-3">Independent challenge</p>
+              <ul className="mt-1.5 space-y-1.5">
+                {challenges.map((c, i) => (
+                  <li key={i} className="text-[13px] leading-relaxed text-ink-2">• {c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {supporting.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-positive">Supporting evidence</p>
+              <ul className="mt-1.5 space-y-1.5">
+                {supporting.map((e, i) => (
+                  <li key={i} className="text-[13px] leading-relaxed text-ink-2">• {e}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {contradicting.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-3">Contradicting evidence</p>
+              <ul className="mt-1.5 space-y-1.5">
+                {contradicting.map((e, i) => (
+                  <li key={i} className="text-[13px] leading-relaxed text-ink-2">• {e}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section>
+        <SectionKicker n="08" title="Open questions" />
+        <ul className="mt-3 space-y-1.5">
+          {openQuestions.length > 0 ? (
+            openQuestions.map((q, i) => (
+              <li key={i} className="text-[13px] leading-relaxed text-ink-2">• {q}</li>
+            ))
+          ) : (
+            <li className="text-[12.5px] text-ink-3">No open questions recorded.</li>
+          )}
+        </ul>
+      </section>
+
+      {hasDataGaps && (
+        <section className="mt-10 rounded-md bg-bg-panel px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-3">Analysis limits</p>
+          <p className="mt-1 text-[12px] leading-relaxed text-ink-2">
+            This note reflects the data the pipeline currently admits. Qualitative moat types, scenario
+            valuation, and some earnings detail fields are not yet produced — the gaps above are real, not
+            hidden. The company story deepens as the underlying research layer grows.
+          </p>
+        </section>
+      )}
     </div>
   );
 }
