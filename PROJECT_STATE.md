@@ -48,7 +48,7 @@
 **RECONSTITUTION (FD #63–69, 6 Aug 2026):** WP1 (role amendments) COMPLETE · **WP2 (Apple pilot RM-2026-0001) COMPLETE + PUBLISHED (FD #69)** · **WP3 (IPM foundation) COMPLETE** — all three execution tracks done.
 Next in order:
 (a) **Blog design review — APPROVED as-is (FD #72, 6 Aug)** — no code changes; D1–D4 cosmetic backlog.
-(b) **Radar research execution (from RADAR-001 cards):** ORG-2026-0006 Silver challenge memo FIRST (challenges the published Silver note framing) → 0007 Apple buyback watch update → 0008 gold/real-rate macro note.
+(b) **Radar research execution (from RADAR-001 cards):** ORG-2026-0006 Silver challenge memo **COMPLETE + PUBLISHED (6 Aug, gate A — `reports/silver-deficit-challenge-2026-08-06.md` + CRO companion; audit CLEAN WITH MINORS; radar→research loop proven end-to-end)** → NEXT: 0007 Apple buyback watch update → 0008 gold/real-rate macro note.
 (c) **Research-org cadence:** Weekly Intelligence Letter #1 PUBLISHED (6 Aug) — next letter in ~1 week; on-demand deep research per future mandates.
 (d) **IPM cadence (separate project, profile `ipm`):** Weekly Portfolio Review — Week 1 letter must cite IIP published reports (IPM-FD-003).
 (e) Frozen-platform leftovers unchanged: UI-4, A-01, C-04/C-05/M-02, org-workflow intake; Apple evidence upgrades (Q1/Q2 FY26 10-Q, transcripts, IDC/Counterpoint — evidence-log §9).

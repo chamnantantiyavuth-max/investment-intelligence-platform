@@ -2,12 +2,12 @@ card_id: ORG-2026-0006
 title: "Radar: Silver deficit changes character"
 research_question: Has the silver deficit shifted from a demand-growth problem to an inventory-and-liquidity problem, given actual and forecast industrial-demand contraction?
 decision_user: Founder
-workflow_column: Scoped
+workflow_column: Published
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
-artifact_state: Draft
+artifact_state: Published
 domain: COMMODITY
 principal_owner: org-commodity-analyst
 assistant_owner: Commodity Research Assistant
@@ -17,14 +17,14 @@ created_at: 2026-08-06
 required_by: triage
 expected_artifact: research note / commodity dossier update (challenge to Silver note thesis)
 evidence_standard: point-in-time (FD #58); figures sourced + dated
-data_status: NOT ASSESSED
-validation_status: NOT REQUIRED
-risk_status: NOT REVIEWED
-audit_status: null
+data_status: ASSESSED
+validation_status: COMPLETE
+risk_status: REVIEWED
+audit_status: CLEAN WITH MINORS (2026-08-06)
 radar_observation: "World Silver Survey 2026: 40.3Moz deficit 2025 (5th consecutive) despite total demand -2% and industrial demand -3%; 2026 forecast industrial demand -3%, mine production 844.1Moz (-0.3%), 6th deficit 46.3Moz; Oct-2025 liquidity squeeze eased as metal returned to London; primary-mine AISC $12.21/oz (-1%). Challenges the 'demand grows faster than supply' framing — deficit persists while industrial demand contracts."
 radar_source: "Silver Institute/Metals Focus, April 2026 — https://silverinstitute.org/wp-content/uploads/2026/04/World-Silver-Survey-2026.pdf"
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "TRIAGED (Founder A, 6 Aug) — research intake: commodity dossier update / Silver-note challenge memo. Non-goals: no price target, no buy/sell. Data sources: World Silver Survey 2026 + LBMA + CFTC positioning + COMEX inventories."
+next_action: "PUBLISHED (Founder gate A, 6 Aug) — reports/silver-deficit-challenge-2026-08-06.md + CRO companion silver-deficit-challenge-opposing-2026-08-06.md. Full pipeline: evidence → analyst essay → cross-exam (material-claims) → CRO → audit CLEAN WITH MINORS → synthesis → gate → publish. Browser-verified typeset. Loop radar→research COMPLETE for this card."
 last_updated: 2026-08-06
