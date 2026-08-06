@@ -1,0 +1,30 @@
+card_id: ORG-2026-0009
+title: "Radar: London silver vault holdings rise to series high"
+research_question: Does the rise in reported London silver-vault holdings through June 2026 indicate easing physical availability, inventory relocation, or a change in the relationship between visible stocks and lease-market liquidity?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: COMMODITY
+principal_owner: org-commodity-analyst
+assistant_owner: Commodity Research Assistant
+priority: P1
+materiality: M2
+created_at: 2026-08-07
+required_by: triage
+expected_artifact: commodity dossier update / SLV watch-framework test (stock-and-flow evidence)
+evidence_standard: point-in-time (FD #58); figures sourced + dated
+data_status: NOT ASSESSED
+validation_status: NOT REQUIRED
+risk_status: NOT REVIEWED
+audit_status: null
+radar_observation: "LBMA reported London silver holdings of 902.843 million troy ounces for June 2026 — the highest displayed observation in the June 2025–June 2026 series — vs 870.170 Moz (February 2026) and 764.889 Moz (June 2025). Directly tests the stock-and-flow watch framework of the published silver deficit challenge memo (reports/silver-deficit-challenge-2026-08-06.md): 'vault availability rebuilds' would weaken the inventory/liquidity hypothesis; rising visible stocks alongside persistent deficits needs lease-rate + COMEX reconciliation. CME source failed to load this pass."
+radar_source: "https://www.lbma.org.uk/prices-and-data/london-vault-data (LBMA London Vault Data, June 2026 observation; pulled 2026-08-07, deleg_ec2298ce)"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: "RADAR-001 round 2 — awaiting triage. Non-goals: no price target, no buy/sell. Required to resolve: lease rates, COMEX deliverable stocks, Shanghai premium persistence (CME failed this pass — re-pull)."
+last_updated: 2026-08-07

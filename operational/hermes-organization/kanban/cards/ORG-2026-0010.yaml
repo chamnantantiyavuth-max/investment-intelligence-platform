@@ -1,0 +1,30 @@
+card_id: ORG-2026-0010
+title: "Radar: Apple Services margin now directly testable from disclosed lines"
+research_question: Do Apple's newly disclosed Services sales and cost lines substantiate the previously unverified Services gross-margin claim (≈75.6% from the CRO buyback dissent), and how should tariff refunds and the absence of category-level operating expenses constrain its interpretation?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: Draft
+domain: EQUITY
+principal_owner: org-equity-analyst
+assistant_owner: Equity Research Assistant
+priority: P1
+materiality: M2
+created_at: 2026-08-07
+required_by: triage
+expected_artifact: equity note / Services economics verification (moat report evidence update)
+evidence_standard: point-in-time (FD #58); figures sourced + dated
+data_status: NOT ASSESSED
+validation_status: NOT REQUIRED
+risk_status: NOT REVIEWED
+audit_status: null
+radar_observation: "Q3 FY26 (ended 2026-06-27, published 2026-07-30): Services net sales $30.739B, Services cost of sales $7.494B (vs $27.423B/$6.698B in Q3 FY25). Apple disclosed total-company GM 50.1% incl. ~2pp favorable tariff-refund effect; diluted EPS $2.02 incl. $0.11 tariff-refund effect. The consolidated statements do not separately label a Services GM percentage — the disclosed lines provide the inputs for independent derivation. NOTE: (30.739-7.494)/30.739 derives ≈75.62% — matching the Services GM figure flagged as 'not source-cleared' in the CRO buyback-mask dissent cover note (reports/apple-buyback-mask-test-opposing-2026-08-06.md); verification is arithmetic, interpretation needs tariff/category-level caveats."
+radar_source: "https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/ ; https://www.apple.com/newsroom/pdfs/fy2026q3/FY26_Q3_Consolidated_Financial_Statements.pdf (pulled 2026-08-07, deleg_ec2298ce)"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: "RADAR-001 round 2 — awaiting triage. Non-goals: no full moat re-analysis, no valuation. Required: derive Services GM from disclosed lines + reconcile with tariff-refund effect + segment cost allocations (moat report used 'derived' 75.62%/75.58% series)."
+last_updated: 2026-08-07
