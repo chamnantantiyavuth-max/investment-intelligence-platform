@@ -26,9 +26,9 @@
 | Python tests | 311/311 (26 CS pipeline locked + 285 API/other locked+suite; 140 pre-existing locked: 90 logic + 42 real-data-api + 8 org-workflow) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-06 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-06 |
-| Commits | 179 on `main` (HEAD `c75f3a8` — Silver note PUBLISHED FD #62, 6 Aug); **role-amendment batch (20 files) UNCOMMITTED in working tree — awaiting WP2/WP3 checkpoint commit** | 2026-08-06 |
+| Commits | 181 on `main` (HEAD `93ea33d` — WP2 Apple evidence kickoff; `dd34fc0` WP1 role amendments; prior `c75f3a8` Silver note) | 2026-08-06 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#68 (84 total) | 2026-08-06 |
-| closeout_status | **completed** — closed 6 Aug 2026 (reconstitution session): FD #63 review authorized → #64 split (Plan A/Plan B) → #65 R-1 legacy freeze → #66 R-2 role amendments + Apple pilot (RM-2026-0001) → #67 P-1 IPM project → #68 P-2 IPM pilot; Plan Council PASS WITH FIXES artifacted; WP1 (20 role contracts) amended + verified; PROJECT_STATE + SESSION_CLOSEOUT pending final write on session end | 2026-08-06 |
+| closeout_status | **completed** — closed 6 Aug 2026 (reconstitution session): FD #63 review authorized → #64 split (Plan A/Plan B) → #65 R-1 legacy freeze → #66 R-2 role amendments + Apple pilot (RM-2026-0001) → #67 P-1 IPM project → #68 P-2 IPM pilot; Plan Council PASS WITH FIXES artifacted; WP1 (20 role contracts) amended + verified + committed (`dd34fc0`); WP2 Apple evidence kickoff committed (`93ea33d`); SESSION_CLOSEOUT written; next = WP2 research sprint (independent first pass) then WP3 IPM setup | 2026-08-06 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
