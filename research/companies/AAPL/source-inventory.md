@@ -13,7 +13,7 @@
 | 10-Q Q3 FY2026 | 2026-06-27 | 2026-07-31 | 0000320193-26-000020 | aapl-20260627.htm | Latest quarter — services momentum, segment check |
 | 10-Q Q2 FY2026 | 2026-03-28 | 2026-05-01 | 0000320193-26-000013 | aapl-20260328.htm | Interim trend |
 | 10-Q Q1 FY2026 | 2025-12-27 | 2026-01-30 | 0000320193-26-000006 | aapl-20251227.htm | Interim trend |
-| 8-K Q3 FY26 earnings | 2026-07-30 | 2026-07-30 | 0000320193-26-000018 | aapl-20260730.htm (+ex99.1) | Latest earnings release + guidance |
+| 8-K Q3 FY26 earnings | 2026-07-30 | 2026-07-30 | 0000320193-26-000018 | a8-kex991q3202606272026.htm (ex99.1) | Latest earnings release + guidance |
 | 8-K Q4 FY25 earnings | 2025-10-30 | 2025-10-30 | 0000320193-25-000077 | aapl-20251030.htm (+ex99.1) | FY25 release |
 | DEF 14A | FY2026 | 2026-01-08 | 0001308179-26-000008 | aapl014016-def14a.htm | Governance/comp — optional lens |
 
@@ -24,11 +24,12 @@
 
 ## Working files (outside repo — system temp)
 
-- `/tmp/apl-evidence/` — submissions.json, 10-K text slices (S01-business, S03-mda, segments, S04-financials), XBRL extraction
-- Repo carries only: this inventory + the Evidence & Quant Appendix (with accession refs) at publication
+- `/tmp/apl-evidence/` — submissions.json, aapl-10k-fy2025.txt (converted), aapl-8k-q3fy26-ex991.txt (converted), aapl-xbrl-facts.json (3.8MB), 8k-index.json
+- Repo carries only: this inventory + evidence-log.md (working log with accession refs); the published Evidence & Quant Appendix lives in reports/ at publication
 
 ## Evidence log
 
 - 2026-08-06: source inventory built from submissions API (CIK 0000320193)
-- 2026-08-06: 10-K FY2025 downloaded + converted (237KB text); product-mix table + geographic segments + net income/share counts extracted → `evidence-log.md` (accession 0000320193-25-000079)
+- 2026-08-06: 10-K FY2025 downloaded + converted; product-mix table + geographic segments + net income/share counts extracted → `evidence-log.md` (accession 0000320193-25-000079)
+- 2026-08-06: **evidence build COMPLETE** — Note 13 segment op income (3 years), gross margin detail (Products/Services), Services narrative (Item 1 + MD&A), Item 1A risk factors, Q3 FY2026 8-K (ex99.1, accession 0000320193-26-000018), XBRL FY21–25 annual series (rev/GM/NI/OCF/capex/buybacks/shares)
 <!-- 2026-08-06 20:50 UTC+7 -->
