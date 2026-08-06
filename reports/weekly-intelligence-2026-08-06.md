@@ -55,4 +55,4 @@ The FOMC held the funds rate at 3.50–3.75% on a 9–3 vote with all three diss
 
 All figures above are point-in-time (FD #58): World Silver Survey 2026 (Silver Institute / Metals Focus, Apr 2026); Apple Q3 FY26 release + consolidated financial statements (2026-07-30); FOMC statement (2026-07-29); FRED series DGS2 / DGS10 / DFII10 / CPIAUCSL / CPILFESL / DTWEXBGS; LBMA gold PM fix (2026-08-05). The three radar questions are M2 hypotheses raised by the radar layer — not conclusions; each is triaged and awaiting research execution. One data gap: equity-breadth detail could not be pulled this pass (Reuters CAPTCHA); the macro question rests on the yield/gold/dollar triangle until breadth is re-pulled.
 
-<!-- 2026-08-06 19:05 UTC+7 -->
+
