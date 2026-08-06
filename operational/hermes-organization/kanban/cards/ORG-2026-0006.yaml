@@ -2,15 +2,15 @@ card_id: ORG-2026-0006
 title: "Radar: Silver deficit changes character"
 research_question: Has the silver deficit shifted from a demand-growth problem to an inventory-and-liquidity problem, given actual and forecast industrial-demand contraction?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
 artifact_state: Draft
 domain: COMMODITY
-principal_owner: org-commodity-analyst (suggestion)
-assistant_owner: Scanning Assistant
+principal_owner: org-commodity-analyst
+assistant_owner: Commodity Research Assistant
 priority: P1
 materiality: M2
 created_at: 2026-08-06
@@ -26,5 +26,5 @@ radar_source: "Silver Institute/Metals Focus, April 2026 — https://silverinsti
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: CoS D1 triage → decide research intake
+next_action: "TRIAGED (Founder A, 6 Aug) — research intake: commodity dossier update / Silver-note challenge memo. Non-goals: no price target, no buy/sell. Data sources: World Silver Survey 2026 + LBMA + CFTC positioning + COMEX inventories."
 last_updated: 2026-08-06

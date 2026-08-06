@@ -15,9 +15,9 @@ Inbox → Triage → Scoped → Data Ready → In Research → Cross-Review → 
 | ORG-2026-0003 | Pilot: risk challenge of equity memo | Closed (pilot complete) | CRO (simulated) | PILOT PASS |
 | ORG-2026-0004 | Pilot: Founder decision pack assembly | Founder Review (simulated) | IC Secretary (simulated) | READY FOR FOUNDER REVIEW |
 | ORG-2026-0005 | Pilot: governance/lineage verification | Closed (pilot complete) | Internal Auditor (simulated) | PILOT PASS |
-| ORG-2026-0006 | Radar (RADAR-001): Silver deficit changes character | Inbox | Radar Scout | AWAITING TRIAGE |
-| ORG-2026-0007 | Radar (RADAR-001): Apple repurchases lag operating acceleration | Inbox | Radar Scout | AWAITING TRIAGE |
-| ORG-2026-0008 | Radar (RADAR-001): Hawkish Fed, resilient gold | Inbox | Radar Scout | AWAITING TRIAGE |
+| ORG-2026-0006 | Radar (RADAR-001): Silver deficit changes character | Scoped | Commodity Analyst | RESEARCH INTAKE (Founder A, 6 Aug) |
+| ORG-2026-0007 | Radar (RADAR-001): Apple repurchases lag operating acceleration | Scoped | Equity Analyst | RESEARCH INTAKE (Founder A, 6 Aug) |
+| ORG-2026-0008 | Radar (RADAR-001): Hawkish Fed, resilient gold | Scoped | Macro Strategist | RESEARCH INTAKE (Founder A, 6 Aug) |
 
 ## Rules
 

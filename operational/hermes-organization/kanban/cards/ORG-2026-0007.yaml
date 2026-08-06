@@ -2,15 +2,15 @@ card_id: ORG-2026-0007
 title: "Radar: Apple repurchases lag operating acceleration"
 research_question: Is the 12% year-over-year decline in nine-month cash paid for repurchases merely settlement timing, or the start of a durable reduction in Apple's capital-return pace?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
 artifact_state: Draft
 domain: EQUITY
-principal_owner: org-equity-analyst (suggestion)
-assistant_owner: Scanning Assistant
+principal_owner: org-equity-analyst
+assistant_owner: Equity Research Assistant
 priority: P1
 materiality: M2
 created_at: 2026-08-06
@@ -26,5 +26,5 @@ radar_source: "Apple newsroom 2026-07-30 — https://www.apple.com/newsroom/2026
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: CoS D1 triage → decide research intake
+next_action: "TRIAGED (Founder A, 6 Aug) — research intake: Apple watch-item update (buyback mask test vs published moat report). Non-goals: no full moat re-analysis, no valuation. Data sources: FY26 Q3 10-Q + cash-flow statement + authorization disclosures."
 last_updated: 2026-08-06
