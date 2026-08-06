@@ -94,4 +94,43 @@ Research Desk pattern); (b) org-workflow real intake (first real research reques
 (d) C-04/C-05/M-02 leftovers; (e) industry-outlook next step: refresh stale figures (TODO-UPDATE) with
 current data when the outlook layer is actually used. A-01 + Options Overlay deferred.
 
-<!-- 2026-08-06 01:15 UTC+7 -->
+## Session 6 (6 Aug 2026) — Housekeeping + Kanban VISUAL Board (FD #59) — ✅ COMPLETED + ACCEPTED
+
+**Branch:** `main` · **Commits:** `58bdc82` (housekeeping) + `50b6647` (kanban board) · **Status:** COMPLETED + ACCEPTED (A)
+
+**What happened (plain language):** Founder said "A then B". A = housekeeping: pushed 2 stale commits
+(`fd2cbc3` + `dd34cee`), fixed PROJECT_STATE.md stale sections (Next allowed action still said
+"industry-outlook IN-FLIGHT" and Session closeout_status said "interrupted" while the work was already
+committed), backfilled vault fd-register FD-58 + FD-59 (closed the C-05 gap reported by the 6 Aug cron),
+registered FD #59, pushed. B = the kanban VISUAL board (the open question from 5 Aug): new `/kanban`
+route + masthead nav item "Kanban Board" — all 11 canonical columns rendered as column stacks from
+GET /org-queue (D1 endpoints, no backend changes), 5 pilot cards grouped by `workflow_column` (YAML
+contract source), honest empty columns, card→artifact links via `linkArtifact`, horizontal-scroll
+kanban, borderless 0. Built with Research Desk v3.0 pattern. Founder reviewed the board at
+localhost:5173 → ACCEPTED (A).
+
+**Key decisions (recorded immediately):**
+- FD #59 — Kanban VISUAL Board: read-only board view (Option A): /kanban + masthead item; reuses D1
+  endpoints; presentation-layer only, no writes (movement stays CoS/IC Secretary + Founder, §6).
+  DELIVERED + ACCEPTED this session (`50b6647`).
+
+**Verification evidence:**
+- npm run lint 0 errors (7 pre-existing warnings); npm run build exit 0 (tsc -b + vite build).
+- Ad-hoc hermes-verify-kanban-board.sh 8/8 (wiring, API-derived columns, read-only contract).
+- Browser: console 0 errors; board populated + empty states; card→artifact chain (ORG-2026-0004 →
+  IC-DECISION-PACK detail); /research regression clean; refined vision pass.
+- Screenshots + VISUAL_QA: `evidence/ui/kanban-board/` (01-first-pass, 02-final-desktop).
+- Python suite untouched (frontend-only) — 311/311 baseline.
+
+**Housekeeping note:** one patch-application lesson — a fuzzy `patch` match on
+`operational/FOUNDERS-DECISIONS.md` consumed part of the amendment-record line (restored in the same
+pass); verify diffs on governance files immediately after patching.
+
+**OPEN — Founder UI-issues review session:** after accepting the board, Founder reported "many issues"
+from his localhost:5173 review, to discuss AFTER closeout. Issue list PENDING Founder input — asked to
+paste rough bullets; registered as open so nothing is lost. Next session must ask for this list first.
+
+**Recommended next action:** UI-issues review session (list pending from Founder) → then commit-candidates:
+(a) org-workflow real intake; (b) UI-4 registers; (c) C-04/C-05/M-02 leftovers. CIW stays PAUSED.
+
+<!-- 2026-08-06 12:45 UTC+7 -->
