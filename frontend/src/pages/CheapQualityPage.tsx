@@ -1,16 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { getFOCheapQuality } from "@/api/foClient";
 import type { ResearchPackageSummary } from "@/types/fo";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ProvenanceChip } from "@/components/ProvenanceChip";
 import { cn } from "@/lib/utils";
-import SyntheticDataBanner from "@/components/SyntheticDataBanner";
 
-function moatColor(width: string) { return { Wide: "bg-emerald-100 text-emerald-700", Narrow: "bg-amber-100 text-amber-700", None: "bg-rose-100 text-rose-700" }[width] || ""; }
+/** Cheap & Quality watchlist (P2 — institutional standard, FD #60).
+ *  Honest empty state: the trigger needs 5-year volatility data the current
+ *  dataset does not carry — an empty watchlist is the correct, honest result. */
 
 export default function CheapQualityPage() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -20,64 +18,69 @@ export default function CheapQualityPage() {
   });
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (error) return (
-    <Card className="border-rose-200 bg-rose-50">
-      <CardContent className="p-6 text-center text-rose-700">Failed to load. <button onClick={() => refetch()} className="underline">Retry</button></CardContent>
-    </Card>
-  );
+  if (error)
+    return (
+      <div className="rounded-md bg-bg-panel px-4 py-8">
+        <p className="text-sm font-medium text-negative">Could not load the watchlist.</p>
+        <button type="button" onClick={() => refetch()} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
+          Retry →
+        </button>
+      </div>
+    );
+
+  const provenance = data?.[0]?.provenance;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-h2 font-bold">Cheap & Quality Watchlist</h1>
-        <p className="text-sm text-muted-foreground">
-          Companies that are unusually cheap vs own history AND passed Value Trap detection
+    <div className="mx-auto max-w-[960px]">
+      <header className="border-b border-rule pb-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Fundamental research</p>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Cheap & Quality</h1>
+        <p className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-ink-2">
+          Companies unusually cheap against their own history AND clear of the value-trap screen
+          {provenance?.mode && <ProvenanceChip mode={provenance.mode} source={provenance.source} asOf={provenance.as_of} />}
         </p>
-      </div>
-
-      {data?.[0]?.provenance.mode !== "real" && (
-        <SyntheticDataBanner note="Watchlist members are demonstration data — live data wiring is not yet connected to this screen." />
-      )}
+      </header>
 
       {!data?.length ? (
-        <Card>
-          <CardContent className="p-12 text-center text-muted-foreground">
-            <DollarSign className="size-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">No companies in Cheap & Quality watchlist</p>
-            <p className="text-sm">Unusually cheap companies that pass all 5 Value Trap checks will appear here.</p>
-          </CardContent>
-        </Card>
+        <div className="mt-8 rounded-md bg-bg-panel px-5 py-10">
+          <p className="text-sm font-medium text-foreground">No companies pass the screen yet.</p>
+          <p className="mt-1 max-w-[680px] text-[12.5px] leading-relaxed text-ink-2">
+            The cheap-and-quality trigger compares a company's P/E to its own five-year average and requires
+            five-year earnings volatility data. That volatility data is not yet carried by the current dataset,
+            so the screen correctly returns nothing — it will light up when the data exists.
+          </p>
+        </div>
       ) : (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company</TableHead>
-                <TableHead>Moat</TableHead>
-                <TableHead>Conviction</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((pkg: ResearchPackageSummary) => (
-                <TableRow key={pkg.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell>
-                    <Link to={`/fundamental/${pkg.id}`} className="block">
-                      <span className="font-semibold">{pkg.name}</span>
-                      <span className="text-muted-foreground ml-2 text-xs">({pkg.id})</span>
-                      <div className="text-xs text-muted-foreground">{pkg.sector} · {pkg.industry}</div>
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className={cn("text-xs font-medium", moatColor(pkg.moat_width))}>{pkg.moat_width}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="text-xs font-medium bg-emerald-100 text-emerald-700">{pkg.conviction}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+        <section className="mt-6">
+          <div className="grid grid-cols-[minmax(220px,1.6fr)_0.8fr_0.9fr] gap-x-4 border-b border-rule pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-3">
+            <span>Company</span>
+            <span>Moat</span>
+            <span>Conviction</span>
+          </div>
+          {data.map((pkg: ResearchPackageSummary) => (
+            <Link
+              key={pkg.id}
+              to={`/fundamental/${pkg.id}`}
+              className="group grid grid-cols-[minmax(220px,1.6fr)_0.8fr_0.9fr] items-baseline gap-x-4 border-b border-rule/60 py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <span>
+                <span className="font-display text-[14.5px] font-semibold tracking-tight text-foreground group-hover:text-primary">
+                  {pkg.name}
+                </span>
+                <span className="ml-1.5 font-mono text-[11px] text-ink-3">{pkg.id}</span>
+                <span className="block text-[11px] text-ink-2">
+                  {pkg.sector} · {pkg.industry}
+                </span>
+              </span>
+              <span className={cn("font-mono text-[12.5px]", pkg.moat_width === "Wide" ? "text-positive" : pkg.moat_width === "None" ? "text-ink-3" : undefined)}>
+                {pkg.moat_width || "—"}
+              </span>
+              <span className={cn("font-mono text-[12.5px]", pkg.conviction === "Maximum" || pkg.conviction === "High" ? "text-positive" : undefined)}>
+                {pkg.conviction || "—"}
+              </span>
+            </Link>
+          ))}
+        </section>
       )}
     </div>
   );
