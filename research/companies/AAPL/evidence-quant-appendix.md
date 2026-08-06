@@ -2,7 +2,7 @@
 
 **Companion to:** Main Research Essay — "How Durable Is Apple's Moat?"
 **Mandate:** RM-2026-0001 (approved 2026-08-06, FD #66)
-**Prepared:** 2026-08-06 · **Status:** working draft (synthesis pending)
+**Prepared:** 2026-08-06 16:34 UTC+7 · **Updated:** 2026-08-06 16:50 UTC+7 (audit corrections: 10-Q added, €500M fine sourced, derived labels, buyback terminology) · **Status:** working draft (post cross-exam/audit corrections)
 **Point-in-time rule (FD #58):** every figure valid as of its filing/period date; re-verify before later use.
 
 ---
@@ -11,11 +11,12 @@
 
 | Source | Period | Filed | Accession / ref | Used for |
 |---|---|---|---|---|
-| 10-K FY2025 | ended 2025-09-27 | 2025-10-31 | 0000320193-25-000079 (aapl-20250927.htm) | Business (Item 1), Risk Factors (1A), MD&A (7), Financials (8), Notes 2/7/13 |
-| 8-K Q3 FY2026 | ended 2026-06-27 | 2026-07-30 | 0000320193-26-000018 (ex99.1 a8-kex991q3202606272026.htm) | Latest quarter: revenue, GM, EPS, segments |
-| XBRL Company Facts | FY2021–FY2025 | n/a (SEC API) | data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json | Annual series: revenue, GM, OCF, capex, buybacks, share counts |
+| 10-K FY2025 | ended 2025-09-27 | 2025-10-31 | 0000320193-25-000079 (aapl-20250927.htm) | Business (Item 1), Risk Factors (1A), Legal Proceedings (Item 3), MD&A (7), Financials (8), Notes 2/7/10/13 |
+| 8-K Q3 FY2026 | ended 2026-06-27 | 2026-07-30 | 0000320193-26-000018 (ex99.1 a8-kex991q3202606272026.htm) | Latest quarter: revenue, GM, EPS, segments, cash flow |
+| 10-Q Q3 FY2026 | ended 2026-06-27 | 2026-07-31 | 0000320193-26-000020 (aapl-20260627.htm) | Legal proceedings detail, new risk factors (NAND/DRAM, AI compute, Siri AI interoperability), buyback programs, shares outstanding |
+| XBRL Company Facts | FY2021–FY2025 | n/a (SEC API, retrieved 2026-08-06) | data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json | Annual series: revenue, GM, OCF, capex, buybacks, share counts |
 
-Not used (available): 10-Q Q1/Q2/Q3 FY2026, DEF 14A FY2026, third-party market-share data (IDC/Counterpoint) — not pulled; noted as evidence gap.
+Not used (available): 10-Q Q1/Q2 FY2026, DEF 14A FY2026, third-party market-share data (IDC/Counterpoint) — not pulled; noted as evidence gap.
 
 ## 2. Five-year financial series (XBRL, deduped annual FY values; $M)
 
@@ -30,12 +31,12 @@ Not used (available): 10-Q Q1/Q2/Q3 FY2026, DEF 14A FY2026, third-party market-s
 | OCF | 104,038 | 122,151 | 110,543 | 118,254 | 111,482 |
 | Capex (PP&E) | 11,085 | 10,708 | 10,959 | 9,447 | 12,715 |
 | FCF (OCF − capex) | 92,953 | 111,443 | 99,584 | 108,807 | 98,767 |
-| Buybacks | 85,971 | 89,402 | 77,550 | 94,949 | 90,711 |
+| Cash paid for repurchases | 85,971 | 89,402 | 77,550 | 94,949 | 90,711 |
 | Shares outstanding (period end, B) | 16.43 | 15.94 | 15.55 | 15.12 | 14.77 |
 
 \* FY2024 NI includes one-time $10.2B net Ireland State Aid tax charge (Note 7) — reported NI understated vs underlying.
 
-Derived: cumulative buybacks FY21–25 ≈ **$438.6B**; share count −10.1% FY21→FY25; OCF ≥ $104B every year; capex 2–3% of revenue (low capital intensity); FCF conversion (FCF/NI) ≈ 0.98 / 1.12 / 1.03 / 1.16 / 0.88.
+Derived: cumulative cash paid for repurchases FY21–25 ≈ **$438.6B**; share count −10.1% FY21→FY25; OCF ≥ $104B every year; capex 2–3% of revenue (low capital intensity); FCF conversion (FCF/NI) ≈ 0.98 / 1.12 / 1.03 / 1.16 / 0.88. Buyback terminology: cash-flow-statement payments (this series) vs 10-K Note 10 transaction value ($89.3B for 402M shares FY25) — settlement-timing difference.
 
 ## 3. Product mix (10-K FY2025 Note 2; $M)
 
@@ -95,24 +96,30 @@ iPhone Q3 FY26 $54,252M (+21.7%), Mac +28.7%, Services +12.1% (June-quarter reco
 - Manufacturing purchase obligations $56.2B (9/27/25; $55.4B within 12 mo)
 - Dividend $0.27/sh declared (payable 8/13/26)
 
-## 8. Moat-relevant risk factors (10-K Item 1A, excerpted)
+## 8. Moat-relevant risk factors (10-K Item 1A + 10-Q Q3 FY2026 Item 1A/Item 1)
 
 1. Minority market share in global smartphone/PC/tablet/wearables markets; aggressive price competition; competitors able to price at little/no profit
 2. Single-product concentration: "significant portion of net sales from a single product category" (iPhone = 50.4% FY25)
 3. Tariffs/trade (Q2 2025 US tariffs: China/India/Japan/Korea/Taiwan/Vietnam/EU; Section 232 semiconductor investigation) — supply-chain relocation expensive and time-consuming
-4. Single/limited component sources; custom components from one source; industry-wide shortages
-5. Regulation: antitrust, privacy, digital platforms, AI — "legal proceedings have generally increased over time"
-6. Gross margin: "subject to volatility and downward pressure"
+4. Single/limited component sources; custom components from one source; **NAND/DRAM/semiconductor supply constraints "expected to intensify"** (NEW in 10-Q Q3 FY26)
+5. **AI compute dependence** — third-party cloud capacity constraints, extended lead times, rising costs (NEW in 10-Q)
+6. Regulation: antitrust, privacy, digital platforms, AI — "legal proceedings have generally increased over time"
+7. **Regulatory specifics (10-K Item 3 + 10-Q Item 1 Legal Proceedings):** DMA Article 5(4) €500M fine (2025-04-23) + cease-and-desist; DMA Article 6(4) preliminary findings (fines up to 10% of worldwide net sales); DOJ antitrust suit (2024-03-21); Epic 2021 Injunction → 2025 Injunction (2025-04-30) → Ninth Circuit upheld in part (2025-12-11) → Supreme Court cert granted (2026-06-30); Google search-licensing remedies risk
+8. **Developer-support dependence:** minority share → developers may favor larger platforms; App Store commission erosion via alternative distribution (DMA) and US court order; **interoperability obligations may prevent launching features such as Siri AI in certain jurisdictions** (NEW in 10-Q)
+9. Gross margin: "subject to volatility and downward pressure"
+10. China data-localization rules restricting data transfer (10-Q)
 
 ## 9. Evidence gaps & limitations
 
 - **No installed-base / subscriber / ARPU disclosure** in filings — ecosystem moat quantification rests on financial trajectory + qualitative statements (8-K confirms installed base at all-time high, no figure)
 - No iPhone unit shipments (discontinued since FY2018) — revenue-only view
 - FY24 NI distorted by one-time $10.2B Ireland charge (use operating income for trend)
-- Q3 FY26 GM includes ~2pp tariff refunds — normalize
+- Q3 FY26 GM includes ~2pp tariff refunds — reported GM less the stated refund benefit ≈48.1%
 - No third-party market-share data pulled (IDC/Counterpoint) — minority-share claim is qualitative from 10-K
 - No earnings-call transcripts, no teardown/cost data
 - Fiscal calendar: FY2025 and FY2024 each spanned 52 weeks; FY2023 spanned 53 weeks (extra week in Q1 2023 — 10-K line 514) — FY23 comparisons slightly flattered by the extra week
+- Buyback terminology: $90.7B = cash-flow-statement payments (XBRL/8-K); 10-K Note 10 discloses 402M shares repurchased "for $89.3B" — settlement-timing difference
+- Q1/Q2 FY2026 10-Qs + DEF 14A not extracted (Q3 FY2026 10-Q IS extracted and reconciled — see §6b evidence log)
 
 ## 10. Method notes
 
@@ -120,4 +127,4 @@ iPhone Q3 FY26 $54,252M (+21.7%), Mac +28.7%, Services +12.1% (June-quarter reco
 - All figures $M unless noted; shares in billions where marked
 - Computations (margins, FCF, conversion, cumulative buybacks) are derived from filing figures — marked as derived in §2
 
-<!-- 2026-08-06 21:20 UTC+7 -->
+<!-- 2026-08-06 16:34 UTC+7 -->

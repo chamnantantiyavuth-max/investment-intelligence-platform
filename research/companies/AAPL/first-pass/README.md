@@ -1,6 +1,14 @@
 # Independent First Pass — RM-2026-0001 (Apple Moat Durability)
 
-**Process:** Plan A §6 anti-anchoring — each Principal formed a view independently, in isolation, with access ONLY to the shared evidence packet (evidence-log.md + raw SEC filings). No Principal read another's view before writing (dispatched as 6 parallel isolated subagents, gpt-5.6-sol, 2026-08-06 16:31–16:34 UTC+7).
+**Process:** Plan A §6 anti-anchoring — each Principal formed a view independently, in isolation, with access ONLY to the shared evidence packet (evidence-log.md + raw SEC filings). No Principal read another's view before writing.
+
+## Anti-anchoring dispatch record (audit P-2 evidence, 2026-08-06)
+
+- **Delegation job:** `deleg_89b7126c` — 6 parallel leaf tasks, model **gpt-5.6-sol** (openai-codex), dispatched 16:31:21, all completed 16:34:15 (174.9s total)
+- **Input allowlist (per task):** evidence-log.md + source-inventory.md + /tmp/apl-evidence/ raw filings (10-K FY2025 accession 0000320193-25-000079; 8-K Q3 FY26 accession 0000320193-26-000018; XBRL Company Facts). Specs explicitly prohibited (Plan A §5).
+- **Isolation:** each task received ONLY its own role brief + the shared evidence; no task received another task's prompt or output. Task prompts persisted in delegation cache live transcripts (task-0..5 logs).
+- **Completion:** 6/6 completed; outputs persisted as `01-`…`06-` view files (write times ~16:34:55).
+- **Verification:** views do not cite one another; none references a frozen-platform score or spec.
 
 ## Views
 
@@ -18,4 +26,4 @@
 - Fiscal calendar: FY2025/FY2024 = 52 weeks each; FY2023 = 53 weeks (extra week in Q1 2023) — applied to evidence-quant-appendix.md §9 and source-inventory.md
 - Segment note is **Note 13** (not "Segment Note 18") — fixed in source-inventory.md
 
-<!-- 2026-08-06 21:25 UTC+7 -->
+<!-- 2026-08-06 16:35 UTC+7 -->

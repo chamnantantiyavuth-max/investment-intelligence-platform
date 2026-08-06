@@ -10,7 +10,7 @@
 | Filing | Period end | Filed | Accession | Primary doc | Use |
 |---|---|---|---|---|---|
 | 10-K FY2025 | 2025-09-27 | 2025-10-31 | 0000320193-25-000079 | aapl-20250927.htm | Business (Item 1), Risk Factors (1A), MD&A (7), Financials (8), Segment Note 13 |
-| 10-Q Q3 FY2026 | 2026-06-27 | 2026-07-31 | 0000320193-26-000020 | aapl-20260627.htm | Latest quarter — services momentum, segment check |
+| 10-Q Q3 FY2026 | 2026-06-27 | 2026-07-31 | 0000320193-26-000020 | aapl-20260627.htm | Legal proceedings detail, new risk factors, buyback programs (EXTRACTED + reconciled) |
 | 10-Q Q2 FY2026 | 2026-03-28 | 2026-05-01 | 0000320193-26-000013 | aapl-20260328.htm | Interim trend |
 | 10-Q Q1 FY2026 | 2025-12-27 | 2026-01-30 | 0000320193-26-000006 | aapl-20251227.htm | Interim trend |
 | 8-K Q3 FY26 earnings | 2026-07-30 | 2026-07-30 | 0000320193-26-000018 | a8-kex991q3202606272026.htm (ex99.1) | Latest earnings release + guidance |
@@ -32,4 +32,4 @@
 - 2026-08-06: source inventory built from submissions API (CIK 0000320193)
 - 2026-08-06: 10-K FY2025 downloaded + converted; product-mix table + geographic segments + net income/share counts extracted → `evidence-log.md` (accession 0000320193-25-000079)
 - 2026-08-06: **evidence build COMPLETE** — Note 13 segment op income (3 years), gross margin detail (Products/Services), Services narrative (Item 1 + MD&A), Item 1A risk factors, Q3 FY2026 8-K (ex99.1, accession 0000320193-26-000018), XBRL FY21–25 annual series (rev/GM/NI/OCF/capex/buybacks/shares)
-<!-- 2026-08-06 20:50 UTC+7 -->
+<!-- 2026-08-06 16:34 UTC+7 -->

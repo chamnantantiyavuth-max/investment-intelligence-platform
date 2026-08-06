@@ -67,11 +67,10 @@ Point-in-time rule FD #58: all figures as of filing/period; re-verify before any
 - **Concentration:** "the Company generates a significant portion of its net sales from a single product category [iPhone 50.4% FY25] and a decline in demand for that product could significantly impact net sales and gross margins"
 - **Tariffs/trade:** US tariffs announced Q2 2025 on China, India, Japan, South Korea, Taiwan, Vietnam, EU + reciprocal measures; Section 232 semiconductor investigation; supply chain shift costly/time-consuming — direct pressure on Cost Advantage
 - **Supply:** single/limited sources for critical components; industry-wide shortages; commodity pricing fluctuation
-- **Regulatory:** antitrust, privacy/data localization, digital platforms, AI regulation; legal proceedings "generally increased over time"; patent claims on standards-enabled products
+- **Regulatory:** antitrust, privacy/data localization, digital platforms, AI regulation; **DMA Article 5(4) €500M fine 2025-04-23 + cease-and-desist; Article 6(4) preliminary findings (fines up to 10% of net sales); DOJ suit; Epic 2025 Injunction (Ninth Circuit 2025-12-11, Supreme Court cert 2026-06-30); Google search-licensing remedies risk (10-K Item 3 / 10-Q Item 1 — Legal Proceedings)**; legal proceedings "generally increased over time"; patent claims on standards-enabled products
 - **Margin:** "gross margins will be subject to volatility and downward pressure" (gross margin risk factor + MD&A)
 
 ## 6. Q3 FY2026 (8-K, 2026-07-30, quarter ended 2026-06-27) — latest quarter check
-
 | ($M) | Q3 FY26 | Q3 FY25 | y/y |
 |---|---|---|---|
 | Products | 78,678 | 66,613 | +18.1% |
@@ -87,6 +86,30 @@ Point-in-time rule FD #58: all figures as of filing/period; re-verify before any
 - 9-mo FY26: revenue 364,357 (+16.2%); net income 101,464 (+20.0%); OCF 116,996 (vs 81,754 +43%); capex 6,799 (vs 9,473); buybacks 62,094 (vs 70,579); dividends 11,778
 - Balance sheet 6/27/26: cash+securities 39,544+22,855+84,118 ≈ **$146.5B**; total assets 383,266; total liabilities 275,746; shareholders' equity 107,520; retained earnings turned positive 11,326 (vs (14,264) at 9/27/25 — buyback pace vs earnings)
 - Dividend $0.27/share declared, payable 8/13/26; CEO cites "all-new Siri AI" + WWDC26; CFO cites record OCF
+
+## 6b. Q3 FY2026 10-Q (accession 0000320193-26-000020, filed 2026-07-31, quarter ended 2026-06-27) — legal/risk additions
+
+Reconciles to the 8-K exactly (revenue/GM/NI/EPS/segment figures identical). Adds:
+
+**Legal proceedings (Item 1):**
+- DMA Article 5(4): €500M fine imposed 2025-04-23 + cease-and-desist (developer steering restrictions); Apple appealed. NOTE: this is the fine previously cited loosely as "Item 1A" — correct source is **10-K/10-Q Item 1 Legal Proceedings / Item 3 (10-K)**
+- DMA Article 6(4) investigation: preliminary findings 2025-04-23; potential fines up to 10% of annual worldwide net sales
+- DOJ antitrust lawsuit (filed 2024-03-21, D.N.J.) — "performance smartphones"/"smartphones" monopolization claims
+- Epic: 2021 Injunction → **2025 Injunction (2025-04-30)** barring commission/fee on purchases outside an app → Ninth Circuit upheld in part (2025-12-11), allowed parity + some commission on link-outs → **Supreme Court granted certiorari 2026-06-30** (civil-contempt standard)
+- Google search-licensing remedies risk: D.C. District Court ordered remedies 2025-09-02; reversal could prohibit Google offering commercial terms for search distribution → Apple's licensing revenue at risk
+
+**New risk factors (Item 1A):**
+- **NAND/DRAM/semiconductor supply constraints "expected to intensify"** (new vs 10-K)
+- AI compute dependence: third-party cloud capacity constraints, extended lead times, rising costs
+- Developer-support dependence: minority share → developers may favor larger platforms; App Store commission erosion via alternative distribution (DMA) and US court order; interoperability obligations may prevent launching features such as **Siri AI in certain jurisdictions**
+- China data-localization rules restrict data transfer
+- Google licensing revenue + related litigation exposure
+
+**Buybacks (Item 2):**
+- May 1, 2025: $100B repurchase program (as of 6/27/26 remaining availability $38.0B); **April 30, 2026: additional $100B program**
+- May 2026: new ASRs, up-front payments totaling $10.0B
+- Q3 FY26 open-market purchases 53,143K shares (~$15.8B, avg ~$297)
+- Shares outstanding: **14,594,180,000 as of 2026-07-17** (vs 14,773,260,000 at 2025-09-27)
 
 ## 7. XBRL annual series FY2021–FY2025 (Company Facts, deduped annual FY values)
 
@@ -122,8 +145,10 @@ Point-in-time rule FD #58: all figures as of filing/period; re-verify before any
 
 - No installed-base / subscriber / ARPU figures published in filings (Apple does not disclose) — moat quantification on Services must rely on financial trajectory + qualitative statements
 - FY24 NI distorted by one-time $10.2B Ireland charge; use operating income or ex-item for trend
-- Q3 FY26 GM 50.1% includes ~2pp tariff-refund benefit — normalize before comparing to FY25 46.9%
+- Q3 FY26 GM 50.1% includes ~2pp tariff-refund benefit — reported GM less the stated refund benefit ≈48.1%
 - iPhone unit shipments not disclosed since FY2018 — revenue-only view
 - Market share data (minority share claim) qualitative from 10-K; precise share numbers would need third-party data (IDC/Counterpoint) — not yet pulled
+- Q1/Q2 FY2026 10-Qs + DEF 14A not extracted (Q3 FY2026 10-Q IS extracted + reconciled — see §6b)
+- Buyback terminology: $90.7B FY25 = cash-flow-statement payments; 10-K Note 10 discloses $89.3B for 402M shares — settlement-timing difference
 
-<!-- 2026-08-06 21:15 UTC+7 -->
+<!-- 2026-08-06 16:30 UTC+7 -->
