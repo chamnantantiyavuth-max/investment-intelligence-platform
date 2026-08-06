@@ -34,7 +34,8 @@
 - 2026-08-06 23:30 — cross-exam + CRO (deleg_caa77e92, gpt-5.6-sol) → cross-examination.md + cro-opposing-essay.md
 - 2026-08-06 23:33 — audit #1 (deleg_c48051e6, gpt-5.6-sol) → MAJOR FINDINGS (blocking: companion not evidenced; horizon mismatch partial; CPI claim; raw levels; cut-off; provenance)
 - 2026-08-07 00:15–00:40 — corrections applied (v3), raw FRED levels pulled (fredgraph.csv, curl), companion + cover note produced
-- 2026-08-07 — re-audit (targeted final confirmation) → pending
+- 2026-08-07 — re-audit (deleg_08c1edb8): FURTHER CORRECTIONS (cover-note contrast sentence b, CPI endpoint dates, provenance identifiers) → applied at commit 0547fdd
+- 2026-08-07 — final confirmation (deleg_6b6cfb71): 3/3 fixes APPLIED → **CLEARED FOR FOUNDER REVIEW** (final-confirmation.md)
 
 Artifact hashes (git hash-object, commit 32f626b, 2026-08-07):
 - analyst-note.md v3: d5929141d180134773c2a57be57d70469162bcf7
