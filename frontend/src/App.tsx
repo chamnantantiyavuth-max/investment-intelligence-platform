@@ -5,6 +5,7 @@ import { authStatus } from "@/api/authClient"
 import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import ResearchDeskPage from "@/pages/ResearchDeskPage"
+import KanbanBoardPage from "@/pages/KanbanBoardPage"
 import ResearchArtifactDetailPage from "@/pages/ResearchArtifactDetailPage"
 import AMQueuePage from "@/pages/AMQueuePage"
 import AMScreenerPage from "@/pages/AMScreenerPage"
@@ -42,6 +43,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<DashboardPage />} />
             <Route path="research" element={<ResearchDeskPage />} />
+            <Route path="kanban" element={<KanbanBoardPage />} />
             <Route path="research/*" element={<ResearchArtifactDetailPage />} />
             <Route path="am-queue" element={<AMQueuePage />} />
             <Route path="am-screener" element={<AMScreenerPage />} />
