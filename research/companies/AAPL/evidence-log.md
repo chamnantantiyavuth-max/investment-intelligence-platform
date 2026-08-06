@@ -3,6 +3,7 @@
 **Working evidence log** — every material figure source-referenced. Primary sources:
 - 10-K FY2025 = accession 0000320193-25-000079, filed 2025-10-31, period ended 2025-09-27
 - 8-K Q3 FY2026 = accession 0000320193-26-000018 (ex99.1 a8-kex991q3202606272026.htm), furnished 2026-07-30, quarter ended 2026-06-27
+- 10-Q Q3 FY2026 = accession 0000320193-26-000020 (aapl-20260627.htm), filed 2026-07-31, quarter ended 2026-06-27
 - XBRL Company Facts = data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json (raw slices in /tmp/apl-evidence/)
 
 Point-in-time rule FD #58: all figures as of filing/period; re-verify before any later use. All $ in millions unless noted.

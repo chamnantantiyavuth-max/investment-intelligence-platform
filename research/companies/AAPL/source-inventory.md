@@ -24,7 +24,7 @@
 
 ## Working files (outside repo — system temp)
 
-- `/tmp/apl-evidence/` — submissions.json, aapl-10k-fy2025.txt (converted), aapl-8k-q3fy26-ex991.txt (converted), aapl-xbrl-facts.json (3.8MB), 8k-index.json
+- `/tmp/apl-evidence/` — submissions.json, aapl-10k-fy2025.txt (converted), aapl-8k-q3fy26-ex991.txt (converted), aapl-10q-q3fy26.txt (converted, 96KB), aapl-xbrl-facts.json (3.8MB), 8k-index.json, 10q-q3fy26-index.json
 - Repo carries only: this inventory + evidence-log.md (working log with accession refs); the published Evidence & Quant Appendix lives in reports/ at publication
 
 ## Evidence log
@@ -32,4 +32,5 @@
 - 2026-08-06: source inventory built from submissions API (CIK 0000320193)
 - 2026-08-06: 10-K FY2025 downloaded + converted; product-mix table + geographic segments + net income/share counts extracted → `evidence-log.md` (accession 0000320193-25-000079)
 - 2026-08-06: **evidence build COMPLETE** — Note 13 segment op income (3 years), gross margin detail (Products/Services), Services narrative (Item 1 + MD&A), Item 1A risk factors, Q3 FY2026 8-K (ex99.1, accession 0000320193-26-000018), XBRL FY21–25 annual series (rev/GM/NI/OCF/capex/buybacks/shares)
+- 2026-08-06: **Q3 FY2026 10-Q extracted + reconciled** (accession 0000320193-26-000020, filed 2026-07-31) — legal proceedings detail (€500M DMA fine, DOJ suit, Epic injunctions, Google licensing), new risk factors (NAND/DRAM, AI compute, Siri AI interoperability), buyback programs (new $100B April 2026 + $10B ASRs), shares outstanding 14.594B as of 2026-07-17
 <!-- 2026-08-06 16:34 UTC+7 -->

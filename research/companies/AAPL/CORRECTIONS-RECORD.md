@@ -52,6 +52,6 @@ Q3 FY2026 10-Q (accession 0000320193-26-000020, filed 2026-07-31) downloaded + c
 
 ## Re-audit
 
-Audit note required: "rerun this audit after the essay is revised." A re-audit delegation was dispatched 2026-08-06 after corrections were applied; verdict recorded in `re-audit-note.md` (see file).
+Audit note required: "rerun this audit after the essay is revised." Re-audit delegation `deleg_127f9b61` (gpt-5.6-sol, dispatched 2026-08-06 16:51, completed 16:56) returned **REMAINS BLOCKED** with 3 bounded MAJORs (RA-1 derived formulas incomplete; RA-2 residual thesis/conclusion language; RA-3 premature attestation in this record) + 1 MINOR (RA-4 source inventory). All four corrections applied 2026-08-06 16:58: (1) derived labels + formulas for R&D/revenue growth + buyback/OCF ratio added to essay; (2) thesis/conclusion "Cost Advantage real" → "possible relative advantage — unverified"; "Network Effect real" → "plausible but indirect, unquantified, unverified"; (3) this record corrected to carry actual re-audit provenance (this edit); (4) source inventory + evidence-log header refreshed with 10-Q working files. Verdict recorded in `re-audit-note.md` (persisted 2026-08-06 16:58). Final targeted confirmation dispatched after corrections (delegation `deleg_2e47ba02`, gpt-5.6-sol).
 
 <!-- 2026-08-06 16:47 UTC+7 -->
