@@ -23,7 +23,7 @@ export function MaterialChangePanel({
   if (error) {
     return (
       <p className="text-xs text-negative">
-        Artifact registry unavailable — API error. Material changes cannot be read; retry from the page.
+        Research records unavailable — API error. Material changes cannot be read; retry from the page.
       </p>
     );
   }

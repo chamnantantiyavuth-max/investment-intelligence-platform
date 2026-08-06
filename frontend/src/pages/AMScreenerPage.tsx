@@ -23,7 +23,7 @@ type Dim = [string, keyof CandidateSummary["candidate_quality"] | keyof Candidat
 const DIMENSIONS: { title: string; note: string; rows: Dim[] }[] = [
   {
     title: "Candidate Quality",
-    note: "Spec §4.2 — qualitative strings, no composite score (CANDIDATE §2.5)",
+    note: "Qualitative strings, no composite score",
     rows: [
       ["Fundamentals", "fundamentals"],
       ["Growth", "growth"],
@@ -167,7 +167,7 @@ export default function AMScreenerPage() {
         headline="The full rule pack, rendered against every candidate"
         display={`${candidates.length} × 18`}
         tone="info"
-        sub={`${candidates.length} candidates assessed on 18 approved criteria — 7 candidate-quality, 6 entry-readiness, 5 data-confidence (spec §4.2). Every cell is the pipeline's qualitative string; nothing is summed into a score.`}
+        sub={`${candidates.length} candidates assessed on 18 criteria — 7 candidate-quality, 6 entry-readiness, 5 data-confidence. Every cell is the pipeline's qualitative string; nothing is summed into a score.`}
         evidenceRef={data?.run_id}
         chips={
           <ProvenanceChip
@@ -179,8 +179,8 @@ export default function AMScreenerPage() {
       />
 
       <div className="mb-4 rounded-md bg-warning/10 px-5 py-3 text-xs text-warning">
-        Criteria source: ALPHA-MOMENTUM-V0-SPEC.md v0.1 (approved, FD #19/#20) — rendered as-is. Exact
-        formulas, weights, and thresholds remain deferred (spec §4.3). No invented rules.
+        Criteria rendered as-is from the approved Alpha Momentum rule pack. Exact formulas, weights,
+        and thresholds remain deferred. No invented rules.
       </div>
 
       {dataStories.length > 0 && (
@@ -199,7 +199,7 @@ export default function AMScreenerPage() {
       )}
 
       <section className="mt-6">
-        <h2 className="font-display text-finding font-bold text-foreground">Pipeline Stages (spec §4.1)</h2>
+        <h2 className="font-display text-finding font-bold text-foreground">Pipeline Stages</h2>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {STAGES.map((s, i) => (
             <span key={s.stage} className="flex items-center gap-1.5">
@@ -211,8 +211,8 @@ export default function AMScreenerPage() {
           ))}
         </div>
         <p className="mt-2 text-[11px] text-ink-2">
-          Theme-linked demonstration boundary only — future versions preserve stock-first discovery
-          (spec §4.4). Feature computations are deterministic and reproducible (Constitution §20).
+          Theme-linked demonstration boundary only — future versions preserve stock-first discovery.
+          Computations are deterministic and reproducible.
         </p>
       </section>
 
@@ -225,11 +225,11 @@ export default function AMScreenerPage() {
       )}
 
       <ExplainPanel title="How to read the matrix">
-        Rows are the approved screening criteria (spec §4.2); columns are candidates from the admitted
-        run. Every cell is the qualitative assessment string produced by the deterministic pipeline —
-        rendered as a badge, never summed. The four quality dimensions stay separate (Constitution §10):
-        Candidate Quality, Entry Readiness, Data Confidence here, Theme Quality on the Theme Card. A
-        "pass" is not a recommendation — entry readiness is not a buy signal (Constitution §1).
+        Rows are the screening criteria; columns are candidates from the admitted run. Every cell is
+        the qualitative assessment string produced by the deterministic pipeline — rendered as a
+        badge, never summed. The four quality dimensions stay separate: Candidate Quality, Entry
+        Readiness, Data Confidence here, Theme Quality on the Theme Card. A "pass" is not a
+        recommendation — entry readiness is not a buy signal.
       </ExplainPanel>
     </div>
   )

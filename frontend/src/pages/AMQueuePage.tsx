@@ -160,7 +160,7 @@ export default function AMQueuePage() {
           why={
             topStage
               ? `Most common lifecycle stage: ${topStage[0]} (${topStage[1]} theme${topStage[1] === 1 ? "" : "s"}).`
-              : "Theme-first queue with adaptive capacity (Constitution §14)."
+              : "Theme-first queue with adaptive capacity."
           }
           evidenceRef={runId}
         />
@@ -169,7 +169,7 @@ export default function AMQueuePage() {
       {themes.length === 0 ? (
         <EmptyState
           message="No themes in the queue."
-          sub="Queue capacity is adaptive — it may return zero high-priority candidates (Constitution §14)."
+          sub="Queue capacity is adaptive — it may return zero high-priority candidates."
         />
       ) : (
         <section className="mt-8">
@@ -185,11 +185,11 @@ export default function AMQueuePage() {
       )}
 
       <ExplainPanel title="How Alpha Momentum screens">
-        Six pipeline stages (spec §4.1, v0.1): Universe Definition → Theme-linked Selection → Candidate
+        Six pipeline stages: Universe Definition → Theme-linked Selection → Candidate
         Quality → Entry Readiness → Data Confidence → Research Queue Assembly. Every candidate is
         assessed on 7 quality, 6 entry-readiness, and 5 data-confidence dimensions — all qualitative
-        badges, never a composite score (Constitution §10, CANDIDATE §2.5). The queue is Theme-first
-        (§14). Exact formulas and thresholds are deferred (spec §4.3). See the{" "}
+        badges, never a composite score. The queue is Theme-first. Exact formulas and thresholds are
+        deferred. See the{" "}
         <Link to="/am-screener" className="text-primary underline">
           criteria screener
         </Link>

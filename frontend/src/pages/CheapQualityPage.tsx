@@ -36,7 +36,7 @@ export default function CheapQualityPage() {
       </div>
 
       {data?.[0]?.provenance.mode !== "real" && (
-        <SyntheticDataBanner note="Watchlist members come from the FO pipeline running synthetic fixtures — real data wiring is not yet connected to this API surface." />
+        <SyntheticDataBanner note="Watchlist members are demonstration data — live data wiring is not yet connected to this screen." />
       )}
 
       {!data?.length ? (

@@ -10,10 +10,10 @@ const STYLE: Record<ProvenanceMode, string> = {
 }
 
 const LABEL: Record<ProvenanceMode, string> = {
-  real: "REAL",
-  hybrid: "HYBRID",
-  synthetic: "SYNTHETIC",
-  unknown: "UNKNOWN",
+  real: "Real data",
+  hybrid: "Hybrid data",
+  synthetic: "Synthetic data",
+  unknown: "Source unknown",
 }
 
 export function ProvenanceChip({
@@ -30,7 +30,7 @@ export function ProvenanceChip({
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap rounded-full border px-2 py-0.5 font-mono text-[11px] font-medium ${STYLE[m]}`}
-      title={`provenance: ${m}${source ? ` · ${source}` : ""}${asOf ? ` · ${asOf}` : ""}`}
+      title={`data: ${m}${source ? ` · ${source}` : ""}${asOf ? ` · ${asOf}` : ""}`}
     >
       {LABEL[m]}
       {source ? ` · ${source}` : ""}

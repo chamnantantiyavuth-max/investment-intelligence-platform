@@ -106,7 +106,7 @@ export default function AMThemeCardPage() {
           <div className="grid gap-3 lg:grid-cols-2">
             <DimPanel
               title="Theme Quality"
-              note="Theme-level dimension — separate from candidate/entry/data axes (§10, §13)"
+              note="Theme-level dimension — separate from candidate/entry/data axes"
               rows={[
                 ["Lifecycle", theme.lifecycle],
                 ["Approval Status", theme.approval_status],
@@ -117,7 +117,7 @@ export default function AMThemeCardPage() {
             />
           </div>
           {candidates.length === 0 ? (
-            <EmptyState message="No candidates in this theme." sub="Unsupported roles are left empty (spec §3.3)." />
+            <EmptyState message="No candidates in this theme." sub="Unsupported roles are left empty." />
           ) : (
             candidates.map((c) => (
               <div key={c.id} className="grid gap-3 lg:grid-cols-3">
@@ -164,9 +164,9 @@ export default function AMThemeCardPage() {
 
         <TabsContent value="falsification" className="space-y-3 pt-4">
           <p className="text-[11px] text-ink-2">
-            Scoped §11 panel (FD #50, 4 Aug 2026): alternative explanations, evidence register, and
-            unresolved counter-evidence — read-only passthrough from the admitted artifact. Milestones
-            and invalidation conditions are not yet represented.
+            Alternative explanations, evidence register, and unresolved counter-evidence — read-only
+            passthrough from the admitted artifact. Milestones and invalidation conditions are not yet
+            represented.
           </p>
           <EvidencePanel
             sections={[
@@ -187,7 +187,7 @@ export default function AMThemeCardPage() {
             <div className="rounded-md bg-bg-panel px-4 py-3">
               <h3 className="text-sm font-semibold text-foreground">Alternative Explanations</h3>
               <p className="text-[11px] text-ink-2">
-                What could make this thesis wrong — kept visible, never erased (§11, §22)
+                What could make this thesis wrong — kept visible, never erased
               </p>
               <ul className="mt-2 space-y-1">
                 {Object.entries(theme.alternative_explanations).map(([k, v]) => (
@@ -204,7 +204,7 @@ export default function AMThemeCardPage() {
                 Evidence Register ({theme.evidence.length})
               </h3>
               <p className="text-[11px] text-ink-2">
-                Raw records from the admitted artifact — read-only passthrough (FD #50, 4 Aug 2026)
+                Raw records from the admitted artifact — read-only passthrough
               </p>
               <ul className="mt-2 space-y-1.5">
                 {theme.evidence.map((e) => (
@@ -263,20 +263,19 @@ export default function AMThemeCardPage() {
             </div>
           )}
           <p className="text-[11px] text-ink-2">
-            Evidence source labels from the real artifact — synthetic and human-sourced entries are marked
-            individually; no blanket label over mixed content. Contradicting-evidence fields land with the
-            read-only schema extension (FD #50, §11 falsification panel).
+            Evidence source labels from the real artifact — synthetic and human-sourced entries are
+            marked individually; no blanket label over mixed content.
           </p>
         </TabsContent>
       </Tabs>
 
       <ExplainPanel title="How to read this theme card">
-        Governance is two independent axes (Constitution §5): Approval Status and Monitoring Status — a
-        transition in one never auto-changes the other. The four quality dimensions stay separate (§10):
-        Theme Quality at theme level; Candidate Quality, Entry Readiness, and Data Confidence per candidate
-        — never collapsed into one opaque score (§2.5). Theme roles come from the canonical taxonomy
-        (FD #26, §13): Confirmed Leader, Emerging Challenger, Direct Beneficiary, Enabler, Bottleneck
-        Owner, Second-order Beneficiary, Watchlist Member, Former Leader, Deteriorating Member.
+        Approval Status and Monitoring Status are two independent axes — a transition in one never
+        auto-changes the other. The four quality dimensions stay separate: Theme Quality at theme
+        level; Candidate Quality, Entry Readiness, and Data Confidence per candidate — never collapsed
+        into one opaque score. Theme roles come from the canonical taxonomy: Confirmed Leader, Emerging
+        Challenger, Direct Beneficiary, Enabler, Bottleneck Owner, Second-order Beneficiary, Watchlist
+        Member, Former Leader, Deteriorating Member.
       </ExplainPanel>
     </div>
   )

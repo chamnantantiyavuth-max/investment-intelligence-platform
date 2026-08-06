@@ -56,12 +56,14 @@ export default function InstitutionalPage() {
         <div>
           <h1 className="font-display text-h2 font-bold tracking-tight">Institutional Intelligence</h1>
           <p className="text-sm text-muted-foreground">
-            {total.toLocaleString()} signals · 13F filings · {String(meta.data_source ?? "n/a")}
+            {total.toLocaleString()} signals from 13F filings
           </p>
         </div>
         {provenance && (
           <Badge variant="outline" className="text-xs">
-            {provenance.mode === "real" ? `REAL · ${provenance.source} · ${provenance.completeness ?? ""}` : "SYNTHETIC — NOT LIVE DATA"}
+            {provenance.mode === "real"
+              ? `Real data · ${provenance.source}${provenance.completeness ? ` · ${provenance.completeness.replace("partial_21_51", "21 of 51 funds")}` : ""}`
+              : "Synthetic demo data"}
           </Badge>
         )}
       </div>

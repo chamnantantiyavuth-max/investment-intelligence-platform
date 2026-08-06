@@ -39,7 +39,7 @@ export default function CSRadarPage() {
     <div className="space-y-6">
       <h1 className="font-display text-h2 font-bold tracking-tight">Close System Radar</h1>
 
-      <SyntheticDataBanner note="Radar products come from the v0.1 Close System pipeline artifact — labeled synthetic (FD #46), never disguised." />
+      <SyntheticDataBanner note="Radar products are synthetic demo data — labeled, never disguised." />
 
       {lead && (
         <section className="border-b border-rule pb-6">

@@ -139,7 +139,7 @@ export default function DashboardPage() {
     const d = daysSince(c.point_in_time)
     const bound = STALE_BOUNDS[key]
     if (c.state === "available" && d !== null && d > bound) {
-      staleWarnings.push(`${key.toUpperCase()} data is ${d}d old (bound ${bound}d, FD #47 D3)`)
+      staleWarnings.push(`${key.toUpperCase()} data is ${d}d old (bound ${bound}d)`)
     }
   }
   const maxLifecycle = Math.max(1, ...lifecycle.map(([, n]) => n))
@@ -162,7 +162,7 @@ export default function DashboardPage() {
             Momentum claims suppressed — engine status below
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-ink-2">
-            The AM API did not respond (fail-closed 503, FD #47 D2). Dashboard summary and Close System remain valid.
+            The Alpha Momentum service did not respond. The dashboard summary and Close System remain valid.
           </p>
           <button type="button" onClick={load} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
             Retry →
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           headline="The engine is up — awaiting an admitted Alpha Momentum run"
           display="—"
           tone="info"
-          sub="Engine provenance below shows each strategy's artifact state."
+          sub="What each strategy is running on right now — data source and age below."
         />
       )}
 
@@ -198,7 +198,7 @@ export default function DashboardPage() {
         <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
           Decisions required
         </h2>
-        <SectionStamp text={`org_workflow_kanban · operational · as-of ${orgLatest}`} />
+        <SectionStamp text={`Research workflow · operational tracking · as of ${orgLatest}`} />
         {orgError ? (
           <p className="text-xs text-ink-2">Org-workflow queue unavailable — API error. Retry with the button above.</p>
         ) : org ? (
@@ -212,7 +212,7 @@ export default function DashboardPage() {
         <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
           Material changes since last review
         </h2>
-        <SectionStamp text={`research_artifact_registry · REAL per artifact · as-of ${regLatest}`} />
+        <SectionStamp text={`Research records · real data · as of ${regLatest}`} />
         <MaterialChangePanel artifacts={artifacts} error={artifactsError} />
       </section>
 
@@ -231,7 +231,7 @@ export default function DashboardPage() {
           headline="Coverage on the admitted run"
           value={topProv?.coverage ?? "—"}
           tone="info"
-          why="Real EOD from Yahoo Finance, point-in-time as shown. Staleness bounds: AM ≤7d, FO ≤30d, II ≤120d (FD #47 D3)."
+          why="Real end-of-day data from Yahoo Finance, as of the shown dates. Staleness bounds: Alpha Momentum ≤7d, Fundamental ≤30d, Institutional ≤120d."
           evidenceRef={runId}
         />
         <FindingCard
@@ -239,14 +239,14 @@ export default function DashboardPage() {
           headline="Regime reads risk-on"
           value={data.cs_regime}
           tone="warning"
-          why={`${data.cs_qc_met}/${data.cs_radar_items} radar products show full 5-layer alignment. Synthetic pipeline — labeled, never disguised (FD #46/57).`}
+          why={`${data.cs_qc_met}/${data.cs_radar_items} radar products show full 5-layer alignment. Synthetic demo data — labeled, never disguised.`}
         />
         <FindingCard
           kicker="Finding 04 · Queue"
           headline="Candidates under investigation"
           value={`${candidatesTotal} across ${data.queue_size} themes`}
           tone="neutral"
-          why="Theme-first queue with adaptive capacity — it may return zero high-priority candidates (Constitution §14)."
+          why="Theme-first queue with adaptive capacity — it may return zero high-priority candidates."
           evidenceRef={runId}
         />
       </section>
@@ -289,7 +289,7 @@ export default function DashboardPage() {
         <h2 className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
           Research throughput
         </h2>
-        <SectionStamp text={`org_workflow_kanban · derived from card workflow_column · as-of ${orgLatest}`} />
+        <SectionStamp text={`Research workflow · operational tracking · as of ${orgLatest}`} />
         {orgError ? (
           <p className="text-xs text-ink-2">Throughput unavailable — org-workflow API error.</p>
         ) : org ? (
@@ -317,7 +317,7 @@ export default function DashboardPage() {
 
       <section className="mt-8">
         <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
-          Reference · Engine provenance
+          Engine data state
         </h2>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           <EngineChip name="Alpha Momentum" icon={<TrendingUp className="size-4" />} comp={data.components.am} bound={STALE_BOUNDS.am} />

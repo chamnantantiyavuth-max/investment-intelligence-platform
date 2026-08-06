@@ -50,7 +50,7 @@ export function HeroInsight({
       {evidenceRef && (
         <div className="mt-3 flex items-center gap-1 font-mono text-[11px] text-ink-3">
           <ExternalLink className="size-3" />
-          <span>evidence: {evidenceRef}</span>
+          <span>run: {evidenceRef}</span>
         </div>
       )}
     </section>

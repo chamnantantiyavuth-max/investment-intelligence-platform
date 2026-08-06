@@ -47,7 +47,7 @@ export default function ResearchDeskPage() {
     return (
       <div className="rounded-md bg-bg-panel px-4 py-8">
         <p className="text-sm font-medium text-negative">Research Desk unavailable — API error.</p>
-        <p className="mt-1 text-xs text-ink-2">What failed: the org-workflow queue or artifact registry endpoint.</p>
+        <p className="mt-1 text-xs text-ink-2">What failed: the research tracking or records endpoint.</p>
         <button type="button" onClick={() => { queue.refetch(); registry.refetch(); }} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
           Retry →
         </button>
@@ -63,10 +63,10 @@ export default function ResearchDeskPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Research workflow</p>
         <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Research Desk</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">
-          {queue.data?.data_source ?? "org_workflow_kanban"} · operational tracking · latest card update {latest}
+          Research workflow · operational tracking · latest card update {latest}
         </p>
         <p className="mt-1 max-w-2xl text-xs text-ink-2">
-          Operational tracking only — card state never equals domain state (KANBAN-CONTRACT §1).
+          Operational tracking only — card state never equals the actual research state.
         </p>
       </div>
 

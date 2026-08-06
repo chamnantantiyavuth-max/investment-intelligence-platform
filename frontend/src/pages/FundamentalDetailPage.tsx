@@ -96,7 +96,7 @@ export default function FundamentalDetailPage() {
                 <div><span className="text-xs text-muted-foreground uppercase block">Trend</span><span className={cn("text-2xl font-bold", trendColor(asString(moat?.trend)))}>{asString(moat?.trend) || "—"}</span></div>
               </div>
               <p className="text-[11px] text-muted-foreground mb-2">
-                moat_score removed from the system (FD #53 — weighted 0–100 score had no spec basis). Width/depth/trend are the approved qualitative classification (spec §3.4.1).
+                Moat classification is qualitative — width, depth, and trend. A numeric score is not used.
               </p>
               <Separator className="my-4" />
               <p className="text-sm mb-4">{asString(moat?.moat_narrative) || "No moat narrative."}</p>
@@ -148,7 +148,7 @@ export default function FundamentalDetailPage() {
                   <p className="text-sm font-semibold text-rose-700 mb-2">{asString(vt.verdict)}</p>
                   <p className="text-xs text-rose-600">{asString(vt.action)}</p>
                   <p className="text-[11px] text-rose-500 mt-1">
-                    Trap mapping corrected to spec (FD #53 — §3.6.2: 3–4 = MIXED, deeper research required); numeric score removed.
+                    Value-trap mapping: scores 3–4 are mixed — deeper research required.
                   </p>
                 </div>
               )}

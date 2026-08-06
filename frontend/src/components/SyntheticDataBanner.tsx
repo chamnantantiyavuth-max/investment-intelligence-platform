@@ -4,7 +4,7 @@
 import { FlaskConical } from "lucide-react";
 
 export default function SyntheticDataBanner({
-  note = "Static demonstration data — not live pipeline output. Informational only; not investment advice.",
+  note = "Demonstration data — not live market output. Informational only; not investment advice.",
 }: {
   note?: string;
 }) {
@@ -12,7 +12,7 @@ export default function SyntheticDataBanner({
     <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
       <FlaskConical className="mt-0.5 size-4 shrink-0 text-amber-600" />
       <div className="text-xs text-amber-800">
-        <span className="font-bold uppercase tracking-wide">SYNTHETIC / DEMO — NOT LIVE DATA</span>
+        <span className="font-bold uppercase tracking-wide">Synthetic demo data — not live market data</span>
         <span className="block mt-0.5">{note}</span>
       </div>
     </div>

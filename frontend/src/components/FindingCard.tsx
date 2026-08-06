@@ -47,7 +47,7 @@ export function FindingCard({
       {evidenceRef && (
         <div className="mt-1.5 flex items-center gap-1 font-mono text-[10.5px] text-ink-3">
           <ExternalLink className="size-3" />
-          <span>evidence: {evidenceRef}</span>
+          <span>run: {evidenceRef}</span>
         </div>
       )}
     </article>

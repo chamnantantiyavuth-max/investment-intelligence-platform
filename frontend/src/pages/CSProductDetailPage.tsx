@@ -79,7 +79,7 @@ export default function CSProductDetailPage() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] uppercase tracking-[0.1em] text-ink-3">{a.category}</span>
           <span className="rounded-sm bg-bg-panel px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
-            synthetic · close_system pipeline v0.1
+            Synthetic data
           </span>
         </div>
         <h1 className="mt-2 font-display text-h2 font-bold leading-tight tracking-tight">
@@ -207,7 +207,7 @@ export default function CSProductDetailPage() {
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">Q-conditions</p>
             <p className="mt-1 text-xs text-ink-2">
-              Q-conditions belong to the Alpha Momentum surface; the CS pipeline v0.1 does not produce them — not invented here (FD #57).
+              Q-condition analysis belongs to the Alpha Momentum surface and is not produced for Close System products.
             </p>
           </div>
         </div>

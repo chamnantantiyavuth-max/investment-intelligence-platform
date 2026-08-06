@@ -128,7 +128,7 @@ export default function ResearchArtifactDetailPage() {
       <div className="border-b border-rule pb-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11px] uppercase tracking-[0.1em] text-ink-3">{artifact.artifact_type}</span>
-          <ProvenanceChip mode={mode} source={`${registry.data?.data_source ?? "research_artifact_registry"} · ${artifact.path}`} asOf={artifact.modified} />
+          <ProvenanceChip mode={mode} source={artifact.path} asOf={artifact.modified} />
         </div>
         <h1 className="mt-2 font-display text-h2 font-bold leading-tight tracking-tight">{artifact.title}</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">{artifact.artifact_id}</p>
@@ -240,7 +240,7 @@ export default function ResearchArtifactDetailPage() {
             card && (
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-3">
-                  Card status · {card.card_id} (org_workflow_kanban)
+                  Card status · {card.card_id}
                 </p>
                 <div className="mt-1">
                   <ReviewGatePanel card={card} />

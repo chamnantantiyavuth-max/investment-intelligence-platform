@@ -46,10 +46,10 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               <span className="text-ink-3">—</span> Advisory only — no buy/sell/allocate. No broker connectivity.
             </p>
             <p className="flex items-center gap-2">
-              <span className="text-ink-3">—</span> Portfolio-blind: the system never sees your holdings (§23.8.1).
+              <span className="text-ink-3">—</span> Portfolio-blind: the system never sees your holdings.
             </p>
             <p className="flex items-center gap-2">
-              <span className="text-ink-3">—</span> Evidence-first: every surface carries a real/hybrid/synthetic provenance label.
+              <span className="text-ink-3">—</span> Data is labeled real, hybrid, or synthetic on every page.
             </p>
           </div>
         </div>

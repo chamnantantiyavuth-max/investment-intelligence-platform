@@ -23,7 +23,7 @@ export default function WeakSignalInboxPage() {
     <div className="space-y-6">
       <h1 className="font-display text-h2 font-bold tracking-tight">Weak Signal Inbox</h1>
 
-      <SyntheticDataBanner note="Anomalies and hypotheses are static demonstration data — the experimental pipeline (E1–E4) is not yet wired to this page." />
+      <SyntheticDataBanner note="Anomalies and hypotheses are demonstration data — the experimental pipeline is not yet connected to this page." />
 
       <Tabs defaultValue="anomalies">
         <TabsList>

@@ -105,11 +105,11 @@ export default function KanbanBoardPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Research workflow</p>
         <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Kanban Board</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">
-          {queue.data?.data_source ?? "org_workflow_kanban"} · operational tracking · latest card update {latest}
+          Kanban board · operational tracking · latest card update {latest}
         </p>
         <p className="mt-1 max-w-2xl text-xs text-ink-2">
-          Read-only view of the repo kanban (KANBAN-CONTRACT §10). Operational tracking only — card state never
-          equals domain state (§1). Movement happens in git by the CoS/IC Secretary and Founder (§6), never here.
+          Read-only view of the research kanban. Operational tracking only — card state never equals
+          the actual research state. Cards move only through the research workflow, never from this screen.
         </p>
       </div>
 
