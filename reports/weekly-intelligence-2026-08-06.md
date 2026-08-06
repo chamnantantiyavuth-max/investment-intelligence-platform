@@ -4,8 +4,8 @@ type: weekly
 subject: IIP research organization — weekly intelligence
 date: 2026-08-06
 author: IC Secretary (org-ic-secretary)
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Founding week: reports are the product, the radar layer is live with three live questions, and the portfolio office now consumes published work one-way."
 ---
 
