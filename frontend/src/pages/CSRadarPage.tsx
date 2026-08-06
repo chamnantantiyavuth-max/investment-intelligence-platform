@@ -1,13 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getCSRadar, type CSAsset } from "@/api/csClient";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import SyntheticDataBanner from "@/components/SyntheticDataBanner";
+import { cn } from "@/lib/utils";
 
-// FD #57: radar serves the v0.1 pipeline artifact (SYNTHETIC). Lead judgment =
-// display ordering from admitted fields only (conviction ordinal, then layer
-// alignment) — presentation, never an investment rule (AM rankCandidates doctrine).
+/** Close System radar (P2 — institutional standard, FD #60).
+ *  Dense ledger; lead judgment = display ordering from admitted fields only. */
 
 const CONVICTION_ORDER = ["Low", "Moderate", "High", "Maximum"];
 
@@ -23,12 +21,15 @@ export default function CSRadarPage() {
   });
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (error) return (
-    <div className="rounded-md bg-bg-panel px-5 py-6 text-center">
-      <p className="text-sm font-medium text-negative">Failed to load.</p>
-      <button onClick={() => refetch()} className="mt-1 text-sm text-primary underline">Retry</button>
-    </div>
-  );
+  if (error)
+    return (
+      <div className="rounded-md bg-bg-panel px-4 py-8">
+        <p className="text-sm font-medium text-negative">Could not load the Close System radar.</p>
+        <button type="button" onClick={() => refetch()} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
+          Retry →
+        </button>
+      </div>
+    );
 
   const assets: CSAsset[] = data?.assets ?? [];
   const lead = [...assets].sort(
@@ -36,65 +37,67 @@ export default function CSRadarPage() {
   )[0];
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-display text-h2 font-bold tracking-tight">Close System Radar</h1>
-
-      <SyntheticDataBanner note="Radar products are synthetic demo data — labeled, never disguised." />
+    <div className="mx-auto max-w-[960px]">
+      <header className="border-b border-rule pb-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Close System</p>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Product radar</h1>
+        <p className="mt-1 text-[12px] text-ink-2">
+          Physical and commodity-linked products screened for discount, structural demand, and risk alignment ·{" "}
+          <span className="text-warning">synthetic demo data — labeled, never disguised</span>
+        </p>
+      </header>
 
       {lead && (
-        <section className="border-b border-rule pb-6">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Lead judgment · Close System</p>
-          <h2 className="mt-2 max-w-3xl font-display text-hero font-bold leading-[1.12] text-foreground">
+        <section className="mt-6 border-b border-rule pb-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Lead judgment</p>
+          <h2 className="mt-2 max-w-[760px] font-display text-[22px] font-semibold leading-snug tracking-tight">
             Most interesting product to watch: {lead.ticker} — {lead.name}
           </h2>
-          <p className="mt-2 font-mono text-lg font-semibold text-positive">
-            {lead.conviction} conviction · {lead.layers_aligned}/5 layers aligned
+          <p className="mt-2 font-mono text-[14px] text-foreground">
+            {lead.conviction} conviction · {lead.layers_aligned}/{Object.keys(lead.layers).length} layers aligned
           </p>
-          <p className="mt-2 max-w-2xl text-sm text-ink-2">
-            {lead.recommendation}. Derived from admitted pipeline fields — display ordering, not an investment rule.
-          </p>
+          <p className="mt-1 max-w-[680px] text-[13px] leading-relaxed text-ink-2">{lead.recommendation}</p>
+          <Link to={`/cs-radar/${lead.ticker}`} className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">
+            Open the note →
+          </Link>
         </section>
       )}
 
       <section className="mt-6">
-        <h2 className="font-display text-finding font-bold text-foreground">Product Radar — Eligibility &amp; Synthesis</h2>
-        <div className="mt-2 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">Ticker</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="text-center">P1–P3</TableHead>
-                <TableHead className="text-center">Layers</TableHead>
-                <TableHead>Conviction</TableHead>
-                <TableHead>Recommendation</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assets.map((a) => (
-                <TableRow key={a.id ?? a.ticker}>
-                  <TableCell className="font-mono font-bold">
-                    <Link to={`/cs-radar/${a.ticker}`} className="text-primary hover:underline">
-                      {a.ticker}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {a.name}
-                    <div className="text-xs text-muted-foreground">{a.category}</div>
-                  </TableCell>
-                  <TableCell className="text-center font-mono text-[11px]">
-                    {a.p1_pass && a.p2_pass && a.p3_pass ? "P1·P2·P3" : `${a.p1_pass ? "P1" : ""}${a.p2_pass ? "P2" : ""}${a.p3_pass ? "P3" : ""}`}
-                  </TableCell>
-                  <TableCell className="text-center font-mono text-[11px]">
-                    {a.layers_aligned}/{Object.keys(a.layers).length}
-                  </TableCell>
-                  <TableCell>{a.conviction}</TableCell>
-                  <TableCell className="max-w-[220px] whitespace-normal">{a.recommendation}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="grid grid-cols-[70px_1.4fr_0.9fr_0.7fr_0.8fr_1.3fr] gap-x-4 border-b border-rule pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-3">
+          <span>Ticker</span>
+          <span>Product</span>
+          <span>Eligibility</span>
+          <span>Layers</span>
+          <span>Conviction</span>
+          <span>Recommendation</span>
         </div>
+        {assets.map((a) => {
+          const allPass = a.p1_pass && a.p2_pass && a.p3_pass;
+          return (
+            <Link
+              key={a.id ?? a.ticker}
+              to={`/cs-radar/${a.ticker}`}
+              className="group grid grid-cols-[70px_1.4fr_0.9fr_0.7fr_0.8fr_1.3fr] items-baseline gap-x-4 border-b border-rule/60 py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <span className="font-mono text-[12.5px] font-semibold text-primary">{a.ticker}</span>
+              <span>
+                <span className="font-display text-[14px] font-semibold tracking-tight text-foreground group-hover:text-primary">{a.name}</span>
+                <span className="block text-[11px] text-ink-2">{a.category}</span>
+              </span>
+              <span className={cn("font-mono text-[12px]", allPass ? "text-positive" : "text-warning")}>
+                {allPass ? "P1·P2·P3" : [a.p1_pass && "P1", a.p2_pass && "P2", a.p3_pass && "P3"].filter(Boolean).join("·") || "—"}
+              </span>
+              <span className="font-mono text-[12px] text-ink-2">
+                {a.layers_aligned}/{Object.keys(a.layers).length}
+              </span>
+              <span className={cn("font-mono text-[12px]", a.conviction === "Maximum" || a.conviction === "High" ? "text-positive" : undefined)}>
+                {a.conviction}
+              </span>
+              <span className="text-[12px] leading-snug text-ink-2">{a.recommendation}</span>
+            </Link>
+          );
+        })}
       </section>
     </div>
   );
