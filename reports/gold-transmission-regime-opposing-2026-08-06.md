@@ -4,8 +4,8 @@ type: product
 subject: "Gold (cross-asset)"
 date: 2026-08-06
 author: "Chief Risk Officer (ORG-2026-0008) — companion dissent"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Companion to 'Gold vs Real Rates: Transmission Under Test'. The CRO's preserved opposing case: the year-long 24.6% gold advance against a 47bp real-yield rise is a new pricing regime — a yield-insensitive official sector has displaced opportunity-cost-sensitive investors at the margin, and the 'next real-yield move' test is unfalsifiable. Advisory, portfolio-blind, not a buy/sell call."
 ---
 

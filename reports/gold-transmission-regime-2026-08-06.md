@@ -4,8 +4,8 @@ type: product
 subject: "Gold (cross-asset)"
 date: 2026-08-06
 author: "Macro Strategy (ORG-2026-0008, RADAR-001) — IC Secretary synthesis"
-status: review
-updated: 2026-08-06
+status: published
+updated: 2026-08-06 (published after Founder gate, Option A)
 summary: "Gold rose 24.6% YoY to $4,206.60/oz while the 10-year real yield rose 47bp and the Fed held with a 9-3 hawkish vote — the traditional real-yield drag did not bind. The evidence is consistent with a current-regime flow-dominance hypothesis (conflict, inflation-risk and policy-error hedging, with a possible official-sector component) but does not identify or rank the flows, and does not establish a permanent break in transmission. Measurement periods are non-aligned; the CRO argues the channel has structurally broken. CRO dissent published as companion."
 ---
 
