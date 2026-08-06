@@ -133,4 +133,45 @@ paste rough bullets; registered as open so nothing is lost. Next session must as
 **Recommended next action:** UI-issues review session (list pending from Founder) → then commit-candidates:
 (a) org-workflow real intake; (b) UI-4 registers; (c) C-04/C-05/M-02 leftovers. CIW stays PAUSED.
 
-<!-- 2026-08-06 12:45 UTC+7 -->
+## Session 7 (6 Aug 2026, 10:00–11:55) — UX Overhaul → Platform Pivot to Reports (FD #60/#61/#62) — ✅ COMPLETED
+
+**Branch:** `main` · **Commits:** `f76da77` → `c75f3a8` (15 commits) · **Status:** COMPLETED (HEAD `c75f3a8`)
+
+**What happened (plain language):** The pending "UI-issues review" turned into a full Founder-led UX overhaul.
+Founder issued 7 requirements (FD #60): bad layout/hard-to-read, thin macro context, no Bible/FD jargon in
+UI, IDs to background data, FO pages need story, no raw-markdown briefs, and — most important — the app must
+look like a presentation to a hedge-fund head (Ray Dalio standard). Ran a full real-user audit
+(`evidence/ui/audit-2026-08-06/AUDIT.md`, all 7 confirmed with evidence, root causes split UI vs data layer),
+then P1 UX hygiene (jargon stripped from 21 files) + P2 institutional rollout in 4 batches (FO reference page
+as research note, CS as one-scroll SLV note, II 13F ledger + weak-signal inbox, AM polish; vision-reviewed
+institutional-grade, border audit 0). Founder then pushed further (FD #61): sections are structured but there
+is no ANALYSIS — moat must use the 6-area QUALITATIVE framework (pipeline classifier returns empty — yfinance
+numbers cannot derive qualitative moats), and the platform model itself is under evaluation. Founder chose
+**FD #62 Option A — platform pivot**: agent-team research reports are THE product; built a private research
+blog (typeset paper layout, /library + /library/:slug, auth-gated /api/reports, git single writer, reports/
+contract); pilot report = Silver product note 'The Metals Trade Hiding in Plain Sight' → **PUBLISHED by
+Founder gate (`c75f3a8`, 11:55)**. Existing app frozen as-is (no deletion; screening data = report input).
+
+**Key decisions (recorded immediately):**
+- FD #60 — UX Overhaul Direction (7 requirements; Ray Dalio hedge-fund-grade standard; provenance stays in
+  data layer + discreet honest labels; §/FD/Bible citations removed from foreground).
+- FD #61 — Analysis-Content Direction: full synthesized analyst analysis required; moat = 6-area qualitative
+  framework (spec §3.4.1), not quantitative-only; platform-vs-report model evaluation (→ resolved by FD #62).
+- FD #62 — Platform Model Pivot (Option A): reports = the product; research blog (typeset, never raw
+  markdown); status flow Draft → Founder Review → Published; pilot Silver note PUBLISHED; next Apple note;
+  full report catalog + blog design to be presented for Founder approval.
+
+**Verification evidence:**
+- Per-commit: npm run lint 0 errors + npm run build exit 0 (tsc -b) on every P1/P2/blog batch.
+- Browser-verified per batch (console 0 errors; library renders; /api/reports 401-gated; typeset render
+  vision-checked "GS Top of Mind class", no markdown leakage).
+- Visual QA: `evidence/ui/p2-reference/` + `evidence/ui/audit-2026-08-06/AUDIT.md` + P2 rollout evidence `91d75d8`.
+- Python suite: no test files changed (frontend + report-store only) — 311/311 baseline intact.
+- Market-data freshness re-verified by 6 Aug cron review: AM `AM-V0-20260803-171535` (real EOD, 9/9),
+  FO `FO-20260803-140032` (real yfinance), II `2026-08-03` (25,246 signals, 120-day bound), CS
+  `CS-V0-20260805-181756` (labeled synthetic) — all within staleness bounds. Silver note figures sourced to
+  pipeline artifact 2026-08-05 with date stamps (FD #58 point-in-time rule honored).
+
+**OPEN (next actions per FD #62):** (a) **⚠ BIG CHANGE ANNOUNCED by Founder (end of 6 Aug session) — expected next session; do NOT start the Apple note or new reports until the change is revealed**; (b) Apple company note (next pilot report, qualitative 6-area moat per FD #61) — gated on the big change; (c) full report catalog + blog design presented for Founder approval; (d) founder blog review at localhost:5173. Behind: UI-4, A-01, C-04/C-05/M-02, org-workflow real intake. CIW stays PAUSED.
+
+<!-- 2026-08-06 16:10 UTC+7 -->
