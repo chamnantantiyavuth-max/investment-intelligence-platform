@@ -31,4 +31,5 @@
 ---
 
 *Role Registry v0.1 — FD #54.*
+**Amended 2026-08-06 (FD #66 R-2 + Plan A v0.3):** all 10 Principal + 10 Assistant contracts reframed to research Principals — Analytical Freedom Doctrine (direction §5), independent first pass (§7.3), 3 minimum artifacts (Main Research Essay / Evidence & Quant Appendix / Opposing Thesis & Audit Note, FD #64 item 6); domain specs/checklists NOT auto-loaded into the first pass (optional lenses / QA references only, FD #64 item 7); legacy pipeline outputs frozen (FD #65). Profiles read their amended PRINCIPAL.md at startup (unchanged mechanism).
 <!-- 2026-08-05 14:45 UTC+7 -->
