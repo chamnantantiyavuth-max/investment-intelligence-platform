@@ -10,9 +10,12 @@
 
 3. **Vault fd-register gap fixed.** FD-76 (Apple leadership-transition, 7 Aug morning session) was claimed synced but was NOT in the vault fd-register — backfilled with [BACKFILLED] marker + FD-77 row added; timestamp updated.
 
+4. **WEEKLY RADAR AUTO-SCAN LIVE (Founder A, FD #78).** Founder answered the radar-execution question (monitor vs on-demand): **A — weekly auto-scan via cron, on-demand retained for special situations.** Named-FD cron `8ba233e88015` "IIP Weekly Radar Scan" created (Mon 08:00 UTC+7, deliver local, web+file+terminal, discovery-only per FD #75 → 0–3 Task Idea Cards + Radar Digest to `kanban/digests/`). **Validation run executed same day (round-3 scan):** ORG-2026-0012 (gold +7.7%/4 sessions vs cycle-high real yields + risk-on + Hormuz de-escalation — driver-rotation vs 0008) + ORG-2026-0013 (silver +11% week compresses ratio toward ~65:1 median; COMEX/lease-rate watch items unverified) + digest with honest data gaps (CME IP-blocked, lease rates no free source, LBMA July unpublished); card-integrity self-fix committed (`d45dc1f`). Governance encoded: FOUNDERS-DECISIONS item 94, ROLE-REGISTRY amendment chain, role 11 PRINCIPAL.md Authority, DAILY-WEEKLY-WORKFLOW cadence exceptions, PROJECT_STATE (c4), vault fd-register FD-78, MEM-IIP-051, native memory. **Note:** the cards+digest were swept into the concurrent sibling session's UI commit `948c622` (its `git add -A`) — content intact, attribution cosmetic; left as-is (no history rewrite without approval).
+
 ## FDs recorded this session
 
 - **FD #77 (item 93)** — Silver Valuation Anchor CORRECTED on Synchronized Fixing Data (Option A, Founder gate): dated §23.9 correction note published; originals preserved + CORRECTIONS-RECORD; library = 18. Repo FOUNDERS-DECISIONS + PROJECT_STATE + vault fd-register (FD-76 backfill + FD-77).
+- **FD #78 (item 94)** — Weekly Radar Auto-Scan AUTHORIZED (Option A + on-demand retained): cron `8ba233e88015` live (Mon 08:00 UTC+7); validation run filed ORG-2026-0012/0013 + digest; contracts amended; on-demand RADAR-#### mandates retained. Repo FOUNDERS-DECISIONS + PROJECT_STATE + vault fd-register + _Hermes-Memory.
 
 ## Artifacts
 
