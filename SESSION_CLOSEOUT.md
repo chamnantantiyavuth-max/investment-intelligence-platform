@@ -45,4 +45,19 @@ Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, UI-4/A-0
 - Founder: "IPM should use source from IIP. If not, what's the point build IIP?" → **Option A approved — IPM-FD-003 (standing research input)**: IPM Constitution v0.2 (§1/§6/§8), letter templates + "IIP reports considered", AGENTS.md, IPM fd-register row; IIP FD #70 (register item 86) + PROJECT_STATE WP3 note; diagram + PDF refreshed (emerald standing-flow arrow, v0.2 subtitle, 194 commits / 86 FDs). Commits: IPM `98f21fb` · IIP `b37d67b`.
 - Closeout re-check: FDs recorded ✅ (IPM-FD-003 + FD #70) · PROJECT_STATE ✅ · memory capture ✅ (MEM-IPM-002 + IIP CURRENT-STATE MEM-IIP-040 + IPM CURRENT-STATE + MEMORY-MAP IPM entry) · SESSION_CLOSEOUT ✅ (this addendum) · Bible: no IIP change (IPM Constitution amended under its own authority).
 
-<!-- 2026-08-06 17:56 UTC+7 -->
+## Session 8 (7 Aug 2026, 00:01–00:58 — RADAR-001 research-execution marathon, autonomous)
+
+**Status:** COMPLETE + captured by 7 Aug 09:45 cron review (PROJECT_STATE closeout row was written at 00:58 by the session itself; this entry + memory capture added by the review).
+
+1. **RADAR-001 pilot execution finished:** ORG-2026-0008 Gold vs Real Rates PUBLISHED + CRO (`reports/gold-transmission-regime-2026-08-06.md`; audit MAJOR → re-audit → CLEARED; raw FRED levels independently reproduced; verdict: flow-dominance hypothesis consistent, not established). Pilot 3/3 complete.
+2. **RADAR-001 round 2 executed end-to-end (Founder triage A):** ORG-2026-0009 London Silver Vaults (audit CLEAN WITH MINORS → 5/5 corrections → PUBLISHED + CRO; vault rebuild materially weakens visible-inventory depletion proxy; available-stock normalization unresolved) · ORG-2026-0010 Apple Services Margin (audit #1 MAJOR chronology defect → 7/7 corrections → re-audit CLEARED → PUBLISHED + CRO; Q3 FY26 GM 75.62% substantiated; dissent source-cleared; 0011 share-count FOLDED IN). **6/6 radar cards → published reports, all with CRO companions. Library = 14 published.**
+3. **⚠ Closeout gap:** session closed 00:58 WITHOUT `git push` — 74 commits (311586d..HEAD) local-only. FIRST decision at next session: push + verify.
+
+## Recommended next action
+
+1. **(Decision) Push 74 commits** — `git push origin main` + `git ls-remote origin main` == HEAD.
+2. **IPM Week 1 letter** (profile `ipm`, IPM-FD-003 test — must cite published IIP reports).
+3. **Weekly Intelligence Letter #2** (research-org cadence).
+4. **Radar round 3** on request.
+
+<!-- 2026-08-07 09:55 UTC+7 -->

@@ -29,10 +29,11 @@
 | Python tests | 311/311 (26 CS pipeline locked + 285 API/other locked+suite; 140 pre-existing locked: 90 logic + 42 real-data-api + 8 org-workflow) | 2026-08-05 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-06 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-06 |
-| Commits | 253 on `main` (HEAD `5dc8b59` — RADAR-001 pilot + round 2 complete: 6/6 radar cards published) | 2026-08-07 |
+| Commits | 254 on `main` (HEAD `fca47eb` — RADAR-001 pilot + round 2 complete: 6/6 radar cards published; closeout commit) | 2026-08-07 |
+| Git push state | ⚠️ **74 commits AHEAD of origin/main (unpushed)** — last push `311586d` (6 Aug 12:31); all FD #58–72 + reconstitution + RADAR-001 work is local-only. Decision required (see Next allowed action). | 2026-08-07 |
 | FDs approved | #1–44 + FD-CIW-001..016 + FD #45..#72 (88 total) | 2026-08-06 |
 | closeout_status | **completed** — closed 6 Aug 2026 (WP2+WP3 session) + post-closeout work same day: FD #70 (IPM standing input) + FD #71 (radar layer live, role 11 installed, RADAR-001 pilot, 3 cards triaged) + Weekly Intelligence Letter #1 PUBLISHED (gate A) + FD #72 (blog design approved as-is); next = radar research execution (0006 Silver first) → IPM Week 1 letter → Weekly Intelligence Letter #2 | 2026-08-06 |
-| closeout_status | **completed** — closed 7 Aug 2026 (overnight radar research-execution marathon): RADAR-001 pilot COMPLETE (0006/0007/0008 published, all + CRO companions) + RADAR-001 round 2 COMPLETE (0009 London vaults / 0010 Services margin published, 0011 folded into 0010) — 6/6 radar cards → published reports; audit chain: 0008 MAJOR→CLEARED, 0010 MAJOR→CLEARED, 0009 CLEAN WITH MINORS; 88 FDs; library = 12 published; skill pitfalls updated (correction-marker leak; placeholder ×3). **Next: IPM Week 1 letter (IPM-FD-003 test) → Weekly Letter #2 → radar round 3 on request** | 2026-08-07 |
+| closeout_status | **completed** — closed 7 Aug 2026 (overnight radar research-execution marathon): RADAR-001 pilot COMPLETE (0006/0007/0008 published, all + CRO companions) + RADAR-001 round 2 COMPLETE (0009 London vaults / 0010 Services margin published, 0011 folded into 0010) — 6/6 radar cards → published reports; audit chain: 0008 MAJOR→CLEARED, 0010 MAJOR→CLEARED, 0009 CLEAN WITH MINORS; 88 FDs; library = 14 published; skill pitfalls updated (correction-marker leak; placeholder ×3). **Next: IPM Week 1 letter (IPM-FD-003 test) → Weekly Letter #2 → radar round 3 on request** | 2026-08-07 |
 
 > Stale mirrors to update together: `SESSION_CLOSEOUT.md`, `AGENTS.md` checkpoints, `README.md`, `project-definition/README.md`, vault `fd-register.md`. Audit/council reports live in `evidence/`.
 
@@ -48,6 +49,7 @@
 
 **RECONSTITUTION (FD #63–69, 6 Aug 2026):** WP1 (role amendments) COMPLETE · **WP2 (Apple pilot RM-2026-0001) COMPLETE + PUBLISHED (FD #69)** · **WP3 (IPM foundation) COMPLETE** — all three execution tracks done.
 Next in order:
+(0) **PUSH 74 commits to origin/main — DECISION REQUIRED (found by 7 Aug 09:45 cron review):** all FD #58–72 + reconstitution + RADAR-001 work (incl. Apple moat + 6 radar reports) is local-only since last push `311586d` (6 Aug 12:31). Overnight radar marathon closed without pushing. Recommend: approve push at next session start (`git push origin main`), then re-verify `git ls-remote origin main` == HEAD.
 (a) **Blog design review — APPROVED as-is (FD #72, 6 Aug)** — no code changes; D1–D4 cosmetic backlog.
 (b) **Radar research execution (from RADAR-001 cards) — ALL 3 COMPLETE + PUBLISHED:** 0006 Silver deficit challenge (`reports/silver-deficit-challenge-2026-08-06.md` + CRO) · 0007 Apple buyback mask test (`reports/apple-buyback-mask-test-2026-08-06.md` + CRO; ASR timing = leading hypothesis, deceleration unresolved) · **0008 Gold vs Real Rates (`reports/gold-transmission-regime-2026-08-06.md` + CRO; audit chain MAJOR→re-audit→CLEARED; raw FRED levels independently reproduced; verdict: flow-dominance hypothesis consistent, not established; permanent break not established)** — **RADAR-001 pilot research execution COMPLETE (3/3 cards → published reports, all with CRO dissent companions).** Pilot review: radar→triage→research→publish loop proven end-to-end ×3; next radar scanning pass on request.
 (c) **Research-org cadence:** Weekly Intelligence Letter #1 PUBLISHED (6 Aug) — next letter in ~1 week; on-demand deep research per future mandates.
@@ -84,4 +86,4 @@ Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, industry
 | audit_verdict | **RM-2026-0001 audit chain CLEANED** — audit #1 MAJOR FINDINGS (11 corrections) → CORRECTIONS-RECORD §23.9 → re-audit (RA-1..RA-4) → final targeted confirmation **CLEARED FOR SYNTHESIS + FOUNDER REVIEW** (arithmetic re-performed, zero regressions). Prior: Pre-Launch Close Beta Audit READY WITH ACCEPTED RISKS (3 Aug) |
 | lifecycle_sync | PROJECT_STATE ✅ (this session) · SESSION_CLOSEOUT ✅ (this session) · AGENTS.md ✅ (unchanged this session — WP2 artifacts not checkpoints; FD #69 noted in commit) · vault fd-register ✅ (FD-69 row) · _Hermes-Memory ✅ (session capture pending this closeout) · FOUNDERS-DECISIONS ✅ (item 85) |
 
-<!-- 2026-08-06 17:55 UTC+7 -->
+<!-- 2026-08-07 09:50 UTC+7 (cron review: metrics sync + push decision item) -->
