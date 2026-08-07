@@ -46,6 +46,9 @@ export interface OrgCard {
   blocked_reason: string | null
   next_action: string
   last_updated: string
+  /** Radar-produced cards carry the scout's observation (RADAR-#### pattern). */
+  radar_observation?: string
+  radar_source?: string
   active_holds: OrgHold[]
   holds: OrgHold[]
   _path: string

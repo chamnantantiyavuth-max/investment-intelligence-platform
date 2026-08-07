@@ -6,6 +6,7 @@ import LoginPage from "@/pages/LoginPage"
 import DashboardPage from "@/pages/DashboardPage"
 import ResearchDeskPage from "@/pages/ResearchDeskPage"
 import KanbanBoardPage from "@/pages/KanbanBoardPage"
+import OrgOfficePage from "@/pages/OrgOfficePage"
 import LibraryPage from "@/pages/LibraryPage"
 import ReportArticlePage from "@/pages/ReportArticlePage"
 import ResearchArtifactDetailPage from "@/pages/ResearchArtifactDetailPage"
@@ -46,6 +47,7 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="research" element={<ResearchDeskPage />} />
             <Route path="kanban" element={<KanbanBoardPage />} />
+            <Route path="org-office" element={<OrgOfficePage />} />
             <Route path="library" element={<LibraryPage />} />
             <Route path="library/:slug" element={<ReportArticlePage />} />
             <Route path="research/*" element={<ResearchArtifactDetailPage />} />

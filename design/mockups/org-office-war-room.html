@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Org Office — War Room · Investment Intelligence Platform</title>
+<style>
+  :root{
+    --paper:#FAFAF7; --panel:#F1F1EA; --raised:#FFFFFF;
+    --ink:#1A1C1E; --ink2:#5A5E63; --ink3:#7A7F86;
+    --rule:#DDDED6; --accent:#1F4E79;
+    --pos:#2E7D5B; --neg:#A34A4A; --warn:#8A6D1F;
+    --serif:Georgia,"Times New Roman",serif;
+    --mono:"JetBrains Mono",Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font:14px/1.5 Inter,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1440px;margin:0 auto;padding:0 32px 64px;}
+
+  /* ── Masthead ── */
+  .masthead{display:flex;align-items:baseline;justify-content:space-between;padding:20px 0 14px;border-bottom:2px solid var(--ink);}
+  .brand{font-family:var(--serif);font-size:1.35rem;font-weight:700;letter-spacing:.01em;}
+  .brand em{font-style:normal;color:var(--accent);}
+  nav{display:flex;gap:22px;}
+  nav a{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink2);text-decoration:none;}
+  nav a.active,nav a:hover{color:var(--ink);}
+  .stamp{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink3);text-transform:uppercase;}
+
+  /* ── Page header ── */
+  .pagehead{padding:34px 0 8px;border-bottom:1px solid var(--rule);}
+  .kicker{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);}
+  h1{font-family:var(--serif);font-size:2.1rem;font-weight:700;margin:8px 0 10px;letter-spacing:-.01em;}
+  .question{font-size:15.5px;color:var(--ink2);max-width:860px;}
+  .sample{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--warn);text-transform:uppercase;}
+
+  /* ── Org pulse strip (dense, borderless rows) ── */
+  .pulse{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--rule);}
+  .pcell{padding:18px 20px 16px 0;}
+  .pcell + .pcell{border-left:1px solid var(--rule);padding-left:20px;}
+  .plabel{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
+  .pval{font-family:var(--mono);font-size:1.45rem;margin-top:4px;letter-spacing:-.01em;}
+  .pval small{font-size:.78rem;color:var(--ink3);letter-spacing:0;}
+  .pnote{font-size:11.5px;color:var(--ink2);margin-top:3px;}
+
+  /* ── Section ── */
+  .sec{margin-top:40px;}
+  .sec h2{font-family:var(--serif);font-size:1.15rem;font-weight:700;margin-bottom:6px;}
+  .secsub{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;}
+  .secsub b{color:var(--accent);font-weight:600;}
+
+  /* ── Desk grid ── */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--rule);border-left:1px solid var(--rule);}
+  .desk{background:var(--paper);padding:18px 20px 16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+  .desk.dim{background:var(--panel);}
+  .deskhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:10px;}
+  .role{font-family:var(--serif);font-size:1.02rem;font-weight:700;}
+  .role small{display:block;font:10.5px var(--mono);color:var(--ink3);letter-spacing:.06em;margin-top:2px;text-transform:none;}
+  .count{font-family:var(--mono);font-size:11px;color:var(--ink3);white-space:nowrap;}
+  .count b{color:var(--accent);font-weight:600;font-size:12.5px;}
+  .load{display:flex;gap:6px;margin:10px 0 8px;}
+  .load span{font:10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--panel);color:var(--ink2);}
+  .load span.warn{background:rgba(138,109,31,.12);color:var(--warn);}
+  .load span.ok{background:rgba(46,125,91,.10);color:var(--pos);}
+
+  .cards{display:flex;flex-direction:column;}
+  .cardrow{padding:8px 0;border-bottom:1px solid var(--rule);}
+  .cardrow:last-child{border-bottom:0;}
+  .ctitle{font-size:13px;font-weight:500;line-height:1.4;}
+  .cmeta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;}
+  .col{font:10px var(--mono);letter-spacing:.06em;color:var(--accent);text-transform:uppercase;}
+  .tag{font:9.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:2px;background:var(--panel);color:var(--ink2);}
+  .tag.m{color:var(--warn);}
+  .tag.pub{color:var(--pos);background:rgba(46,125,91,.10);}
+  .tag.hold{color:var(--neg);background:rgba(163,74,74,.08);}
+  .cid{font:9.5px var(--mono);color:var(--ink3);}
+
+  .empty{font-size:12.5px;color:var(--ink3);padding:8px 0;}
+  .empty b{color:var(--ink2);font-weight:600;}
+  .duty{font-size:11.5px;color:var(--ink2);margin-top:3px;}
+
+  .out{border-top:1px solid var(--rule);margin-top:12px;padding-top:10px;}
+  .outh{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:6px;}
+  .outrow{font-size:12px;color:var(--ink);padding:3px 0;display:flex;gap:8px;align-items:baseline;}
+  .outrow .t{font-family:var(--mono);color:var(--accent);font-size:10.5px;}
+
+  /* ── Holds strip ── */
+  .holds{display:flex;gap:14px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:14px;}
+  .holdchip{font:11px var(--mono);letter-spacing:.05em;background:rgba(163,74,74,.07);color:var(--neg);padding:5px 12px;border-radius:2px;}
+
+  /* ── Footer ── */
+  .foot{margin-top:56px;border-top:2px solid var(--ink);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .foot span{font:10.5px var(--mono);color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;}
+  .src{font:10px var(--mono);color:var(--ink3);margin-top:8px;}
+
+  @media (max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr);} .pulse{grid-template-columns:repeat(3,1fr);} .pcell:nth-child(4){border-left:0;} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px 48px;}
+    nav{display:none;}
+    .grid{grid-template-columns:1fr;}
+    .pulse{grid-template-columns:1fr 1fr;}
+    .pcell + .pcell{border-left:0;padding-left:0;}
+    h1{font-size:1.6rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <div class="brand">Investment Intelligence <em>Platform</em></div>
+    <nav>
+      <a href="#">Library</a>
+      <a href="#">Briefing</a>
+      <a href="#">Research Desk</a>
+      <a href="#">Kanban Board</a>
+      <a href="#" class="active">Org Office</a>
+    </nav>
+    <div class="stamp">advisory · portfolio-blind</div>
+  </header>
+
+  <!-- Page header -->
+  <div class="pagehead">
+    <div class="kicker">Org Office · War Room</div>
+    <h1>The research organization, at a glance</h1>
+    <div class="question">Who is working on what, where each item stands, and what needs your attention — every role in one room.</div>
+    <span class="sample">Sample data — not investment advice</span>
+  </div>
+
+  <!-- Org pulse -->
+  <div class="pulse">
+    <div class="pcell"><div class="plabel">Active mandates</div><div class="pval">14</div><div class="pnote">published · in review · monitoring</div></div>
+    <div class="pcell"><div class="plabel">In progress</div><div class="pval">2</div><div class="pnote">cross-review · validation</div></div>
+    <div class="pcell"><div class="plabel">Awaiting you</div><div class="pval">1</div><div class="pnote">founder review</div></div>
+    <div class="pcell"><div class="plabel">Published notes</div><div class="pval">14</div><div class="pnote">library · + CRO companions</div></div>
+    <div class="pcell"><div class="plabel">Active holds</div><div class="pval">0</div><div class="pnote">no data · validation · risk holds</div></div>
+    <div class="pcell"><div class="plabel">Org pulse</div><div class="pval">Healthy</div><div class="pnote">wip within limits · no blockers</div></div>
+  </div>
+
+  <!-- Desks -->
+  <div class="sec">
+    <h2>Role desks</h2>
+    <div class="secsub">11 principals · each desk shows current work + recent output · <b>wip limit: 1 material item per desk</b></div>
+    <div class="grid">
+
+      <!-- 01 CoS -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Chief of Staff<small>org-cos · triage &amp; routing</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span><span>inbox open</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Inbox triage — no items awaiting assignment</div><div class="cmeta"><span class="col">Inbox</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">WIL-01</span> Weekly Intelligence Letter #1 — published</div>
+        </div>
+      </div>
+
+      <!-- 02 IC Secretary -->
+      <div class="desk dim">
+        <div class="deskhead"><div class="role">IC Secretary<small>org-ic-secretary · records &amp; synthesis</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Decision &amp; transition register — current</div><div class="cmeta"><span class="col">Closed</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">WIL-01</span> Weekly Intelligence Letter synthesis</div>
+        </div>
+      </div>
+
+      <!-- 03 Commodity -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Commodity Analyst<small>org-commodity-analyst · products &amp; physicals</small></div><div class="count"><b>1</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Radar: London silver vault holdings rise to series high</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">published</span><span class="cid">0009</span></div></div>
+          <div class="cardrow"><div class="ctitle">Radar: Silver deficit changes character</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">published</span><span class="cid">0006</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">SLV</span> Silver deficit challenge + CRO companion</div>
+          <div class="outrow"><span class="t">LVR</span> London silver vaults watch + CRO companion</div>
+        </div>
+      </div>
+
+      <!-- 04 Macro -->
+      <div class="desk dim">
+        <div class="deskhead"><div class="role">Macro Strategist<small>org-macro-strategist · regime &amp; transmission</small></div><div class="count"><b>1</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Radar: Hawkish Fed, resilient gold — transmission review</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">published</span><span class="cid">0008</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">GTR</span> Gold vs real rates regime note + CRO companion</div>
+        </div>
+      </div>
+
+      <!-- 05 Equity -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Equity Alpha Analyst<small>org-equity-analyst · companies &amp; moats</small></div><div class="count"><b>1</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Radar: Apple Services margin now directly testable from disclosed lines</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">published</span><span class="cid">0010</span></div></div>
+          <div class="cardrow"><div class="ctitle">Apple Leadership Transition — follow-up note</div><div class="cmeta"><span class="col">Founder Review</span><span class="tag m">M2</span><span class="tag">awaiting you</span><span class="cid">—</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">AAPL</span> Moat durability essay + opposing thesis</div>
+          <div class="outrow"><span class="t">ABM</span> Buyback mask test + CRO companion</div>
+          <div class="outrow"><span class="t">SMV</span> Services margin verification + CRO companion</div>
+        </div>
+      </div>
+
+      <!-- 06 Options -->
+      <div class="desk dim">
+        <div class="deskhead"><div class="role">Options Strategist<small>org-options-strategist · structure &amp; vol</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span>standby</span></div>
+        <div class="empty"><b>No active mandate.</b><div class="duty">Options work begins when a mandate references instrument structure or volatility.</div></div>
+      </div>
+
+      <!-- 07 CRO -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Chief Risk Officer<small>org-cro · independent challenge</small></div><div class="count"><b>1</b> active</div></div>
+        <div class="load"><span class="ok">wip ok</span><span>sol medium</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Opposing theses — all published companions current</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">6 published</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">6×</span> Opposing essays for every published note</div>
+        </div>
+      </div>
+
+      <!-- 08 Quant -->
+      <div class="desk dim">
+        <div class="deskhead"><div class="role">Quant Validator<small>org-quant-validator · reproduction</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span>standby</span></div>
+        <div class="empty"><b>No active validation.</b><div class="duty">Arithmetic re-runs are dispatched per material item.</div></div>
+      </div>
+
+      <!-- 09 Data Steward -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Data Steward<small>org-data-steward · provenance &amp; freshness</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span>standby</span></div>
+        <div class="empty"><b>No open data issues.</b><div class="duty">Point-in-time checks run on every evidence build.</div></div>
+      </div>
+
+      <!-- 10 Auditor -->
+      <div class="desk dim">
+        <div class="deskhead"><div class="role">Internal Auditor<small>org-auditor · evidence integrity</small></div><div class="count"><b>0</b> active</div></div>
+        <div class="load"><span>standby</span><span>sol medium</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Audit chain — last 3 items CLEARED</div><div class="cmeta"><span class="col">Closed</span><span class="tag pub">clean</span></div></div>
+        </div>
+      </div>
+
+      <!-- 11 Radar Scout -->
+      <div class="desk">
+        <div class="deskhead"><div class="role">Radar Scout<small>org-radar-scout · discovery</small></div><div class="count"><b>1</b> active</div></div>
+        <div class="load"><span class="warn">scanning</span><span>no cron</span></div>
+        <div class="cards">
+          <div class="cardrow"><div class="ctitle">Round-2 watch items — tested published confirm/break conditions</div><div class="cmeta"><span class="col">Monitoring</span><span class="tag pub">6 cards → 6 published</span></div></div>
+        </div>
+        <div class="out"><div class="outh">Recent output</div>
+          <div class="outrow"><span class="t">RADAR-001</span> 6 idea cards → all researched + published</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Holds -->
+  <div class="sec">
+    <h2>Holds &amp; exceptions</h2>
+    <div class="secsub">nothing silently blocked</div>
+    <div class="holds">
+      <span class="holdchip">No active holds</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <span>Advisory only — no buy, sell, or execution</span>
+    <span>Portfolio-blind · no positions, no capital data</span>
+    <span>Data: org workflow · updated 2026-08-07</span>
+  </footer>
+  <div class="src">source: org-workflow kanban + research-artifact registry · read-only · git is the single writer · sample data for design review</div>
+
+</div>
+<!-- 2026-08-07 11:50 UTC+7 -->
+</body>
+</html>

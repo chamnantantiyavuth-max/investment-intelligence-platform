@@ -5,6 +5,7 @@ const NAV = [
   { to: "/", label: "Briefing", end: true },
   { to: "/research", label: "Research Desk" },
   { to: "/kanban", label: "Kanban Board" },
+  { to: "/org-office", label: "Org Office" },
   { to: "/am-queue", label: "Alpha Momentum" },
   { to: "/cs-radar", label: "Close System" },
   { to: "/fundamental", label: "Fundamental" },
