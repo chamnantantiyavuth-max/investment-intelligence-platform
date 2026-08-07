@@ -107,7 +107,8 @@ export default function ReportArticlePage() {
   }
 
   return (
-    <div className="mx-auto max-w-[820px]">
+    <div className="flex min-h-screen flex-col bg-bg-page">
+      <div className="mx-auto w-full max-w-[820px] flex-1 px-6 py-6">
       <Link to="/library" className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Library
       </Link>
@@ -150,6 +151,11 @@ export default function ReportArticlePage() {
             </Link>
           )}
         </div>
+      </footer>
+      </div>
+      {/* ── Magazine footer (standalone shell — FD #84) ── */}
+      <footer className="mx-auto w-full max-w-[1120px] border-t border-ink px-6 py-5 text-[10px] uppercase tracking-[0.12em] text-ink-3">
+        Advisory only · Portfolio-blind · Point-in-time data (FD #58)
       </footer>
     </div>
   );

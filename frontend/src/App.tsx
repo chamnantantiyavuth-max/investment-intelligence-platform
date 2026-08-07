@@ -48,8 +48,6 @@ export default function App() {
             <Route path="research" element={<ResearchDeskPage />} />
             <Route path="kanban" element={<KanbanBoardPage />} />
             <Route path="org-office" element={<OrgOfficePage />} />
-            <Route path="library" element={<LibraryPage />} />
-            <Route path="library/:slug" element={<ReportArticlePage />} />
             <Route path="research/*" element={<ResearchArtifactDetailPage />} />
             <Route path="am-queue" element={<AMQueuePage />} />
             <Route path="am-screener" element={<AMScreenerPage />} />
@@ -63,6 +61,9 @@ export default function App() {
             <Route path="weak-signals" element={<WeakSignalInboxPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
+          {/* Research blog — standalone magazine shell (FD #84: no legacy app masthead/footer). */}
+          <Route path="library" element={<LibraryPage />} />
+          <Route path="library/:slug" element={<ReportArticlePage />} />
         </Routes>
       </AuthGate>
     </BrowserRouter>

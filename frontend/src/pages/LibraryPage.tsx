@@ -115,7 +115,8 @@ export default function LibraryPage() {
     );
 
   return (
-    <div className="mx-auto max-w-[1120px]">
+    <div className="flex min-h-screen flex-col bg-bg-page">
+      <div className="mx-auto w-full max-w-[1120px] flex-1 px-6 py-6">
       {/* ── Minimal masthead ── */}
       <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-ink py-4">
         <span className="font-display text-2xl font-bold tracking-tight">
@@ -266,6 +267,14 @@ export default function LibraryPage() {
           </button>
         ))}
       </section>
+
+      {/* ── Magazine footer (standalone shell — FD #84) ── */}
+      <footer className="mt-12 flex flex-wrap items-baseline justify-between gap-2 border-t border-ink py-5 text-[10px] uppercase tracking-[0.12em] text-ink-3">
+        <span>Research Intelligence</span>
+        <span>Advisory only · Portfolio-blind · Point-in-time data (FD #58)</span>
+        <span className="font-mono normal-case tracking-normal">{published.length} published</span>
+      </footer>
+      </div>
     </div>
   );
 }
