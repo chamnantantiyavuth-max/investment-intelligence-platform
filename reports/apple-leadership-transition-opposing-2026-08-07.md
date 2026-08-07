@@ -4,8 +4,8 @@ type: company
 subject: AAPL
 date: 2026-08-07
 author: "CRO (RM-2026-0001 evidence upgrade)"
-status: draft
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A — main + CRO companion)
 summary: "The hostile alternative thesis: Apple's record scale is becoming an incumbency load just as the economic control point moves from hardware and app distribution toward AI-mediated intent. A hardware-first CEO, a shadowing Executive Chairman, uneven Siri AI availability, and guided margin compression together make the main note's 'continuity-preserving' verdict too reassuring — the CRO argues continuity itself may increase adaptation risk."
 ---
 

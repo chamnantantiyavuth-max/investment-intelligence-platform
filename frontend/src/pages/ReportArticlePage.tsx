@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getReport, getReports, type ReportDetail, type ReportMeta } from "@/api/reportClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
@@ -98,6 +99,7 @@ export default function ReportArticlePage() {
 
       <article className="mt-8 space-y-0 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-rule [&_h2]:pb-2 [&_h2]:font-display [&_h2]:text-[20px] [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:mt-3 [&_p]:text-[14.5px] [&_p]:leading-[1.75] [&_p]:text-ink-1 [&_ul]:mt-3 [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:mt-3 [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:text-[14px] [&_li]:leading-relaxed [&_li]:text-ink-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:my-6 [&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:font-display [&_blockquote]:text-[16px] [&_blockquote]:italic [&_blockquote]:leading-relaxed [&_blockquote]:text-ink-2">
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             table: ({ children }) => (
               <div className="my-6 overflow-x-auto">

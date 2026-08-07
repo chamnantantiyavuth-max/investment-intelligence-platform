@@ -4,8 +4,8 @@ type: company
 subject: "AAPL"
 date: 2026-08-07
 author: "Equity Research (RM-2026-0001 evidence upgrade, 2026-08-07)"
-status: draft
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A — main + CRO companion)
 summary: "Follow-up to the Apple moat report (2026-08-06): Tim Cook announced on 30 Apr 2026 that he will step down as CEO — John Ternus (SVP Hardware Engineering) becomes CEO ~1 Sep 2026 and Cook moves to Executive Chairman; the 30 Jul 2026 call was Cook's final earnings call. The published moat report omits this succession from its analysis. This note adds the succession, first-disclosed scale figures (installed base 2.5B+ devices, 1.5B+ paid subscriptions), Q1/Q2 FY26 filed financials, IDC/Counterpoint market share, and September-quarter guidance — and re-tests the moat report's change-conditions. Verdict: the succession is continuity-preserving on disclosed evidence (Cook stays as Executive Chairman; Ternus commits to the capital-return and financial discipline) but it is a genuine governance-event addition, not a no-op — and the report's own monitoring list now has an earlier, observable test (how the Ternus-era capital-allocation and AI-investment posture diverges from Cook-era). CRO dissent published as companion."
 ---
 
