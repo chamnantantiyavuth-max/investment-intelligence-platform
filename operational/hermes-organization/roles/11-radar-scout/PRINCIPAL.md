@@ -1,6 +1,6 @@
 # Role 11 — Radar Scout / Opportunity Monitor (Principal)
 
-**Status:** Approved operating role — FD #71 (2026-08-06, scout/radar layer — Option B, dedicated role, long-term). Research-intake role: discovery only, never analysis. **AMENDED 2026-08-07 (FD #75) — FD #74 momentum-screen mandate REVERSED: momentum screening removed from radar scope (Founder decision — focus fundamental/moat/business evidence; Founder reviews charts directly). Radar returns to discovery-only scanning per FD #71.**
+**Status:** Approved operating role — FD #71 (2026-08-06, scout/radar layer — Option B, dedicated role, long-term). Research-intake role: discovery only, never analysis. **AMENDED 2026-08-07 (FD #75) — FD #74 momentum-screen mandate REVERSED: momentum screening removed from radar scope (Founder decision — focus fundamental/moat/business evidence; Founder reviews charts directly). Radar returns to discovery-only scanning per FD #71.** **AMENDED 2026-08-07 (FD #81) — EDGAR FILINGS SCAN ADDED: SEC EDGAR submissions feed for the FO-universe equity watchlist (AAPL/MSFT/NVDA/GOOGL/AMZN/META/TSLA/JNJ) is a standing scan area (weekly full pass + mid-week delta); MSFT = CIW pilot company — MSFT filings noted in digest only, NEVER a radar card (CIW paused, FD #44 discipline).**
 **Hermes profile:** `org-radar-scout`
 **Authority:** Subordinate to the IIP Constitution, Founder's Decisions, and the Operating Standard + Authority Matrix. Portfolio-blind (Constitution §23.8.1). **Cron: authorized by FD #78 (2026-08-07) + FD #80 (2026-08-07)** — weekly Radar Scan job `8ba233e88015` runs every Monday 08:00 UTC+7 (deliver=local, digest → `kanban/digests/`, cards → kanban Inbox); mid-week Radar Watch job `cda817d17236` runs every Thursday 08:00 UTC+7 (deliver=local, lighter pass — 0–2 cards max, short mid-week watch note → `kanban/digests/`, retries data-gapped watch items from the latest Monday digest, reads it for continuity). On-demand session/ad-hoc scanning mandates (RADAR-#### pattern) remain available to the Founder for special situations — the scheduled scans do not replace them. No other cron/automation without a separate named FD (FD-CIW-005 discipline).
 
@@ -33,6 +33,8 @@ Continuously monitor massive public data — markets, commodities, macro, sector
 ## Permitted Evidence
 
 Public data only: market prices/volumes, indices, commodity quotes, macro releases, filings, news, events, regulatory actions, cross-asset relationships. Never portfolio data.
+
+**Standing equity watchlist (EDGAR filings scan, FD #81):** FO-universe 8 CIKs — AAPL 0000320193 · MSFT 0000789019 · NVDA 0001045810 · GOOGL 0001652044 · AMZN 0001018724 · META 0001326801 · TSLA 0001318605 · JNJ 0000200406. Screen for material/surprise filings (8-K material items, 10-Q/10-K, DEF 14A, SC 13D/G activist, 13F-HR season, S-1/S-3/424B, Form 4 clusters, 8-K clusters); routine scheduled filings are not cards. **MSFT boundary: CIW pilot company — digest note only, never a card (CIW paused, FD #44).**
 
 ## Input / Output Contract
 

@@ -57,7 +57,8 @@
 - **Silver §23.9 correction PUBLISHED (FD #77, gate A)** — `reports/silver-valuation-anchor-correction-2026-08-07.md` (`39717e7`): synchronized LBMA fixes (4–6 Aug, ratio ~69:1 / silver ~$62) supersede the 88:1/low-$20s anchor; originals preserved + CORRECTIONS-RECORD SILVER-CORR-001; library 18. Vault fd-register FD-76 backfill gap fixed.
 - **Weekly radar auto-scan cron LIVE (FD #78, gate A)** — job `8ba233e88015` (Mon 08:00 UTC+7): validation round-3 scan filed ORG-2026-0012/0013 + digest (`d45dc1f`).
 - **Mid-week radar watch cron LIVE (FD #80, gate A — radar gap (a))** — job `cda817d17236` (Thu 08:00 UTC+7): validation run caught the Hormuz reversal (context for 0012) + resolved the COMEX data gap (registered 99.8 Moz, +6.8 Moz/30d) → ORG-2026-0014 + mid-week note (`0503dd1`). **Number collision:** sibling claimed FD #79 (item 95) first — this workstream is authoritatively FD #80 (item 96); commit message "FD #79 cron" left as history per §23.9.
-- **Queued (each needs its own named FD):** (b) EDGAR/filings scan into the cron, (c) feedback loop from research outcomes into the radar watchlist.
-- FDs total: **96** (#1–44 + CIW 16 + #45–80). Cards awaiting CoS triage: ORG-2026-0012/0013/0014.
+- **EDGAR filings scan IN the radar cron (FD #81, gate A — radar gap (b))** — SEC EDGAR submissions feed = standing scan area for the FO-universe equity watchlist (8 CIKs verified vs company_tickers.json); both cron prompts extended (Monday STEP 1.5 full pass + Thursday delta; routine filings ≠ cards; MSFT = CIW boundary — digest note only, never a card). Mechanics verified + first pass executed manually → **ORG-2026-0015** (JNJ 8-K cluster: proposed ovarian-talc-litigation resolution 7/28 + Firefly Bio acquisition 7/29 + officer change & notes offering 8/4); 13F season context noted (JNJ/AMZN 13F-HR 8/6, Q2 deadline 14 Aug).
+- **Queued (needs its own named FD):** (c) feedback loop from research outcomes into the radar watchlist.
+- FDs total: **97** (#1–44 + CIW 16 + #45–81). Cards awaiting CoS triage: ORG-2026-0012/0013/0014/0015.
 
 <!-- 2026-08-07 16:25 UTC+7 (combined closeout: sibling Org Office + WIL #2/radar workstreams) -->
