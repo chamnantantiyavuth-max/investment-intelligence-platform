@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getOrgQueue, getResearchArtifacts, type OrgCard, type ResearchArtifact } from "@/api/orgClient";
@@ -20,12 +20,10 @@ import auditorSprite from "@/assets/agents/org-auditor.png";
 import radarScoutSprite from "@/assets/agents/org-radar-scout.png";
 
 /**
- * Org Office — Virtual Office (Maple Story style sprites).
- * Role-centric view over the SAME D1 endpoints as /kanban + /research:
- *   - /org-queue          → cards grouped by principal_owner → 11 role desks
- *   - /research-artifacts → card→artifact links (linkArtifact)
- *   - /reports            → published notes per role (author match, display only)
- * Read-only operational tracking — card state never equals domain state.
+ * Org Office — Virtual Office (Maple Story style sprites), drill-down layout.
+ * Compact by default: sprite + role name only → all 11 roles fit one page.
+ * Click a character to expand its desk (cards, status, recent output).
+ * Data: /org-queue + /research-artifacts + /reports (read-only, real).
  */
 
 type DeskCode =
@@ -76,7 +74,81 @@ function deskOfOwner(owner: string | null | undefined): DeskCode | null {
   return null;
 }
 
-function RoleDeskPanel({
+function loadLabelOf(cards: OrgCard[], radarCards: OrgCard[] | undefined): string {
+  const inflight = cards.filter((c) => INFLIGHT_COLUMNS.has(c.workflow_column));
+  const awaiting = cards.filter((c) => AWAITING_COLUMNS.has(c.workflow_column));
+  const active = inflight.length + awaiting.length;
+  const hasProduced = (radarCards?.length ?? 0) > 0;
+  if (hasProduced) return "produced";
+  if (active > 0) return "active";
+  if (cards.length > 0) return "wip ok";
+  return "standby";
+}
+
+function loadChipClass(label: string): string {
+  switch (label) {
+    case "active":
+      return "bg-amber-500/10 text-warning";
+    case "wip ok":
+      return "bg-emerald-500/10 text-positive";
+    case "produced":
+      return "bg-primary/10 text-primary";
+    default:
+      return "bg-bg-panel text-ink-3";
+  }
+}
+
+function DeskHeader({
+  desk,
+  expanded,
+  count,
+  label,
+  onToggle,
+}: {
+  desk: RoleDesk;
+  expanded: boolean;
+  count: number;
+  label: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      aria-controls={`desk-${desk.code}`}
+      className="group flex w-full flex-col items-center gap-1 rounded-md px-2 py-3 text-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      <div className="relative">
+        <img
+          src={desk.sprite}
+          alt={desk.name}
+          className="h-[86px] w-auto max-w-[84px] object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.04]"
+          draggable={false}
+        />
+        <div aria-hidden="true" className="absolute bottom-0 left-1/2 h-2 w-14 -translate-x-1/2 rounded-[50%] bg-ink/15" />
+        {count > 0 && (
+          <span className="absolute -right-2 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 font-mono text-[10px] font-semibold text-background">
+            {count}
+          </span>
+        )}
+      </div>
+      <span className="font-display text-[13px] font-bold leading-tight tracking-tight">{desk.name}</span>
+      <span className={`inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.08em] ${loadChipClass(label)}`}>
+        {label}
+        <svg
+          viewBox="0 0 12 12"
+          className={`h-2.5 w-2.5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        >
+          <path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    </button>
+  );
+}
+
+function DeskDetail({
   desk,
   cards,
   artifacts,
@@ -89,85 +161,25 @@ function RoleDeskPanel({
   reports: ReportMeta[];
   radarCards?: OrgCard[];
 }) {
-  const inflight = cards.filter((c) => INFLIGHT_COLUMNS.has(c.workflow_column));
-  const awaiting = cards.filter((c) => AWAITING_COLUMNS.has(c.workflow_column));
   const publishedCards = cards.filter((c) => c.workflow_column === "Published");
   const publishedReports = reports
     .filter((r) => r.status === "published" && desk.authorMatch.test(r.author))
     .slice(0, 4);
 
-  const active = inflight.length + awaiting.length;
-  const hasProduced = (radarCards?.length ?? 0) > 0;
-  const loadLabel =
-    desk.code === "org-radar-scout" && hasProduced
-      ? "produced"
-      : active > 0
-        ? "active"
-        : cards.length > 0
-          ? "wip ok"
-          : "standby";
-
   return (
-    <div className="relative border-b border-r border-rule bg-background p-4">
-      {cards.length > 0 && (
-        <span className="absolute right-3 top-3 flex h-6 min-w-6 items-center justify-center rounded-full bg-foreground px-1.5 font-mono text-[11px] font-semibold text-background">
-          {cards.length}
-        </span>
-      )}
-
-      <div className="flex h-[120px] items-end justify-center gap-2">
-        <div className="relative">
-          <img
-            src={desk.sprite}
-            alt={desk.name}
-            className="relative z-10 h-[104px] w-auto max-w-[92px] object-contain drop-shadow-sm"
-            draggable={false}
-          />
-          <div aria-hidden="true" className="absolute bottom-0 left-1/2 h-2.5 w-16 -translate-x-1/2 rounded-[50%] bg-ink/15" />
-        </div>
-        {/* monitor: card count */}
-        <div className="mb-1 flex h-[34px] w-[46px] flex-col overflow-hidden rounded-sm border border-rule bg-bg-panel">
-          <div className="flex h-5 items-center justify-center bg-foreground font-mono text-[10px] text-background">
-            {cards.length}
-          </div>
-          <div className="flex flex-1 items-center justify-center text-[8px] uppercase tracking-wide text-ink-3">
-            cards
-          </div>
-        </div>
-      </div>
-
-      <p className="mt-2 flex flex-wrap items-center gap-2">
-        <span
-          className={
-            loadLabel === "active"
-              ? "rounded-sm bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-warning"
-              : loadLabel === "wip ok"
-                ? "rounded-sm bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-positive"
-                : loadLabel === "produced"
-                  ? "rounded-sm bg-primary/10 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-primary"
-                  : "rounded-sm bg-bg-panel px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.08em] text-ink-3"
-          }
-        >
-          {loadLabel}
-        </span>
-        <span className="text-[10px] text-ink-3">{desk.duty}</span>
-      </p>
-
-      <div className="mt-2 border-t border-rule pt-2">
-        <p className="font-display text-[13px] font-bold leading-tight tracking-tight">{desk.name}</p>
-        <p className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-ink-3">{desk.code}</p>
-      </div>
+    <div id={`desk-${desk.code}`} className="border-t border-rule px-3 pb-3 pt-2">
+      <p className="text-[10px] text-ink-3">{desk.duty}</p>
 
       {cards.length === 0 && !(radarCards && radarCards.length > 0) ? (
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-3">
-          No active mandate — {desk.duty.toLowerCase()} begins on demand.
+        <p className="mt-1.5 text-[11px] leading-relaxed text-ink-3">
+          No active mandate — work begins on demand.
         </p>
       ) : (
-        <div className="mt-1 flex flex-col">
+        <div className="mt-1.5 flex flex-col">
           {cards.map((c) => {
             const target = linkArtifact(c, artifacts);
             const body = (
-              <div className="border-b border-rule py-1 last:border-b-0">
+              <div className="border-b border-rule py-1.5 last:border-b-0">
                 <p className="text-[11.5px] font-medium leading-snug text-foreground">{c.title}</p>
                 <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-[9px]">
                   <span className="font-mono uppercase tracking-[0.07em] text-primary">{c.workflow_column}</span>
@@ -218,6 +230,7 @@ function RoleDeskPanel({
 }
 
 export default function OrgOfficePage() {
+  const [expanded, setExpanded] = useState<DeskCode | null>(null);
   const queue = useQuery({ queryKey: ["org-queue"], queryFn: getOrgQueue, staleTime: 60_000 });
   const registry = useQuery({ queryKey: ["research-artifacts"], queryFn: getResearchArtifacts, staleTime: 60_000 });
   const reports = useQuery({ queryKey: ["reports"], queryFn: getReports, staleTime: 60_000 });
@@ -280,8 +293,8 @@ export default function OrgOfficePage() {
           Org workflow · operational tracking · latest card update {latest}
         </p>
         <p className="mt-1 max-w-2xl text-xs text-ink-2">
-          Who is working on what, where each item stands, and what needs your attention — every role in one room.
-          Read-only: cards move only through the research workflow, never from this screen.
+          Every role in one room. Click a character to see what they are working on — read-only, cards move only
+          through the research workflow, never from this screen.
         </p>
       </div>
 
@@ -317,18 +330,33 @@ export default function OrgOfficePage() {
         ))}
       </div>
 
-      {/* Role desks with Maple-Story sprites */}
-      <div className="grid grid-cols-1 border-t border-l border-rule md:grid-cols-2 lg:grid-cols-3">
-        {DESKS.map((d) => (
-          <RoleDeskPanel
-            key={d.code}
-            desk={d}
-            cards={byDesk.get(d.code) ?? []}
-            artifacts={artifacts}
-            reports={reportList}
-            radarCards={d.code === "org-radar-scout" ? radarProduced : undefined}
-          />
-        ))}
+      {/* Role desks — compact by default, click to drill down */}
+      <div className="grid grid-cols-2 border-t border-l border-rule sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {DESKS.map((d) => {
+          const deskCards = byDesk.get(d.code) ?? [];
+          const label = loadLabelOf(deskCards, d.code === "org-radar-scout" ? radarProduced : undefined);
+          const isOpen = expanded === d.code;
+          return (
+            <div key={d.code} className={`border-b border-r border-rule bg-background ${isOpen ? "bg-bg-panel/40" : ""}`}>
+              <DeskHeader
+                desk={d}
+                expanded={isOpen}
+                count={deskCards.length}
+                label={label}
+                onToggle={() => setExpanded(isOpen ? null : d.code)}
+              />
+              {isOpen && (
+                <DeskDetail
+                  desk={d}
+                  cards={deskCards}
+                  artifacts={artifacts}
+                  reports={reportList}
+                  radarCards={d.code === "org-radar-scout" ? radarProduced : undefined}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Holds — active only, honest empty */}
