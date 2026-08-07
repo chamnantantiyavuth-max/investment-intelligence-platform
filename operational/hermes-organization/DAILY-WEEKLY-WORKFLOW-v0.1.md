@@ -3,7 +3,7 @@
 **Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05)
 **Version:** 0.1
 **Authority:** Subordinate to the IIP Constitution + `AI-ORGANIZATION-OPERATING-STANDARD-v0.1.md`.
-**Cadence note (FD #54, F-19):** the cadence below is org process. **No new cron jobs** are authorized by this standard; every scheduled automation requires a separate named authorization (FD-CIW-005 discipline). The pilot and initial activation run manually/ad-hoc. **Exceptions granted by named FDs:** weekly Radar Scan cron (Mon 08:00 UTC+7, FD #78, 2026-08-07 — discovery-only scanning → Task Idea Cards + Radar Digest); CIW Class A MSFT monitor (Mon 09:00, FD-CIW-013/014).
+**Cadence note (FD #54, F-19):** the cadence below is org process. **No new cron jobs** are authorized by this standard; every scheduled automation requires a separate named authorization (FD-CIW-005 discipline). The pilot and initial activation run manually/ad-hoc. **Exceptions granted by named FDs:** weekly Radar Scan cron (Mon 08:00 UTC+7, FD #78, 2026-08-07 — discovery-only scanning → Task Idea Cards + Radar Digest); mid-week Radar Watch cron (Thu 08:00 UTC+7, FD #80, 2026-08-07 — lighter pass, event-window coverage + data-gap retries); CIW Class A MSFT monitor (Mon 09:00, FD-CIW-013/014).
 
 ## 1. Operating Principle
 

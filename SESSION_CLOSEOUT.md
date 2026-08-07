@@ -49,4 +49,15 @@
 - [x] Pushed (0 unpushed), build/lint green
 - [x] _Hermes-Memory capture (MEM-IIP-052 session log written)
 
-<!-- 2026-08-07 15:35 UTC+7 -->
+## Parallel session (same day, same repo — WIL #2 + Silver correction + Radar crons)
+
+> The sibling session's work is summarized here so this file reflects the full day (its own closeout commit `6e9118a` covered FD #74/#75/#79; this section covers the WIL #2/radar workstream). Details preserved in git history (`da44a6e`/`019648e`/`39717e7`/`d45dc1f`/`27ef05e`/`0503dd1`).
+
+- **WIL #2 PUBLISHED (Founder gate A)** — `reports/weekly-intelligence-2026-08-07.md` (`da44a6e`): radar 6/6 closed, Apple leadership follow-up (FD #76), IPM Week 1 no-action on silver; library 17.
+- **Silver §23.9 correction PUBLISHED (FD #77, gate A)** — `reports/silver-valuation-anchor-correction-2026-08-07.md` (`39717e7`): synchronized LBMA fixes (4–6 Aug, ratio ~69:1 / silver ~$62) supersede the 88:1/low-$20s anchor; originals preserved + CORRECTIONS-RECORD SILVER-CORR-001; library 18. Vault fd-register FD-76 backfill gap fixed.
+- **Weekly radar auto-scan cron LIVE (FD #78, gate A)** — job `8ba233e88015` (Mon 08:00 UTC+7): validation round-3 scan filed ORG-2026-0012/0013 + digest (`d45dc1f`).
+- **Mid-week radar watch cron LIVE (FD #80, gate A — radar gap (a))** — job `cda817d17236` (Thu 08:00 UTC+7): validation run caught the Hormuz reversal (context for 0012) + resolved the COMEX data gap (registered 99.8 Moz, +6.8 Moz/30d) → ORG-2026-0014 + mid-week note (`0503dd1`). **Number collision:** sibling claimed FD #79 (item 95) first — this workstream is authoritatively FD #80 (item 96); commit message "FD #79 cron" left as history per §23.9.
+- **Queued (each needs its own named FD):** (b) EDGAR/filings scan into the cron, (c) feedback loop from research outcomes into the radar watchlist.
+- FDs total: **96** (#1–44 + CIW 16 + #45–80). Cards awaiting CoS triage: ORG-2026-0012/0013/0014.
+
+<!-- 2026-08-07 16:25 UTC+7 (combined closeout: sibling Org Office + WIL #2/radar workstreams) -->
