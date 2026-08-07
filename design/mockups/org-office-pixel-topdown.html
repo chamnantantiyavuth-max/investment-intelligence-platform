@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Virtual Office — Top-Down Floor Plan · IIP</title>
+<style>
+  :root{
+    --paper:#FAFAF7; --panel:#F1F1EA; --ink:#1A1C1E; --ink2:#5A5E63; --ink3:#7A7F86;
+    --rule:#DDDED6; --accent:#1F4E79;
+    --pos:#2E7D5B; --neg:#A34A4A; --warn:#8A6D1F;
+    --serif:Georgia,"Times New Roman",serif; --mono:"JetBrains Mono",Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font:14px/1.5 Inter,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 28px 56px;}
+
+  .masthead{display:flex;align-items:baseline;justify-content:space-between;padding:20px 0 14px;border-bottom:2px solid var(--ink);}
+  .brand{font-family:var(--serif);font-size:1.3rem;font-weight:700;}
+  .brand em{font-style:normal;color:var(--accent);}
+  .stamp{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink3);text-transform:uppercase;}
+
+  .pagehead{padding:30px 0 6px;border-bottom:1px solid var(--rule);}
+  .kicker{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);}
+  h1{font-family:var(--serif);font-size:2rem;font-weight:700;margin:8px 0 8px;}
+  .sub{font-size:14.5px;color:var(--ink2);max-width:760px;}
+  .sample{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--warn);text-transform:uppercase;}
+
+  /* ── Office floor (tonal, borderless) ── */
+  .floor{position:relative;margin-top:28px;background:var(--panel);border-radius:8px;padding:26px 24px 20px;overflow:hidden;}
+  .floor::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#CFD2C4 1px,transparent 1px);background-size:22px 22px;opacity:.5;pointer-events:none;}
+  .floorhead{position:relative;display:flex;align-items:baseline;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--rule);margin-bottom:18px;}
+  .flabel{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);}
+  .fcount{font-family:var(--mono);font-size:10.5px;color:var(--ink3);}
+
+  .desks{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;}
+  .desk{position:relative;display:flex;flex-direction:column;align-items:center;padding:14px 8px 10px;background:var(--paper);border-radius:6px;}
+  .desk .sprite{width:56px;height:67px;image-rendering:pixelated;}
+  .desk .bob{animation:bob 3s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+  .desk .plate{margin-top:8px;text-align:center;}
+  .desk .role{font-family:var(--serif);font-size:12.5px;font-weight:700;}
+  .desk .code{font-family:var(--mono);font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;}
+  .desk .chip{margin-top:6px;font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
+  .chip.ok{background:rgba(46,125,91,.10);color:var(--pos);}
+  .chip.act{background:rgba(138,109,31,.12);color:var(--warn);}
+  .chip.std{background:rgba(122,127,134,.10);color:var(--ink2);}
+  .chip.pro{background:rgba(31,78,121,.10);color:var(--accent);}
+  .desk .cards{position:absolute;top:-8px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--ink);color:var(--paper);font:10px var(--mono);display:flex;align-items:center;justify-content:center;padding:0 6px;}
+  .desk .n {display:none;}
+  .desk:hover .n{display:block;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);width:180px;background:var(--ink);color:var(--paper);font-size:10.5px;line-height:1.45;padding:8px 10px;border-radius:4px;z-index:5;white-space:normal;}
+  .desk:hover .n b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#B9C6D8;margin-bottom:3px;}
+
+  /* front desk */
+  .front{position:relative;margin-top:16px;display:flex;align-items:center;gap:14px;background:var(--paper);border-radius:6px;padding:12px 16px;}
+  .front .sprite{width:44px;height:53px;image-rendering:pixelated;}
+  .front .msg{font-size:12.5px;color:var(--ink2);}
+  .front .msg b{color:var(--ink);font-weight:700;}
+
+  /* ── pulse strip ── */
+  .pulse{display:grid;grid-template-columns:repeat(6,1fr);margin-top:22px;border-bottom:1px solid var(--rule);}
+  .pcell{padding:16px 18px 14px 0;}
+  .pcell + .pcell{border-left:1px solid var(--rule);padding-left:18px;}
+  .plabel{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
+  .pval{font-family:var(--mono);font-size:1.3rem;margin-top:3px;}
+  .pnote{font-size:10.5px;color:var(--ink2);margin-top:2px;}
+
+  .foot{margin-top:40px;border-top:2px solid var(--ink);padding-top:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  .foot span{font:10px var(--mono);color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;}
+
+  @media (max-width:900px){.desks{grid-template-columns:repeat(3,1fr);}.pulse{grid-template-columns:repeat(3,1fr);}.pcell:nth-child(4){border-left:0;}}
+  @media (max-width:560px){.desks{grid-template-columns:repeat(2,1fr);}h1{font-size:1.5rem;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand">Investment Intelligence <em>Platform</em></div>
+    <div class="stamp">advisory · portfolio-blind</div>
+  </header>
+
+  <div class="pagehead">
+    <div class="kicker">Org Office · Pixel Virtual Office</div>
+    <h1>The research floor</h1>
+    <div class="sub">Eleven desks, one room. Every analyst is where their work is — hover a desk for the live cards.</div>
+    <span class="sample">Sample data — not investment advice</span>
+  </div>
+
+  <div class="floor">
+    <div class="floorhead">
+      <span class="flabel">Research floor · open plan</span>
+      <span class="fcount">11 desks · 4 cards in flight · 1 awaiting founder</span>
+    </div>
+
+    <div class="desks" id="desks"><!-- desks injected --></div>
+
+    <div class="front">
+      <div id="frontSprite"></div>
+      <div class="msg">Hi — <b>I'm the Chief of Staff.</b> Triage is clear; nothing is blocked. The Radar Scout just dropped 6 idea cards this week — all researched and published.</div>
+    </div>
+  </div>
+
+  <div class="pulse">
+    <div class="pcell"><div class="plabel">Cards in flight</div><div class="pval">4</div><div class="pnote">inbox → validation</div></div>
+    <div class="pcell"><div class="plabel">Awaiting you</div><div class="pval">1</div><div class="pnote">founder review</div></div>
+    <div class="pcell"><div class="plabel">Published notes</div><div class="pval">18</div><div class="pnote">library · + companions</div></div>
+    <div class="pcell"><div class="plabel">Active holds</div><div class="pval">0</div><div class="pnote">none is silent</div></div>
+    <div class="pcell"><div class="plabel">Desks active</div><div class="pval">7/11</div><div class="pnote">roles holding cards</div></div>
+    <div class="pcell"><div class="plabel">Org pulse</div><div class="pval" style="color:var(--pos)">Healthy</div><div class="pnote">no holds · no blockers</div></div>
+  </div>
+
+  <footer class="foot">
+    <span>Advisory only — no buy, sell, or execution</span>
+    <span>Portfolio-blind · git is the single writer</span>
+    <span>Sample data for design review · 2026-08-07</span>
+  </footer>
+</div>
+
+<script>
+// Pixel sprite renderer — 10x12 character, palette per role. SVG rects only (no emoji).
+const CHAR = [
+  "...HHHH...",
+  "..HHHHHH..",
+  "..HSSSSH..",
+  "..HSSSSH..",
+  "...HSSH...",
+  "....BB....",
+  "..BBBBBB..",
+  ".BBBBBBBB.",
+  ".BBBBBBBB.",
+  "..PPPPPP..",
+  "..PP..PP..",
+  ".LL....LL."
+];
+const PAL = { H:"#3A2E28", S:"#E8B98A", P:"#4A4E55", L:"#2B2E33" };
+function sprite(body, hair){
+  const p = {...PAL, B: body, H: hair || PAL.H};
+  let r = "";
+  CHAR.forEach((row,y)=>{ [...row].forEach((ch,x)=>{ if(ch!=="." && p[ch]) r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${p[ch]}"/>`; }); });
+  return `<svg class="sprite bob" viewBox="0 0 10 12" aria-hidden="true">${r}</svg>`;
+}
+// role: [name, code, bodyColor, hair, chipState, cardCount, hoverTitle, hoverCards]
+const DESKS = [
+  ["Chief of Staff","org-cos","#1F4E79","#4A3B32","std",0,"No items awaiting assignment","Inbox triage is clear · nothing blocked"],
+  ["IC Secretary","org-ic-secretary","#5B6E8C","#4A3B32","act",1,"Founder decision pack assembly","Founder Review · M2 · P1 · 2026-08-05"],
+  ["Commodity Analyst","org-commodity-analyst","#8A6D1F","#3A2E28","ok",2,"London vaults · Silver deficit","2 published cards · 2 product notes"],
+  ["Macro Strategist","org-macro-strategist","#4A7BB5","#4A3B32","ok",1,"Gold vs real rates transmission","Published · M2 · P2 · 2026-08-07"],
+  ["Equity Alpha Analyst","org-equity-analyst","#2E7D5B","#3A2E28","act",4,"Buyback mask · Services margin · share count","3 published + 1 in research · 4 company notes"],
+  ["Options Strategist","org-options-strategist","#7A5C8C","#4A3B32","std",0,"No active mandate","Structure & volatility work begins on demand"],
+  ["Chief Risk Officer","org-cro","#A34A4A","#3A2E28","act",1,"Risk challenge of equity brief","Cross-Review · M1 · P1 · 6 opposing essays"],
+  ["Quant Validator","org-quant-validator","#5A5E63","#4A3B32","std",0,"No active validation","Arithmetic re-runs dispatch per material item"],
+  ["Data Steward","org-data-steward","#B07A1E","#3A2E28","act",1,"Data readiness of source map","In Research · M1 · P1 · 2026-08-05"],
+  ["Internal Auditor","org-auditor","#3A3E44","#2B2E33","act",1,"Governance / lineage verification","Triage · M1 · P2 · last 3 audits CLEARED"],
+  ["Radar Scout","org-radar-scout","#C2527B","#3A2E28","pro",0,"6 idea cards this week","0006–0011 → all researched + published"]
+];
+const chips = { ok:"ok", act:"act", std:"std", pro:"pro" };
+const labels = { ok:"wip ok", act:"active", std:"standby", pro:"produced" };
+const deskHTML = DESKS.map(([name,code,body,hair,state,count,ht,hc])=>{
+  const n = count>0 ? `<span class="cards">${count}</span>` : "";
+  return `<div class="desk">${n}${sprite(body,hair)}
+    <div class="plate"><div class="role">${name}</div><div class="code">${code}</div>
+    <div class="chip ${chips[state]}">${labels[state]}</div></div>
+    <div class="n"><b>${ht}</b>${hc}</div></div>`;
+}).join("");
+document.getElementById("desks").innerHTML = deskHTML;
+document.getElementById("frontSprite").innerHTML = sprite("#1F4E79");
+</script>
+<!-- 2026-08-07 15:20 UTC+7 -->
+</body>
+</html>

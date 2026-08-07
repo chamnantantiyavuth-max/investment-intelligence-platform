@@ -6,18 +6,26 @@ import { getReports, type ReportMeta } from "@/api/reportClient";
 import { linkArtifact, latestCardUpdate } from "@/lib/researchWorkflow";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Maple-Story-style chibi sprites (generated via imagegen, chroma-keyed cutouts)
+import cosSprite from "@/assets/agents/org-cos.png";
+import icSecretarySprite from "@/assets/agents/org-ic-secretary.png";
+import commoditySprite from "@/assets/agents/org-commodity-analyst.png";
+import macroSprite from "@/assets/agents/org-macro-strategist.png";
+import equitySprite from "@/assets/agents/org-equity-analyst.png";
+import optionsSprite from "@/assets/agents/org-options-strategist.png";
+import croSprite from "@/assets/agents/org-cro.png";
+import quantSprite from "@/assets/agents/org-quant-validator.png";
+import dataStewardSprite from "@/assets/agents/org-data-steward.png";
+import auditorSprite from "@/assets/agents/org-auditor.png";
+import radarScoutSprite from "@/assets/agents/org-radar-scout.png";
+
 /**
- * Org Office — War Room (FD #75-adjacent; role-centric view, approved mockup
- * design/mockups/org-office-war-room.html, Founder pick A).
- *
- * Read-only role desks over the SAME D1 endpoints as /kanban + /research:
+ * Org Office — Virtual Office (Maple Story style sprites).
+ * Role-centric view over the SAME D1 endpoints as /kanban + /research:
  *   - /org-queue          → cards grouped by principal_owner → 11 role desks
  *   - /research-artifacts → card→artifact links (linkArtifact)
  *   - /reports            → published notes per role (author match, display only)
- *
- * Operational tracking only — card state never equals domain state. No writes,
- * no drag, no movement rights (KANBAN-CONTRACT §6). Counts are display
- * derivations, never scores (Constitution §10).
+ * Read-only operational tracking — card state never equals domain state.
  */
 
 type DeskCode =
@@ -37,26 +45,24 @@ interface RoleDesk {
   code: DeskCode;
   name: string;
   duty: string;
-  /** author-keyword → desk (for published-report grouping; display only). */
+  sprite: string;
   authorMatch: RegExp;
 }
 
-// ROLE-REGISTRY-v0.1 row 1–11 — canonical 11 principals (display names in user language).
 const DESKS: RoleDesk[] = [
-  { code: "org-cos", name: "Chief of Staff", duty: "Triage, routing, capacity", authorMatch: /Chief of Staff/i },
-  { code: "org-ic-secretary", name: "IC Secretary", duty: "Records, synthesis, founder pack", authorMatch: /^IC Secretary/i },
-  { code: "org-commodity-analyst", name: "Commodity Analyst", duty: "Products & physical markets", authorMatch: /Commodity/i },
-  { code: "org-macro-strategist", name: "Macro Strategist", duty: "Regime & transmission", authorMatch: /Macro Strategy/i },
-  { code: "org-equity-analyst", name: "Equity Alpha Analyst", duty: "Companies, moats, earnings", authorMatch: /Equity/i },
-  { code: "org-options-strategist", name: "Options Strategist", duty: "Structure & volatility", authorMatch: /Options/i },
-  { code: "org-cro", name: "Chief Risk Officer", duty: "Independent challenge", authorMatch: /Chief Risk Officer|CRO|Chief Research Risk Officer/i },
-  { code: "org-quant-validator", name: "Quant Validator", duty: "Reproduction & validation", authorMatch: /Quant/i },
-  { code: "org-data-steward", name: "Data Steward", duty: "Provenance & freshness", authorMatch: /Data Steward/i },
-  { code: "org-auditor", name: "Internal Auditor", duty: "Evidence integrity", authorMatch: /Internal Auditor/i },
-  { code: "org-radar-scout", name: "Radar Scout", duty: "Discovery & monitoring", authorMatch: /Radar Scout|Radar/i },
+  { code: "org-cos", name: "Chief of Staff", duty: "Triage, routing, capacity", sprite: cosSprite, authorMatch: /Chief of Staff/i },
+  { code: "org-ic-secretary", name: "IC Secretary", duty: "Records, synthesis, founder pack", sprite: icSecretarySprite, authorMatch: /^IC Secretary/i },
+  { code: "org-commodity-analyst", name: "Commodity Analyst", duty: "Products & physical markets", sprite: commoditySprite, authorMatch: /Commodity/i },
+  { code: "org-macro-strategist", name: "Macro Strategist", duty: "Regime & transmission", sprite: macroSprite, authorMatch: /Macro Strategy/i },
+  { code: "org-equity-analyst", name: "Equity Alpha Analyst", duty: "Companies, moats, earnings", sprite: equitySprite, authorMatch: /Equity/i },
+  { code: "org-options-strategist", name: "Options Strategist", duty: "Structure & volatility", sprite: optionsSprite, authorMatch: /Options/i },
+  { code: "org-cro", name: "Chief Risk Officer", duty: "Independent challenge", sprite: croSprite, authorMatch: /Chief Risk Officer|CRO|Chief Research Risk Officer/i },
+  { code: "org-quant-validator", name: "Quant Validator", duty: "Reproduction & validation", sprite: quantSprite, authorMatch: /Quant/i },
+  { code: "org-data-steward", name: "Data Steward", duty: "Provenance & freshness", sprite: dataStewardSprite, authorMatch: /Data Steward/i },
+  { code: "org-auditor", name: "Internal Auditor", duty: "Evidence integrity", sprite: auditorSprite, authorMatch: /Internal Auditor/i },
+  { code: "org-radar-scout", name: "Radar Scout", duty: "Discovery & monitoring", sprite: radarScoutSprite, authorMatch: /Radar Scout|Radar/i },
 ];
 
-// Terminal columns (a card there is done, not "active work").
 const AWAITING_COLUMNS = new Set(["Founder Review", "Blocked"]);
 const INFLIGHT_COLUMNS = new Set([
   "Inbox", "Triage", "Scoped", "Data Ready", "In Research", "Cross-Review", "Validation",
@@ -102,15 +108,32 @@ function RoleDeskPanel({
           : "standby";
 
   return (
-    <div className="border-b border-r border-rule bg-background p-4">
-      <div className="flex items-baseline justify-between gap-3 border-b border-rule pb-2">
-        <div>
-          <p className="font-display text-[15px] font-bold leading-tight tracking-tight">{desk.name}</p>
-          <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">{desk.code}</p>
+    <div className="relative border-b border-r border-rule bg-background p-4">
+      {cards.length > 0 && (
+        <span className="absolute right-3 top-3 flex h-6 min-w-6 items-center justify-center rounded-full bg-foreground px-1.5 font-mono text-[11px] font-semibold text-background">
+          {cards.length}
+        </span>
+      )}
+
+      <div className="flex h-[120px] items-end justify-center gap-2">
+        <div className="relative">
+          <img
+            src={desk.sprite}
+            alt={desk.name}
+            className="relative z-10 h-[104px] w-auto max-w-[92px] object-contain drop-shadow-sm"
+            draggable={false}
+          />
+          <div aria-hidden="true" className="absolute bottom-0 left-1/2 h-2.5 w-16 -translate-x-1/2 rounded-[50%] bg-ink/15" />
         </div>
-        <p className="font-mono text-[10px] text-ink-3">
-          <span className="text-[12px] font-semibold text-primary">{cards.length}</span> cards
-        </p>
+        {/* monitor: card count */}
+        <div className="mb-1 flex h-[34px] w-[46px] flex-col overflow-hidden rounded-sm border border-rule bg-bg-panel">
+          <div className="flex h-5 items-center justify-center bg-foreground font-mono text-[10px] text-background">
+            {cards.length}
+          </div>
+          <div className="flex flex-1 items-center justify-center text-[8px] uppercase tracking-wide text-ink-3">
+            cards
+          </div>
+        </div>
       </div>
 
       <p className="mt-2 flex flex-wrap items-center gap-2">
@@ -130,37 +153,37 @@ function RoleDeskPanel({
         <span className="text-[10px] text-ink-3">{desk.duty}</span>
       </p>
 
-      {cards.length === 0 ? (
-        <p className="mt-3 text-[11.5px] leading-relaxed text-ink-3">
-          No active mandate.
-          <span className="mt-0.5 block text-[10.5px] text-ink-2">{desk.duty} work begins on demand.</span>
+      <div className="mt-2 border-t border-rule pt-2">
+        <p className="font-display text-[13px] font-bold leading-tight tracking-tight">{desk.name}</p>
+        <p className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-ink-3">{desk.code}</p>
+      </div>
+
+      {cards.length === 0 && !(radarCards && radarCards.length > 0) ? (
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-3">
+          No active mandate — {desk.duty.toLowerCase()} begins on demand.
         </p>
       ) : (
-        <div className="mt-2 flex flex-col">
+        <div className="mt-1 flex flex-col">
           {cards.map((c) => {
             const target = linkArtifact(c, artifacts);
             const body = (
-              <div className="border-b border-rule py-1.5 last:border-b-0">
-                <p className="text-[12px] font-medium leading-snug text-foreground">{c.title}</p>
-                <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[9.5px]">
-                  <span className="font-mono uppercase tracking-[0.08em] text-primary">{c.workflow_column}</span>
+              <div className="border-b border-rule py-1 last:border-b-0">
+                <p className="text-[11.5px] font-medium leading-snug text-foreground">{c.title}</p>
+                <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-[9px]">
+                  <span className="font-mono uppercase tracking-[0.07em] text-primary">{c.workflow_column}</span>
                   <span className="font-mono text-ink-3">{c.materiality}</span>
                   <span className="text-ink-2">{c.priority}</span>
                   <span className="font-mono text-ink-3">{c.last_updated}</span>
                 </p>
                 {c.active_holds.length > 0 && (
-                  <p className="mt-0.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-warning">
+                  <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.07em] text-warning">
                     {c.active_holds.map((h) => h.hold_id).join(" · ")}
                   </p>
                 )}
               </div>
             );
             return target ? (
-              <Link
-                key={c.card_id}
-                to={`/research/${target.artifact_id}`}
-                className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
+              <Link key={c.card_id} to={`/research/${target.artifact_id}`} className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 {body}
               </Link>
             ) : (
@@ -171,31 +194,21 @@ function RoleDeskPanel({
       )}
 
       {(publishedCards.length > 0 || publishedReports.length > 0 || (radarCards && radarCards.length > 0)) && (
-        <div className="mt-3 border-t border-rule pt-2">
-          <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-ink-3">Recent output</p>
+        <div className="mt-2 border-t border-rule pt-2">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-3">Recent output</p>
           <div className="mt-1 flex flex-col">
             {radarCards &&
               radarCards.map((c) => (
-                <p key={c.card_id} className="py-0.5 text-[11.5px] text-ink-2">
-                  <span className="mr-1.5 font-mono text-[9.5px] uppercase text-primary">{c.card_id}</span>
+                <p key={c.card_id} className="py-0.5 text-[11px] text-ink-2">
+                  <span className="mr-1.5 font-mono text-[9px] uppercase text-primary">{c.card_id}</span>
                   {c.title}
                 </p>
               ))}
             {publishedReports.map((r) => (
-              <Link
-                key={r.slug}
-                to={`/library/${r.slug}`}
-                className="py-0.5 text-[11.5px] text-foreground hover:text-primary"
-              >
-                <span className="mr-1.5 font-mono text-[9.5px] uppercase text-primary">{r.type}</span>
+              <Link key={r.slug} to={`/library/${r.slug}`} className="py-0.5 text-[11px] text-foreground hover:text-primary">
+                <span className="mr-1.5 font-mono text-[9px] uppercase text-primary">{r.type}</span>
                 {r.title}
               </Link>
-            ))}
-            {publishedCards.map((c) => (
-              <p key={c.card_id} className="py-0.5 text-[11.5px] text-ink-2">
-                <span className="mr-1.5 font-mono text-[9.5px] uppercase text-ink-3">{c.card_id}</span>
-                {c.title}
-              </p>
             ))}
           </div>
         </div>
@@ -214,10 +227,7 @@ export default function OrgOfficePage() {
   const reportList = useMemo(() => reports.data?.reports ?? [], [reports.data]);
   const holds = useMemo(() => queue.data?.holds ?? [], [queue.data]);
 
-  const radarProduced = useMemo(
-    () => cards.filter((c) => Boolean(c.radar_observation)),
-    [cards]
-  );
+  const radarProduced = useMemo(() => cards.filter((c) => Boolean(c.radar_observation)), [cards]);
 
   const byDesk = useMemo(() => {
     const map = new Map<DeskCode, OrgCard[]>();
@@ -231,19 +241,10 @@ export default function OrgOfficePage() {
 
   const inflight = useMemo(() => cards.filter((c) => INFLIGHT_COLUMNS.has(c.workflow_column)).length, [cards]);
   const awaiting = useMemo(() => cards.filter((c) => AWAITING_COLUMNS.has(c.workflow_column)).length, [cards]);
-  const publishedReports = useMemo(
-    () => reportList.filter((r) => r.status === "published").length,
-    [reportList]
-  );
-  const activeHolds = useMemo(
-    () => holds.filter((h) => String(h.status || "").toUpperCase() !== "CLEARED").length,
-    [holds]
-  );
+  const publishedReports = useMemo(() => reportList.filter((r) => r.status === "published").length, [reportList]);
+  const activeHolds = useMemo(() => holds.filter((h) => String(h.status || "").toUpperCase() !== "CLEARED").length, [holds]);
   const blocked = useMemo(() => cards.filter((c) => c.blocked_reason).length, [cards]);
-  const desksActive = useMemo(
-    () => [...byDesk.values()].filter((cs) => cs.length > 0).length,
-    [byDesk]
-  );
+  const desksActive = useMemo(() => [...byDesk.values()].filter((cs) => cs.length > 0).length, [byDesk]);
 
   const pulseHealthy = activeHolds === 0 && blocked === 0;
 
@@ -273,8 +274,8 @@ export default function OrgOfficePage() {
   return (
     <div className="space-y-6">
       <div className="border-b border-rule pb-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Org office · war room</p>
-        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">The research organization, at a glance</h1>
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Org office · virtual office</p>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">The research floor</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">
           Org workflow · operational tracking · latest card update {latest}
         </p>
@@ -298,14 +299,7 @@ export default function OrgOfficePage() {
             note: pulseHealthy ? "no holds · no blockers" : `${activeHolds} holds · ${blocked} blocked`,
           },
         ].map((cell, i) => (
-          <div
-            key={cell.label}
-            className={
-              i > 0
-                ? "border-l border-rule px-4 py-3 first:border-l-0 md:border-l md:px-4"
-                : "px-4 py-3 md:px-4"
-            }
-          >
+          <div key={cell.label} className={i > 0 ? "border-l border-rule px-4 py-3" : "px-4 py-3"}>
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-ink-3">{cell.label}</p>
             <p
               className={
@@ -323,7 +317,7 @@ export default function OrgOfficePage() {
         ))}
       </div>
 
-      {/* Role desks — 3-col hairline grid (mockup-approved) */}
+      {/* Role desks with Maple-Story sprites */}
       <div className="grid grid-cols-1 border-t border-l border-rule md:grid-cols-2 lg:grid-cols-3">
         {DESKS.map((d) => (
           <RoleDeskPanel

@@ -1,0 +1,30 @@
+card_id: ORG-2026-0012
+title: "Radar: Gold's best week since January runs against cycle-high real yields, risk-on equities, and geopolitical de-escalation"
+research_question: Has the marginal driver of gold rotated from geopolitical hedging to monetary-policy expectations (rate-cut pivot), and does a gold rally concurrent with cycle-high real yields, risk-on equities, and Hormuz de-escalation weaken, strengthen, or leave intact the 0008 flow-dominance thesis — and is the gold–real-yield transmission break now testable at this scale?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: MACRO
+principal_owner: org-macro-strategist
+assistant_owner: Macro Research Assistant
+priority: P1
+materiality: M2
+created_at: 2026-08-07
+required_by: triage
+expected_artifact: "macro transmission note / 0008 watch-item test (driver ranking — rate-cut expectations vs geopolitical premium vs official-sector flows)"
+evidence_standard: point-in-time (FD #58); figures sourced + dated
+data_status: NOT ASSESSED
+validation_status: null
+risk_status: null
+audit_status: null
+radar_observation: "COMEX gold Dec 26 (GC=F) closes: 4,033.70 (2026-08-03) → 4,344.70 (2026-08-07 ~07:55 UTC intraday) = +7.7% in 4 sessions; Reuters 2026-08-07: 'Gold heads for best week since January'. Spot gold 4,286.20 (gold-api.com, 2026-08-07 07:52 UTC); LBMA PM fix 4,267.85 (2026-08-06). Gold sits ~25% below its record (Gulf News 2026-08-07); COMEX Dec 52-week range 3,310.1–5,586.2 (Yahoo metadata) — this is a post-crash recovery accelerating, not a new-high breakout. Concurrent conditions: 10y real yield (FRED DFII10) 2.41% (2026-08-05; 7/31 peak 2.47%; 6/23 2.29%) — near cycle highs; hawkish 9-3 FOMC hold (2026-07-29, Dallas Fed dissent for a HIKE); DXY 101.38→99.69 (7/28→8/5); S&P 500 +4.6% (7/31→8/4, record territory); WTI -11% from 7/31 peak (84.67→75.22, 8/5) on Hormuz-deal optimism; JOLTS openings 7.36M (released 8/4); market narrative shifting to a Fed rate-cut pivot (Barron's 'Why a Fed Rate Cut Is Coming' 8/6; 'Stock market rallies as Fed signals rate-cut pivot ahead' 8/3; Warsh floats fewer FOMC meetings, WSJ 7/31). THE ANOMALY: gold +7.7% in 4 sessions while (a) real yields sit near cycle highs, (b) equities rally to records (risk-on), and (c) the geopolitical driver is DE-escalating (Hormuz deal talks; oil -11%) — a geopolitical-premium explanation would predict gold DOWN on de-escalation. Raises, does not answer: which flow is now marginal (rate-cut expectations, dollar weakness, official-sector, or residual Hormuz uncertainty — Bloomberg 8/7 cites a 'Hormuz flare-up' after the optimism), and whether the 0008 real-yield-transmission break survives this scale of move. NOTE: 8/7 is a US jobs-report day; the story may move further after this pull."
+radar_source: "Yahoo Finance chart API GC=F (pulled 2026-08-07 07:55 UTC, deleg weekly-scan-0012); FRED DFII10 csv (pulled 2026-08-07 07:47 UTC); gold-api.com XAU (2026-08-07 07:52 UTC); LBMA fixes via silver-valuation-anchor-correction-2026-08-07 (4-6 Aug); Google News RSS: Reuters 'Gold heads for best week since January' 2026-08-07, Bloomberg 'Gold Steady as Traders Assess Impact of Hormuz Flare-Up on Rates' 2026-08-07, Gulf News 'Gold sits 25% below its record' 2026-08-07, Benzinga 'Gold Jumps 4%' 2026-08-05, Barron's 2026-08-06, WSJ Warsh 2026-07-31 (all pulled 2026-08-07 07:58-08:06 UTC)"
+open_decision_slots: []
+dependencies: [ORG-2026-0008]
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-07
