@@ -112,6 +112,84 @@ Reconciles to the 8-K exactly (revenue/GM/NI/EPS/segment figures identical). Add
 - Q3 FY26 open-market purchases 53,143K shares (~$15.8B, avg ~$297)
 - Shares outstanding: **14,594,180,000 as of 2026-07-17** (vs 14,773,260,000 at 2025-09-27)
 
+## 6c. Q1 FY2026 10-Q (accession 0000320193-26-000006, filed 2026-01-30, quarter ended 2025-12-27)
+
+| ($M) | Q1 FY26 | Q1 FY25 | y/y |
+|---|---|---|---|
+| Products | 113,743 | 97,960 | +16.1% |
+| Services | 30,013 | 26,340 | +13.9% |
+| **Total revenue** | **143,756** | 124,300 | **+15.7%** |
+| Gross margin | 69,231 (48.2%) | 58,275 (46.9%) | — |
+| Operating income | 50,852 | 42,832 | +18.7% |
+| R&D | 10,887 | 8,268 | **+31.7%** |
+| Net income | 42,097 | 36,330 | +15.9% |
+| Diluted EPS | $2.84 | $2.40 | +18.3% |
+
+- **Product mix:** iPhone 85,269 (+23.3%, all-time record); Mac 8,386 (−6.7%); iPad 8,595 (+6.3%); Wearables 11,493 (−2.2%)
+- **Segments:** Americas 58,529 (+11.2%); Europe 38,146 (+12.7%); **Greater China 25,526 (+37.9%)**; Japan 9,413 (+4.7%); Rest APAC 12,142 (+18.0%) — every segment grew double digits except Japan
+- Segment op income: Americas 23,953; Europe 17,790; **Greater China 11,792 (+44.5%)**; Japan 4,613; Rest APAC 5,686; Corporate (12,982)
+- Deferred revenue $14.3B (vs $13.7B at 9/27/25); 66% realizable <1yr
+- Buybacks: **93M shares for $25.0B** in Q1; shares outstanding **14,681,140,000 as of 2026-01-16**
+- Cash+securities $144.8B (45,317+21,590+77,888)
+- Tariff: Section 232 initial results published 2026-01-14 — no additional tariffs at that time; tariff exposure language unchanged
+- MD&A: 14" MacBook Pro, iPad Pro, Apple Vision Pro announced during Q1
+
+## 6d. Q2 FY2026 10-Q (accession 0000320193-26-000013, filed 2026-05-01, quarter ended 2026-03-28)
+
+| ($M) | Q2 FY26 | Q2 FY25 | y/y | 6-mo FY26 | 6-mo FY25 |
+|---|---|---|---|---|---|
+| Products | 80,208 | 68,714 | +16.7% | 193,951 | 166,674 |
+| Services | 30,976 | 26,645 | +16.3% | 60,989 | 52,985 |
+| **Total revenue** | **111,184** | 95,359 | **+16.6%** | **254,940** | 219,659 |
+| Gross margin | 54,781 (49.3%) | 44,867 (47.0%) | — | 124,012 (48.6%) | 103,142 (47.0%) |
+| Operating income | 35,885 | 29,589 | +21.3% | 86,737 | 72,421 |
+| R&D | 11,419 | 8,550 | **+33.6%** | 22,306 | 16,818 |
+| Net income | 29,578 | 24,780 | +19.4% | 71,675 | 61,110 |
+| Diluted EPS | $2.01 | $1.65 | +21.8% | $4.85 | $4.05 |
+
+- **Product mix Q2:** iPhone 56,994 (+21.7%); Mac 8,399 (+5.7%); iPad 6,914 (+8.0%); Wearables 7,901 (+5.0%); 6-mo iPhone 142,263 (+22.7%)
+- **Segments Q2:** Americas 45,093 (+11.9%); Europe 28,055 (+14.7%); **Greater China 20,497 (+28.1%)**; Japan 8,401 (+15.1%); Rest APAC 9,138 (+25.3%); 6-mo Greater China 46,023 (+33.3%)
+- Segment op income Q2: Americas 19,373; Europe 13,052; **Greater China 9,189 (+38.7%)**; Japan 3,839; Rest APAC 4,127; Corporate (13,695)
+- Deferred revenue $14.7B (vs $13.7B at 9/27/25)
+- Buybacks: **6-mo 135M shares for $36.0B** (Q2 alone ≈42M sh / $11.0B); shares outstanding **14,687,356,000 as of 2026-04-17**
+- Cash+securities $146.6B (45,572+22,935+78,088); intangible assets net jumped 11,093 → 21,334 (no business-combination note — likely content/licensing additions)
+- MD&A: iPad Air, iPhone 17e, MacBook Pro, MacBook Air, **MacBook Neo**, AirPods Max 2 announced during Q2
+- Services GM Q2 derived: (30,976−7,224)/30,976 = **76.68%** (Q1 76.52%, Q3 75.62%) — see §6e note
+- **Total 9-mo FY26 (incl Q3):** revenue 364,357; NI 101,464; OCF 116,996; capex 6,799 (evidence-log §6 already)
+
+## 6e. Earnings-call transcripts Q1/Q2/Q3 FY2026 (third-party transcripts; first-party figures cross-checked to 8-K/10-Q)
+
+Sources: AlphaStreet transcripts (news.alphastreet.com) for Q1 (2026-01-29), Q2 (2026-04-30), Q3 (2026-07-30) earnings calls; figures reconcile to 8-K/10-Q. **Third-party transcription — quotes below are as-transcribed; verify against Apple's own recordings/releases before quoting verbatim in a published report.**
+
+**CRITICAL — CEO succession (Q2 call 2026-04-30, announced):**
+- **Tim Cook to step down as CEO; John Ternus (SVP Hardware Engineering) becomes CEO** effective ~Sept 1, 2026; Cook → **Executive Chairman**
+- Cook: "my 89th earnings call… I will be here to support him"; Ternus: "I intend to continue" the financial discipline
+- **Q3 call (2026-07-30) = Cook's final earnings call** — "this will be my final earnings call and John will lead these calls going forward"
+- ⚠ **This leadership transition is NOT covered in the published moat report (2026-08-06)** — report predates the 30 Apr announcement awareness? No: the announcement preceded publication by 3 months. The published report's six-dimension moat analysis omits management-succession context. **Candidate for §23.9 correction / addendum — Founder's call.**
+
+**Installed base + subscriptions (first concrete figures ever disclosed — previously 'not disclosed' per evidence-log §4):**
+- Q1 call (2026-01-29, Cook): "new record for our installed base with **more than 2.5 billion active devices**"
+- Q3 call (2026-07-30, Parekh): "installed base of over **two and a half billion active devices**… all-time high across all major product categories"; "**surpassed 1.5 billion in paid subscriptions**"; transacting + paid accounts all-time highs
+- ⚠ These are call disclosures, not in filings — the 10-K/10-Q still do not publish the count (evidence-log §4 stays valid for filings-only claims)
+
+**Q3 call (2026-07-30) key items:**
+- Revenue $109.4B +16% (June-quarter record); iPhone $54.3B +22%; Mac $10.4B +29%; iPad $6.2B −6%; Wearables $7.9B +6%; Services $30.7B +12% (records in every category)
+- **Company GM 50.1%** incl ~2pp tariff-refund benefit; ex-refund ≈48.1% (midpoint of guidance); **Services GM 75.6%, down 110bps sequentially (mix)** — consistent with the derived 75.62% in the Services Margin verification note
+- Opex $19.1B +23% (R&D-driven); NI $29.8B; diluted EPS $2.02 +29% (incl $0.11 tariff refund); OCF $34.4B record
+- Cash $147B; debt $84B; returned $33B in Q3 ($4B dividends + $25.8B buybacks)
+- **Sept-quarter guidance:** revenue +9–11% y/y (FX −2.5pp headwind; **supply constraints to increase significantly** — iPhone/Mac/iPad); GM 47–48% (incl ~1pp tariff refund); opex $19.1–19.4B; tax ~16.5%
+- **Memory crisis:** "hundred-year flood" memory pricing; DRAM has 3 suppliers; paying "significantly more" in June than March, more in September; carry-in inventory benefit decreasing; iPhone prices raised "reluctantly" on iPad/Mac
+- **Supply constraints root cause:** advanced-node SOC demand exceeding forecast (iPhone +22% YTD, Mac +29% YTD) — "not a partner or supplier issue"; Arizona fab sourcing >100M components this year
+- **Broadcom:** new multi-year agreement expected to **exceed $30B** — largest-ever American manufacturing program commitment
+- **Siri AI:** WWDC26 "all-new Siri AI" — developer + public beta; iCloud+ upgrade path for heavy AI use; EU: not on iPhone/iPad (Mac not covered by same regs); China: approval received to ship original Apple Intelligence features (cleanup etc.), Siri AI requires more work
+- Apple Upgrade: new hardware leasing program (US, with Klarna); Apple TV+ content momentum (record 89 Emmy noms)
+- IDC: "we gained share globally" (iPhone, Mac) — see §10
+- Survey/customer metrics: 451 Research iPhone US satisfaction 99%; Mac 95%; iPad 98%; Apple Watch 95%
+
+**Q2 call (2026-04-30) key items:** revenue $111.2B +17% (March-quarter record, above high end of guidance); iPhone +22%; Services all-time record +16%; EPS $2.01 +22%; Greater China +28% (per 10-Q); supply constraints on advanced SOCs acknowledged; **$100B buyback authorization announced 30 Apr 2026** (per 10-Q §6b)
+
+**Q1 call (2026-01-29) key items:** revenue $143.8B +16% best-ever quarter; iPhone $85.3B +23% all-time record; Services all-time record +14%; EPS $2.84 +19% all-time record; **Greater China +38%** (driven by iPhone); Apple Intelligence in 15 languages; majority of enabled iPhone users actively using Apple Intelligence
+
 ## 7. XBRL annual series FY2021–FY2025 (Company Facts, deduped annual FY values)
 
 | ($M) | FY2021 | FY2022 | FY2023 | FY2024 | FY2025 |
@@ -136,20 +214,54 @@ Reconciles to the 8-K exactly (revenue/GM/NI/EPS/segment figures identical). Add
 ## 8. Resolved open needs (from kickoff log)
 
 - ✅ Note 13 operating income complete (all segments, 3 years) — see §2
-- ✅ Services narrative — see §4 (10-K does not publish installed-base/subscriber counts; only qualitative)
+- ✅ Services narrative — see §4 (10-K does not publish installed-base/subscriber counts; only qualitative — **call transcripts now give 2.5B+ devices / 1.5B+ paid subs, see §6e**)
 - ✅ Item 1A risk factors — see §5
 - ✅ MD&A competitive landscape + Services growth discussion — see §1/§2/§5
 - ✅ 8-K Q3 FY2026 latest quarter — see §6
 - ✅ XBRL 5-year series — see §7
+- ✅ **Q1 FY2026 10-Q extracted** — see §6c (accession 0000320193-26-000006)
+- ✅ **Q2 FY2026 10-Q extracted** — see §6d (accession 0000320193-26-000013)
+- ✅ **Earnings-call transcripts Q1/Q2/Q3 FY2026** — see §6e (CEO succession, installed base 2.5B+, paid subs 1.5B+, Sept guidance)
+- ✅ **Market share data (IDC + Counterpoint)** — see §10
 
 ## 9. Evidence limitations
 
-- No installed-base / subscriber / ARPU figures published in filings (Apple does not disclose) — moat quantification on Services must rely on financial trajectory + qualitative statements
+- No installed-base / subscriber / ARPU figures published in filings (Apple does not disclose) — **call transcripts disclose 2.5B+ active devices + 1.5B+ paid subscriptions (Q1/Q3 FY26 calls, §6e) but these are verbal, not filed; treat as management-stated, verify before publication** — moat quantification on Services must rely on financial trajectory + qualitative statements
 - FY24 NI distorted by one-time $10.2B Ireland charge; use operating income or ex-item for trend
-- Q3 FY26 GM 50.1% includes ~2pp tariff-refund benefit — reported GM less the stated refund benefit ≈48.1%
-- iPhone unit shipments not disclosed since FY2018 — revenue-only view
-- Market share data (minority share claim) qualitative from 10-K; precise share numbers would need third-party data (IDC/Counterpoint) — not yet pulled
-- Q1/Q2 FY2026 10-Qs + DEF 14A not extracted (Q3 FY2026 10-Q IS extracted + reconciled — see §6b)
+- Q3 FY26 GM 50.1% includes ~2pp tariff-refund benefit; reported GM less the stated refund benefit ≈48.1%
+- iPhone unit shipments not disclosed since FY2018 — revenue-only view; IDC/Counterpoint shipments are third-party estimates (see §10)
+- Market share data: **IDC + Counterpoint pulled (Q1 2026)** — see §10; both are third-party estimates, not filings; IDC and Counterpoint disagree on Q1 2026 #1 (IDC: Samsung 21.2% vs Apple 21.0% — statistical tie; Counterpoint: Apple 21% vs Samsung 20%) — cite with source + date
+- Q1/Q2 FY2026 10-Qs NOW extracted (see §6c/§6d); DEF 14A FY2026 still not extracted (governance/comp lens — optional)
 - Buyback terminology: $90.7B FY25 = cash-flow-statement payments; 10-K Note 10 discloses $89.3B for 402M shares — settlement-timing difference
+- **CEO succession (Cook → Ternus, eff. ~Sept 2026) not covered in published moat report** — see §6e; candidate for §23.9 correction/addendum, Founder's call
+- Transcripts are third-party (AlphaStreet) — as-transcribed, not Apple-issued; verbatim quotes in publications require re-verification against Apple's official audio/release
 
-<!-- 2026-08-06 16:30 UTC+7 -->
+## 10. Market share — smartphone (IDC + Counterpoint, Q1 2026 + forecasts)
+
+**IDC Q1 2026 (final historical data, published 2026-06-23, "Samsung and Apple Grew in Q1 2026 As the Global Smartphone Shipments Declines 2.9%"):**
+
+| Company | 1Q26 shipments (M) | 1Q26 share | 1Q25 shipments (M) | 1Q25 share | YoY |
+|---|---|---|---|---|---|
+| Samsung | 62.4 | 21.2% | 60.6 | 20.0% | +2.9% |
+| **Apple** | **61.8** | **21.0%** | 59.1 | 19.5% | **+4.4%** |
+| Xiaomi | 33.8 | 11.5% | 41.8 | 13.8% | −19.1% |
+| OPPO | 30.7 | 10.5% | 34.1 | 11.3% | −9.9% |
+| vivo | 21.2 | 7.2% | 22.7 | 7.5% | −6.9% |
+| Others | 84.0 | 28.6% | 84.3 | 27.8% | −0.3% |
+| **Total** | **293.8** | 100.0% | 302.6 | 100.0% | **−2.9%** |
+
+- **Apple second place, +4.4% YoY — only top-5 grower besides Samsung; iPhone 17 series growth in China >30%** (IDC); global market −2.9% (first decline since mid-2023; memory constraints)
+- IDC declares a **statistical tie** when share difference ≤0.1pp — Samsung 21.2% vs Apple 21.0% is within noise of a tie for #1
+- **FY2025 full year (IDC forecast released 2025-12-02):** market 1.25B units +1.5%; **Apple record ~247.4M units +6.1%** (iPhone 17 series); Apple #1 in China Oct/Nov 2025 with >20% share
+- **FY2026 forecast (IDC, 2026-06-23):** market **−13.9% to 1.09B units (steepest annual contraction in history)**; Android −20%; **iOS −5.2% (improved from −8.1% Feb forecast) — "iOS will deliver its highest annual share ever, at 22%"**; ASP record ~$550 (+$100); NA −6.3%; China −13%; sub-$200 segment hit hardest
+- Memory: prices +40–50% in emerging markets; premiumization continues; memory prices expected to stabilize 2H 2027
+
+**Counterpoint Q1 2026 (preliminary, published 2026-04-10, "Global Smartphone Shipments Fall 6% YoY in Q1 2026 Amid Memory Crunch; Apple Leads Q1 for First Time"):**
+
+- **Apple led Q1 2026 with 21% share, +5% YoY** (first-ever Q1 #1) — driven by iPhone 17 demand, proactive supply-chain management, improved China performance
+- Samsung 20% share, −6% YoY (delayed Galaxy S26 launch, entry-tier weakness); market −6% YoY (DRAM/NAND shortage + Middle East tensions)
+- HONOR +25%, Google +14%, Nothing +25% YoY (outside top 5)
+
+**⚠ Tracker disagreement (Q1 2026 #1):** IDC says Samsung #1 (62.4 vs 61.8M, statistical tie), Counterpoint says Apple #1 (21% vs 20%) — different tracker methodologies; both agree Apple gained share y/y and both are third-party estimates. **Cite with source + date; do not state "Apple #1 in Q1 2026" without attributing to Counterpoint specifically.**
+
+<!-- 2026-08-06 16:30 UTC+7 · 2026-08-07 12:10 UTC+7 (evidence upgrade: Q1/Q2 FY26 10-Qs §6c/§6d, transcripts §6e, market share §10; limitations updated) -->
