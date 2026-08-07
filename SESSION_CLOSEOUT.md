@@ -1,58 +1,47 @@
-# Session Closeout — 2026-08-07 (Apple Evidence Upgrade + Leadership-Transition Follow-up Publication)
+# Session Closeout — 2026-08-07 (WIL #2 + Silver §23.9 Correction)
 
-**Status:** COMPLETE — Apple evidence upgrade delivered, follow-up note PUBLISHED with dissent (FD #76), remark-gfm defect fixed, all pushed.
+**Status:** COMPLETE — Weekly Intelligence Letter #2 PUBLISHED (Founder gate A), silver valuation-anchor correction PUBLISHED (FD #77, Founder gate A), vault fd-register gap backfilled, all pushed.
 
 ## What happened this session
 
-1. **Apple evidence upgrade (commits `5f2a9b8` + `c1c0192`):** Q1 FY26 10-Q (accession 0000320193-26-000006 — rev $143.8B +15.7%, iPhone +23.3%, Greater China +37.9%, Services GM derived 76.52%) + Q2 FY26 10-Q (accession 0000320193-26-000013 — rev $111.2B +16.6%, iPhone +21.7%, GC +28.1%, Services GM derived 76.68%) extracted + verified against raw filing text; earnings-call transcripts Q1–Q3 FY26 pulled (AlphaStreet); IDC + Counterpoint market share pulled (Q1 2026 + FY25/FY26 forecasts). Evidence-log §6c/§6d/§6e/§10 + source-inventory updated.
+1. **Weekly Intelligence Letter #2 drafted + PUBLISHED (Founder gate A, commit `da44a6e`).** `reports/weekly-intelligence-2026-08-07.md` — Week 2 (ending 7 Aug, pulled forward from ~13 Aug at Founder's request). Content: radar round 2 closed (6/6 RADAR-001 cards published — 0009 London vaults / 0010 Services margin / 0011 folded), Apple leadership-transition follow-up (FD #76), IPM Week 1 no-action on silver (first cross-project test), FD #74→#75 momentum reversal, FD #73 model-routing pilot; silver thesis took adverse evidence (vault rebuild 902.843 Moz +18.04% YoY); silver valuation anchor flagged as §23.9 correction candidate (Founder's call). Verified: /api/reports (17 published), /library (WIL #2 first card), article page typeset, console 0 errors. Library-count self-consistency fix 16→17 during verification.
 
-2. **Critical finding flagged:** published moat report (6 Aug) omitted the CEO succession announced 30 Apr 2026 (Cook → Ternus eff. ~Sept 2026; Cook final call 30 Jul; Cook → Executive Chairman) — public 3 months before publication. Also new: installed base 2.5B+ devices + paid subs 1.5B+ (call-disclosed, not filed).
+2. **Silver §23.9 correction PUBLISHED (Founder gate A, FD #77, commit `39717e7`).** Raised by WIL #2 decision #1 (recommendation A); Founder approved A. `reports/silver-valuation-anchor-correction-2026-08-07.md` — defect: published silver series carried unsynchronized anchor (product note ~88:1 / low-$20s; CRO ~175:1 timestamp-failure defense; 0006 memo correctly held cheapness unresolved). Replacement: synchronized LBMA PM fixes pulled 2026-08-07 per IPM-DECISION-001 (independent portfolio office): 4–6 Aug — silver $58.785/$61.265/$61.735, gold $4,084.20/$4,206.60/$4,267.85, ratio 69.5/68.7/69.1 (~69:1, at not far above ~65:1 median); corroboration 7 Aug (SilverPrice.org $62.02 / GoldBroker $61.99 / TradingEconomics $62.06). Impact: product-note anchor SUPERSEDED; 0006 RESOLVED (not contradicted); CRO anchor defense REJECTED on data; structural content (deficit 40.3/46.3 Moz, vault rebuild, supply inelasticity) UNAFFECTED. §23.9: originals preserved; `research/commodities/SLV/CORRECTIONS-RECORD.md` (SILVER-CORR-001). Verified: /api/reports (18 published), /library (18, correction 2nd card in Silver series), article page (LBMA table renders via remark-gfm, no pipe leak, console 0 errors).
 
-3. **Founder gate: Option A — publish follow-up note + CRO companion (FD #76).**
-   - Main: `reports/apple-leadership-transition-2026-08-07.md` — succession + scale figures + Q1/Q2 financials + market share + Sept guidance + change-condition re-test (8 conditions: 7 not triggered, product-margin Indeterminate).
-   - CRO: `reports/apple-leadership-transition-opposing-2026-08-07.md` — hostile thesis (continuity = incumbency load; verdict FAIL) — delegated via Sol Medium (FD #73 Option B pilot).
-
-4. **Full audit chain (research-cell standard):** audit #1 MAJOR (F1–F8: 5 MAJOR + 3 MINOR) → corrections + CORRECTIONS-RECORD (§23.9) + evidence-log raw inputs (Q1/Q2/Q3 iPhone/GC pairs + Services GM cost lines) → re-audit REMAINS BLOCKED (F3 residual) → F3 fixed → final targeted confirmation **CLEARED FOR FOUNDER REVIEW** (4 Services GM formulas recompute match: 75.62/75.58/76.52/76.68%). Commits `144f78a`.
-
-5. **Bonus defect found + fixed during browser verification:** `frontend/src/pages/ReportArticlePage.tsx` never passed `remarkPlugins={[remarkGfm]}` → GFM tables (first report with a markdown table — §6 change-condition table) leaked as raw pipe text (FD #62 violation). Fixed: import + plugin added. **Ad-hoc verification 9/9 PASS** (behavioral render via node_modules: bug reproduced without plugin, `<table>` + no pipe leak with plugin; lint 0 errors; build exit 0). Browser-verified both article pages + /library (16 published), console 0 runtime errors, visual QA clean. Commit `9c7d98a` + evidence/ui/apple-leadership-transition/.
-
-6. **Push:** `7f60979..dccc798` (8 commits — includes concurrent FD #74/#75 from a parallel session) → origin/main, 0 unpushed.
+3. **Vault fd-register gap fixed.** FD-76 (Apple leadership-transition, 7 Aug morning session) was claimed synced but was NOT in the vault fd-register — backfilled with [BACKFILLED] marker + FD-77 row added; timestamp updated.
 
 ## FDs recorded this session
 
-- **FD #76 (item 92)** — Apple Leadership-Transition follow-up PUBLISHED with dissent (Option A, Founder gate): main + CRO companion; audit chain MAJOR→CLEARED; remark-gfm table fix recorded. Repo FOUNDERS-DECISIONS + PROJECT_STATE + _Hermes-Memory.
+- **FD #77 (item 93)** — Silver Valuation Anchor CORRECTED on Synchronized Fixing Data (Option A, Founder gate): dated §23.9 correction note published; originals preserved + CORRECTIONS-RECORD; library = 18. Repo FOUNDERS-DECISIONS + PROJECT_STATE + vault fd-register (FD-76 backfill + FD-77).
 
 ## Artifacts
 
-- Reports: `reports/apple-leadership-transition-2026-08-07.md` + `-opposing-` (published; /library = 16)
-- Evidence: `research/companies/AAPL/evidence-log.md` (§6c/§6d/§6e/§10), `source-inventory.md`, `audit-note-leadership-transition.md`, `re-audit-note-leadership-transition.md`, `CORRECTIONS-RECORD.md` (F1–F8)
-- UI evidence: `evidence/ui/apple-leadership-transition/` (VISUAL_QA.md + 2 screenshots)
-- Frontend fix: `frontend/src/pages/ReportArticlePage.tsx` (remark-gfm)
-- Memory: MEM-IIP-048 (decision) + MEM-IIP-049 (lesson) + session log
+- Reports: `reports/weekly-intelligence-2026-08-07.md` (WIL #2, published) + `reports/silver-valuation-anchor-correction-2026-08-07.md` (correction, published; /library = 18)
+- Records: `research/commodities/SLV/CORRECTIONS-RECORD.md` (SILVER-CORR-001)
+- Commits: `da44a6e` (WIL #2) → `019648e` (state sync) → `39717e7` (correction + corrections record) — all pushed, 0 unpushed
 
 ## Open items / next actions
 
-1. **Cadence:** Weekly Intelligence Letter #2 (~13 Aug); radar scanning pass on request.
-2. **IPM (separate project):** Week 2 review ~14 Aug — lease rates/COMEX retry, ratio vs re-entry threshold (>~75:1).
+1. **Cadence:** WIL #3 (~13 Aug, unless Founder resets); radar round 3 scanning pass on request (no cron without named FD).
+2. **IPM (separate project):** Week 2 review ~14 Aug — lease rates/COMEX retry, ratio vs re-entry threshold (>~75:1). Silver anchor now RESOLVED on IIP side (FD #77) — IPM's IPM-DECISION-001 data adopted as the correction source.
 3. **FD #73 pilot review ~21 Aug:** delegation-medium cost/quality verdict; revert to high on council/audit regression.
-4. **Silver §23.9 correction (Founder's call):** published silver reports carry unsynchronized valuation anchor (88:1 / low-$20s vs synchronized ~69:1, silver ~$62).
-5. Frozen-platform leftovers: UI-4, A-01, C-04/C-05/M-02, org-workflow intake; FD #74 deferred blog format (magazine UI) — Founder thinking, pending.
+4. Frozen-platform leftovers: UI-4, A-01, C-04/C-05/M-02, org-workflow intake; FD #74 deferred blog format (magazine UI) — Founder thinking, pending.
 
 ## Recommended next action
 
-**(a) Recommended:** continue cadence — Weekly Intelligence Letter #2 when due (~13 Aug), IPM Week 2 (~14 Aug), radar pass on request; let the FD #73 pilot run its 2 weeks (review ~21 Aug).
-- (b) If Founder wants: silver §23.9 correction (Founder's call) or the deferred blog-format decision (FD #74).
-- (c) New evidence window: Q4 FY26 earnings call (~Oct 2026) = first Ternus-era capital-allocation signal (per the new monitoring condition in the published note).
+**(a) Recommended:** let the cadence run — IPM Week 2 (~14 Aug), WIL #3 (~13 Aug), FD #73 pilot review (~21 Aug); radar round 3 on request.
+- (b) If Founder wants: radar round 3 scanning pass now, or the deferred blog-format decision (FD #74, magazine UI).
+- (c) New evidence window: Q4 FY26 earnings call (~Oct 2026) = first Ternus-era capital-allocation signal (per published monitoring condition).
 
 ## Closeout checklist
 
-- [x] FDs recorded? — FD #76 (item 92): FOUNDERS-DECISIONS + PROJECT_STATE + _Hermes-Memory
-- [x] Bible updated? — N/A (report publication + frontend presentation fix — no Constitution/Bible change; §23.9 corrections recorded in CORRECTIONS-RECORD)
-- [x] PROJECT_STATE.md updated? — fd_count 92, closeout_status row, next actions
-- [x] Verify-First? — every figure read from extracted 10-Q text / evidence-log before writing; ad-hoc 9/9 PASS on the frontend fix
-- [x] Verification tags? — ad-hoc verification script (hermes-verify-remark-gfm, 9/9 PASS) + browser (console 0 runtime errors, visual QA) + lint 0 + build exit 0; git pushed + ls-remote verified
-- [x] Acceptance lock? — N/A (no locked tests changed; frontend presentation-layer fix only, suite untouched)
+- [x] FDs recorded? — FD #77 (item 93): FOUNDERS-DECISIONS + PROJECT_STATE + vault fd-register (+ FD-76 backfill)
+- [x] Bible updated? — N/A (report publication + §23.9 corrections record — no Constitution/Bible change; correction doctrine followed)
+- [x] PROJECT_STATE.md updated? — fd_count 93, metrics (commits 271, library 18), closeout rows, next actions
+- [x] Verify-First? — every figure read from reports/IPM decision records before writing; library counts checked against /api/reports before claiming
+- [x] Verification tags? — API verify (17→18 published) + browser (/library cards, article typeset, LBMA table via remark-gfm, console 0 errors) + git pushed + ls-remote parity
+- [x] Acceptance lock? — N/A (no locked tests changed; publication + state docs only)
 - [x] Closeout status? — completed (this file)
-- [x] Gate check passed? — Quick-mode ops + research publication workflow (audit chain CLEARED before Founder gate); no material architecture gate applies
+- [x] Gate check passed? — research publication workflow (Founder gate A on both artifacts); no material architecture gate applies
 
-<!-- 2026-08-07 13:15 UTC+7 -->
+<!-- 2026-08-07 14:30 UTC+7 -->
