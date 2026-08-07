@@ -11,7 +11,7 @@ summary: "The CRO's opposing thesis: the proposed $5.5B ovarian-talc resolution 
 
 # JNJ's Talc Cleanup Can Fail by Sequence, Not Shock
 
-**RM-2026-0003 · CRO Independent Opposing Essay** — companion to "[JNJ's Talc Proposal: A Conditional Schedule, Not Finality](jnj-talc-resolution-2026-08-07.md)" · Point-in-time · Portfolio-blind · No valuation or recommendation
+**RM-2026-0003 · CRO Independent Opposing Essay** — companion to "[JNJ's Talc Proposal: A Conditional Schedule, Not Finality](/library/jnj-talc-resolution-2026-08-07)" · Point-in-time · Portfolio-blind · No valuation or recommendation
 
 ## The disputed object and control point
 
