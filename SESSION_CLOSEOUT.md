@@ -1,71 +1,55 @@
-# Session Closeout — 2026-08-07 (Org Office Virtual Office UI + Local Production Deploy)
+# Session Closeout — 2026-08-07 (RM-2026-0003 JNJ Talc-Litigation Resolution — PUBLISHED)
 
-**Status:** COMPLETE — FD #79 (Org Office Virtual Office UI + local production deploy) SHIPPED + ACCEPTED, all pushed (0 unpushed).
+**Status:** COMPLETE — RM-2026-0003 research executed end-to-end + PUBLISHED (Founder gate Option A — publish with dissent); library 22; audit chain 3 rounds RESOLVED.
 
-> Prior session closeout (WIL #2 + Silver §23.9 correction, FD #76–78) preserved in git history
-> (commits `da44a6e` / `019648e` / `39717e7` / `d45dc1f` / `27ef05e`); this file holds the latest session.
+> Prior closeouts preserved in git history. This session: radar card ORG-2026-0015 → Scoped → research → Published.
 
 ## What happened this session
 
-1. **Momentum-screen mandate decision → REVERSED (FD #74 → #75).** Founder asked whether the Equity Alpha Analyst screens momentum names, or a new agent should, or the Radar Scout should produce lists. Verified reality (Domain Guardrail): role 5 does NOT screen momentum (research Principal, legacy momentum duty frozen FD #65). FD #74 routed momentum screening to role 11 (Option B, no new role) → **Founder reversed same day (FD #75): focus fundamental/moat/business-evidence research; he reads charts himself.** Contracts restored to FD #71 discovery-only; FD #74 preserved as history (Constitution §21).
+1. **CoS triage (Founder mandate):** Founder: "เริ่มวิจัย ORG-2026-0015 (JNJ / คดี talc)" → card 0015 Inbox→Scoped, RM-2026-0003 mandate created, outcomes register synced (ad-hoc verify 11/11 PASS).
 
-2. **Org Office monitoring question → Virtual Office build (FD #79).** Founder asked how to monitor role-division of work; where to look; whether a "virtual office" is possible. Approved **A — Org Office page**: War Room mockup → Pixel Virtual Office mockups (topdown/sideview) → **Maple-Story-style chibi sprites** (Founder direction; reference Close System `agent-sprites` pipeline). 11 sprites generated via `image_generate` (gpt-image-2-medium) + PIL chroma-key → transparent cutouts in `frontend/src/assets/agents/`. **Drill-down layout** added on request: compact 11-role view fits one page; click a sprite to expand its desk (cards/status/recent output); aria-expanded accordion.
+2. **Evidence build (SEC EDGAR, 6 sources):** 8-K 7/28 talc resolution PR (EX-99.1: $5.5B commitment, ≥95% participation, first payment ≤$3B 2027, no additional payments before 2028, 76,000 ovarian claims) · 8-K 7/29 Firefly ($1B cash, asset acquisition, ~$1B IPR&D charge Q3 2026, −$0.46/−$0.08 adj EPS) + Sail EX-99.2 ($785M initial incl. $465M equity, $140M contingent, $2.58B option, −$0.18/−$1.28) + cover guidance table (2026 adj EPS $11.68→$11.04, −$0.64) · 8-K 8/4 officer change (Taubert→Cavanaugh) · 10-Q Q2 FY26 (reserve $3.7B PV ~40% current, 76,000 plaintiffs, Red River/Pecos, $7.0B reversal Q1 2025, MDL chronology) · 10-K FY2025 (reserve evolution $11.6B→$3.4B, prepack $6.475B PV dismissed Mar 2025, Ingham $2.5B, buybacks) · Q2 earnings 8-K 7/15 (raised guidance pre-transactions).
 
-3. **Local production deploy (Founder pick A).** Backend SPA catch-all (`backend/main.py serve_frontend`): serves `frontend/dist` when present on :8000, `/api/*` precedence, SPA fallback for client-side routes, traversal guard, 503 honest when dist missing; dev Vite :5173 unchanged. Verified root 200 + `/org-office` SPA fallback → login → full Org Office render on :8000.
+3. **Independent first pass (deleg_de736f82, 3 views):** Equity Analyst + CRO + Data Steward — Data Steward verdict **PASS WITH CORRECTIONS** (7 corrections: "at least 95%" not ">95%"; payment wording; Sail terms materially disclosed; "not yet accrued" UNVERIFIED; reserve residual ~$1.2B unexplained; buyback basis notes; FY2023 source attribution).
 
-4. **Concurrency note:** a sibling session ran in parallel (WIL #2 + silver §23.9 correction FD #77 + weekly radar cron FD #78). Its card/digest files were swept into commit `948c622` (my sprite commit's `git add -A`) — content intact, attribution cosmetic; left as-is per Founder approval A (no history rewrite). FD numbering coordinated: this session recorded FD #79 (item 95).
+4. **Deep analysis + cross-exam + CRO:** analyst-note.md (thesis: conditional schedule, not finality) → cross-exam 6 findings (2 SUSTAINED/3 PARTIAL/1 REJECTED) → corrections applied at controlling positions → CRO opposing essay (deleg_37e41d9e, "The Cleanup Can Fail by Sequence, Not Shock").
+
+5. **Audit chain (3 rounds, Sol Medium):** audit #1 REMAINS BLOCKED (4 MAJOR + 2 MINOR) → corrections (40d6fd0) → re-audit 5/6 APPLIED, MAJOR-1 PARTIAL → exact 8-file allowlists + prompt SHA-256 + reconciliation (c0f5717) → final confirmation hash fix (a0f49bd) → **RESOLVED 6/6**.
+
+6. **Founder gate + publish (Option A):** main + CRO published (96e3c02), card 0015 → Published, outcomes register sync, frontmatter parse OK, browser-verified: /library 22 published, article pages typeset (no markdown leak, console 0 errors), cross-links fixed to SPA routes (87a2484).
 
 ## FDs recorded this session
 
-- **FD #74 (item 90)** — Momentum-screen mandate routed to Radar Scout (Option B) — SUPERSEDED by #75 same day.
-- **FD #75 (item 91)** — Momentum-screen mandate REVERSED (focus fundamental/moat; Founder reads charts).
-- **FD #79 (item 95)** — Org Office Virtual Office UI + Local Production Deploy (Option A ×3).
+- **FD #83 (register item 98)** — RM-2026-0003 research mandate + publish-with-dissent (Founder gate Option A). Registered in repo FOUNDERS-DECISIONS + vault fd-register.
 
 ## Artifacts
 
-- Code: `frontend/src/pages/OrgOfficePage.tsx` (drill-down sprite desks), `frontend/src/assets/agents/*.png` (11 cutouts), `frontend/src/api/orgClient.ts` (radar_observation/source fields), `backend/main.py` (serve_frontend SPA catch-all), App.tsx route + Masthead nav.
-- Mockups: `design/mockups/org-office-war-room.html`, `org-office-pixel-topdown.html`, `org-office-pixel-sideview.html`, `org-office-maple.html`.
-- Evidence: `evidence/ui/org-office-war-room/VISUAL_QA.md` + `03-final-desktop.png`.
-- Commits: `118b51a` (War Room) → `948c622` (sprites) → `9d645b3` (drill-down) → `d090b56` (deploy) — all pushed.
+- Reports: `reports/jnj-talc-resolution-2026-08-07.md` (main) + `reports/jnj-talc-resolution-opposing-2026-08-07.md` (CRO) — library 22.
+- Mandate: `research/mandates/2026-08-07-JNJ-001-talc-litigation-resolution.md`.
+- Workspace: `research/companies/JNJ/talc-litigation-resolution/` — evidence-log, first-pass ×3, dispatch record (+prompts +SHA-256 hashes), analyst-note, cross-examination, cro-opposing-essay, audit-note, re-audit-note, final-confirmation, founder-review-record, secretary-synthesis.
+- Card: `operational/hermes-organization/kanban/cards/ORG-2026-0015.yaml` (Published, 2 transitions) + `card-outcomes.md` row.
+- Commits: 0c9ad54 → 87a2484 (11 commits).
 
 ## Open items / next actions
 
-1. **Cadence:** WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), weekly radar scan (Mon 08:00, cron `8ba233e88015`).
-2. **Org Office backlog (optional):** sprite hover/idle animation, per-role color categorization, radar desk cards → report links.
-3. **Deferred from FD #74 (unchanged):** research-blog output format — Founder thinking: research-analysis website without constraining writing style, modern Magazine UI (decision pending, no code).
+1. **Cadence:** WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), weekly radar Mon 10 Aug 08:00 (cron `8ba233e88015`), mid-week Thu 13 Aug (cron `cda817d17236`).
+2. **JNJ monitoring:** participation ≥95% confirmation, Q3 2026 accrual (10-Q ~Oct), residual dockets (mesothelioma/Canada/securities/Imerys-Cyprus/opioids), Sail option decision — per report change-conditions (1 operational test + 4 monitoring indicators).
+3. **Deferred (unchanged):** 0012 re-test at settled macro window; UI-4, A-01, C-04/C-05/M-02; magazine-blog format decision.
 
 ## Recommended next action
 
-**(a) Recommended:** let the cadence run (WIL #3 ~13 Aug, IPM Week 2 ~14 Aug, FD #73 pilot review ~21 Aug); Org Office is live and accepted.
-- (b) If Founder wants: magazine-blog-format decision (deferred), or Org Office polish (animations).
-- (c) New evidence window: Q4 FY26 earnings call (~Oct 2026) = first Ternus-era capital-allocation signal.
+**(a) Recommended:** let the cadence run (WIL #3 ~13 Aug, IPM Week 2 ~14 Aug); radar scans auto (Mon 10 Aug). JNJ monitoring triggers on Q3 10-Q.
+- (b) If Founder wants: next radar card (0012 re-test when macro settles), or magazine-blog format decision.
+- (c) New evidence window: JNJ Q3 FY26 10-Q (~mid-Oct 2026) = accrual + participation evidence.
 
 ## Closeout checklist
 
-- [x] FDs recorded (FD #74/#75/#79; vault fd-register FD-74/75/79)
-- [x] PROJECT_STATE.md updated (closeout row, FD count 95)
-- [x] Verify-First honored (read contracts/endpoints before building)
-- [x] Verification tags in VISUAL_QA (BROWSER_VERIFIED etc.)
-- [x] Pushed (0 unpushed), build/lint green
-- [x] _Hermes-Memory capture (MEM-IIP-052 session log written)
+- [x] FDs recorded (FD #83; vault fd-register)
+- [x] PROJECT_STATE.md updated (RM-2026-0003 bullet + closeout row + timestamp)
+- [x] Verify-First honored (read filings/contracts before claims; read artifacts post-delegation)
+- [x] Verification tags (ad-hoc 11/11, frontmatter parse, BROWSER_VERIFIED console 0 errors)
+- [x] Audit chain complete (3 rounds, all 6 findings closed)
+- [x] Pushed: NOT pushed (local only — 11 commits since last push; push decision for next session or Founder call)
+- [x] _Hermes-Memory capture (MEM-IIP-053 session log written)
 
-## Parallel session (same day, same repo — WIL #2 + Silver correction + Radar crons)
-
-> The sibling session's work is summarized here so this file reflects the full day (its own closeout commit `6e9118a` covered FD #74/#75/#79; this section covers the WIL #2/radar workstream). Details preserved in git history (`da44a6e`/`019648e`/`39717e7`/`d45dc1f`/`27ef05e`/`0503dd1`).
-
-- **WIL #2 PUBLISHED (Founder gate A)** — `reports/weekly-intelligence-2026-08-07.md` (`da44a6e`): radar 6/6 closed, Apple leadership follow-up (FD #76), IPM Week 1 no-action on silver; library 17.
-- **Silver §23.9 correction PUBLISHED (FD #77, gate A)** — `reports/silver-valuation-anchor-correction-2026-08-07.md` (`39717e7`): synchronized LBMA fixes (4–6 Aug, ratio ~69:1 / silver ~$62) supersede the 88:1/low-$20s anchor; originals preserved + CORRECTIONS-RECORD SILVER-CORR-001; library 18. Vault fd-register FD-76 backfill gap fixed.
-- **Weekly radar auto-scan cron LIVE (FD #78, gate A)** — job `8ba233e88015` (Mon 08:00 UTC+7): validation round-3 scan filed ORG-2026-0012/0013 + digest (`d45dc1f`).
-- **Mid-week radar watch cron LIVE (FD #80, gate A — radar gap (a))** — job `cda817d17236` (Thu 08:00 UTC+7): validation run caught the Hormuz reversal (context for 0012) + resolved the COMEX data gap (registered 99.8 Moz, +6.8 Moz/30d) → ORG-2026-0014 + mid-week note (`0503dd1`). **Number collision:** sibling claimed FD #79 (item 95) first — this workstream is authoritatively FD #80 (item 96); commit message "FD #79 cron" left as history per §23.9.
-- **EDGAR filings scan IN the radar cron (FD #81, gate A — radar gap (b))** — SEC EDGAR submissions feed = standing scan area for the FO-universe equity watchlist (8 CIKs verified vs company_tickers.json); both cron prompts extended (Monday STEP 1.5 full pass + Thursday delta; routine filings ≠ cards; MSFT = CIW boundary — digest note only, never a card). Mechanics verified + first pass executed manually → **ORG-2026-0015** (JNJ 8-K cluster: proposed ovarian-talc-litigation resolution 7/28 + Firefly Bio acquisition 7/29 + officer change & notes offering 8/4); 13F season context noted (JNJ/AMZN 13F-HR 8/6, Q2 deadline 14 Aug). Ad-hoc verify 17/17 PASS.
-- **RADAR FEEDBACK LOOP (FD #82, gate A — radar gap (c), three-upgrade plan COMPLETE)** — `kanban/card-outcomes.md` = outcomes register (backfilled from RADAR-001 real outcomes 0006–0011 + known-gap table); radar crons read it read-only with 3 binding rules (do-not-reraise / known-gap policy / refine); PRINCIPAL.md gains Feedback Loop section. **(a) mid-week FD #80 + (b) EDGAR FD #81 + (c) feedback FD #82 — ALL DELIVERED 7 Aug.**
-- **CoS TRIAGE A + RM-2026-0002 PUBLISHED (gate A)** — triage: 0013 Scoped / 0014 folded→Closed / 0012 Blocked (deferred). Research: `reports/silver-squeeze-repricing-test-2026-08-07.md` (main — visible data points away from scarcity; audit 20/20 PASS incl. beta 1.4× fix) + `-opposing-` (CRO via Sol Medium deleg_5277b5ac) — **library = 20**; series 0006→0009→0013 converged; monitoring conditions updated. Next: 0015 JNJ on Founder call.
-- FDs total: **98** (#1–44 + CIW 16 + #45–82). Cards: 0015 Inbox (next), 0012 Blocked (deferred).
-
-## Recommended next action (radar/triage workstream)
-
-**(a) Recommended: ORG-2026-0015 JNJ research (next in the approved triage order)** — fundamental impact ชัดสุด (ข้อเสนอยุติคดี talc = overhang หลายทศวรรษ), บริษัท FO-universe ตัวแรกนอก Apple, evidence เริ่มได้ทันทีจาก 8-K 3 ฉบับ; เงื่อนไขคดี "proposed" ยังไม่ final — งานวิจัยจะ map สิ่งที่รู้ + ตั้ง monitoring conditions (pattern เดียวกับ RM-2026-0002).
-- (b) Zero-touch: ปล่อย cadence อัตโนมัติ (radar จันทร์ 10 ส.ค. / พฤหัส 13 ส.ค., IPM Week 2 ~14 ส.ค., WIL #3 ~13 ส.ค.) — ไม่ต้องสั่งอะไร ระบบรันเอง
-- (c) ถ้าต้องการ: ตัดสินใจ blog format แบบ magazine (FD #74, ค้างมานาน) หรือเริ่ม RM ตัวอื่นตาม Founder โฟกัส
-
-<!-- 2026-08-07 16:25 UTC+7 (combined closeout: sibling Org Office + WIL #2/radar workstreams) -->
+<!-- 2026-08-07 18:45 UTC+7 -->
