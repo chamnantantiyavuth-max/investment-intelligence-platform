@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Magazine C — Hybrid (mockup)</title>
+<style>
+  :root {
+    --bg-page: #FAFAF7;
+    --bg-panel: #F1F1EA;
+    --ink: #1A1C1E;
+    --ink-2: #5A5E63;
+    --ink-3: #8A8E93;
+    --rule: #DDDED6;
+    --accent: #1F4E79;
+    --positive: #2E7D5B;
+    --negative: #A34A4A;
+    --warning: #8A6D1F;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg-page);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 960px; margin: 0 auto; padding: 0 24px 56px; }
+
+  /* ── App header (unchanged from current) ──── */
+  .app-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 0 14px; border-bottom: 1px solid var(--rule);
+  }
+  .app-header .brand { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+  .app-header .brand .accent { color: var(--accent); }
+  .app-header .nav { display: flex; gap: 22px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600; color: var(--ink-2); }
+  .app-header .nav a { color: var(--ink-2); text-decoration: none; }
+  .app-header .nav a.active { color: var(--ink); }
+  .app-header .nav a:hover { color: var(--accent); }
+
+  /* ── Page header (current style + magazine kicker) ── */
+  .page-head { padding: 22px 0 14px; border-bottom: 1px solid var(--rule); }
+  .page-head .kicker { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); }
+  .page-head h1 { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin-top: 4px; }
+  .page-head .sub { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+
+  /* ── Cover story (compact — the new magazine addition) ── */
+  .cover {
+    margin: 20px 0 0; padding: 22px 24px;
+    background: var(--bg-panel); border-radius: 6px;
+  }
+  .cover .rubric { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); }
+  .cover h2 { font-family: var(--font-display); font-size: 24px; line-height: 1.2; font-weight: 700; margin-top: 8px; max-width: 720px; }
+  .cover .standfirst { font-size: 13.5px; color: var(--ink-2); line-height: 1.6; margin-top: 8px; max-width: 720px; }
+  .cover .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .cover .meta .author { color: var(--ink-2); }
+  .cover .links { margin-top: 12px; font-size: 12px; font-weight: 600; display: flex; gap: 20px; }
+  .cover .links a { color: var(--accent); text-decoration: none; }
+  .cover .links .opposing { color: var(--negative); }
+
+  /* ── Section head ── */
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin: 26px 0 8px; }
+  .section-head h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ink); }
+  .section-head .count { font-size: 10.5px; color: var(--ink-3); font-family: var(--font-mono); }
+
+  /* ── Series rows ── */
+  .series-row {
+    display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; align-items: baseline;
+    padding: 10px 4px; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink);
+  }
+  .series-row:hover { background: var(--bg-panel); }
+  .series-row .name { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+  .series-row:hover .name { color: var(--accent); }
+  .series-row .latest { font-size: 11.5px; color: var(--ink-2); }
+  .series-row .n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+
+  /* ── Ledger (unchanged current list) ── */
+  .ledger-row {
+    display: grid; grid-template-columns: 90px 1fr 120px 110px; gap: 14px; align-items: baseline;
+    padding: 10px 4px; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink);
+  }
+  .ledger-row:hover { background: var(--bg-panel); }
+  .ledger-row:hover .title { color: var(--accent); }
+  .ledger-row .date { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+  .ledger-row .title { font-family: var(--font-display); font-size: 14.5px; font-weight: 600; }
+  .ledger-row .type { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-2); }
+  .ledger-row .subject { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-2); text-align: right; }
+
+  /* ── Article treatment: AS-IS (current, unchanged) ── */
+  .article-preview { margin-top: 40px; border-top: 1px solid var(--rule); padding-top: 18px; }
+  .article-preview .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-3); font-weight: 700; }
+  .article-preview .note { font-size: 11px; color: var(--positive); margin-top: 2px; font-weight: 600; }
+  .article-as-is {
+    margin-top: 14px; padding: 24px 28px;
+    border: 1px dashed var(--rule); border-radius: 6px;
+  }
+  .article-as-is .kicker { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); }
+  .article-as-is h5 { font-family: var(--font-display); font-size: 24px; font-weight: 700; line-height: 1.2; margin-top: 8px; }
+  .article-as-is .standfirst { font-size: 13.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.6; }
+  .article-as-is .meta { margin-top: 10px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+  .article-as-is .provenance { margin-top: 12px; font-size: 11px; color: var(--ink-2); background: var(--bg-panel); padding: 10px 14px; border-radius: 4px; }
+  .article-as-is .body { font-size: 13.5px; line-height: 1.7; margin-top: 14px; color: var(--ink); max-width: 640px; }
+
+  /* ── Footer ── */
+  .footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.12em; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ APP HEADER (unchanged) ══ -->
+  <header class="app-header">
+    <span class="brand">Research<span class="accent">Desk</span></span>
+    <nav class="nav">
+      <a href="#">Dashboard</a>
+      <a href="#">Research</a>
+      <a href="#" class="active">Library</a>
+      <a href="#">Kanban</a>
+    </nav>
+  </header>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="page-head">
+    <p class="kicker">Research library</p>
+    <h1>The library</h1>
+    <p class="sub">22 published reports · every report carries its evidence, its date, and its status</p>
+  </div>
+
+  <!-- ══ COVER STORY (new) ══ -->
+  <section class="cover">
+    <p class="rubric">Company Research · JNJ</p>
+    <h2>JNJ's Talc Proposal: A Conditional Schedule, Not Finality</h2>
+    <p class="standfirst">The $5.5B ovarian-talc resolution is participation-gated (≥95% of 76,000 claims),
+    cash-deferred (≤$3B in 2027), and accounting-unproven — a schedule, not finality.</p>
+    <div class="meta">
+      <span class="author">Equity Research · RM-2026-0003</span>
+      <span>Aug 7, 2026</span>
+      <span style="color:var(--positive)">● published</span>
+    </div>
+    <div class="links">
+      <a href="#">Read the report →</a>
+      <a href="#" class="opposing">Opposing essay (CRO) →</a>
+    </div>
+  </section>
+
+  <!-- ══ SERIES ══ -->
+  <div class="section-head">
+    <h4>Series</h4>
+    <span class="count">read in order</span>
+  </div>
+  <div class="series-row" href="#">
+    <span class="name">Apple — Moat &amp; Buyback</span>
+    <span class="latest">8 notes · latest: Leadership Transition (07 Aug)</span>
+    <span class="n">8</span>
+  </div>
+  <div class="series-row" href="#">
+    <span class="name">Silver — Deficit &amp; Squeeze</span>
+    <span class="latest">8 notes · latest: Squeeze Re-Pricing Test (07 Aug)</span>
+    <span class="n">8</span>
+  </div>
+  <div class="series-row" href="#">
+    <span class="name">Gold — Transmission</span>
+    <span class="latest">2 notes · latest: Transmission Under Test (06 Aug)</span>
+    <span class="n">2</span>
+  </div>
+  <div class="series-row" href="#">
+    <span class="name">JNJ — Talc Litigation</span>
+    <span class="latest">2 notes · latest: Conditional Schedule (07 Aug)</span>
+    <span class="n">2</span>
+  </div>
+  <div class="series-row" href="#">
+    <span class="name">Weekly Intelligence Letter</span>
+    <span class="latest">2 letters · Week 2 (07 Aug)</span>
+    <span class="n">2</span>
+  </div>
+
+  <!-- ══ FULL LEDGER (unchanged current list) ══ -->
+  <div class="section-head">
+    <h4>All reports</h4>
+    <span class="count">22</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">07 Aug</span>
+    <span class="title">Silver's Squeeze Re-Pricing Under Test: The Visible Data Points Away From Scarcity</span>
+    <span class="type">Product</span>
+    <span class="subject">Silver</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">07 Aug</span>
+    <span class="title">Silver Valuation Anchor: Corrected on Synchronized Fixing Data</span>
+    <span class="type">Correction</span>
+    <span class="subject">Silver</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">07 Aug</span>
+    <span class="title">Apple Services Margin: Verification of the Reported Claim</span>
+    <span class="type">Company</span>
+    <span class="subject">AAPL</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">07 Aug</span>
+    <span class="title">London Silver Vaults: First Watch-Item Test</span>
+    <span class="type">Product</span>
+    <span class="subject">Silver</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Gold vs Real Rates: Transmission Under Test</span>
+    <span class="type">Product</span>
+    <span class="subject">Gold</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Apple's Buyback Mask: First Test — Q3 FY26</span>
+    <span class="type">Company</span>
+    <span class="subject">AAPL</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Silver's Deficit: Persisting Without Demand Growth</span>
+    <span class="type">Product</span>
+    <span class="subject">Silver</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Apple's Moat: How Durable, and What Would Break It</span>
+    <span class="type">Company</span>
+    <span class="subject">AAPL</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Silver — The Metals Trade Hiding in Plain Sight</span>
+    <span class="type">Product</span>
+    <span class="subject">Silver</span>
+  </div>
+  <div class="ledger-row" href="#">
+    <span class="date">06 Aug</span>
+    <span class="title">Weekly Intelligence Letter — Week 1: The Org Stands Up</span>
+    <span class="type">Weekly</span>
+    <span class="subject">IIP Org</span>
+  </div>
+
+  <!-- ══ ARTICLE TREATMENT: AS-IS ══ -->
+  <div class="article-preview">
+    <p class="label">Article page treatment — UNCHANGED (current, FD #72-approved)</p>
+    <p class="note">✓ Kept exactly as-is — the verified typeset research-note page is untouched.</p>
+    <div class="article-as-is">
+      <p class="kicker">Company Research Note · JNJ · RM-2026-0003</p>
+      <h5>JNJ's Talc Proposal: A Conditional Schedule, Not Finality</h5>
+      <p class="standfirst">A $5.5B commitment that executes only if 95% of 76,000 claimants agree, first
+      cash deferred to 2027, and the balance sheet has not yet accrued the plan.</p>
+      <div class="meta">Equity Research · Published Aug 7, 2026 · Advisory only · Portfolio-blind</div>
+      <div class="provenance">Provenance: 8-K 7/28/26 · Real data · Point-in-time (FD #58)</div>
+      <p class="body">The filing is a schedule, not a settlement. JNJ proposes to pay $5.5 billion to
+      resolve the ovarian-talc claims — but the money moves only if participation clears 95% of the
+      76,000 claimants, the first tranche is capped at $3 billion and deferred to 2027, and the $3.7
+      billion reserve carried at Q2-26 predates the proposal entirely.</p>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="footer">
+    <span>Research Desk · Library</span>
+    <span>Advisory only · Portfolio-blind</span>
+  </footer>
+
+</div>
+</body>
+</html>
