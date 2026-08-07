@@ -33,6 +33,31 @@ app.include_router(ii_routes.router)
 app.include_router(org_routes.router)
 app.include_router(report_routes.router)
 
+# ── Production frontend (FD #62 blog + org surfaces) ─────────────────────────
+# Serve the built SPA from frontend/dist when present (local production deploy,
+# Founder pick A 2026-08-07). Presentation layer only: no API change, adapters
+# untouched. /api/* routes register above and take precedence; SPA fallback
+# returns index.html for client-side routes. Mounted only when dist exists
+# (dev mode keeps using Vite on :5173).
+from pathlib import Path
+from fastapi.responses import FileResponse
+
+FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_frontend(full_path: str):
+    if not FRONTEND_DIST.is_dir():
+        return JSONResponse(status_code=503, content={"detail": "frontend not built"})
+    candidate = (FRONTEND_DIST / full_path).resolve()
+    try:
+        candidate.relative_to(FRONTEND_DIST.resolve())
+    except ValueError:
+        raise HTTPException(status_code=404, detail="not found")
+    if full_path and candidate.is_file():
+        return FileResponse(candidate)
+    return FileResponse(FRONTEND_DIST / "index.html")
+
 
 # ── Auth endpoints ────────────────────────────────────────────────────────────
 class LoginBody(BaseModel):
