@@ -64,7 +64,7 @@ Where the field is not filed, the condition is a monitoring question with a prox
 
 ## The dissenting view (CRO opposing essay, prepared as a review-stage companion)
 
-> Companion report: [jnj-talc-resolution-opposing-2026-08-07.md](/library/jnj-talc-resolution-opposing-2026-08-07) — the CRO's full independent opposing thesis ("The Cleanup Can Fail by Sequence, Not Shock").
+> Companion report: [JNJ's Talc Cleanup Can Fail by Sequence, Not Shock](/library/jnj-talc-resolution-opposing-2026-08-07) — the CRO's full independent opposing thesis ("The Cleanup Can Fail by Sequence, Not Shock").
 
 The CRO's strongest coherent counter-case holds that the announcement is not yet a cleanup because participation, recognition, residual dockets, and capital deployment must execute through the same control point. Ordinary sequential slippage — incomplete claimant files, uneven state-court implementation, a revised accrual, recurring residual expense — can preserve strong sales, managed adjusted EPS, buyback-supported per-share results, and favorable pipeline news while legal cash and expense remain recurrent. The main essay's response: the favorable MDL development and the exact $0.64 transaction bridge are real and support the conditional-improvement read, but they establish negotiating strength and clean transaction attribution, not settlement execution. The disagreement is real and preserved: a conditioned schedule as evidence of uncertainty compression vs verified participation, stable recognition, and declining residual expense as the event that constitutes it.
 

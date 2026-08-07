@@ -8,9 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Typeset report article (FD #62) — markdown SOURCE rendered as a professional
- *  research note. The reader never sees markdown: headings, prose, tables, and
- *  quotes are mapped to the typeset standard. */
+/**
+ * Typeset report article — Modern Digital Magazine treatment (FD #84, direction B).
+ * Markdown SOURCE rendered as a magazine feature: article hero (kicker + display
+ * headline + standfirst + provenance chips), typeset body with pull-quote styling,
+ * series footer navigation. The reader never sees raw markdown.
+ */
 
 const TYPE_LABEL: Record<string, string> = {
   company: "Company Research Note",
@@ -28,18 +31,34 @@ function statusTone(status: string): string | undefined {
 
 function TitleBlock({ r }: { r: ReportDetail }) {
   return (
-    <header className="border-b border-rule pb-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] uppercase tracking-[0.1em] text-ink-3">{TYPE_LABEL[r.type] ?? r.type}</span>
-        {r.subject && <span className="rounded-sm bg-bg-panel px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-ink-2">{r.subject}</span>}
-        <span className={cn("text-[10.5px] font-semibold uppercase tracking-[0.12em]", statusTone(r.status))}>{r.status}</span>
-      </div>
-      <h1 className="mt-2 font-display text-h1 font-bold leading-tight tracking-tight">{r.title}</h1>
-      <p className="mt-2 font-mono text-[12px] text-ink-2">
+    <header>
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+        {TYPE_LABEL[r.type] ?? r.type}
+        {r.subject ? ` · ${r.subject}` : ""}
+      </p>
+      <h1 className="mt-3 font-display text-[clamp(28px,4vw,40px)] font-bold leading-[1.08] tracking-[-0.015em]">
+        {r.title}
+      </h1>
+      {r.summary && <p className="mt-3 max-w-[700px] text-[16.5px] leading-[1.6] text-ink-2">{r.summary}</p>}
+      <p className="mt-4 font-mono text-[11px] text-ink-3">
         {r.date}
         {r.author ? ` · by ${r.author}` : ""}
         {r.updated && r.updated !== r.date ? ` · updated ${r.updated}` : ""}
+        <span className={cn("ml-3 font-sans text-[10.5px] font-semibold uppercase tracking-[0.12em]", statusTone(r.status))}>
+          {r.status}
+        </span>
       </p>
+      <div className="mt-4 flex flex-wrap gap-4 rounded-[6px] bg-bg-panel px-4 py-3 text-[11px] text-ink-2">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-positive" aria-hidden="true" /> Real data · sourced &amp; dated
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-info" aria-hidden="true" /> Portfolio-blind
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-ink-3" aria-hidden="true" /> Advisory only — no buy/sell instruction
+        </span>
+      </div>
     </header>
   );
 }
@@ -97,7 +116,7 @@ export default function ReportArticlePage() {
         <TitleBlock r={report} />
       </div>
 
-      <article className="mt-8 space-y-0 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-rule [&_h2]:pb-2 [&_h2]:font-display [&_h2]:text-[20px] [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:mt-3 [&_p]:text-[14.5px] [&_p]:leading-[1.75] [&_p]:text-ink-1 [&_ul]:mt-3 [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:mt-3 [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:text-[14px] [&_li]:leading-relaxed [&_li]:text-ink-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:my-6 [&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-4 [&_blockquote]:font-display [&_blockquote]:text-[16px] [&_blockquote]:italic [&_blockquote]:leading-relaxed [&_blockquote]:text-ink-2">
+      <article className="mt-8 space-y-0 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-rule [&_h2]:pb-2 [&_h2]:font-display [&_h2]:text-[20px] [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:mt-3 [&_p]:text-[14.5px] [&_p]:leading-[1.75] [&_p]:text-ink-1 [&_ul]:mt-3 [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:mt-3 [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:text-[14px] [&_li]:leading-relaxed [&_li]:text-ink-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:my-6 [&_blockquote]:border-l-[3px] [&_blockquote]:border-primary [&_blockquote]:pl-6 [&_blockquote]:font-display [&_blockquote]:text-[20px] [&_blockquote]:italic [&_blockquote]:leading-[1.4] [&_blockquote]:text-ink">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -117,13 +136,20 @@ export default function ReportArticlePage() {
         </ReactMarkdown>
       </article>
 
-      <footer className="mt-10 flex items-baseline justify-between border-t border-rule pt-4 text-[11px] text-ink-3">
-        <span>Research library · {report.date}</span>
-        {siblings.prev && (
-          <Link to={`/library/${siblings.prev.slug}`} className="font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground">
-            ← Earlier {report.subject} note
-          </Link>
-        )}
+      <footer className="mt-10 flex items-baseline justify-between gap-4 border-t border-rule pt-4 text-[11px] text-ink-3">
+        <span>Research Intelligence · {report.date}</span>
+        <div className="flex items-baseline gap-5">
+          {siblings.next && (
+            <Link to={`/library/${siblings.next.slug}`} className="font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground">
+              Later {report.subject} note →
+            </Link>
+          )}
+          {siblings.prev && (
+            <Link to={`/library/${siblings.prev.slug}`} className="font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground">
+              ← Earlier {report.subject} note
+            </Link>
+          )}
+        </div>
       </footer>
     </div>
   );
