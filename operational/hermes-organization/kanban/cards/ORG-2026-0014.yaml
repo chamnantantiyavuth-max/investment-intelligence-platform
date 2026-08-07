@@ -1,0 +1,30 @@
+card_id: ORG-2026-0014
+title: "Radar: COMEX deliverable silver now VERIFIED — registered stocks 99.8 Moz (2026-08-06), RISING +6.8 Moz over 30 days during silver's +12% week (mid-week watch, FD #79)"
+research_question: Does the first current verification of the standing COMEX watch item — registered (deliverable) silver stocks at 99.8 Moz (2026-08-06), up +6.8 Moz from 93.0 Moz (2026-07-07), i.e., ACCUMULATING while silver rallies +12% — constitute testable evidence AGAINST the 0006/0009 physical-liquidity-squeeze re-pricing, or do warrant/registered-vs-eligible mechanics (and the aggregator source, not CME primary) make the level compatible with genuine tightness — and does this reconcile the CoinWeek 'below 100 Moz' figure (2026-02-13) that the Monday scan could only cite as stale?
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: COMMODITY
+principal_owner: org-commodity-analyst
+assistant_owner: Commodity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-07
+required_by: triage
+expected_artifact: "commodity note / 0006-0009 watch-item test — verified COMEX registered stock trend vs liquidity-squeeze re-pricing (warrant mechanics, registered vs eligible, CME primary confirmation)"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: DATA READY WITH LIMITATIONS
+validation_status: null
+risk_status: null
+audit_status: null
+radar_observation: "COMEX silver warehouse inventory (metalcharts.org, aggregator — CME Group primary IP-blocked this pass, 403): TOTAL 334.6 Moz as of 2026-08-06, of which REGISTERED (deliverable against futures) 99.8 Moz and eligible 234.8 Moz; total +0.6 Moz from prior report. Registered series: 93.0 Moz (2026-07-07) → 99.8 Moz (2026-08-06) = +6.8 Moz / +7.3% over 30 days — DELIVERABLE STOCKS RISING, not drawing down, across the window containing silver's sharpest rally of the recovery leg (COMEX Sep 26 SI=F 57.67 on 2026-08-03 → 64.70 intraday 2026-08-07 08:35 UTC = +12.2% in 4 sessions; spot XAG 64.438, gold-api.com 2026-08-07 08:45 UTC). This also supplies the first current reconciliation of the CoinWeek figure ('COMEX Silver Inventories Fall Below 100 Million Ounces', 2026-02-13) that the Monday scan (ORG-2026-0013) could only flag as stale: read as the registered-stocks measure, ~99.8 Moz now vs '<100 Moz' in Feb 2026 — the level is roughly UNCHANGED over six months, not collapsing, and the 30-day trend is up. Market context (sourced commentary, not verified data): Moomoo 2026-08-07 03:46 GMT — 'Silver surged 8.3% in a single week, with Goldman Sachs warning that systemic short-covering may have already begun' (analyst claim, point-in-time). THE OBSERVATION: the market is pricing a physical-deliverable squeeze story (0006/0009/0013 thread) while the only current, dated deliverable-stock figure available this pass shows registered stocks ACCUMULATING — the price move and the verified inventory direction disagree, which is exactly the kind of divergence a watch-item test should be able to discriminate. Raises, does not answer: whether the squeeze thesis survives contact with the verified data, and whether Data Steward D2 confirmation of the aggregator figure against CME primary (once unblocked) should be pulled ahead."
+radar_source: "https://metalcharts.org/comex (COMEX Warehouse Inventory, silver 334.6M oz total / 99.8M oz registered / 234.8M oz eligible, gold 26,935,424 oz total; last updated Aug 6, 2026 — pulled 2026-08-07 08:50 UTC); https://query1.finance.yahoo.com/v8/finance/chart/SI=F (pulled 2026-08-07 08:35 UTC); https://api.gold-api.com/price/XAG (2026-08-07 08:45 UTC); https://news.google.com/rss/search?q=COMEX+silver+stocks (CoinWeek 2026-02-13 '<100 Million Ounces' — stale flag FD #58, now reconciled; Moomoo/GS short-covering 2026-08-07 03:46 GMT; both pulled 2026-08-07 08:40-08:50 UTC)"
+open_decision_slots: []
+dependencies: [ORG-2026-0006, ORG-2026-0009, ORG-2026-0013]
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-07
