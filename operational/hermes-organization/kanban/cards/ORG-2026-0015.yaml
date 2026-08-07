@@ -2,11 +2,11 @@ card_id: ORG-2026-0015
 title: "Radar: JNJ files three 8-Ks in five trading days — proposed talc-litigation resolution, Firefly Bio acquisition, and officer change + notes offering"
 research_question: Does JNJ's 8-K cluster (28 Jul–4 Aug 2026) signal a deliberate cleanup of the multi-decade talc-litigation overhang — what are the terms and timing of the proposed ovarian-talc resolution, what contingent liability remains (ovarian + non-ovarian talc, bankruptcy-claims channels), and does the Firefly Bio acquisition + notes issuance change the capital-deployment read on JNJ's fundamental picture?
 decision_user: Founder
-workflow_column: Scoped
+workflow_column: Published
 approval_status: null
 monitoring_status: null
 thesis_status: null
-research_state: Scoped
+research_state: Published
 artifact_state: null
 domain: EQUITY
 principal_owner: org-equity-analyst
@@ -20,13 +20,13 @@ evidence_standard: "point-in-time (FD #58); figures sourced + dated"
 data_status: ASSESSED
 validation_status: null
 risk_status: null
-audit_status: null
+audit_status: CLEARED
 radar_observation: "JNJ filed THREE 8-Ks in five trading days (first EDGAR filing-scan pass of the FO universe, 2026-08-07): (1) 8-K 2026-07-28 (accession 0000200406-26-000155): 'Johnson & Johnson Announces a Proposed Resolution of Ovarian Talc Litigation' — follows a favorable MDL court causation ruling; company calls it an 'efficient conclusion to the talc litigation' (EX-99.1). (2) 8-K 2026-07-29 (0000200406-26-000163): completed acquisition of Firefly Bio, Inc. — oncology biotech, pan-KRAS degraders, 'next-generation oncology innovation' (EX-99.1). (3) 8-K 2026-08-04 (0000200406-26-000167): Item 5.02 (officer departure/appointment) + Item 9.01 + multi-tranche notes offering (A-1.150% Notes due 2028 … 3.350% Notes due 2036). Cluster intensity (3 material 8-Ks in 5 trading days) is unusual for JNJ; the talc item is the highest-materiality development — a proposed resolution of the multi-decade talc-litigation overhang. Raises, does not answer: resolution terms/timing, residual non-ovarian/other-channel exposure, and whether this is a one-off or part of a broader legal cleanup. 13F context: JNJ also filed 13F-HR 2026-08-06 (Q2 season, due 14 Aug)."
 radar_source: "SEC EDGAR submissions API https://data.sec.gov/submissions/CIK0000200406.json + filing index.json for accessions 0000200406-26-000155 / -000163 / -000167 (all pulled 2026-08-07; primary docs jnj-20260727.htm / jnj-20260729.htm / jnj-20260804.htm — item numbers + EX-99.1 snippets read from the raw filings)"
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "SCOPED (RM-2026-0003, Founder triage 7 Aug) — research execution in progress: evidence build → first pass → essay → cross-exam → CRO → audit → synthesis → Founder gate"
+next_action: "PUBLISHED (RM-2026-0003, Founder gate Option A — publish with dissent, 7 Aug) — reports/jnj-talc-resolution-2026-08-07.md (main) + -opposing- (CRO); audit chain RESOLVED 6/6; library 22"
 last_updated: 2026-08-07
 transition_log:
   - from: Inbox
@@ -34,5 +34,12 @@ transition_log:
     reason: "Founder triage (2026-08-07) — JNJ talc-litigation resolution research pass; RM-2026-0003 mandate created"
     evidence_refs: [card-outcomes.md, RM-2026-0003]
     actor: "CoS triage / IC Secretary (session 2026-08-07)"
+    timestamp: 2026-08-07
+    rule_version: "KANBAN-CONTRACT v0.1 §3"
+  - from: Scoped
+    to: Published
+    reason: "RM-2026-0003 research complete — Founder gate Option A (publish with dissent, 2026-08-07); audit chain 3 rounds RESOLVED (4 MAJOR + 2 MINOR closed); main + CRO companion published"
+    evidence_refs: [reports/jnj-talc-resolution-2026-08-07.md, reports/jnj-talc-resolution-opposing-2026-08-07.md, research/companies/JNJ/talc-litigation-resolution/founder-review-record.md]
+    actor: "IC Secretary synthesis (session 2026-08-07)"
     timestamp: 2026-08-07
     rule_version: "KANBAN-CONTRACT v0.1 §3"

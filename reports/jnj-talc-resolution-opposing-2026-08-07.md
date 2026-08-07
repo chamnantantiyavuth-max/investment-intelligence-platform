@@ -4,8 +4,8 @@ type: company
 subject: "JNJ"
 date: 2026-08-07
 author: "CRO (RM-2026-0003) — Independent Opposing Thesis"
-status: review
-updated: 2026-08-07
+status: published
+updated: 2026-08-07 (published after Founder gate, Option A — publish with dissent)
 summary: "The CRO's opposing thesis: the proposed $5.5B ovarian-talc resolution is not yet a cleanup — participation, accounting recognition, residual dockets, and concurrent capital deployment must execute through the same control point. Ordinary sequential slippage (incomplete claimant elections, revised accrual, recurring residual expense) can preserve strong sales, managed adjusted EPS, buyback-supported per-share results, and favorable pipeline news while legal cash and expense remain recurrent. The opposing case is proven first by settlement-specific evidence — delayed participation, revised economics, or an open ovarian provision — not by a weak quarter."
 ---
 
