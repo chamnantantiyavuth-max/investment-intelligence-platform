@@ -32,7 +32,7 @@ transition_log:
   - from: Inbox
     to: Scoped
     reason: "Founder triage (2026-08-07) — JNJ talc-litigation resolution research pass; RM-2026-0003 mandate created"
-    evidence_refs: [card-outcomes.md, research/mandates/2026-08-07-JNJ-001-talc-litigation-resolution.md]
+    evidence_refs: [card-outcomes.md, RM-2026-0003]
     actor: "CoS triage / IC Secretary (session 2026-08-07)"
     timestamp: 2026-08-07
     rule_version: "KANBAN-CONTRACT v0.1 §3"
