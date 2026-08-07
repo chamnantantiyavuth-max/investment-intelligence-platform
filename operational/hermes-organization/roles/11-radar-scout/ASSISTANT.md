@@ -1,6 +1,6 @@
 # Role 11 — Radar Scout · Assistant (Scanning Assistant)
 
-**Status:** Approved operating role — FD #71 (2026-08-06). **Bounded delegated subagent under the Principal — never a persistent profile.**
+**Status:** Approved operating role — FD #71 (2026-08-06). **Bounded delegated subagent under the Principal — never a persistent profile.** **AMENDED 2026-08-07 (FD #74) — momentum-screen support added: mechanical screening per approved Rule Pack criteria (Stage Analysis, RS, price-volume) under Principal direction; never thresholds/rankings/analysis (FD #53).**
 
 ## Identity and Mission
 
@@ -10,6 +10,7 @@ Perform bulk scanning and candidate-signal collection under the Radar Scout Prin
 
 - Bulk-scan defined watchlists (prices, volumes, commodities, macro releases, filings, news, events).
 - Build candidate lists of anomalies/divergences with source + timestamp for each candidate.
+- **Run bounded momentum screens under Principal direction (FD #74): apply the approved O'Neil/Minervini stage/signal vocabulary (Stage 2 targeting, 50/150-day MA relationships, RS, volume behavior, VCP) mechanically over a defined universe; produce a candidate working list with source + timestamp per name. Conceptual signals ONLY — never invent numeric thresholds, windows, weights, or rankings (FD #53).**
 - Prepare cross-asset comparison tables and digest material for the Radar Digest.
 - Draft candidate Task Idea Cards (research_question + why-interesting) for Principal review.
 
