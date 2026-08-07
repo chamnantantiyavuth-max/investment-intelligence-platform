@@ -21,13 +21,13 @@
 | FY2024 year-end | ~$11.6B PV (nominal ~$13.5B) | after cumulative ~$5.0B FY2024 charge for prepack plan | SRC-05 Note 19 |
 | Q4 2025 | ~$3.4B PV (~1/3 current) | after March 2025 Texas dismissal → ~$7.0B reversed | SRC-05 Note 19 |
 | Q2 2026 (6/28/26) | ~$3.7B PV (~40% current) | executed settlements + litigation defense + other costs | SRC-04 Note 11 |
-| 7/27/26 proposal | $5.5B commitment (new) | proposed ovarian resolution; first payment ≤$3B in 2027, none before 2028 | SRC-01 |
+| 7/27/26 proposal | $5.5B commitment (new) | proposed ovarian resolution; first payment of no more than $3B in 2027; **no additional payments due before 2028** | SRC-01 |
 
 ## Key facts (each dated + sourced)
 
 ### 1. Proposed ovarian talc resolution (SRC-01, 7/27/26 PR on 7/28 8-K)
 - **$5.5 billion** total commitment by the Company.
-- Conditioned on ≥95% participation of remaining claims (lead plaintiff firms in federal MDL + related state proceedings).
+- Conditioned on ≥95% participation of remaining claims — source wording: **"at least 95%"** (lead plaintiff firms in federal MDL + related state proceedings).
 - First payment **no more than $3B in 2027**; **no additional payments due before 2028**.
 - Eliminates expense of litigating remaining **76,000 ovarian talc claims**.
 - Follows MDL court causation ruling: 7/22/26 court ordered plaintiffs to show cause why remaining claims should not be dismissed (inability to prove specific causation); plaintiffs withdrew specific-causation experts in two bellwether cases.
@@ -82,16 +82,18 @@
 - **CORRECTION 2 — filing date nuance:** the 7/28 8-K's PR is dated July 27, 2026 (report date 7/27; filed 7/28). The talc proposal announcement date is 7/27.
 
 ## Derived-figure formulas
-- Reserve change FY2024→Q4 2025: ~11.6 − 7.0 ≈ ~4.6 (pre-reversal) → ~3.4 reported (difference ~1.2 = settlement payments/defense spend + rounding; NOT disclosed line-by-line — do not over-derive).
+- Reserve change FY2024→Q4 2025: ~11.6 − 7.0 ≈ ~4.6 — this is the **simple post-reversal balance before other reserve movements** (settlement payments, defense spend, new charges, estimate changes, timing, rounding); the reported Q4 2025 balance is ~3.4, leaving an unexplained residual of ~$1.2B. **Do NOT attribute the residual without a sourced roll-forward (Data-Steward finding 8).**
 - Proposed commitment vs reserve delta: 5.5 − 3.7 = **~$1.8B above the Q2 2026 reserve PV** (timing: first ≤$3B in 2027).
 - 2026 adj EPS guidance cut: $11.68 → $11.04 = −$0.64 (matches $0.46 + $0.18 transaction impact exactly).
 - H1 2026 buyback run-rate: 4,253/6 mo ≈ $709M/mo vs FY2025 5,953/12 ≈ $496M/mo → +43% pace (derived; check vs guidance commentary if any).
 
 ## Open items / honest gaps
-- Participation threshold (>95%) + state-court scope: PR says "lead plaintiff firms in all ovarian talc litigation pending in state and federal court, representing at least 95% of the remaining claims" — the exact mechanics (which firms, exclusivity, non-participant handling) not disclosed in the PR; terms sheet not filed as of pull time.
-- Non-ovarian residual: mesothelioma ~5% of filed claims + Canada litigation (explicitly in scope of PR: "ovarian"); Pecos River channel status (prepack plan was dismissed; tort system recommenced).
-- The $5.5B is NOT yet accrued (proposed, conditioned) — 10-Q Q2 reserve is $3.7B; watch for Q3 10-Q accrual.
-- Sail option: $2.58B exercise price + −$1.28 2027 adj EPS conditional — option terms/milestones not in the 8-K exhibit text beyond headline.
+- Participation threshold: **at least 95%** (source wording), not ">95%". Mechanics for non-participants, participating firms, exclusivity, and state-court implementation NOT disclosed — no terms sheet among the supplied sources (unverifiable from this evidence base).
+- **"Not yet accrued" is UNVERIFIED:** the June 28 10-Q predates the July 27 proposal; the PR calls the arrangement proposed and conditioned but does not state the accounting entry. A Q3 2026 filing is required to establish whether/when an accrual was recognized. Treat the $5.5B-vs-$3.7B gap as a comparison with different scope/timing/accounting bases, not a like-for-like shortfall.
+- Non-ovarian residual: mesothelioma ~5% of filed claims + Canada litigation (explicitly in scope of PR: "ovarian"); Pecos River channel status (prepack plan dismissed; tort system recommenced).
+- **Sail terms are materially disclosed in EX-99.2** (correction of earlier "beyond headline" claim): total initial payments **$785M including a $465M equity investment**, additional contingent payments **$140M** if development milestones achieved, **$2.58B** option payment, conditional 2026 −$0.18 / 2027 −$1.28 adj-EPS effects — but NOT the full option agreement or detailed milestone definitions.
+- Buyback basis note (Data-Steward): treasury/equity-statement basis vs cash-flow basis differ — FY2024 $2,407M (Note 12 treasury) vs $2,432M (cash flow); H1 2026 $4,253M incl. excise tax (equity) vs $4,249M cash (cash flow); **FY2023 $5,054M is from the consolidated statement of equity — Note 12 reports $5,079M (31,085k shares)**. Keep bases explicit.
+- Opioid wording nuance: 10-K liquidity section says "remaining approximately $1.1 billion to settle opioid litigation" — not labelled "reserve" at that cite; prefer that wording.
 - Current market quote for JNJ not pulled in this evidence pass (mandate is legal/fundamental, not price-implies; add synchronized quote only if the report uses a ratio/relative-value claim — per §6 discipline).
 
 <!-- 2026-08-07 18:50 UTC+7 -->

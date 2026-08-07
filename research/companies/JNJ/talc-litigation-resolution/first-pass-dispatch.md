@@ -26,10 +26,10 @@
 
 | # | Status | Completed at |
 |---|--------|--------------|
-| 1 | dispatched | — |
-| 2 | dispatched | — |
-| 3 | dispatched | — |
+| 1 | completed | 2026-08-07 ~18:40 UTC+7 (api_calls=17, 229.52s) |
+| 2 | completed | 2026-08-07 ~18:35 UTC+7 (api_calls=10, 161.8s) |
+| 3 | completed | 2026-08-07 ~18:44 UTC+7 (api_calls=25, 421.75s) |
 
-_Completion timestamps recorded after results return (no premature attestation — Apple RA-3)._
+**Batch result (returned 2026-08-07 ~19:05 UTC+7, deleg_de736f82):** 3/3 completed. Data Steward verdict **PASS WITH CORRECTIONS** — 7 required corrections applied to evidence-log.md (participation threshold "at least 95%"; payment wording; Sail terms disclosed $785M initial/$465M equity/$140M contingent/$2.58B option; "not yet accrued" → UNVERIFIED; reserve residual ~$1.2B unexplained; buyback basis notes; FY2023 source attribution). All 3 view files verified as real artifacts (read post-return).
 
 <!-- 2026-08-07 18:55 UTC+7 -->
