@@ -15,10 +15,10 @@
 | ORG-2026-0009 | COMMODITY | PUBLISHED | London vaults 902.843 Moz (Jun 26, +18.04% YoY) materially weaken the visible-inventory depletion proxy; available-stock + liquidity normalization UNRESOLVED (`london-silver-vaults-watch-2026-08-06.md` + CRO) | refine → available-stock/free-float + COMEX deliverable + lease rates → led to 0013/0014 | — |
 | ORG-2026-0010 | EQUITY | PUBLISHED | Apple Q3 FY26 Services GM 75.62% substantiated from filed 10-Q lines; dissent ~75.6% level source-cleared; trend + tariff-refund segment allocation UNRESOLVED (`apple-services-margin-verification-2026-08-06.md` + CRO) | refine → tariff-refund allocation; Ternus-era capital-allocation signal at Q4 FY26 (~Oct 2026) | — |
 | ORG-2026-0011 | EQUITY | FOLDED → 0010 | Share-count continuation delivered inside 0010 (14,594,180,000 sh 2026-07-17 vs 14,608,963,000 2026-06-27) | n/a (folded) | — |
-| ORG-2026-0012 | MACRO | INBOX (7 Aug) | pending CoS triage → research | pending | — |
-| ORG-2026-0013 | COMMODITY | INBOX (7 Aug) | pending CoS triage → research | pending | — |
-| ORG-2026-0014 | COMMODITY | INBOX (7 Aug) | pending CoS triage → research | pending | — |
-| ORG-2026-0015 | EQUITY | INBOX (7 Aug) | pending CoS triage → research | pending | — |
+| ORG-2026-0013 | COMMODITY | SCOPED (7 Aug) | RM-2026-0002 research pass in progress (Founder triage A) — squeeze-test: physical squeeze vs reflation beta; paired with 0014 (folded) | refine → publish squeeze-test note + monitoring conditions | — |
+| ORG-2026-0014 | COMMODITY | CLOSED (7 Aug) | FOLDED INTO 0013 (Founder triage A) — COMEX registered 99.8 Moz (+6.8 Moz/30d, 2026-08-06, metalcharts) becomes key evidence input for RM-2026-0002; CME-primary confirmation still gapped | n/a (folded) | — |
+| ORG-2026-0015 | EQUITY | INBOX (7 Aug) | pending — next research pass after RM-2026-0002 (Founder triage A order) | pending | — |
+| ORG-2026-0012 | MACRO | BLOCKED (7 Aug) | DEFERRED per Founder triage A — re-test at a settled macro window (Hormuz live, jobs-report day); gold watch-item monitoring continues via weekly radar | pending (re-test later) | do-not-reraise until macro window settles |
 
 ## Known data gaps (retry policy)
 

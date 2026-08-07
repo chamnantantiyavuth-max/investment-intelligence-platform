@@ -2,7 +2,7 @@ card_id: ORG-2026-0012
 title: "Radar: Gold's best week since January runs against cycle-high real yields, risk-on equities, and geopolitical de-escalation"
 research_question: Has the marginal driver of gold rotated from geopolitical hedging to monetary-policy expectations (rate-cut pivot), and does a gold rally concurrent with cycle-high real yields, risk-on equities, and Hormuz de-escalation weaken, strengthen, or leave intact the 0008 flow-dominance thesis — and is the gold–real-yield transmission break now testable at this scale?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Blocked
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -25,6 +25,14 @@ radar_observation: "COMEX gold Dec 26 (GC=F) closes: 4,033.70 (2026-08-03) → 4
 radar_source: "https://query1.finance.yahoo.com/v8/finance/chart/GC=F (pulled 2026-08-07 07:55 UTC, deleg weekly-scan-0012); https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10 (pulled 2026-08-07 07:47 UTC); https://api.gold-api.com/price/XAU (2026-08-07 07:52 UTC); https://news.google.com/rss/search?q=gold+when:1d (Reuters 'Gold heads for best week since January' 2026-08-07; Bloomberg 'Gold Steady as Traders Assess Impact of Hormuz Flare-Up on Rates' 2026-08-07; Gulf News 'Gold sits 25% below its record' 2026-08-07; Benzinga 'Gold Jumps 4%' 2026-08-05; Barron's 'Why a Fed Rate Cut Is Coming' 2026-08-06; WSJ 'Warsh Floats Cut in Number of Fed Rate-Setting Meetings' 2026-07-31; all pulled 2026-08-07 07:58-08:06 UTC)"
 open_decision_slots: []
 dependencies: [ORG-2026-0008]
-blocked_reason: null
-next_action: "awaiting CoS triage"
+blocked_reason: "DEFERRED per Founder triage A (7 Aug) — re-test at a settled macro window; Hormuz situation live + jobs-report day; gold watch-item monitoring continues via the weekly radar"
+next_action: "DEFERRED (Founder triage A, 7 Aug) — re-test at settled macro window; driver-ranking question folds into the next gold watch-item test"
 last_updated: 2026-08-07
+transition_log:
+  - from: Inbox
+    to: Blocked
+    reason: "Founder triage A (2026-08-07) — deferred pending a settled macro window (Hormuz re-escalation live; jobs-report day; price still moving)"
+    evidence_refs: [card-outcomes.md, mid-week watch note 2026-08-07]
+    actor: "CoS triage / IC Secretary (session 2026-08-07)"
+    timestamp: 2026-08-07
+    rule_version: "KANBAN-CONTRACT v0.1 §3"

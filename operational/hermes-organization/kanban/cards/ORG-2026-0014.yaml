@@ -2,12 +2,12 @@ card_id: ORG-2026-0014
 title: "Radar: COMEX deliverable silver now VERIFIED — registered stocks 99.8 Moz (2026-08-06), RISING +6.8 Moz over 30 days during silver's +12% week (mid-week watch, FD #79)"
 research_question: Does the first current verification of the standing COMEX watch item — registered (deliverable) silver stocks at 99.8 Moz (2026-08-06), up +6.8 Moz from 93.0 Moz (2026-07-07), i.e., ACCUMULATING while silver rallies +12% — constitute testable evidence AGAINST the 0006/0009 physical-liquidity-squeeze re-pricing, or do warrant/registered-vs-eligible mechanics (and the aggregator source, not CME primary) make the level compatible with genuine tightness — and does this reconcile the CoinWeek 'below 100 Moz' figure (2026-02-13) that the Monday scan could only cite as stale?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Closed
 approval_status: null
 monitoring_status: null
 thesis_status: null
 research_state: null
-artifact_state: null
+artifact_state: Superseded
 domain: COMMODITY
 principal_owner: org-commodity-analyst
 assistant_owner: Commodity Research Assistant
@@ -26,5 +26,13 @@ radar_source: "https://metalcharts.org/comex (COMEX Warehouse Inventory, silver 
 open_decision_slots: []
 dependencies: [ORG-2026-0006, ORG-2026-0009, ORG-2026-0013]
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "FOLDED INTO ORG-2026-0013 (Founder triage A, 7 Aug) — COMEX evidence input for RM-2026-0002; audit trail preserved"
 last_updated: 2026-08-07
+transition_log:
+  - from: Inbox
+    to: Closed
+    reason: "Folded into ORG-2026-0013 per Founder triage A (2026-08-07) — single data point, insufficient standalone; becomes key evidence input for the silver squeeze-test"
+    evidence_refs: [ORG-2026-0013, RM-2026-0002]
+    actor: "CoS triage / IC Secretary (session 2026-08-07)"
+    timestamp: 2026-08-07
+    rule_version: "KANBAN-CONTRACT v0.1 §3"

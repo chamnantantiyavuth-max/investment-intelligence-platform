@@ -2,7 +2,7 @@ card_id: ORG-2026-0013
 title: "Radar: Silver's +11% week compresses the gold/silver ratio toward the median while the inventory-liquidity watch items remain unverified"
 research_question: Does silver's sharp outperformance of gold (+11.0% vs +7.7% in 4 sessions) and the ratio compression toward the ~65:1 median re-open the 0006 inventory-liquidity working hypothesis — is the market re-pricing a physical liquidity squeeze, or is silver merely riding the rate-cut reflation beta — and do the still-unverified standing watch items (COMEX deliverable stocks, lease rates, available-stock vs gross-custody evidence) now carry higher salience for the 0006/0009 follow-up?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,13 @@ radar_source: "https://query1.finance.yahoo.com/v8/finance/chart/SI=F (pulled 20
 open_decision_slots: []
 dependencies: [ORG-2026-0006, ORG-2026-0009]
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "RM-2026-0002 research pass (Founder triage A, 7 Aug) — silver squeeze-test: physical squeeze vs reflation beta; ORG-2026-0014 folded in as COMEX evidence input"
 last_updated: 2026-08-07
+transition_log:
+  - from: Inbox
+    to: Scoped
+    reason: "Founder triage A (2026-08-07) — silver squeeze-test research pass; paired with ORG-2026-0014 (folded)"
+    evidence_refs: [card-outcomes.md, RM-2026-0002]
+    actor: "CoS triage / IC Secretary (session 2026-08-07)"
+    timestamp: 2026-08-07
+    rule_version: "KANBAN-CONTRACT v0.1 §3"
