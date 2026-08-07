@@ -62,4 +62,10 @@
 - **CoS TRIAGE A + RM-2026-0002 PUBLISHED (gate A)** — triage: 0013 Scoped / 0014 folded→Closed / 0012 Blocked (deferred). Research: `reports/silver-squeeze-repricing-test-2026-08-07.md` (main — visible data points away from scarcity; audit 20/20 PASS incl. beta 1.4× fix) + `-opposing-` (CRO via Sol Medium deleg_5277b5ac) — **library = 20**; series 0006→0009→0013 converged; monitoring conditions updated. Next: 0015 JNJ on Founder call.
 - FDs total: **98** (#1–44 + CIW 16 + #45–82). Cards: 0015 Inbox (next), 0012 Blocked (deferred).
 
+## Recommended next action (radar/triage workstream)
+
+**(a) Recommended: ORG-2026-0015 JNJ research (next in the approved triage order)** — fundamental impact ชัดสุด (ข้อเสนอยุติคดี talc = overhang หลายทศวรรษ), บริษัท FO-universe ตัวแรกนอก Apple, evidence เริ่มได้ทันทีจาก 8-K 3 ฉบับ; เงื่อนไขคดี "proposed" ยังไม่ final — งานวิจัยจะ map สิ่งที่รู้ + ตั้ง monitoring conditions (pattern เดียวกับ RM-2026-0002).
+- (b) Zero-touch: ปล่อย cadence อัตโนมัติ (radar จันทร์ 10 ส.ค. / พฤหัส 13 ส.ค., IPM Week 2 ~14 ส.ค., WIL #3 ~13 ส.ค.) — ไม่ต้องสั่งอะไร ระบบรันเอง
+- (c) ถ้าต้องการ: ตัดสินใจ blog format แบบ magazine (FD #74, ค้างมานาน) หรือเริ่ม RM ตัวอื่นตาม Founder โฟกัส
+
 <!-- 2026-08-07 16:25 UTC+7 (combined closeout: sibling Org Office + WIL #2/radar workstreams) -->
