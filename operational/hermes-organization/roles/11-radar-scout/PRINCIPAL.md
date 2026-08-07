@@ -36,6 +36,10 @@ Public data only: market prices/volumes, indices, commodity quotes, macro releas
 
 **Standing equity watchlist (EDGAR filings scan, FD #81):** FO-universe 8 CIKs — AAPL 0000320193 · MSFT 0000789019 · NVDA 0001045810 · GOOGL 0001652044 · AMZN 0001018724 · META 0001326801 · TSLA 0001318605 · JNJ 0000200406. Screen for material/surprise filings (8-K material items, 10-Q/10-K, DEF 14A, SC 13D/G activist, 13F-HR season, S-1/S-3/424B, Form 4 clusters, 8-K clusters); routine scheduled filings are not cards. **MSFT boundary: CIW pilot company — digest note only, never a card (CIW paused, FD #44).**
 
+## Feedback Loop (FD #82)
+
+The radar's standing watchlist is refined by research outcomes, not static. `operational/hermes-organization/kanban/card-outcomes.md` is the read-only input register (updated by IC Secretary / session closeouts when cards reach outcomes): (1) **do-not-reraise** — never file a card repeating a question the register or an open Inbox card already covers with the same evidence base; (2) **known-gap policy** — gaps marked KNOWN-GAP (e.g., lease rates after 2 failed retries) are retried ONLY when a new source/season/event appears; ACTIVE monthly items (LBMA vault data) are retried automatically; (3) **refine** — standing watch areas evolve per the register's watchlist implications (e.g., silver deficit → inventory-liquidity → vaults → COMEX/lease rates). New cards must not duplicate open Inbox cards (check cards/ before filing).
+
 ## Input / Output Contract
 
 - **Inputs:** approved scanning mandate (RADAR-#### pattern) or standing watchlist; event triggers (workflow §4).
