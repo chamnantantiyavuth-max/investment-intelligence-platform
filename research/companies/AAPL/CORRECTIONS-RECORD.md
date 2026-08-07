@@ -54,4 +54,21 @@ Q3 FY2026 10-Q (accession 0000320193-26-000020, filed 2026-07-31) downloaded + c
 
 Audit note required: "rerun this audit after the essay is revised." Re-audit delegation `deleg_127f9b61` (gpt-5.6-sol, dispatched 2026-08-06 16:51, completed 16:56) returned **REMAINS BLOCKED** with 3 bounded MAJORs (RA-1 derived formulas incomplete; RA-2 residual thesis/conclusion language; RA-3 premature attestation in this record) + 1 MINOR (RA-4 source inventory). All four corrections applied 2026-08-06 16:58: (1) derived labels + formulas for R&D/revenue growth + buyback/OCF ratio added to essay; (2) thesis/conclusion "Cost Advantage real" → "possible relative advantage — unverified"; "Network Effect real" → "plausible but indirect, unquantified, unverified"; (3) this record corrected to carry actual re-audit provenance (this edit); (4) source inventory + evidence-log header refreshed with 10-Q working files. Verdict recorded in `re-audit-note.md` (persisted 2026-08-06 16:58). Final targeted confirmation dispatched after corrections (delegation `deleg_2e47ba02`, gpt-5.6-sol).
 
-<!-- 2026-08-06 16:47 UTC+7 -->
+## Leadership-transition follow-up audit (2026-08-07) — F1–F8 corrections
+
+**Trigger:** Audit note `audit-note-leadership-transition.md` (MAJOR FINDINGS, 8 findings: 5 MAJOR F1–F5 + 3 MINOR F6–F8) on `reports/apple-leadership-transition-2026-08-07.md` + `reports/apple-leadership-transition-opposing-2026-08-07.md`.
+
+| # | Severity | File | Correction applied |
+|---|---|---|---|
+| F1 | MAJOR | MAIN §5/§6/§7 | "Normalized product-margin erosion: Partially triggered, cause=memory" → **"Indeterminate / monitoring signal live"** (Apple did not disclose guided Products GM, mix, or refund allocation); §5 memory reframed as management-disclosed pressure mechanism, not measured cause; §7 verdict updated |
+| F2 | MAJOR | CRO conclusion + summary | Strawman "continuity-preserving, no moat change" → accurate quote **"continuity-preserving on disclosed evidence but not a no-op"**; disagreement framed as weight/forward-risk; "unchanged" → "largely unchanged (in this essay's reading)" |
+| F3 | MAJOR | evidence-log §6c/§6d/§6 + both drafts | Raw inputs + formulas added for: Q1 iPhone (85,269 vs 69,138), Q2 iPhone (56,994 vs 46,841), Q1 GC (25,526 vs 18,513), Q2 GC (20,497 vs 16,002), Q3 GC (18,816 vs 15,369 from Q3 10-Q Note 10), Q1 Services GM (30,013/7,047), all segment y/y pairs; claim-level formulas added at claim sites in both drafts |
+| F4 | MAJOR | MAIN §3 | "longer rebound than one product cycle would alone explain" → **"sustained FY26 rebound… does not distinguish product-cycle effects from structural reversal; full-year re-test pending"** |
+| F5 | MAJOR | CRO | "the board calls it seamless" → **"the transition may appear seamless in the company's framing"** (scenario inference, no actor attribution) |
+| F6 | MINOR | MAIN §5 | "FX −2.5pp sequential headwind" → **"FX −2.5pp headwind"** |
+| F7 | MINOR | MAIN §5 | "iPhone prices raised 'reluctantly' on iPad/Mac" → **"prices were raised 'reluctantly' on iPad and Mac"** (confirmed against Q3 FY26 call transcript) |
+| F8 | MINOR | CRO frontmatter | Added `updated: 2026-08-07` |
+
+All F1–F8 corrections applied 2026-08-07 12:35 UTC+7. Re-audit dispatched after corrections (delegation `deleg_007f333f`, gpt-5.6-sol — dispatched 2026-08-07 12:36, result appended to `re-audit-note-leadership-transition.md`; verdict **REMAINS BLOCKED** — F1/F2/F4–F8 PASS, F3 residual: MAIN §6 Services GM 76.52% lacked claim-level formula). F3 residual corrected 2026-08-07 12:42 (formulas added to §6 Services GM row). Final targeted confirmation dispatched (delegation `deleg_258eff2a`, gpt-5.6-sol — F3 residual only).
+
+<!-- 2026-08-06 16:47 UTC+7 · 2026-08-07 12:35 UTC+7 (F1–F8 corrections record) -->

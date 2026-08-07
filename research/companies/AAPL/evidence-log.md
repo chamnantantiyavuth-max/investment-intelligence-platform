@@ -82,8 +82,9 @@ Point-in-time rule FD #58: all figures as of filing/period; re-verify before any
 | Net income | 29,789 | 23,434 | +27.1% |
 | Diluted EPS | $2.02 | $1.57 | +28.7% |
 
-- Q3 FY26 GM 50.1% includes ~2pp favorable from tariff refunds; EPS includes +$0.11 from tariff refunds
+- **Q3 FY26 GM 50.1% includes ~2pp favorable from tariff refunds; EPS includes +$0.11 from tariff refunds**
 - **iPhone $54,252M +21.7% y/y (June quarter record); Mac +28.7%; Services +12.1% (June quarter record); iPad −5.9%**
+- **Q3 segments (10-Q Note 10):** Americas 45,781 (+11.1%; 45,781 vs 41,198); Europe 29,395 (+22.4%; 29,395 vs 24,014); **Greater China 18,816 (+22.4%; raw: 18,816 vs 15,369 Q3 FY25)**; Japan 6,554 (+13.4%; 6,554 vs 5,782); Rest APAC 8,871 (+15.6%; 8,871 vs 7,673); 9-mo Greater China 64,839 (+30.0%; 64,839 vs 49,884)
 - 9-mo FY26: revenue 364,357 (+16.2%); net income 101,464 (+20.0%); OCF 116,996 (vs 81,754 +43%); capex 6,799 (vs 9,473); buybacks 62,094 (vs 70,579); dividends 11,778
 - Balance sheet 6/27/26: cash+securities 39,544+22,855+84,118 ≈ **$146.5B**; total assets 383,266; total liabilities 275,746; shareholders' equity 107,520; retained earnings turned positive 11,326 (vs (14,264) at 9/27/25 — buyback pace vs earnings)
 - Dividend $0.27/share declared, payable 8/13/26; CEO cites "all-new Siri AI" + WWDC26; CFO cites record OCF
@@ -125,8 +126,9 @@ Reconciles to the 8-K exactly (revenue/GM/NI/EPS/segment figures identical). Add
 | Net income | 42,097 | 36,330 | +15.9% |
 | Diluted EPS | $2.84 | $2.40 | +18.3% |
 
-- **Product mix:** iPhone 85,269 (+23.3%, all-time record); Mac 8,386 (−6.7%); iPad 8,595 (+6.3%); Wearables 11,493 (−2.2%)
-- **Segments:** Americas 58,529 (+11.2%); Europe 38,146 (+12.7%); **Greater China 25,526 (+37.9%)**; Japan 9,413 (+4.7%); Rest APAC 12,142 (+18.0%) — every segment grew double digits except Japan
+- **Product mix:** iPhone 85,269 (+23.3%, all-time record; raw: 85,269 vs 69,138 Q1 FY25); Mac 8,386 (−6.7%; 8,386 vs 8,987); iPad 8,595 (+6.3%; 8,595 vs 8,088); Wearables 11,493 (−2.2%; 11,493 vs 11,747)
+- **Services GM Q1 derived:** (30,013 − 7,047)/30,013 = **76.52%** (raw: Q1 FY26 Services sales 30,013, cost 7,047)
+- **Segments:** Americas 58,529 (+11.2%; 58,529 vs 52,648); Europe 38,146 (+12.7%; 38,146 vs 33,861); **Greater China 25,526 (+37.9%; raw: 25,526 vs 18,513)**; Japan 9,413 (+4.7%; 9,413 vs 8,987); Rest APAC 12,142 (+18.0%; 12,142 vs 10,291) — every segment grew double digits except Japan
 - Segment op income: Americas 23,953; Europe 17,790; **Greater China 11,792 (+44.5%)**; Japan 4,613; Rest APAC 5,686; Corporate (12,982)
 - Deferred revenue $14.3B (vs $13.7B at 9/27/25); 66% realizable <1yr
 - Buybacks: **93M shares for $25.0B** in Q1; shares outstanding **14,681,140,000 as of 2026-01-16**
@@ -147,8 +149,8 @@ Reconciles to the 8-K exactly (revenue/GM/NI/EPS/segment figures identical). Add
 | Net income | 29,578 | 24,780 | +19.4% | 71,675 | 61,110 |
 | Diluted EPS | $2.01 | $1.65 | +21.8% | $4.85 | $4.05 |
 
-- **Product mix Q2:** iPhone 56,994 (+21.7%); Mac 8,399 (+5.7%); iPad 6,914 (+8.0%); Wearables 7,901 (+5.0%); 6-mo iPhone 142,263 (+22.7%)
-- **Segments Q2:** Americas 45,093 (+11.9%); Europe 28,055 (+14.7%); **Greater China 20,497 (+28.1%)**; Japan 8,401 (+15.1%); Rest APAC 9,138 (+25.3%); 6-mo Greater China 46,023 (+33.3%)
+- **Product mix Q2:** iPhone 56,994 (+21.7%; raw: 56,994 vs 46,841 Q2 FY25); Mac 8,399 (+5.7%; 8,399 vs 7,949); iPad 6,914 (+8.0%; 6,914 vs 6,402); Wearables 7,901 (+5.0%; 7,901 vs 7,522); 6-mo iPhone 142,263 (+22.7%; 142,263 vs 115,979)
+- **Segments Q2:** Americas 45,093 (+11.9%; 45,093 vs 40,315); Europe 28,055 (+14.7%; 28,055 vs 24,454); **Greater China 20,497 (+28.1%; raw: 20,497 vs 16,002)**; Japan 8,401 (+15.1%; 8,401 vs 7,298); Rest APAC 9,138 (+25.3%; 9,138 vs 7,290); 6-mo Greater China 46,023 (+33.3%; 46,023 vs 34,515)
 - Segment op income Q2: Americas 19,373; Europe 13,052; **Greater China 9,189 (+38.7%)**; Japan 3,839; Rest APAC 4,127; Corporate (13,695)
 - Deferred revenue $14.7B (vs $13.7B at 9/27/25)
 - Buybacks: **6-mo 135M shares for $36.0B** (Q2 alone ≈42M sh / $11.0B); shares outstanding **14,687,356,000 as of 2026-04-17**
