@@ -2,11 +2,11 @@ card_id: ORG-2026-0015
 title: "Radar: JNJ files three 8-Ks in five trading days — proposed talc-litigation resolution, Firefly Bio acquisition, and officer change + notes offering"
 research_question: Does JNJ's 8-K cluster (28 Jul–4 Aug 2026) signal a deliberate cleanup of the multi-decade talc-litigation overhang — what are the terms and timing of the proposed ovarian-talc resolution, what contingent liability remains (ovarian + non-ovarian talc, bankruptcy-claims channels), and does the Firefly Bio acquisition + notes issuance change the capital-deployment read on JNJ's fundamental picture?
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Scoped
 approval_status: null
 monitoring_status: null
 thesis_status: null
-research_state: null
+research_state: Scoped
 artifact_state: null
 domain: EQUITY
 principal_owner: org-equity-analyst
@@ -26,5 +26,13 @@ radar_source: "SEC EDGAR submissions API https://data.sec.gov/submissions/CIK000
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "SCOPED (RM-2026-0003, Founder triage 7 Aug) — research execution in progress: evidence build → first pass → essay → cross-exam → CRO → audit → synthesis → Founder gate"
 last_updated: 2026-08-07
+transition_log:
+  - from: Inbox
+    to: Scoped
+    reason: "Founder triage (2026-08-07) — JNJ talc-litigation resolution research pass; RM-2026-0003 mandate created"
+    evidence_refs: [card-outcomes.md, research/mandates/2026-08-07-JNJ-001-talc-litigation-resolution.md]
+    actor: "CoS triage / IC Secretary (session 2026-08-07)"
+    timestamp: 2026-08-07
+    rule_version: "KANBAN-CONTRACT v0.1 §3"
