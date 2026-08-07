@@ -71,4 +71,6 @@ Per PROFILE-STARTUP-CONTRACT: read Standard + this file; load the active Researc
 ## Assistant Delegation Boundary
 
 Delegate to **Risk Research Assistant** (bounded subagent): scenario matrices, failure-mode inventories, contradiction searches, risk-claim evidence checks, open-risk logs. No Hold issue/clear, no risk acceptance, no probability assignment without approved method, no opposing-essay drafting.
-<!-- 2026-08-06 19:40 UTC+7 -->
+
+**Model routing (FD #73, 2026-08-07):** all delegated Risk Research Assistant work executes via Sol Medium (`delegate_task` — provider openai-codex, model `gpt-5.6-sol`, reasoning=medium pilot) — challenger independence requires a different model family from the Flash-based analyst roles; the Principal conversation layer remains DeepSeek V4 Flash (reasoning high). Luna fallback per Model Routing.
+<!-- 2026-08-07 09:52 UTC+7 -->

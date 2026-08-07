@@ -34,4 +34,5 @@
 *Role Registry v0.1 — FD #54.*
 **Amended 2026-08-06 (FD #66 R-2 + Plan A v0.3):** all 10 Principal + 10 Assistant contracts reframed to research Principals — Analytical Freedom Doctrine (direction §5), independent first pass (§7.3), 3 minimum artifacts (Main Research Essay / Evidence & Quant Appendix / Opposing Thesis & Audit Note, FD #64 item 6); domain specs/checklists NOT auto-loaded into the first pass (optional lenses / QA references only, FD #64 item 7); legacy pipeline outputs frozen (FD #65). Profiles read their amended PRINCIPAL.md at startup (unchanged mechanism).
 **Amended 2026-08-06 (FD #71):** row 11 added — Radar Scout (`org-radar-scout`) — scout/radar layer (Option B, dedicated role). Rows 1–10 unchanged. Same session: cross-examiner material-claims rule + Data Steward first-pass thesis-bar encoded (FD #71).
-<!-- 2026-08-05 14:45 UTC+7 -->
+**Amended 2026-08-07 (FD #73):** role 7 (CRO) — all delegated Risk Research Assistant work routes via Sol Medium (openai-codex, `gpt-5.6-sol`, reasoning=medium pilot) for challenger model diversity; delegation `reasoning_effort` high→medium for iip + org-* profiles + global (FD #73 cost pilot, 2-week measurement; council/audit quality monitored — revert on regression). Rows unchanged.
+<!-- 2026-08-07 09:52 UTC+7 -->

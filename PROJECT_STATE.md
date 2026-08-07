@@ -82,8 +82,8 @@ Unchanged: CIW PAUSED (Q1-FY27 ~Oct 2026), CS Options Overlay deferred, industry
 | Field | Value |
 |-------|-------|
 | closeout_status | **completed** (closed by 6 Aug WP2+WP3 session) — FD #69 Apple moat note PUBLISHED (publish with dissent) + WP3 IPM foundation stood up + blog design review delivered (FD #62, decision A–D PENDING); captured: PROJECT_STATE updated, SESSION_CLOSEOUT written, vault fd-register row FD-69, repo FOUNDERS-DECISIONS item 85, _Hermes-Memory (MEM-IIP-038/039 + IPM MEM-IPM-001); open: blog design review decision, Weekly Intelligence Letter pilot, IPM cadence, UI-4, A-01, C-04/C-05/M-02, org-workflow intake |
-| fd_count | #1–44 + FD-CIW-001..016 + FD #45..#69 (85 total) |
+| fd_count | #1–44 + FD-CIW-001..016 + FD #45..#73 (89 total) |
 | audit_verdict | **RM-2026-0001 audit chain CLEANED** — audit #1 MAJOR FINDINGS (11 corrections) → CORRECTIONS-RECORD §23.9 → re-audit (RA-1..RA-4) → final targeted confirmation **CLEARED FOR SYNTHESIS + FOUNDER REVIEW** (arithmetic re-performed, zero regressions). Prior: Pre-Launch Close Beta Audit READY WITH ACCEPTED RISKS (3 Aug) |
 | lifecycle_sync | PROJECT_STATE ✅ (this session) · SESSION_CLOSEOUT ✅ (this session) · AGENTS.md ✅ (unchanged this session — WP2 artifacts not checkpoints; FD #69 noted in commit) · vault fd-register ✅ (FD-69 row) · _Hermes-Memory ✅ (session capture pending this closeout) · FOUNDERS-DECISIONS ✅ (item 85) |
 
-<!-- 2026-08-07 09:50 UTC+7 (cron review: metrics sync + push decision item) -->
+<!-- 2026-08-07 09:50 UTC+7 (cron review: metrics sync + push decision item) · 2026-08-07 09:54 UTC+7 (FD #73 model-routing pilot implemented: CRO → Sol Medium delegation + delegation reasoning_effort medium for iip/org-*/global; SOUL.md + ROLE-REGISTRY + FOUNDERS-DECISIONS + vault fd-register synced) -->
