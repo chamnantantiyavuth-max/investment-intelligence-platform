@@ -52,7 +52,19 @@ Desktop 1440 verified. Mobile not re-captured this pass (no responsive changes �
 
 `BROWSER_VERIFIED` · `FUNCTION_TEST_VERIFIED` · `SCREENSHOT_VERIFIED` · `STATIC_OBSERVATION`
 
+## WS-3 UI-4 COMPLETE (2026-08-09, same session — FD #86 Option A approved)
+
+`/audit` page (Decision Register + Audit Center + Model Registry) + 3 read-only endpoints.
+
+- Backend: `audit_store.py` (FD register parser — 102 items contiguous, git log bounded 40, §23.9 correction records, adapter registry) + `audit_routes.py` (GET /api/decisions, /api/audit/git-log, /api/audit/model-registry) + main.py router registered.
+- Locked tests: `tests/locked/test_audit_api.py` (4 tests: auth boundary 401; register contiguous 1..102 + FD #86 date stamp; git-log commits + corrections; model-registry == ADAPTER_VERSION v5). Suite 141 → **145**.
+- Frontend: `auditClient.ts` (credentials include) + `AuditPage.tsx` (3 sections, borderless, ledger rows, register search, loading/error/empty states) + route `/audit` + Masthead nav (Library · Kanban Board · Org Office · Audit).
+- Browser verified (localhost:8000): /audit renders 102 items · 40 commits · 6 corrections · v1–v5 registry; register search "Hallmark" → FD #85; console 0 errors. Screenshot: `03-audit-page-final.png`.
+- Gates: tsc 0 / lint 0 / build exit 0 / pytest 145/145.
+
+**WS-4 (deep-analysis coverage gap) — pending Founder mandate (research pipeline, not UI).**
+
 ## Verdict
 
-WS-1 + WS-2 accepted evidence: gates tsc 0 / lint 0 / build exit 0 / pytest 141/141; browser 9 scenarios 0 errors. Remaining: WS-3 UI-4 (Decision Register/Audit Center — needs git-history endpoint) + WS-4 deep-analysis mandate.
+WS-1 + WS-2 + WS-3 accepted evidence: gates tsc 0 / lint 0 / build exit 0 / pytest 145/145; browser 10+ scenarios 0 errors (library filter/sort, platform trim 404s, /audit 3 sections + search). Remaining: WS-4 deep-analysis mandate.
 <!-- 2026-08-09 03:40 UTC+7 -->

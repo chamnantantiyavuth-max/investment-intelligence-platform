@@ -5,6 +5,7 @@ import { authStatus } from "@/api/authClient"
 import LoginPage from "@/pages/LoginPage"
 import KanbanBoardPage from "@/pages/KanbanBoardPage"
 import OrgOfficePage from "@/pages/OrgOfficePage"
+import AuditPage from "@/pages/AuditPage"
 import LibraryPage from "@/pages/LibraryPage"
 import ReportArticlePage from "@/pages/ReportArticlePage"
 import NotFoundPage from "@/pages/NotFoundPage"
@@ -35,10 +36,11 @@ export default function App() {
           <Route path="library" element={<LibraryPage />} />
           <Route path="library/:slug" element={<ReportArticlePage />} />
 
-          {/* Old platform — trimmed to Org Office + Kanban Board only (FD #86; routes deleted). */}
+          {/* Old platform — trimmed to Org Office + Kanban Board + Audit (FD #86). */}
           <Route element={<Layout />}>
             <Route path="kanban" element={<KanbanBoardPage />} />
             <Route path="org-office" element={<OrgOfficePage />} />
+            <Route path="audit" element={<AuditPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

@@ -4,6 +4,7 @@ const NAV = [
   { to: "/library", label: "Library" },
   { to: "/kanban", label: "Kanban Board" },
   { to: "/org-office", label: "Org Office" },
+  { to: "/audit", label: "Audit" },
 ]
 
 /** Research Desk masthead — newspaper-of-record brand + small-caps nav + run stamp. */

@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from backend import adapters, auth, persistence
-from backend.api import am_routes, cs_routes, fo_routes, ii_routes, org_routes, report_routes
+from backend.api import am_routes, audit_routes, cs_routes, fo_routes, ii_routes, org_routes, report_routes
 from backend.schemas.responses import DashboardSummary, ComponentProvenance
 
 app = FastAPI(title="IIP API", version="0.2.0")
@@ -32,6 +32,7 @@ app.include_router(fo_routes.router)
 app.include_router(ii_routes.router)
 app.include_router(org_routes.router)
 app.include_router(report_routes.router)
+app.include_router(audit_routes.router)
 
 
 # ── Auth endpoints ────────────────────────────────────────────────────────────
