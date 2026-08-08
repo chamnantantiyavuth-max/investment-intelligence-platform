@@ -48,7 +48,8 @@ function TitleBlock({ r }: { r: ReportDetail }) {
           {r.status}
         </span>
       </p>
-      <div className="mt-4 flex flex-wrap gap-4 rounded-[6px] bg-bg-panel px-4 py-3 text-[11px] text-ink-2">
+      {/* Provenance — borderless hairline strip (FD #85/B, FD #84 no-box) */}
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-rule pt-3 text-[11px] text-ink-2">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-positive" aria-hidden="true" /> Real data · sourced &amp; dated
         </span>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Research Intelligence — The Broadsheet (Direction A)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* Hallmark · genre: editorial · macrostructure: Index-First · theme: Newsprint (warm paper, bronze accent, roman serif)
+ * nav: N6 Newspaper masthead · footer: Ft4 Dense colophon · enrichment: none (typography only)
+ * pre-emit critique: P4 H5 E4 S5 R4 V5 · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (34, 49, 50–57)
+ * contrast: pass (40–41) · nav: N6 · footer: Ft4 · slop: pass (42–45) */
+:root {
+  --color-paper:    #FAF7F2;   /* warm paper */
+  --color-paper-2:  #F2EEE5;   /* tonal band */
+  --color-ink:      #211D18;   /* warm ink */
+  --color-ink-2:    #5C564C;
+  --color-ink-3:    #857D6F;
+  --color-rule:     #D8D2C4;   /* hairline */
+  --color-accent:   #7A5A24;   /* bronze — kickers, links, lead labels */
+  --color-focus:    #4A5E4E;   /* sage focus ring */
+  --font-display:  Georgia, 'Times New Roman', serif;
+  --font-body:     'Inter', system-ui, sans-serif;
+  --font-outlier:  'JetBrains Mono', monospace;
+  --space-3xs: 4px; --space-2xs: 8px; --space-xs: 12px; --space-sm: 16px;
+  --space-md: 24px; --space-lg: 40px; --space-xl: 64px; --space-2xl: 96px;
+}
+html, body { overflow-x: clip; }
+body {
+  margin: 0; background: var(--color-paper); color: var(--color-ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--color-accent); }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ── N6 Newspaper masthead ── */
+.masthead {
+  padding: var(--space-md) clamp(1rem, 4vw, 3rem) var(--space-xs);
+  border-bottom: 2px solid var(--color-ink);
+}
+.masthead::after { content: ""; display: block; border-bottom: 1px solid var(--color-rule); margin-top: 3px; }
+.issue-line {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2xs);
+  font-family: var(--font-outlier); font-size: 11px; letter-spacing: 0.06em;
+  color: var(--color-ink-2); text-transform: uppercase;
+}
+.wordmark {
+  margin: var(--space-2xs) 0 0; font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 700; letter-spacing: -0.01em; line-height: 1.02;
+}
+.wordmark em { font-style: normal; color: var(--color-accent); }
+.nav-row {
+  display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-2xs);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.nav-row a { white-space: nowrap; }
+
+/* ── Index-First body ── */
+.page { padding: var(--space-lg) clamp(1rem, 4vw, 3rem) var(--space-xl); }
+.lead {
+  padding-bottom: var(--space-md); border-bottom: 1px solid var(--color-ink); margin-bottom: var(--space-md);
+}
+.lead .kicker {
+  display: inline-block; font-family: var(--font-outlier); font-size: 10.5px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); font-weight: 500;
+}
+.lead h1 {
+  font-family: var(--font-display); font-size: clamp(1.9rem, 4vw, 2.9rem); line-height: 1.1;
+  font-weight: 700; letter-spacing: -0.01em; margin: var(--space-2xs) 0 var(--space-2xs);
+  max-width: 24em; overflow-wrap: anywhere; min-width: 0;
+}
+.lead p.standfirst { max-width: 62ch; color: var(--color-ink-2); font-size: 16.5px; line-height: 1.6; margin: 0 0 var(--space-xs); }
+.lead .meta { font-family: var(--font-outlier); font-size: 11px; color: var(--color-ink-3); display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: baseline; }
+.lead .meta .sep { color: var(--color-rule); }
+.lead .opposing { color: var(--color-accent); font-weight: 500; }
+
+.series-band { margin-top: var(--space-md); }
+.series-band h2 {
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 0 0 var(--space-2xs);
+}
+.index-list { list-style: none; margin: 0; padding: 0; }
+.index-list li {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-xs); align-items: baseline; padding: 10px 0;
+  border-bottom: 1px solid var(--color-rule);
+}
+.index-list .row-top { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: baseline; min-width: 0; }
+.index-list .date { font-family: var(--font-outlier); font-size: 11px; color: var(--color-ink-3); white-space: nowrap; }
+.index-list .type { font-family: var(--font-outlier); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent); white-space: nowrap; }
+.index-list .title { font-family: var(--font-display); font-size: 16.5px; font-weight: 600; line-height: 1.3; min-width: 0; }
+.index-list .opp { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); white-space: nowrap; font-family: var(--font-outlier); }
+.index-list li:hover .title { color: var(--color-accent); }
+
+/* ── Article sample (Long Document treatment) ── */
+.article-sample { margin-top: var(--space-xl); padding-top: var(--space-md); border-top: 2px solid var(--color-ink); }
+.article-sample h2.sample-head { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 0 0 var(--space-sm); }
+.sample-body { max-width: 65ch; }
+.sample-body h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin: var(--space-md) 0 var(--space-2xs); line-height: 1.2; }
+.sample-body p { margin: 0 0 var(--space-xs); color: var(--color-ink); line-height: 1.65; }
+.sample-body blockquote {
+  margin: var(--space-md) 0; padding-left: var(--space-sm); border-left: 2px solid var(--color-accent);
+  font-family: var(--font-display); font-size: 1.15rem; line-height: 1.4; color: var(--color-ink);
+}
+.sample-meta { font-family: var(--font-outlier); font-size: 11px; color: var(--color-ink-3); display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md); }
+
+/* ── Ft4 Dense colophon ── */
+footer {
+  padding: var(--space-md) clamp(1rem, 4vw, 3rem) var(--space-lg);
+  border-top: 1px solid var(--color-ink);
+  font-family: var(--font-outlier); font-size: 11px; color: var(--color-ink-2); line-height: 1.7;
+}
+footer .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md); }
+footer .cols div { display: flex; flex-direction: column; gap: 3px; }
+footer .cols dt { color: var(--color-ink); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; margin-bottom: 2px; }
+footer .credits { border-top: 1px solid var(--color-rule); padding-top: var(--space-xs); }
+
+@media (max-width: 48rem) {
+  footer .cols { grid-template-columns: 1fr; gap: var(--space-xs); }
+  .index-list li { grid-template-columns: 1fr; gap: 2px; }
+  .lead h1 { font-size: 1.7rem; }
+}
+@media (max-width: 40rem) {
+  .wordmark { font-size: 1.9rem; }
+  .lead h1 { font-size: 1.55rem; }
+  .index-list .title { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="issue-line">
+    <span>Research Intelligence — No. 2</span>
+    <span>7 August 2026</span>
+    <span>22 published reports</span>
+  </div>
+  <h1 class="wordmark">Research Intelligence<em>.</em></h1>
+  <nav class="nav-row" aria-label="Primary">
+    <a href="#">Library</a><a href="#">Apple</a><a href="#">Silver</a><a href="#">Gold</a><a href="#">JNJ</a><a href="#">Weekly</a>
+  </nav>
+</header>
+
+<main class="page">
+
+  <section class="lead" aria-label="Lead story">
+    <span class="kicker">Company Research · JNJ</span>
+    <h1>JNJ's Talc Proposal: A Conditional Schedule, Not Finality</h1>
+    <p class="standfirst">JNJ's proposed $5.5B ovarian-talc resolution is consistent with an attempt to compress a multi-decade legal overhang into a scheduled, financeable obligation — but it is not finality: participation-gated, cash-deferred, accounting-unproven. The CRO dissents: cleanup exists only after participation, recognition, residual dockets, and capital commitments execute together.</p>
+    <div class="meta tnum">
+      <span>Equity Research (RM-2026-0003)</span><span class="sep">|</span><span>2026-08-07</span><span class="sep">|</span><span>published</span>
+      <span class="opposing">+ opposing essay</span>
+    </div>
+  </section>
+
+  <section class="series-band" aria-label="Apple series">
+    <h2>Apple — 8 notes</h2>
+    <ul class="index-list">
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Company</span><span class="title">Apple's Moat: How Durable, and What Would Break It</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Company</span><span class="title">Apple's Buyback Mask: First Test — Q3 FY26</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Company</span><span class="title">Apple Services Margin: Verification of the Reported Claim</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Company</span><span class="title">Apple Leadership Transition: What the CEO Succession Changes (and Doesn't) for the Moat</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Company</span><span class="title">The Case Against the Moat — Opposing Essay</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Company</span><span class="title">The Buyback Mask Is Thinning — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Company</span><span class="title">The Verification Clears the Margin, Not the Flattening — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Company</span><span class="title">Apple's Seamless Succession Is the Risk — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="series-band" aria-label="Silver series">
+    <h2>Silver — 8 notes</h2>
+    <ul class="index-list">
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Product</span><span class="title">Silver — The Metals Trade Hiding in Plain Sight</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Product</span><span class="title">Silver's Deficit: Persisting Without Demand Growth</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Product</span><span class="title">London Silver Vaults: First Watch-Item Test</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Product</span><span class="title">Silver's Squeeze Re-Pricing Under Test: The Visible Data Points Away From Scarcity</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Product</span><span class="title">Silver Valuation Anchor: Corrected on Synchronized Fixing Data</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Product</span><span class="title">The Case for the Silver Thesis's Survival — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Product</span><span class="title">The Rebuild Measures Gross Custody, Not the Free Float — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Product</span><span class="title">Rising Stocks Do Not Clear the Squeeze — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="series-band" aria-label="Gold and JNJ series">
+    <h2>Gold — 2 notes</h2>
+    <ul class="index-list">
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Product</span><span class="title">Gold vs Real Rates: Transmission Under Test</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Product</span><span class="title">The Channel Has Structurally Broken — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="series-band" aria-label="JNJ series">
+    <h2>JNJ — 2 notes</h2>
+    <ul class="index-list">
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Company</span><span class="title">JNJ's Talc Proposal: A Conditional Schedule, Not Finality</span></div>
+        <span class="opp">+ opposing</span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Company</span><span class="title">JNJ's Talc Cleanup Can Fail by Sequence, Not Shock — CRO Opposing Essay</span></div>
+        <span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="series-band" aria-label="Weekly letters">
+    <h2>Weekly Intelligence — 2 letters</h2>
+    <ul class="index-list">
+      <li>
+        <div class="row-top"><span class="date">08-06</span><span class="type">Weekly</span><span class="title">Weekly Intelligence Letter — Week 1: The Org Stands Up</span></div>
+        <span></span>
+      </li>
+      <li>
+        <div class="row-top"><span class="date">08-07</span><span class="type">Weekly</span><span class="title">Weekly Intelligence Letter — Week 2: The Loop Repeats, and a Thesis Takes Adverse Evidence</span></div>
+        <span></span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="article-sample" aria-label="Article treatment sample">
+    <h2 class="sample-head">Article treatment — typeset feature</h2>
+    <article class="sample-body">
+      <h3>The participation gate is the first filter</h3>
+      <p>At least 95% of the 76,000 ovarian-talc claims must elect in for the resolution to bind. That is a participation schedule, not a settlement in hand — and it is the first of several conditions that must execute together before any cleanup exists.</p>
+      <blockquote>“Cleanup exists only after participation, recognition, residual dockets, and capital commitments execute together.”</blockquote>
+      <p>Cash is deferred: the first payment of no more than $3B lands in 2027. The $3.7B Q2-26 reserve predates the proposal and is accounting-unproven against it. Residual channels remain — mesothelioma, Canada, securities class action.</p>
+      <div class="sample-meta tnum">
+        <span>SRC-01 · 2026-07-27</span><span>|</span><span>SRC-04 · 2026-06-28</span><span>|</span><span>Point-in-time (FD #58)</span>
+      </div>
+    </article>
+  </section>
+
+</main>
+
+<footer>
+  <div class="cols">
+    <div><dt>Series</dt><a href="#">Apple</a><a href="#">Silver</a><a href="#">Gold</a><a href="#">JNJ</a></div>
+    <div><dt>Cadence</dt><a href="#">Weekly Intelligence</a><a href="#">Company Research</a><a href="#">Commodities</a></div>
+    <div><dt>Governance</dt><a href="#">Library index</a><a href="#">Research desk</a><a href="#">Kanban board</a></div>
+  </div>
+  <div class="credits">
+    Research Intelligence — advisory only · portfolio-blind · point-in-time data (FD #58).<br />
+    Reports are research notes, not investment advice. No buy/sell instruction. 22 published · 5 series.
+  </div>
+</footer>
+
+</body>
+</html>
