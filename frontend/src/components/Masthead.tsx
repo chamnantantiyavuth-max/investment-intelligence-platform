@@ -2,15 +2,8 @@ import { NavLink } from "react-router-dom"
 
 const NAV = [
   { to: "/library", label: "Library" },
-  { to: "/", label: "Briefing", end: true },
-  { to: "/research", label: "Research Desk" },
   { to: "/kanban", label: "Kanban Board" },
   { to: "/org-office", label: "Org Office" },
-  { to: "/am-queue", label: "Alpha Momentum" },
-  { to: "/cs-radar", label: "Close System" },
-  { to: "/fundamental", label: "Fundamental" },
-  { to: "/institutional", label: "Institutional" },
-  { to: "/weak-signals", label: "Weak Signals" },
 ]
 
 /** Research Desk masthead — newspaper-of-record brand + small-caps nav + run stamp. */
@@ -26,7 +19,6 @@ export function Masthead() {
             <NavLink
               key={n.to}
               to={n.to}
-              end={n.end}
               className={({ isActive }) =>
                 isActive ? "border-b-2 border-primary pb-0.5 text-foreground" : "pb-0.5 text-ink-2 hover:text-foreground"
               }

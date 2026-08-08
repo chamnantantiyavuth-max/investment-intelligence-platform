@@ -49,6 +49,8 @@ export default function LibraryPage() {
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [series, setSeries] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("date_desc");
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["reports"],
@@ -94,8 +96,32 @@ export default function LibraryPage() {
     if (status !== "all") list = list.filter((r) => r.status === status);
     if (type !== "all") list = list.filter((r) => r.type === type);
     if (series) list = list.filter((r) => seriesKey(r) === series);
-    return list;
-  }, [rest, status, type, series]);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (r) =>
+          r.title.toLowerCase().includes(q) ||
+          (r.subject ?? "").toLowerCase().includes(q) ||
+          (r.author ?? "").toLowerCase().includes(q) ||
+          r.date.includes(q)
+      );
+    }
+    const sorted = [...list];
+    switch (sortBy) {
+      case "date_asc":
+        sorted.sort((a, b) => a.date.localeCompare(b.date));
+        break;
+      case "title":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "series":
+        sorted.sort((a, b) => seriesKey(a).localeCompare(seriesKey(b)) || b.date.localeCompare(a.date));
+        break;
+      default: // date_desc
+        sorted.sort((a, b) => b.date.localeCompare(a.date));
+    }
+    return sorted;
+  }, [rest, status, type, series, search, sortBy]);
 
   /** True companion: the other half of a main/opposing pair (base-slug match, same subject). */
   const companionOf = (r: ReportMeta) => {
@@ -220,6 +246,16 @@ export default function LibraryPage() {
             <h2 className="font-display text-[20px] font-bold">Latest intelligence</h2>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-ink-2">
               <label className="flex items-center gap-1.5">
+                <span className="uppercase tracking-[0.08em]">Search</span>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="title, subject, author…"
+                  className="w-44 rounded-sm border border-rule bg-background px-1.5 py-0.5 font-mono text-[11px] text-ink-2 placeholder:text-ink-3"
+                />
+              </label>
+              <label className="flex items-center gap-1.5">
                 <span className="uppercase tracking-[0.08em]">Status</span>
                 <select
                   value={status}
@@ -245,13 +281,35 @@ export default function LibraryPage() {
                   ))}
                 </select>
               </label>
+              <label className="flex items-center gap-1.5">
+                <span className="uppercase tracking-[0.08em]">Sort</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="rounded-sm border border-rule bg-background px-1.5 py-0.5 font-mono text-[11px] text-ink-2"
+                >
+                  <option value="date_desc">newest first</option>
+                  <option value="date_asc">oldest first</option>
+                  <option value="title">title A–Z</option>
+                  <option value="series">series</option>
+                </select>
+              </label>
             </div>
           </div>
 
           {visible.length === 0 ? (
             <div className="mt-4 border-t border-rule py-8">
-              <p className="text-sm font-medium text-foreground">No reports here yet.</p>
-              <p className="mt-1 text-[12.5px] text-ink-2">The research team&apos;s reports will appear as they pass review.</p>
+              <p className="text-sm font-medium text-foreground">No reports match your filters.</p>
+              <p className="mt-1 text-[12.5px] text-ink-2">
+                Clear the search or filters to see the full library. The research team&apos;s reports appear here as they pass review.
+              </p>
+              <button
+                type="button"
+                onClick={() => { setSearch(""); setStatus("all"); setType("all"); setSeries(null); }}
+                className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground"
+              >
+                Clear filters →
+              </button>
             </div>
           ) : (
             <div>
@@ -310,7 +368,7 @@ export default function LibraryPage() {
           </div>
           <nav className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-2" aria-label="Footer">
             <Link to="/library" className="whitespace-nowrap hover:text-primary">Library</Link>
-            <Link to="/research" className="whitespace-nowrap hover:text-primary">Research desk</Link>
+            <Link to="/org-office" className="whitespace-nowrap hover:text-primary">Org Office</Link>
             <Link to="/kanban" className="whitespace-nowrap hover:text-primary">Kanban board</Link>
             <Link to="/library" className="whitespace-nowrap hover:text-primary">Weekly</Link>
           </nav>

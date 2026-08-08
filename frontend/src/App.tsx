@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react"
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Layout } from "@/components/Layout"
 import { authStatus } from "@/api/authClient"
 import LoginPage from "@/pages/LoginPage"
-import DashboardPage from "@/pages/DashboardPage"
-import ResearchDeskPage from "@/pages/ResearchDeskPage"
 import KanbanBoardPage from "@/pages/KanbanBoardPage"
 import OrgOfficePage from "@/pages/OrgOfficePage"
 import LibraryPage from "@/pages/LibraryPage"
 import ReportArticlePage from "@/pages/ReportArticlePage"
-import ResearchArtifactDetailPage from "@/pages/ResearchArtifactDetailPage"
-import AMQueuePage from "@/pages/AMQueuePage"
-import AMScreenerPage from "@/pages/AMScreenerPage"
-import AMThemeCardPage from "@/pages/AMThemeCardPage"
-import CSRadarPage from "@/pages/CSRadarPage"
-import CSProductDetailPage from "@/pages/CSProductDetailPage"
-import FundamentalQueuePage from "@/pages/FundamentalQueuePage"
-import FundamentalDetailPage from "@/pages/FundamentalDetailPage"
-import CheapQualityPage from "@/pages/CheapQualityPage"
-import InstitutionalPage from "@/pages/InstitutionalPage"
-import WeakSignalInboxPage from "@/pages/WeakSignalInboxPage"
 import NotFoundPage from "@/pages/NotFoundPage"
 
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -43,27 +30,17 @@ export default function App() {
     <BrowserRouter>
       <AuthGate>
         <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="research" element={<ResearchDeskPage />} />
-            <Route path="kanban" element={<KanbanBoardPage />} />
-            <Route path="org-office" element={<OrgOfficePage />} />
-            <Route path="research/*" element={<ResearchArtifactDetailPage />} />
-            <Route path="am-queue" element={<AMQueuePage />} />
-            <Route path="am-screener" element={<AMScreenerPage />} />
-            <Route path="am-theme/:id" element={<AMThemeCardPage />} />
-            <Route path="cs-radar" element={<CSRadarPage />} />
-            <Route path="cs-radar/:id" element={<CSProductDetailPage />} />
-            <Route path="fundamental" element={<FundamentalQueuePage />} />
-            <Route path="fundamental/:id" element={<FundamentalDetailPage />} />
-            <Route path="cheap-quality" element={<CheapQualityPage />} />
-            <Route path="institutional" element={<InstitutionalPage />} />
-            <Route path="weak-signals" element={<WeakSignalInboxPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-          {/* Research blog — standalone magazine shell (FD #84: no legacy app masthead/footer). */}
+          {/* Research blog — primary surface, standalone magazine shell (FD #84; FD #86: `/` → blog). */}
+          <Route path="/" element={<Navigate to="/library" replace />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="library/:slug" element={<ReportArticlePage />} />
+
+          {/* Old platform — trimmed to Org Office + Kanban Board only (FD #86; routes deleted). */}
+          <Route element={<Layout />}>
+            <Route path="kanban" element={<KanbanBoardPage />} />
+            <Route path="org-office" element={<OrgOfficePage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
         </Routes>
       </AuthGate>
     </BrowserRouter>
