@@ -13,7 +13,7 @@ Apple's customer interface is the **primary integrator and rent-capture control 
 
 Earnings quality is **ADEQUATE** — not HIGH: five-year FCF/NI conversion (88–116%) is broadly cash-backed, but FY25's 88.18% conversion, NI +19.5% vs OCF −5.7% divergence, and an unexplained $11.1B→$21.3B intangible roll-forward block the HIGH label (cross-exam #2). Capital allocation shows **strong capital-return capacity; allocation quality INCONCLUSIVE** — the A− letter grade is withdrawn (cross-exam #4). The value-trap detector verdict is **INCONCLUSIVE** and must stay that way: spec 3.6.2's −2σ trigger is untestable without a synchronized price/multiple series, and a narrative lean would bypass the approved gate (cross-exam #3). Valuation is **indeterminate** — no price model exists in the evidence base.
 
-**Core verdict:** durable business, adequate earnings quality, inconclusive value-trap and allocation-quality verdicts, indeterminate valuation — and the controlling investment risk is **rent-capture erosion: Apple can retain users while regulation and AI agents redirect the economics of discovery, distribution, and payment**. "Attractive business" is established; "attractive investment" is NOT — the gap is price, and price cannot be judged from this evidence base (CRO opposing: "durability is not the same as safety").
+**Core verdict:** durable business, adequate earnings quality, inconclusive value-trap and allocation-quality verdicts, indeterminate valuation — and the controlling investment risk is **rent-capture erosion: Apple can retain users while regulation and AI agents redirect the economics of discovery, distribution, and payment**. "Attractive business" is established; "attractive investment" is NOT — and **not only because of price**. Attractiveness remains **unestablished unless two conditions are jointly met**: (1) a synchronized valuation that explicitly incorporates and tests the causal rent-loss scenario (attachment → routing/take rate → Services gross profit → organic NI/OCF → buyback-supported EPS), and (2) survival of that scenario — if profit captured per relationship deteriorates while devices persist, no price within the evidence base establishes attractiveness. Neither condition is satisfiable from this evidence (no price model; rent-capture economics unresolved) (CRO opposing: "durability is not the same as safety"; audit item 8, REMAINS-BLOCKED correction applied).
 
 ---
 
@@ -75,7 +75,7 @@ Spec 3.6.2 requires a **−2σ historical range** (synchronized price/multiple s
 - Valuation is context, not a veto (spec §3.5 / Operating Model §5.6).
 - Expectations embedded: premium hardware demand + sustained Services growth/margins + continued repurchases. Loss of Services rents challenges that narrative.
 - **No synchronized price, diluted equity value, normalized cash-flow base, method matrix, or sensitivity exists in the evidence base** (Data Steward: LOW confidence). Moat durability cannot substitute for price paid.
-- **Conclusion:** cheap/fair/expensive = **inconclusive**. This is a stated limitation, not a model.
+- **Conclusion:** cheap/fair/expensive = **inconclusive**, and valuation is **one of two unmet conditions** for any attractiveness finding — the other being survival of the rent-capture-loss scenario (§7). Neither is satisfiable from this evidence base. This is a stated limitation, not a model.
 
 ## 7. The controlling risk and what would change this analysis
 
@@ -103,4 +103,4 @@ attachment/retention → transaction routing & take rate → Services gross prof
 
 ---
 
-*RM-2026-0004 deep analysis v2 — cross-exam 7/7 applied + CRO FAIL addressed. Next: audit chain, then Founder gate. Not yet published.*
+*RM-2026-0004 deep analysis v3 — audit item 8 correction applied (rent-capture survival = binding condition; price not the sole gap). Next: targeted re-audit of item 8, then Founder gate. Not yet published.*
