@@ -3,7 +3,7 @@
 **RM-2026-0004 · first full deep analysis of the FO-universe (FD #84 coverage gap)**
 **Point-in-time:** 2026-08-09 · evidence through Q3 FY2026 (quarter ended 2026-06-27) · **advisory only, portfolio-blind**
 **Workspace:** `research/companies/AAPL/deep-analysis-2026-08-09/` · sources: `evidence-log.md` (accessions in `source-inventory.md`)
-**Version:** v2 — cross-exam corrections applied (deleg_9d55f437, 7/7 MUST-FIX) + CRO opposing FAIL addressed
+**Version:** v3 — cross-exam 7/7 + audit item 8 corrections applied; re-audit CLEAN WITH MINORS (deleg_089deb7c) · CRO opposing FAIL addressed
 
 ---
 
