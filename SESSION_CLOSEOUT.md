@@ -7,7 +7,7 @@
 ## What happened
 1. **Founder decision:** "FD #73 ใช้เป็น High ละกัน เป็น GPT5.6 Sol Reasoning = High" → end the 2-week medium pilot early, revert delegation reasoning to **high**.
 2. **13 configs changed + verified 13/13 high:** global config.yaml + iip (via `hermes config set`) + 11 org-* profiles (via patch). Sol Medium model unchanged (gpt-5.6-sol, openai-codex). CRO/challenger routing via Sol Medium (FD #73 core) unchanged.
-3. **SOUL.md:** iip Model Routing section updated (no pilot exception). **shared SOUL.md edit BLOCKED** (protected-file approval timed out) — shared still carries the medium clause → **governance-sync drift flagged; needs Founder approval** (FD-HERMES-008).
+3. **SOUL.md:** iip Model Routing section updated (no pilot exception); **shared SOUL.md edit APPROVED by Founder (A) + applied** — governance sync restored (FD-HERMES-008 verified: both files 0 old clause, gates present).
 4. **Registered:** FD #93 (FOUNDERS-DECISIONS item 109 + vault central + IIP project registers), fd_count 109, PROJECT_STATE (metrics + Latest FDs + item (c) resolved), this closeout.
 
 ## Recommended next action
