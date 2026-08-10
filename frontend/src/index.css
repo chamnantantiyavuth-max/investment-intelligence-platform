@@ -81,13 +81,28 @@
     border-color: var(--color-border);
   }
 
+  /* Hallmark mobile floor (gate 34): never hidden, never visible —
+     clip on both html and body so no horizontal scroll can ever occur */
+  html {
+    overflow-x: clip;
+  }
+
   body {
+    overflow-x: clip;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Hallmark gate 51: display headers wrap inside long words */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 
   /* Research Desk masthead double rule */
@@ -99,5 +114,124 @@
     display: block;
     border-bottom: 1px solid var(--color-rule);
     margin-top: 2px;
+  }
+}
+
+/* ── Long Document article body (Hallmark macro 02, FD #85/B pass) ─────────
+   Continuous prose, single column, generous line-height, measure 60–65ch.
+   Section heads emerge from the paragraph flow (no card boxes, no icon tiles).
+   Applied to the ReportArticlePage ReactMarkdown wrapper. */
+@layer components {
+  .article-body {
+    max-width: 65ch;
+    color: var(--color-ink-2);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+
+  /* section heads: inline with the body flow — small caps bold, hairline
+     rule below, generous space above */
+  .article-body h2 {
+    margin-top: 2.75rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid var(--color-rule);
+    padding-bottom: 0.4rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .article-body h3 {
+    margin-top: 2rem;
+    margin-bottom: 0.25rem;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  .article-body p {
+    margin-top: 0.9rem;
+  }
+  .article-body ul,
+  .article-body ol {
+    margin-top: 0.9rem;
+    padding-left: 1.4rem;
+  }
+  .article-body ul {
+    list-style: disc;
+  }
+  .article-body ol {
+    list-style: decimal;
+  }
+  .article-body li {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--color-ink-2);
+  }
+
+  .article-body strong {
+    font-weight: 600;
+    color: var(--color-foreground);
+  }
+  .article-body em {
+    font-style: italic;
+  }
+  .article-body a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .article-body a:hover {
+    color: var(--color-foreground);
+  }
+
+  /* pull-quote: display face, roman (gate 38a — no italic headers/pull-quotes),
+     accent rule on the left, generous vertical rhythm */
+  .article-body blockquote {
+    margin-top: 1.75rem;
+    margin-bottom: 1.75rem;
+    border-left: 3px solid var(--color-primary);
+    padding-left: 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    line-height: 1.45;
+    color: var(--color-ink);
+  }
+
+  /* tables: keep inside the measure, horizontal scroll only when needed */
+  .article-body table {
+    margin-top: 1.25rem;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .article-body thead {
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .article-body th {
+    padding: 0.375rem 0.5rem;
+    text-align: left;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+  .article-body td {
+    border-bottom: 1px solid color-mix(in srgb, var(--color-rule) 50%, transparent);
+    padding: 0.375rem 0.5rem;
+    vertical-align: top;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-2);
   }
 }

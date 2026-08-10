@@ -9,10 +9,13 @@ import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Typeset report article — Modern Digital Magazine treatment (FD #84, direction B).
- * Markdown SOURCE rendered as a magazine feature: article hero (kicker + display
- * headline + standfirst + provenance chips), typeset body with pull-quote styling,
- * series footer navigation. The reader never sees raw markdown.
+ * Typeset report article — Long Document treatment (Hallmark macro 02,
+ * FD #85/B second pass).
+ * Markdown SOURCE rendered as a magazine feature: article hero (kicker +
+ * display headline + standfirst + provenance chips), continuous-prose body
+ * (measure 65ch, section heads emerge from the flow, roman pull-quotes —
+ * `.article-body` in index.css), series footer navigation. The reader never
+ * sees raw markdown.
  */
 
 const TYPE_LABEL: Record<string, string> = {
@@ -118,20 +121,15 @@ export default function ReportArticlePage() {
         <TitleBlock r={report} />
       </div>
 
-      <article className="mt-8 space-y-0 [&_h2]:mt-10 [&_h2]:border-b [&_h2]:border-rule [&_h2]:pb-2 [&_h2]:font-display [&_h2]:text-[20px] [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:mt-3 [&_p]:text-[14.5px] [&_p]:leading-[1.75] [&_p]:text-ink-1 [&_ul]:mt-3 [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:mt-3 [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:text-[14px] [&_li]:leading-relaxed [&_li]:text-ink-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic [&_a]:text-primary [&_a]:underline [&_blockquote]:my-6 [&_blockquote]:border-l-[3px] [&_blockquote]:border-primary [&_blockquote]:pl-6 [&_blockquote]:font-display [&_blockquote]:text-[20px] [&_blockquote]:italic [&_blockquote]:leading-[1.4] [&_blockquote]:text-ink">
+      <article className="article-body mt-8">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
             table: ({ children }) => (
-              <div className="my-6 overflow-x-auto">
-                <table className="w-full border-collapse text-[13px]">{children}</table>
+              <div className="overflow-x-auto">
+                <table>{children}</table>
               </div>
             ),
-            thead: ({ children }) => <thead className="border-b border-rule">{children}</thead>,
-            th: ({ children }) => (
-              <th className="px-2 py-1.5 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-ink-3">{children}</th>
-            ),
-            td: ({ children }) => <td className="border-b border-rule/50 px-2 py-1.5 align-top font-mono text-[12px] tabular-nums text-ink-2">{children}</td>,
           }}
         >
           {content}
