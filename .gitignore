@@ -46,3 +46,6 @@ discovery/equity_inflection/output/*
 !discovery/equity_inflection/output/*.md
 !discovery/equity_inflection/output/validation-2026-08-10/
 /backend/data/artifacts/
+
+.vercel
+.env*
