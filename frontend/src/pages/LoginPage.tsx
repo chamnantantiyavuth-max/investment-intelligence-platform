@@ -3,12 +3,8 @@ import { useState } from "react"
 import { login } from "@/api/authClient"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { LangToggle } from "@/components/LangToggle"
-import { useLang } from "@/i18n/LanguageContext"
-import { translate } from "@/i18n/translations"
 
 export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
-  const { lang } = useLang()
   const [username, setUsername] = useState("founder")
   const [password, setPassword] = useState("")
   const [error, setError] = useState(false)
@@ -26,43 +22,39 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Language toggle — top-right, available before auth */}
-      <div className="absolute right-4 top-4">
-        <LangToggle />
-      </div>
-
       {/* Product intro — answers "what is this app" at first sight */}
       <div className="hidden flex-1 flex-col justify-center gap-8 border-r border-rule p-12 lg:flex">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
-            {translate("login.momentum", lang)}
+            Momentum-first opportunity discovery
           </p>
           <h1 className="mt-3 max-w-md font-display text-4xl font-bold leading-[1.12] tracking-[-0.01em] text-foreground">
-            {translate("login.platform", lang)}
+            The Investment Intelligence Platform
           </h1>
         </div>
         <div className="max-w-md space-y-4 text-sm leading-relaxed text-ink-2">
           <p className="text-foreground">
-            {translate("login.decisiondesk", lang)}
+            A decision-desk that reduces the global investment search space while preserving
+            evidence, uncertainty, and dissent.
           </p>
           <p>
-            {translate("login.question", lang).split(":")[0]}:{" "}
-            <span className="font-semibold text-foreground">{translate("login.question", lang).split(": ")[1] ?? ""}</span>
+            It answers one question:{" "}
+            <span className="font-semibold text-foreground">what deserves further investigation?</span>
           </p>
           <div className="space-y-2 border-t border-rule pt-4">
             <p className="flex items-center gap-2">
-              <span className="text-ink-3">—</span> {translate("login.advisory", lang)}
+              <span className="text-ink-3">—</span> Advisory only — no buy/sell/allocate. No broker connectivity.
             </p>
             <p className="flex items-center gap-2">
-              <span className="text-ink-3">—</span> {translate("login.portfolioBlind", lang)}
+              <span className="text-ink-3">—</span> Portfolio-blind: the system never sees your holdings.
             </p>
             <p className="flex items-center gap-2">
-              <span className="text-ink-3">—</span> {translate("login.dataLabeled", lang)}
+              <span className="text-ink-3">—</span> Data is labeled real, hybrid, or synthetic on every page.
             </p>
           </div>
         </div>
         <p className="font-mono text-[11px] text-ink-3">
-          {translate("login.pillars", lang)}
+          Alpha Momentum · Close System · Fundamental &amp; Opportunity — one shared intelligence core
         </p>
       </div>
 
@@ -70,12 +62,12 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
       <div className="flex flex-1 items-center justify-center p-6">
         <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-md border border-rule bg-card p-6">
           <div>
-            <h2 className="font-display text-xl font-bold text-foreground">{translate("login.title", lang)}</h2>
-            <p className="mt-1 text-xs text-ink-2">{translate("login.subtitle", lang)}</p>
+            <h2 className="font-display text-xl font-bold text-foreground">Sign in</h2>
+            <p className="mt-1 text-xs text-ink-2">Private research workspace — advisory intelligence, not advice.</p>
           </div>
           <div className="space-y-1.5">
             <label htmlFor="username" className="text-xs font-medium text-ink-2">
-              {translate("login.username", lang)}
+              Username
             </label>
             <Input
               id="username"
@@ -86,7 +78,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
           </div>
           <div className="space-y-1.5">
             <label htmlFor="password" className="text-xs font-medium text-ink-2">
-              {translate("login.password", lang)}
+              Password
             </label>
             <Input
               id="password"
@@ -96,9 +88,9 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               autoComplete="current-password"
             />
           </div>
-          {error && <p className="text-sm text-negative">{translate("login.error", lang)}</p>}
+          {error && <p className="text-sm text-negative">Invalid credentials — try again.</p>}
           <Button type="submit" disabled={busy} className="w-full">
-            {busy ? (lang === "th" ? "กำลังเข้าสู่ระบบ…" : "Signing in…") : translate("login.button", lang)}
+            {busy ? "Signing in…" : "Sign in"}
           </Button>
         </form>
       </div>

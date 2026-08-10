@@ -18,7 +18,6 @@ import quantSprite from "@/assets/agents/org-quant-validator.png";
 import dataStewardSprite from "@/assets/agents/org-data-steward.png";
 import auditorSprite from "@/assets/agents/org-auditor.png";
 import radarScoutSprite from "@/assets/agents/org-radar-scout.png";
-import { useLang } from "@/i18n/LanguageContext";
 
 /**
  * Org Office — Virtual Office (Maple Story style sprites), drill-down layout.
@@ -231,7 +230,6 @@ function DeskDetail({
 }
 
 export default function OrgOfficePage() {
-  const { lang } = useLang();
   const [expanded, setExpanded] = useState<DeskCode | null>(null);
   const queue = useQuery({ queryKey: ["org-queue"], queryFn: getOrgQueue, staleTime: 60_000 });
   const registry = useQuery({ queryKey: ["research-artifacts"], queryFn: getResearchArtifacts, staleTime: 60_000 });
@@ -290,7 +288,7 @@ export default function OrgOfficePage() {
     <div className="space-y-6">
       <div className="border-b border-rule pb-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Org office · virtual office</p>
-        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">{lang === "th" ? "ห้องวิจัย" : "The research floor"}</h1>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">The research floor</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">
           Org workflow · operational tracking · latest card update {latest}
         </p>

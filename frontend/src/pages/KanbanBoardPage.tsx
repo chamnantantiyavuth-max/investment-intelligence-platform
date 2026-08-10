@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getOrgQueue, getResearchArtifacts, type OrgCard, type ResearchArtifact } from "@/api/orgClient";
 import { linkArtifact, latestCardUpdate } from "@/lib/researchWorkflow";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLang } from "@/i18n/LanguageContext";
 
 /** Read-only kanban VISUAL board (FD #59) — the 11 canonical columns
  *  (KANBAN-CONTRACT §2) rendered as column stacks from GET /org-queue.
@@ -67,7 +66,6 @@ function BoardCard({ card, artifacts }: { card: OrgCard; artifacts: ResearchArti
 }
 
 export default function KanbanBoardPage() {
-  const { lang } = useLang();
   const queue = useQuery({ queryKey: ["org-queue"], queryFn: getOrgQueue, staleTime: 60_000 });
   const registry = useQuery({ queryKey: ["research-artifacts"], queryFn: getResearchArtifacts, staleTime: 60_000 });
 
@@ -105,7 +103,7 @@ export default function KanbanBoardPage() {
     <div className="space-y-6">
       <div className="border-b border-rule pb-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Research workflow</p>
-        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">{lang === "th" ? "กระดานคัมบัง" : "Kanban Board"}</h1>
+        <h1 className="mt-1 font-display text-h2 font-bold tracking-tight">Kanban Board</h1>
         <p className="mt-1 font-mono text-[11px] text-ink-3">
           Kanban board · operational tracking · latest card update {latest}
         </p>

@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getDecisions, getGitLog, getModelRegistry } from "@/api/auditClient";
 import { cn } from "@/lib/utils";
-import { useLang } from "@/i18n/LanguageContext";
 
 /**
  * Audit page (FD #86, WS-3 — UI-4): Decision Register + Audit Center +
@@ -36,7 +35,6 @@ function SectionSkeleton() {
 }
 
 export default function AuditPage() {
-  const { lang } = useLang();
   const [search, setSearch] = useState("");
 
   const decisions = useQuery({ queryKey: ["audit-decisions"], queryFn: getDecisions, staleTime: 60_000 });
@@ -60,7 +58,7 @@ export default function AuditPage() {
     <div className="mx-auto w-full max-w-[1120px] px-6 py-8">
       <header className="border-b border-ink pb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Operational Audit</p>
-        <h1 className="mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-tight">{lang === "th" ? "ทะเบียนการตัดสินใจและการตรวจสอบ" : "Decision Register &amp; Audit"}</h1>
+        <h1 className="mt-2 font-display text-[clamp(24px,3vw,32px)] font-bold tracking-tight">Decision Register &amp; Audit</h1>
         <p className="mt-2 max-w-[720px] text-[13.5px] leading-[1.6] text-ink-2">
           The Founder decision history, the git trail behind every published report, and the
           adapter registry — read-only, straight from the committed repository. No composite

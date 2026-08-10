@@ -7,9 +7,6 @@ import { getReport, getReports, type ReportDetail, type ReportMeta } from "@/api
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LangToggle } from "@/components/LangToggle";
-import { useLang } from "@/i18n/LanguageContext";
-import { translate } from "@/i18n/translations";
 
 /**
  * Typeset report article — Long Document treatment (Hallmark macro 02,
@@ -18,8 +15,16 @@ import { translate } from "@/i18n/translations";
  * display headline + standfirst + provenance chips), continuous-prose body
  * (measure 65ch, section heads emerge from the flow, roman pull-quotes —
  * `.article-body` in index.css), series footer navigation. The reader never
- * sees raw markdown. Bilingual: Thai default / English toggle (10 Aug 2026).
+ * sees raw markdown.
  */
+
+const TYPE_LABEL: Record<string, string> = {
+  company: "Company Research Note",
+  product: "Product Research Note",
+  weekly: "Weekly Brief",
+  quarterly: "Quarterly Report",
+  theme: "Theme Note",
+};
 
 function statusTone(status: string): string | undefined {
   if (status === "published") return "text-positive";
@@ -28,19 +33,16 @@ function statusTone(status: string): string | undefined {
 }
 
 function TitleBlock({ r }: { r: ReportDetail }) {
-  const { lang } = useLang();
-  const title = lang === "th" && r.title_th ? r.title_th : r.title;
-  const summary = lang === "th" && r.summary_th ? r.summary_th : r.summary;
   return (
     <header>
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-        {translate(`article.typeLabel.${r.type}` as string, lang)}
+        {TYPE_LABEL[r.type] ?? r.type}
         {r.subject ? ` · ${r.subject}` : ""}
       </p>
       <h1 className="mt-3 font-display text-[clamp(28px,4vw,40px)] font-bold leading-[1.08] tracking-[-0.015em]">
-        {title}
+        {r.title}
       </h1>
-      {summary && <p className="mt-3 max-w-[700px] text-[16.5px] leading-[1.6] text-ink-2">{summary}</p>}
+      {r.summary && <p className="mt-3 max-w-[700px] text-[16.5px] leading-[1.6] text-ink-2">{r.summary}</p>}
       <p className="mt-4 font-mono text-[11px] text-ink-3">
         {r.date}
         {r.author ? ` · by ${r.author}` : ""}
@@ -52,13 +54,13 @@ function TitleBlock({ r }: { r: ReportDetail }) {
       {/* Provenance — borderless hairline strip (FD #85/B, FD #84 no-box) */}
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-rule pt-3 text-[11px] text-ink-2">
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-positive" aria-hidden="true" /> {translate("article.realData", lang)}
+          <span className="size-1.5 rounded-full bg-positive" aria-hidden="true" /> Real data · sourced &amp; dated
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-info" aria-hidden="true" /> {translate("article.portfolioBlind", lang)}
+          <span className="size-1.5 rounded-full bg-info" aria-hidden="true" /> Portfolio-blind
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-ink-3" aria-hidden="true" /> {translate("article.advisoryOnly", lang)}
+          <span className="size-1.5 rounded-full bg-ink-3" aria-hidden="true" /> Advisory only — no buy/sell instruction
         </span>
       </div>
     </header>
@@ -66,7 +68,6 @@ function TitleBlock({ r }: { r: ReportDetail }) {
 }
 
 export default function ReportArticlePage() {
-  const { lang } = useLang();
   const { slug = "" } = useParams();
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["report", slug],
@@ -79,10 +80,8 @@ export default function ReportArticlePage() {
   const content = useMemo(() => {
     if (!report) return "";
     // Strip the leading H1 (title lives in the title block, not the body).
-    // Thai body (content_th) when present and Thai is active; else English.
-    const src = lang === "th" && report.content_th ? report.content_th : report.content;
-    return src.replace(/^#\s+.+\n+/, "");
-  }, [report, lang]);
+    return report.content.replace(/^#\s+.+\n+/, "");
+  }, [report]);
 
   const siblings = useMemo(() => {
     if (!report) return { prev: undefined, next: undefined } as { prev?: ReportMeta; next?: ReportMeta };
@@ -101,12 +100,10 @@ export default function ReportArticlePage() {
     const status404 = (error as { status?: number } | null)?.status === 404;
     return (
       <div className="rounded-md bg-bg-panel px-4 py-8">
-        <p className="text-sm font-medium text-negative">
-          {status404 ? translate("article.notFound", lang) : translate("article.loadError", lang)}
-        </p>
+        <p className="text-sm font-medium text-negative">{status404 ? "Report not found." : "Could not load this report."}</p>
         {!status404 && (
           <button type="button" onClick={() => refetch()} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
-            {translate("article.retry", lang)}
+            Retry →
           </button>
         )}
       </div>
@@ -116,12 +113,9 @@ export default function ReportArticlePage() {
   return (
     <div className="flex min-h-screen flex-col bg-bg-page">
       <div className="mx-auto w-full max-w-[820px] flex-1 px-6 py-6">
-      <div className="flex items-center justify-between">
-        <Link to="/library" className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 hover:text-foreground">
-          <ArrowLeft className="size-3.5" /> {translate("article.back", lang)}
-        </Link>
-        <LangToggle />
-      </div>
+      <Link to="/library" className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 hover:text-foreground">
+        <ArrowLeft className="size-3.5" /> Library
+      </Link>
 
       <div className="mt-4">
         <TitleBlock r={report} />
@@ -143,16 +137,16 @@ export default function ReportArticlePage() {
       </article>
 
       <footer className="mt-10 flex items-baseline justify-between gap-4 border-t border-rule pt-4 text-[11px] text-ink-3">
-        <span>{translate("library.brand", lang)} · {report.date}</span>
+        <span>Research Intelligence · {report.date}</span>
         <div className="flex items-baseline gap-5">
           {siblings.next && (
             <Link to={`/library/${siblings.next.slug}`} className="font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground">
-              {translate("article.later", lang, { subject: report.subject })}
+              Later {report.subject} note →
             </Link>
           )}
           {siblings.prev && (
             <Link to={`/library/${siblings.prev.slug}`} className="font-semibold uppercase tracking-[0.1em] text-primary hover:text-foreground">
-              {translate("article.earlier", lang, { subject: report.subject })}
+              ← Earlier {report.subject} note
             </Link>
           )}
         </div>
@@ -160,7 +154,7 @@ export default function ReportArticlePage() {
       </div>
       {/* ── Magazine footer (standalone shell — FD #84) ── */}
       <footer className="mx-auto w-full max-w-[1120px] border-t border-ink px-6 py-5 text-[10px] uppercase tracking-[0.12em] text-ink-3">
-        {translate("article.footerNote", lang)}
+        Advisory only · Portfolio-blind · Point-in-time data (FD #58)
       </footer>
     </div>
   );
