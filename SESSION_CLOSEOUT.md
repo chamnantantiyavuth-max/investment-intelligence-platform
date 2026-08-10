@@ -49,6 +49,19 @@
 
 <!-- 2026-08-09 04:20 UTC+7 -->
 
+## 10 Aug 2026 (late session) — Vercel deployment + magazine closeout (FD #85)
+
+**What happened:**
+1. Magazine FD #85 closeout: Hallmark mobile floor (index.css: overflow-x clip + h1-h3 overflow-wrap) + `.article-body` Long Document treatment (65ch, roman pull-quotes, token-only) — verified 320/375/414/768 × 2 pages via new reusable `scripts/verify-mobile.mjs` (CDP emulation + API login), tsc 0 / lint 0 / build ✓ / suite 340. Commit `4495ecb`.
+2. **Push DONE** — `1550429..afbdbe6` (11 commits incl. FD #88/#89 chain + magazine + Vercel setup). **origin/main == HEAD** (first sync since 6 Aug).
+3. **Vercel deployment READY** — project `investment-intelligence-platform` (chamnan-t): Vite build (frontend/dist) + `api/index.py` serverless FastAPI re-export (sys.path repo root, /tmp SQLite) + rewrites (/api→function, SPA→index.html) + .vercelignore (bundle < 225MB) + env IIP_AUTH_* set. Fixed real issues: services-framework trap (CLI auto-set, changed to vite via API PATCH), runtime field must be omitted (CLI 56), PyYAML missing dep (report_store/org_store), .vercelignore png over-exclusion (frontend agent assets re-included).
+4. **BLOCKED on Founder decision:** Vercel SSO protection `all_except_custom_domains` ACTIVE — all requests 302 → vercel.com/sso-api. Options: A) off SSO (public), B) add custom domain (bypass), C) keep internal-only. No custom domains in account. Deploy URL: https://investment-intelligence-platform-8t97wkv0y-chamnan-t.vercel.app
+5. Memory save failed (4x, full) — Vercel facts recorded here instead; retry next session.
+
+**Recommended next action:** Founder answers SSO A/B/C → final verify (login + /library + article on production) → then standing queue: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), CoS 0016/0017, AGENTS.md checkpoint (protected), scanner→Radar integration.
+
+<!-- 2026-08-10 17:00 UTC+7 -->
+
 ## 10 Aug 2026 — Equity Inflection Discovery: FD #88/#89 full cycle (direction → scanner → validation → standing)
 
 **Session type:** Critical Mode (financial-signal discovery feature, shadow-gated) — full WF-Phase cycle in one session.
