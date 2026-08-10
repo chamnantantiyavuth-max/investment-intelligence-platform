@@ -1,104 +1,105 @@
 ---
-title: "Apple Multi-Dimension Deep Analysis: Durable Business, Unestablished Investment"
+title: "บทวิเคราะห์เจาะลึกหลายมิติ Apple: ธุรกิจแข็งแกร่งยั่งยืน แต่การลงทุนยังไม่ได้รับการพิสูจน์"
 type: company
 subject: "AAPL"
 date: 2026-08-09
 author: "Equity Research (RM-2026-0004, first FO-universe deep analysis — FD #84 coverage gap) — IC Secretary synthesis"
 status: published
 updated: 2026-08-09 (published after Founder gate, Option A — publish with dissent)
-summary: "Apple is a durable, high-margin business whose moat rests on ONE primary integrator and rent-capture control point — ownership of the customer interface — expressed through switching costs, intangible assets, and platform scale (correlated expressions of one system, NOT three independent proofs). Earnings quality is ADEQUATE, not HIGH: FY21–25 FCF/NI conversion 88–116% is broadly cash-backed, but FY25's 88.18% conversion, NI +19.5% vs OCF −5.7% divergence, and an unexplained $11.1B→$21.3B intangible roll-forward block the HIGH label. Services = 42.2% of FY25 gross profit at 75.4% GM; Q3 FY26 Services GM 75.62% (derived reported-basis, not tariff-normalized). Value-trap detector: INCONCLUSIVE — the −2σ trigger is untestable without a synchronized price/multiple series. Capital allocation: strong capital-return capacity ($438.6B buybacks FY21–25, shares −10.1%), allocation quality INCONCLUSIVE (A− withdrawn: no price-vs-value test, no M&A return audit). Valuation: indeterminate. Controlling risk: rent-capture erosion — Apple can retain users while regulation and AI agents redirect the economics of discovery, distribution, and payment. 'Attractive business' is established; 'attractive investment' is NOT, and not only because of price: attractiveness requires BOTH a synchronized valuation that tests the rent-loss scenario AND survival of that scenario. The CRO dissents (FAIL): durability is not the same as safety."
+summary: "Apple เป็นธุรกิจแข็งแกร่งยั่งยืน margin สูง ซึ่ง moat ตั้งอยู่บนผู้บูรณาการหลักหนึ่งเดียวและจุดควบคุมการเก็บค่าเช่า (rent capture) — ความเป็นเจ้าของอินเทอร์เฟซลูกค้า — แสดงออกผ่าน switching cost สินทรัพย์ไม่มีตัวตน และสเกลแพลตฟอร์ม (เป็นการแสดงออกที่สัมพันธ์กันของระบบเดียว ไม่ใช่สามหลักฐานอิสระ) คุณภาพกำไร ADEQUATE ไม่ใช่ HIGH: การแปลง FCF/NI ปี FY21–25 ที่ 88–116% หนุนด้วยเงินสดโดยรวม แต่การแปลง 88.18% ของ FY25, ความต่าง NI +19.5% เทียบ OCF −5.7% และการเพิ่มขึ้นของสินทรัพย์ไม่มีตัวตน $11.1B→$21.3B ที่อธิบายไม่ได้ ขัดขวางฉลาก HIGH Services = 42.2% ของกำไรขั้นต้น FY25 ที่ GM 75.4%; Q3 FY26 Services GM 75.62% (คำนวณจากข้อมูลรายงาน ไม่ได้ปรับภาษี) ตัวตรวจจับกับดักมูลค่า (value trap): INCONCLUSIVE — ตัวกระตุ้น −2σ ทดสอบไม่ได้หากไม่มีซีรีส์ราคา/หลายเท่าแบบ synchronized การจัดสรรทุน: ความสามารถคืนทุนแข็งแกร่ง ($438.6B ซื้อคืน FY21–25, หุ้น −10.1%) คุณภาพการจัดสรร INCONCLUSIVE (ถอน A−: ไม่มีการทดสอบราคาเทียบมูลค่า ไม่มีการตรวจสอบผลตอบแทน M&A) การประเมินมูลค่า: ระบุไม่ได้ ต้นทุนความเสี่ยงควบคุม: การกัดกร่อนการเก็บค่าเช่า — Apple รักษาผู้ใช้ได้ ขณะที่กฎระเบียบและเอเจนต์ AI เปลี่ยนเส้นทางเศรษฐศาสตร์ของการค้นพบ การกระจาย และการชำระเงิน 'ธุรกิจที่น่าดึงดูด' ได้รับการพิสูจน์; 'การลงทุนที่น่าดึงดูด' ไม่ได้ — และไม่ใช่เพราะราคาอย่างเดียว: ความน่าดึงดูดต้องการทั้งการประเมินมูลค่าแบบ synchronized ที่ทดสอบสถานการณ์สูญเสียค่าเช่า และการรอดของสถานการณ์นั้น CRO ค้าน (FAIL): ความยั่งยืนไม่เหมือนความปลอดภัย"
 ---
 
-# Apple Multi-Dimension Deep Analysis: Durable Business, Unestablished Investment
+# บทวิเคราะห์เจาะลึกหลายมิติ Apple: ธุรกิจแข็งแกร่งยั่งยืน แต่การลงทุนยังไม่ได้รับการพิสูจน์
 
-**RM-2026-0004 · first full deep analysis of the FO-universe (FD #84 coverage gap)**
-**Point-in-time:** 2026-08-09 · evidence through Q3 FY2026 (quarter ended 2026-06-27) · **advisory only, portfolio-blind**
-**Workspace:** `research/companies/AAPL/deep-analysis-2026-08-09/` · **audit chain:** cross-exam 7/7 → audit MAJOR (item 8) → re-audit **CLEAN WITH MINORS — READY** (arithmetic 3/3 PASS)
-
----
-
-## Executive summary
-
-Apple's customer interface is the **primary integrator and rent-capture control point** of its economics — not a sole moat engine, and not three independent proofs (RM-2026-0001 itself warned "three dimensions, not six"). Installed-base persistence and nominal Services growth are **non-dispositive if profit captured per relationship deteriorates**.
-
-Earnings quality is **ADEQUATE** — not HIGH: five-year FCF/NI conversion (88–116%) is broadly cash-backed, but FY25's 88.18% conversion, NI +19.5% vs OCF −5.7% divergence, and an unexplained $11.1B→$21.3B intangible roll-forward block the HIGH label. Capital allocation shows **strong capital-return capacity; allocation quality INCONCLUSIVE** (the A− letter grade is withdrawn). The value-trap detector verdict is **INCONCLUSIVE** and must stay that way: spec 3.6.2's −2σ trigger is untestable without a synchronized price/multiple series. Valuation is **indeterminate** — no price model exists in the evidence base.
-
-**Core verdict:** durable business, adequate earnings quality, inconclusive value-trap and allocation-quality verdicts, indeterminate valuation — and the controlling investment risk is **rent-capture erosion: Apple can retain users while regulation and AI agents redirect the economics of discovery, distribution, and payment**. "Attractive business" is established; "attractive investment" is NOT — and **not only because of price**. Attractiveness remains **unestablished unless two conditions are jointly met**: (1) a synchronized valuation that explicitly incorporates and tests the causal rent-loss scenario (attachment → routing/take rate → Services gross profit → organic NI/OCF → buyback-supported EPS), and (2) survival of that scenario. Neither condition is satisfiable from this evidence base.
+**RM-2026-0004 · การวิเคราะห์เจาะลึกเต็มรูปแบบครั้งแรกของ FO-universe (ช่องว่างความครอบคลุม FD #84)**
+**Point-in-time:** 2026-08-09 · หลักฐานถึง Q3 FY2026 (ไตรมาสสิ้นสุด 2026-06-27) · **ที่ปรึกษาเท่านั้น, portfolio-blind**
+**Workspace:** `research/companies/AAPL/deep-analysis-2026-08-09/` · **สายการตรวจสอบ:** cross-exam 7/7 → audit MAJOR (item 8) → re-audit **CLEAN WITH MINORS — READY** (เลขคณิต 3/3 PASS)
 
 ---
 
-## 1. Business model
+## สรุปผู้บริหาร
 
-- FY2025 revenue $416.2B: iPhone 50.4% · Services 26.2% · other products 23.4%. Products gross profit $112.9B at 36.8%; Services $82.3B at **75.4%** — **42.2% of gross profit** [10-K FY25, accession 0000320193-25-000079; derived 82,314/195,201 = 42.1688%].
-- Geography: Americas 42.9%, Greater China 15.5% (down from 18.9% FY23, then **+22.4% y/y Q3 FY26** reversal) [10-K FY25; 10-Q Q3 FY26, accession 0000320193-26-000020].
-- Aggregate Services reporting prevents attribution of growth/margin to App Store, advertising, cloud, payments, or licensing individually — **the rent pool most exposed to regulation is unmeasurable at this disclosure level**.
-- Missing: product units, ARPU, filed installed-base count (2.5B+ devices / 1.5B+ subs are **management statements in third-party transcripts**, not filing-verified).
+อินเทอร์เฟซลูกค้าของ Apple คือ **ผู้บูรณาการหลักและจุดควบคุมการเก็บค่าเช่า** ของเศรษฐศาสตร์มัน — ไม่ใช่เครื่องยนต์ moat เดี่ยว และไม่ใช่สามหลักฐานอิสระ (RM-2026-0001 เองเตือน "สามมิติ ไม่ใช่หก") ความคงอยู่ของฐานผู้ใช้และการเติบโต Services เชิงตัวเลข **ไม่ชี้ขาด ถ้ากำไรที่จับต่อความสัมพันธ์ลดลง**
 
-## 2. Moat — six required areas, one primary integrator
+คุณภาพกำไรเป็น **ADEQUATE** — ไม่ใช่ HIGH: การแปลง FCF/NI ห้าปี (88–116%) หนุนด้วยเงินสดโดยรวม แต่การแปลง 88.18% ของ FY25 ความต่าง NI +19.5% เทียบ OCF −5.7% และการเพิ่มขึ้นของสินทรัพย์ไม่มีตัวตน $11.1B→$21.3B ที่อธิบายไม่ได้ ขัดขวางฉลาก HIGH การจัดสรรทุนแสดง **ความสามารถคืนทุนแข็งแกร่ง; คุณภาพการจัดสรร INCONCLUSIVE** (เกรดตัวอักษร A− ถูกถอน) คำตัดสินตัวตรวจจับกับดักมูลค่าคือ **INCONCLUSIVE** และต้องคงอยู่อย่างนั้น: ตัวกระตุ้น −2σ ของ spec 3.6.2 ทดสอบไม่ได้หากไม่มีซีรีส์ราคา/หลายเท่าแบบ synchronized การประเมินมูลค่า**ระบุไม่ได้** — ไม่มีโมเดลราคาในฐานหลักฐาน
 
-| Required area | Verdict | Incremental evidence |
+**คำตัดสินแกนกลาง:** ธุรกิจแข็งแกร่งยั่งยืน คุณภาพกำไรพอเพียง คำตัดสินกับดักมูลค่าและคุณภาพการจัดสรรไม่ชี้ขาด การประเมินมูลค่าไม่สามารถระบุได้ — และความเสี่ยงการลงทุนที่ควบคุมคือ **การกัดกร่อนการเก็บค่าเช่า: Apple รักษาผู้ใช้ได้ ขณะที่กฎระเบียบและเอเจนต์ AI เปลี่ยนเส้นทางเศรษฐศาสตร์ของการค้นพบ การกระจาย และการชำระเงิน** "ธุรกิจที่น่าดึงดูด" ได้รับการพิสูจน์; "การลงทุนที่น่าดึงดูด" ไม่ได้ — และ **ไม่ใช่เพราะราคาอย่างเดียว** ความน่าดึงดูดยัง**ไม่ได้รับการพิสูจน์ เว้นแต่สองเงื่อนไขถูกรวมกัน**: (1) การประเมินมูลค่าแบบ synchronized ที่รวมและทดสอบสถานการณ์สูญเสียค่าเช่าเชิงเหตุอย่างชัดเจน (ความผูกพัน → การเส้นทาง/อัตราการเก็บ → กำไรขั้นต้น Services → NI/OCF ออร์แกนิก → EPS ที่หนุนด้วยซื้อคืน) และ (2) การรอดของสถานการณ์นั้น ไม่มีเงื่อนไขใดที่พอใจได้จากฐานหลักฐานนี้
+
+---
+
+## 1. โมเดลธุรกิจ
+
+- รายได้ FY2025 $416.2B: iPhone 50.4% · Services 26.2% · ผลิตภัณฑ์อื่น 23.4% กำไรขั้นต้นผลิตภัณฑ์ $112.9B ที่ 36.8%; Services $82.3B ที่ **75.4%** — **42.2% ของกำไรขั้นต้น** [10-K FY25, accession 0000320193-25-000079; คำนวณ 82,314/195,201 = 42.1688%]
+- ภูมิศาสตร์: Americas 42.9%, Greater China 15.5% (ลดจาก 18.9% FY23 แล้ว **+22.4% y/y Q3 FY26** พลิกกลับ) [10-K FY25; 10-Q Q3 FY26, accession 0000320193-26-000020]
+- การรายงาน Services แบบรวมกันป้องกันการระบุที่มาของการเติบโต/margin ต่อ App Store โฆษณา คลาวด์ การชำระเงิน หรือ licensing รายตัว — **สระค่าเช่าที่เสี่ยงกฎระเบียบมากที่สุดวัดไม่ได้ที่ระดับการเปิดเผยนี้**
+- สิ่งที่ขาด: หน่วยผลิตภัณฑ์ ARPU จำนวนฐานผู้ใช้ที่ยื่น (2.5B+ อุปกรณ์ / 1.5B+ สมาชิกเป็น **คำกล่าวของฝ่ายบริหารใน transcript บุคคลที่สาม ไม่ได้ตรวจสอบจากเอกสารยื่น**)
+
+## 2. Moat — หกพื้นที่ที่กำหนด หนึ่งผู้บูรณาการหลัก
+
+| พื้นที่ที่กำหนด | คำตัดสิน | หลักฐานเพิ่มเติม |
 |---|---|---|
-| Share of Mind | Strong | brand demand; record 22% iOS share forecast (IDC 2026-06-23) |
-| Switching Cost | Strong (unquantified) | device+cloud+app+household integration; no churn/migration data disclosed; **Migration Cost nests here** |
-| Network Effect | **Moderate — hypothesis, not proven** | users attract developers/services, but no disclosed series demonstrates self-reinforcement |
-| Intangible Assets | Strong | proprietary OS, silicon, security, design; $34.6B FY25 R&D |
-| Cost Advantage | Moderate / fragile | outsourcing + purchasing scale; single-source components, Asian concentration, memory constraints |
-| Efficient Scale | Strong in platform economics; **weak as entry deterrence** | minority unit share in major hardware markets |
+| Share of Mind | แข็งแกร่ง | อุปสงค์แบรนด์; คาดการณ์ส่วนแบ่ง iOS ทำสถิติ 22% (IDC 2026-06-23) |
+| Switching Cost | แข็งแกร่ง (ยังไม่ได้วัด) | การผสานอุปกรณ์+คลาวด์+แอป+ครัวเรือน; ไม่มีข้อมูล churn/migration เปิดเผย; **Migration Cost ซ้อนอยู่ที่นี่** |
+| Network Effect | **ปานกลาง — สมมติฐาน ไม่ได้พิสูจน์** | ผู้ใช้ดึงนักพัฒนา/บริการ แต่ไม่มีซีรีส์เปิดเผยที่แสดงการตอกย้ำตัวเอง |
+| สินทรัพย์ไม่มีตัวตน | แข็งแกร่ง | OS เจ้าของ ซิลิคอน ความปลอดภัย การออกแบบ; R&D FY25 $34.6B |
+| Cost Advantage | ปานกลาง / เปราะบาง | เอาท์ซอร์ส + สเกลการซื้อ; ชิ้นส่วนแหล่งเดียว การกระจุกเอเชีย ข้อจำกัดหน่วยความจำ |
+| Efficient Scale | แข็งแกร่งในเศรษฐศาสตร์แพลตฟอร์ม; **อ่อนแอในฐานะการยับยั้งผู้เข้า** | ส่วนแบ่งหน่วยเสียงข้างน้อยในตลาดฮาร์ดแวร์หลัก |
 
-**Correction applied:** each area earns only its incremental evidence; the shared interface engine (installed base + Services margin) is counted once — never as multiple independent proofs.
+**การแก้ไขที่ใช้:** แต่ละพื้นที่ได้หลักฐานเพิ่มของตัวเองเท่านั้น; เครื่องยนต์อินเทอร์เฟซร่วม (ฐานผู้ใช้ + margin Services) ถูกนับครั้งเดียว — ไม่เคยเป็นหลักฐานอิสระหลายชิ้น
 
-## 3. Earnings quality — ADEQUATE
+## 3. คุณภาพกำไร — ADEQUATE
 
-**Verdict: ADEQUATE** — the formal §3.5.1 HIGH criterion (FCF conversion >1.0×) is not cleared by the latest annual evidence.
+**คำตัดสิน: ADEQUATE** — เกณฑ์ HIGH ทางการของ §3.5.1 (การแปลง FCF >1.0×) ไม่ถูกเคลียร์ด้วยหลักฐานรายปีล่าสุด
 
-- Products GM 35.3→36.8% FY21–25 then **40.07% Q3 FY26**; Services GM 69.7→75.4% then **75.62%**. Consolidated Q3 GM 50.1% includes ~2 points of tariff refunds — **neither Q3 category margin is tariff-normalized** (refund allocation undisclosed).
-- **Claim-site lineage:** Q3 FY26 Services GM = `($30,739M sales − $7,494M cost) / $30,739M = 75.6205%` → 75.62% — **derived reported-basis gross-margin arithmetic** from Q3 FY2026 10-Q (accession 0000320193-26-000020, filed 2026-07-31); NOT tariff-normalized, NOT category operating margin.
-- **Cash bridge (rerunnable):** FCF/NI = 98%, 112%, 103%, 116%, **88.18% FY25** (FY24 ≈105% excluding the $10.2B Ireland State Aid charge). **Blockers to HIGH:** FY25 NI +19.50% vs OCF −5.73%; net intangibles $11.093B→$21.334B (+92.32%) without business-combination explanation; working-capital movements and maintenance capex undecomposed.
+- GM ผลิตภัณฑ์ 35.3→36.8% FY21–25 แล้ว **40.07% Q3 FY26**; Services GM 69.7→75.4% แล้ว **75.62%** GM รวม Q3 50.1% รวมเงินคืนภาษี ~2 จุด — **margin หมวด Q3 ทั้งสองไม่ได้ปรับภาษี** (การจัดสรรเงินคืนไม่เปิดเผย)
+- **สายที่มาข้ออ้าง (claim-site lineage):** Q3 FY26 Services GM = `($30,739M ยอดขาย − $7,494M ต้นทุน) / $30,739M = 75.6205%` → 75.62% — **เลขคณิต margin ขั้นต้นจากข้อมูลรายงาน** จาก Q3 FY2026 10-Q (accession 0000320193-26-000020, ยื่น 2026-07-31); ไม่ได้ปรับภาษี ไม่ใช่ margin ดำเนินงานหมวด
+- **สะพานเงินสด (รันซ้ำได้):** FCF/NI = 98%, 112%, 103%, 116%, **88.18% FY25** (FY24 ≈105% ไม่รวมค่าใช้จ่าย Ireland State Aid $10.2B) **ตัวขัดขวาง HIGH:** FY25 NI +19.50% เทียบ OCF −5.73%; สินทรัพย์ไม่มีตัวตนสุทธิ $11.093B→$21.334B (+92.32%) โดยไม่มีคำอธิบาย business combination; การเคลื่อนไหวเงินทุนหมุนเวียนและ capex บำรุงรักษาไม่ได้แยกองค์ประกอบ
 
-## 4. Value trap — INCONCLUSIVE
+## 4. กับดักมูลค่า — INCONCLUSIVE
 
-Spec 3.6.2 requires a **−2σ historical range** (synchronized price/multiple series + defined lookback + current observation). That dataset is **not in the evidence base**. Therefore: the detector verdict is **INCONCLUSIVE** — no "Unusually Cheap" trigger can be evaluated, and a narrative lean would bypass the approved gate. Operating-risk discussion is separate: realized operating erosion is NOT established (Q3 FY26 growth, Services margin, share gains are counterevidence); future rent-capture erosion IS credible (regulation, AI control-point migration, China).
+Spec 3.6.2 ต้องการ **ช่วง −2σ ทางประวัติศาสตร์** (ซีรีส์ราคา/หลายเท่าแบบ synchronized + lookback ที่นิยาม + การสังเกตปัจจุบัน) ชุดข้อมูลนั้น**ไม่อยู่ในฐานหลักฐาน** ดังนั้น: คำตัดสินตัวตรวจจับคือ **INCONCLUSIVE** — ไม่มีตัวกระตุ้น "Unusually Cheap" ที่ประเมินได้ และการเอียงตามเรื่องเล่าจะเลี่ยงประตูที่อนุมัติ การอภิปรายความเสี่ยงดำเนินงานแยกต่างหาก: การกัดกร่อนดำเนินงานที่เกิดขึ้นจริงไม่ได้ถูกพิสูจน์ (การเติบโต Q3 FY26 margin Services การได้ส่วนแบ่งเป็นหลักฐานค้าน); การกัดกร่อนการเก็บค่าเช่าในอนาคตน่าเชื่อถือ (กฎระเบียบ การย้ายจุดควบคุม AI จีน)
 
-## 5. Capital allocation — strong capacity; quality INCONCLUSIVE
+## 5. การจัดสรรทุน — ความสามารถแข็งแกร่ง; คุณภาพ INCONCLUSIVE
 
-| Element | Evidence |
+| องค์ประกอบ | หลักฐาน |
 |---|---|
-| Buybacks | FY25 $90.7B cash vs $98.8B FCF (81.4% of OCF); FY21–25 $438.6B total; shares −10.1% FY21–25, −1.2% more to 14.594B by 2026-07-17 |
-| 9M FY26 | cash paid −12.0% to $62.1B while OCF +43% to $117.0B → coverage 53% vs 86% (fresh $10B ASRs settle Q4; **durable deceleration NOT established**) |
-| Dividend | $0.27 quarterly (Q3 FY26) |
-| Cash/debt | $146.5B cash+securities Q3 FY26; $100B new authorization |
-| R&D | $34.6B FY25 R&D; intangible increase $11.1B→$21.3B unexplained |
+| ซื้อหุ้นคืน | FY25 เงินสด $90.7B เทียบ FCF $98.8B (81.4% ของ OCF); FY21–25 รวม $438.6B; หุ้น −10.1% FY21–25, −1.2% เพิ่มเป็น 14.594B ณ 2026-07-17 |
+| 9M FY26 | เงินสดจ่าย −12.0% เป็น $62.1B ขณะที่ OCF +43% เป็น $117.0B → ความครอบคลุม 53% เทียบ 86% (ASR $10B ใหม่ settle Q4; **การชะลอถาวรไม่ถูกพิสูจน์**) |
+| เงินปันผล | $0.27 รายไตรมาส (Q3 FY26) |
+| เงินสด/หนี้ | เงินสด+หลักทรัพย์ $146.5B Q3 FY26; วงเงินใหม่ $100B |
+| R&D | R&D FY25 $34.6B; สินทรัพย์ไม่มีตัวตนเพิ่ม $11.1B→$21.3B อธิบายไม่ได้ |
 
-**Why the grade is withdrawn:** scale and balance-sheet capacity are proven; allocation QUALITY is not — no synchronized repurchase-price-vs-value test, ASR timing optics, no M&A return audit. **EPS-mask warning:** Q3 EPS growth exceeded NI growth by 1.6pp — repurchases can preserve per-share optics after organic rent growth slows.
+**เหตุผลที่เกรดถูกถอน:** สเกลและความสามารถงบดุลถูกพิสูจน์; คุณภาพการจัดสรรไม่ได้ — ไม่มีการทดสอบราคาซื้อคืนแบบ synchronized เทียบมูลค่า, optics จังหวะ ASR, ไม่มีการตรวจสอบผลตอบแทน M&A **คำเตือนหน้ากาก EPS:** การเติบโต EPS Q3 เกินการเติบโต NI 1.6pp — การซื้อคืนรักษา optics ต่อหุ้นได้หลังการเติบโตค่าเช่าออร์แกนิกชะลอ
 
-## 6. Valuation context — INDETERMINATE
+## 6. บริบทการประเมินมูลค่า — INDETERMINATE
 
-Valuation is context, not a veto (spec §3.5 / Operating Model §5.6). Expectations embedded: premium hardware demand + sustained Services growth/margins + continued repurchases. **No synchronized price, diluted equity value, normalized cash-flow base, method matrix, or sensitivity exists in the evidence base.** Valuation is **one of two unmet conditions** for any attractiveness finding — the other being survival of the rent-capture-loss scenario (§7).
+การประเมินมูลค่าเป็นบริบท ไม่ใช่การยับยั้ง (spec §3.5 / Operating Model §5.6) ความคาดหวังที่ฝังอยู่: อุปสงค์ฮาร์ดแวร์พรีเมียม + การเติบโต/margin Services ยั่งยืน + การซื้อคืนต่อเนื่อง **ไม่มีราคาแบบ synchronized มูลค่าตราสารทุน diluted ฐานกระแสเงินสดปกติ เมทริกซ์วิธี หรือความไวในฐานหลักฐาน** การประเมินมูลค่าเป็น**หนึ่งในสองเงื่อนไขที่ยังไม่ครบ** สำหรับข้อค้นพบความน่าดึงดูดใด — อีกเงื่อนไขคือการรอดของสถานการณ์สูญเสียการเก็บค่าเช่า (§7)
 
-## 7. The controlling risk and what would change this analysis
+## 7. ความเสี่ยงที่ควบคุมและอะไรจะเปลี่ยนการวิเคราะห์นี้
 
-**Controlling risk:** rent-capture erosion. The causal chain the deep analysis organizes its monitoring around:
+**ความเสี่ยงที่ควบคุม:** การกัดกร่อนการเก็บค่าเช่า สายเหตุที่การวิเคราะห์เจาะลึกจัดระบบการติดตามรอบมัน:
 
 ```
-attachment/retention → transaction routing & take rate → Services gross profit
-→ organic NI/OCF → buyback-supported EPS
+ความผูกพัน/การคงอยู่ → การเส้นทางธุรกรรมและอัตราการเก็บ → กำไรขั้นต้น Services
+→ NI/OCF ออร์แกนิก → EPS ที่หนุนด้วยซื้อคืน
 ```
 
-- **Cook→Ternus transition** (eff. ~1 Sep 2026): continuity may preserve the architecture that must be cannibalized — AI-transition adaptation risk; scenario judgment, not observed evidence.
-- **Tariff-refund margin distortion** unresolved (Q3 category margins not normalized).
-- **Regulatory monetization risk**: DMA Article 5(4) €500M fine + cease-and-desist; Article 6(4) preliminary findings; DOJ suit; Epic injunction; Supreme Court cert 2026-06-30 [10-K Item 3 / 10-Q Item 1].
-- **AI agent interface**: if agents own discovery/transaction initiation above iOS, the monetization layer opens while devices persist.
+- **การเปลี่ยนผ่าน Cook→Ternus** (มีผล ~1 ก.ย. 2026): ความต่อเนื่องอาจรักษาสถาปัตยกรรมที่ต้องถูก cannibalize — ความเสี่ยงการปรับตัวต่อการเปลี่ยนผ่าน AI; การตัดสินตามสถานการณ์ ไม่ใช่หลักฐานที่สังเกต
+- **การบิดเบือน margin จากเงินคืนภาษี** ยังไม่ตัดสิน (margin หมวด Q3 ไม่ได้ปรับ)
+- **ความเสี่ยงการสร้างรายได้จากกฎระเบียบ**: DMA Article 5(4) ปรับ €500M + cease-and-desist; ข้อค้นพบเบื้องต้น Article 6(4); ฟ้อง DOJ; Epic injunction; ศาลฎีกา cert 2026-06-30 [10-K Item 3 / 10-Q Item 1]
+- **อินเทอร์เฟซเอเจนต์ AI**: ถ้าเอเจนต์เป็นเจ้าของการค้นพบ/การริเริ่มธุรกรรมเหนือ iOS ชั้นการสร้างรายได้เปิดออกในขณะที่อุปกรณ์ยังอยู่
 
-**Falsification/confirmation of the dissent (CRO):** falsified by a globally used Apple-controlled agent owning discovery + stable normalized Services economics + Ternus-era decisions sacrificing legacy rents; confirmed by record devices + repeated Services weakening + rising external-payment/agent activity + EPS resilience explained by share contraction.
+**การหักล้าง/ยืนยันของ dissent (CRO):** ถูกหักล้างโดยเอเจนต์ที่ Apple ควบคุม ใช้ทั่วโลก เป็นเจ้าของการค้นพบ + เศรษฐศาสตร์ Services ปกติที่มั่นคง + การตัดสินยุค Ternus ที่เสียสละค่าเช่าเดิม; ถูกยืนยันโดยอุปกรณ์ทำสถิติ + ความอ่อนแอ Services ซ้ำ ๆ + กิจกรรมการชำระเงินภายนอก/เอเจนต์ที่เพิ่ม + ความยืดหยุ่น EPS ที่อธิบายด้วยการหดหุ้น
 
-## 8. Sources and limitations
+## 8. ที่มาและข้อจำกัด
 
-- Evidence log: `research/companies/AAPL/evidence-log.md` (10-K FY25; Q1–Q3 FY26 10-Qs/8-K; XBRL FY21–25; transcripts; IDC/Counterpoint share — trackers disagree on Q1 2026 #1, cite with attribution).
-- Prior reports: apple-moat (RM-2026-0001) + opposing, buyback-mask + opposing, services-margin verification + opposing, leadership-transition + opposing (8 total).
-- Independent views: 6 first-pass + cross-examination + CRO opposing + audit + re-audit (all in `research/companies/AAPL/deep-analysis-2026-08-09/`).
-- **Limitations:** no synchronized price/valuation model; no filed installed-base count; aggregate Services disclosure; value-trap −2σ test unavailable; FY25 cash conversion + intangible increase unresolved; DEF 14A unextracted; tariff-refund allocation undisclosed.
-- Point-in-time (FD #58): all figures valid at filing date; re-verify before future reliance.
+- บันทึกหลักฐาน: `research/companies/AAPL/evidence-log.md` (10-K FY25; Q1–Q3 FY26 10-Qs/8-K; XBRL FY21–25; transcripts; ส่วนแบ่ง IDC/Counterpoint — tracker ไม่ตรงกันเรื่องอันดับ 1 ของ Q1 2026, อ้างพร้อมระบุที่มา)
+- รายงานก่อนหน้า: apple-moat (RM-2026-0001) + ค้าน, buyback-mask + ค้าน, services-margin verification + ค้าน, leadership-transition + ค้าน (รวม 8)
+- มุมมองอิสระ: 6 first-pass + cross-examination + CRO ค้าน + audit + re-audit (ทั้งหมดใน `research/companies/AAPL/deep-analysis-2026-08-09/`)
+- **ข้อจำกัด:** ไม่มีโมเดลราคา/การประเมินมูลค่าแบบ synchronized; ไม่มีจำนวนฐานผู้ใช้ที่ยื่น; การเปิดเผย Services แบบรวม; การทดสอบ −2σ กับดักมูลค่าไม่พร้อมใช้; การแปลงเงินสด FY25 + การเพิ่มสินทรัพย์ไม่มีตัวตนยังไม่ตัดสิน; DEF 14A ไม่ได้สกัด; การจัดสรรเงินคืนภาษีไม่เปิดเผย
+- Point-in-time (FD #58): ตัวเลขทั้งหมดใช้ได้ ณ วันที่ยื่น; ตรวจสอบใหม่ก่อนพึ่งพาครั้งถัดไป
 
 ---
 
-*RM-2026-0004 deep analysis v3 — audit chain CLEAN WITH MINORS (re-audit READY); published 2026-08-09 after Founder gate (Option A — publish with dissent). CRO companion: `apple-deep-analysis-opposing-2026-08-09.md`.*
+*RM-2026-0004 deep analysis v3 — สายการตรวจสอบ CLEAN WITH MINORS (re-audit READY); เผยแพร่ 2026-08-09 หลังประตู Founder (Option A — เผยแพร่พร้อม dissent) คู่ CRO: `apple-deep-analysis-opposing-2026-08-09.md`*
+<!-- 2026-08-11 00:25 UTC+7 -->

@@ -1,44 +1,45 @@
 ---
-title: "Durability Is Not the Same as Safety — CRO Opposing Essay"
+title: "ความยั่งยืนไม่เหมือนความปลอดภัย — บทความค้านของ CRO"
 type: company
 subject: "AAPL"
 date: 2026-08-09
 author: "Chief Research Risk Officer (RM-2026-0004) — opposing essay"
 status: published
 updated: 2026-08-09 (published after Founder gate, Option A — publish with dissent)
-summary: "The main essay's 'durable business, unestablished investment' conclusion is directionally right but still too benign: the controlling risk is NOT customer loss but rent-capture erosion — Apple retaining the customer while regulation and AI agents redirect the economics of discovery, distribution, and payment. Services produced 42.2% of FY2025 gross profit at a 75.4% gross margin, and an agent initiating transactions above iOS need not displace the iPhone to weaken Apple's take. The value-trap INCONCLUSIVE ruling is procedurally correct but not economically neutral: the absence of evidence that Apple is cheap is not evidence of safety. The A− capital-allocation grade (withdrawn in the main essay) gave buybacks too much affirmative weight — EPS can be preserved by share contraction after organic rent growth slows. Over 24–36 months Apple can underperform WITHOUT a device collapse: devices and iPhone revenue stay resilient, external payment paths and agent-led discovery capture marginal commerce, nominal Services revenue grows while Services economics soften, and buybacks initially sustain EPS until slower deployment or weaker cash generation removes the cushion. Verdict: FAIL — durability is not the same as safety."
+summary: "ข้อสรุป 'ธุรกิจแข็งแกร่งยั่งยืน การลงทุนยังไม่ได้รับการพิสูจน์' ของบทความหลักทิศทางถูก แต่ยังสุภาพเกินไป: ความเสี่ยงที่ควบคุมไม่ใช่การเสียลูกค้า แต่เป็นการกัดกร่อนการเก็บค่าเช่า — Apple รักษาลูกค้าไว้ได้ ขณะที่กฎระเบียบและเอเจนต์ AI เปลี่ยนเส้นทางเศรษฐศาสตร์ของการค้นพบ การกระจาย และการชำระเงิน Services ผลิต 42.2% ของกำไรขั้นต้น FY2025 ที่ margin ขั้นต้น 75.4% และเอเจนต์ที่ริเริ่มธุรกรรมเหนือ iOS ไม่จำเป็นต้องแย่ง iPhone เพื่อทำให้อัตราการเก็บของ Apple อ่อนแอ คำตัดสิน INCONCLUSIVE ของกับดักมูลค่าถูกต้องตามกระบวนการแต่ไม่เป็นกลางทางเศรษฐกิจ: การไม่มีหลักฐานว่า Apple ถูก ไม่ใช่หลักฐานของความปลอดภัย เกรดการจัดสรรทุน A− (ที่ถอนในบทความหลัก) ให้การซื้อหุ้นคืนน้ำหนักเชิงยืนยันเกินไป — EPS รักษาได้ด้วยการหดหุ้นหลังการเติบโตค่าเช่าออร์แกนิกชะลอ ใน 24–36 เดือน Apple ภายใต้ผลงานได้โดยไม่ต้องอุปกรณ์ล่ม: อุปกรณ์และรายได้ iPhone ยังยืดหยุ่น เส้นทางการชำระเงินภายนอกและการค้นพบที่นำโดยเอเจนต์จับการค้าส่วนเพิ่ม รายได้ Services โตเชิงตัวเลขขณะที่เศรษฐศาสตร์ Services อ่อนลง และการซื้อคืนหนุน EPS เริ่มแรกจนการวางกำลังช้าลงหรือการสร้างเงินสดอ่อนแอลงเอาบัฟเฟอร์ออก คำตัดสิน: FAIL — ความยั่งยืนไม่เหมือนความปลอดภัย"
 ---
 
-# Durability Is Not the Same as Safety — CRO Opposing Essay
+# ความยั่งยืนไม่เหมือนความปลอดภัย — บทความค้านของ CRO
 
-**Point-in-time:** 2026-08-09 · **RM-2026-0004** · Advisory, portfolio-blind
-**Companion to:** `apple-deep-analysis-2026-08-09.md` (main essay)
+**Point-in-time:** 2026-08-09 · **RM-2026-0004** · ที่ปรึกษา, portfolio-blind
+**คู่กันกับ:** `apple-deep-analysis-2026-08-09.md` (บทความหลัก)
 
-## Headline dissent
+## dissent พาดหัว
 
-The main essay's "durable business, unestablished investment" conclusion is too benign. The controlling risk is not customer loss; it is Apple retaining the customer while regulation and AI agents redirect the economics of discovery, distribution, and payment. Services produced **42.2% of FY2025 gross profit at a 75.4% gross margin**, while regulatory actions already constrain steering and external-purchase fees. An agent initiating transactions above iOS need not displace the iPhone to weaken Apple's take. The installed-base narrative measures attachment when the disputed variable is **monetization**.
+ข้อสรุป "ธุรกิจแข็งแกร่งยั่งยืน การลงทุนยังไม่ได้รับการพิสูจน์" ของบทความหลักสุภาพเกินไป ความเสี่ยงที่ควบคุมไม่ใช่การเสียลูกค้า; มันคือ Apple รักษาลูกค้าไว้ ขณะที่กฎระเบียบและเอเจนต์ AI เปลี่ยนเส้นทางเศรษฐศาสตร์ของการค้นพบ การกระจาย และการชำระเงิน Services ผลิต **42.2% ของกำไรขั้นต้น FY2025 ที่ margin ขั้นต้น 75.4%** ขณะที่การกระทำด้านกฎระเบียบจำกัด steering และค่าธรรมเนียมการซื้อภายนอกแล้ว เอเจนต์ที่ริเริ่มธุรกรรมเหนือ iOS ไม่จำเป็นต้องแย่ง iPhone เพื่อทำให้อัตราการเก็บของ Apple อ่อนแอ เรื่องเล่าฐานผู้ใช้วัดความผูกพัน เมื่อตัวแปรที่โต้แย้งคือ**การสร้างรายได้**
 
-The value-trap ruling is also too generous. **INCONCLUSIVE** is procedurally correct but not economically neutral: no synchronized price, multiple, or normalized cash-flow model establishes cheapness. The absence of evidence that Apple is cheap is **not evidence that the stock is safe**; the investment case is unproved while rent-risk remains live.
+คำตัดสินกับดักมูลค่ายังให้กว้างเกินไป **INCONCLUSIVE** ถูกต้องตามกระบวนการแต่ไม่เป็นกลางทางเศรษฐกิจ: ไม่มีราคาแบบ synchronized หลายเท่า หรือโมเดลกระแสเงินสดปกติที่ยืนยันความถูก การไม่มีหลักฐานว่า Apple ถูก**ไม่ใช่หลักฐานว่าหุ้นปลอดภัย**; กรณีการลงทุนยังไม่ถูกพิสูจน์ขณะที่ความเสี่ยงค่าเช่ายังมีชีวิต
 
-## What the main essay still buries
+## อะไรที่บทความหลักยังฝังไว้
 
-First, the A− capital-allocation grade gives buybacks too much affirmative weight. Apple spent **$90.7 billion** on FY2025 repurchases, and Q3 diluted EPS growth exceeded net-income growth by **1.6 percentage points**. Repurchases can preserve per-share optics after organic rent growth slows. Second, Q3's **50.1% gross margin** included roughly two points of tariff refunds; undisclosed allocation prevents category normalization — that is not clean operating evidence.
+หนึ่ง เกรดการจัดสรรทุน A− ให้การซื้อหุ้นคืนน้ำหนักเชิงยืนยันเกินไป Apple ใช้จ่าย **$90.7 พันล้าน** ในการซื้อคืน FY2025 และการเติบโต diluted EPS Q3 เกินการเติบโตกำไรสุทธิ **1.6 จุดเปอร์เซ็นต์** การซื้อคืนรักษา optics ต่อหุ้นได้หลังการเติบโตค่าเช่าออร์แกนิกชะลอ สอง margin ขั้นต้น Q3 **50.1%** รวมเงินคืนภาษีราวสองจุด; การจัดสรรที่ไม่เปิดเผยกันการปรับหมวด — นั่นไม่ใช่หลักฐานดำเนินงานที่สะอาด
 
-Third, Cook's move to Executive Chairman while hardware chief John Ternus becomes CEO creates AI-transition adaptation risk: **continuity may preserve the architecture that must be cannibalized**. Finally, aggregate Services disclosure hides the App Store, advertising, cloud, payments, and licensing mix. Apple names advertising, App Store, and cloud as FY2025 growth drivers but discloses no separate revenue or margins. The report cannot measure the rent pool most exposed to regulation.
+สาม การย้ายของ Cook เป็น Executive Chairman ขณะที่หัวหน้าฮาร์ดแวร์ John Ternus เป็น CEO สร้างความเสี่ยงการปรับตัวต่อการเปลี่ยนผ่าน AI: **ความต่อเนื่องอาจรักษาสถาปัตยกรรมที่ต้องถูก cannibalize** สุดท้าย การเปิดเผย Services แบบรวมซ่อน mix ของ App Store โฆษณา คลาวด์ การชำระเงิน และ licensing Apple ระบุชื่อโฆษณา App Store และคลาวด์เป็นตัวขับเคลื่อนการเติบโต FY2025 แต่ไม่เปิดเผยรายได้หรือ margin แยก รายงานไม่สามารถวัดสระค่าเช่าที่เสี่ยงกฎระเบียบมากที่สุด
 
-## One underperformance scenario without device collapse
+## หนึ่งสถานการณ์ภายใต้ผลงานโดยไม่ต้องอุปกรณ์ล่ม
 
-Over 24–36 months, active devices and iPhone revenue remain resilient, but external payment paths and agent-led discovery capture more marginal commerce. Nominal Services revenue still grows, yet Services growth and margin soften; tariff-normalized product economics also fail to offset the lost yield. Buybacks initially sustain EPS, then slower deployment or weaker cash generation reduces that cushion. The business remains excellent while normalized profit expectations reset downward — enough for underperformance **without a device recession**.
+ใน 24–36 เดือน อุปกรณ์แอคทีฟและรายได้ iPhone ยังยืดหยุ่น แต่เส้นทางการชำระเงินภายนอกและการค้นพบที่นำโดยเอเจนต์จับการค้าส่วนเพิ่มมากขึ้น รายได้ Services ยังโตเชิงตัวเลข แต่การเติบโตและ margin Services อ่อนลง; เศรษฐศาสตร์ผลิตภัณฑ์ที่ปรับภาษีก็ชดเชยผลผลิตที่สูญไปไม่ได้ การซื้อคืนหนุน EPS เริ่มแรก แล้วการวางกำลังที่ช้าลงหรือการสร้างเงินสดที่อ่อนแอลงลดบัฟเฟอร์นั้น ธุรกิจยังยอดเยี่ยมขณะที่ความคาดหวังกำไรปกติถูกตั้งใหม่ลดลง — พอสำหรับภายใต้ผลงาน**โดยไม่มีภาวะถดถอยของอุปกรณ์**
 
-## What would falsify or confirm this dissent
+## อะไรจะหักล้างหรือยืนยัน dissent นี้
 
-**Falsification** requires a globally available, heavily used Apple-controlled agent owning discovery and transaction initiation, stable or improving normalized Services economics, and independent Ternus-era decisions that sacrifice legacy rents. **Confirmation** is record devices and resilient iPhone sales alongside repeated Services weakening, rising external-payment or agent-mediated activity, persistent regional Siri gaps, and EPS resilience increasingly explained by share contraction. These are directional observations, not invented thresholds.
+**การหักล้าง** ต้องการเอเจนต์ที่ Apple ควบคุม พร้อมใช้ทั่วโลก ใช้หนัก เป็นเจ้าของการค้นพบและการริเริ่มธุรกรรม เศรษฐศาสตร์ Services ปกติที่มั่นคงหรือดีขึ้น และการตัดสินอิสระยุค Ternus ที่เสียสละค่าเช่าเดิม **การยืนยัน** คืออุปกรณ์ทำสถิติและยอดขาย iPhone ยืดหยุ่น พร้อมความอ่อนแอ Services ซ้ำ ๆ กิจกรรมการชำระเงินภายนอกหรือผ่านเอเจนต์ที่เพิ่ม ช่องว่าง Siri ภูมิภาคที่คงอยู่ และความยืดหยุ่น EPS ที่อธิบายด้วยการหดหุ้นมากขึ้น สิ่งเหล่านี้คือการสังเกตทิศทาง ไม่ใช่เกณฑ์ที่แต่งขึ้น
 
-**Verdict: FAIL.** The main essay identifies the right risk but must let that risk control the investment conclusion; "inconclusive" understates an unpriced, undisclosed, and already-opening rent-capture threat.
+**คำตัดสิน: FAIL** บทความหลักระบุความเสี่ยงถูก แต่ต้องปล่อยให้ความเสี่ยงนั้นควบคุมข้อสรุปการลงทุน; "inconclusive" กล่าวภัยคุกคามการเก็บค่าเช่าที่ไม่ได้ตั้งราคา ไม่ได้เปิดเผย และกำลังเปิดอยู่ต่ำเกินไป
 
-## Sources
+## ที่มา
 
-1. `research/companies/AAPL/evidence-log.md` §§1, 4–7 (FY2025 10-K; Q1–Q3 FY2026 filings and call evidence; current through 2026-08-07).
-2. `research/companies/AAPL/deep-analysis-2026-08-09/main-deep-analysis-essay.md` §§4, 6, 7 (audited v3).
-3. `reports/apple-buyback-mask-test-opposing-2026-08-06.md` (cash-deployment and EPS-mask dissent, with its published cover-note evidence boundary).
-4. `reports/apple-leadership-transition-opposing-2026-08-07.md` (Cook→Ternus incumbency-load scenario and stated falsification conditions).
+1. `research/companies/AAPL/evidence-log.md` §§1, 4–7 (FY2025 10-K; เอกสารยื่น Q1–Q3 FY2026 และหลักฐานการโทร; ถึง 2026-08-07)
+2. `research/companies/AAPL/deep-analysis-2026-08-09/main-deep-analysis-essay.md` §§4, 6, 7 (v3 ที่ตรวจสอบ)
+3. `reports/apple-buyback-mask-test-opposing-2026-08-06.md` (dissent การวางกำลังเงินสดและหน้ากาก EPS พร้อมขอบเขตหลักฐานบันทึกหน้าปกที่เผยแพร่)
+4. `reports/apple-leadership-transition-opposing-2026-08-07.md` (สถานการณ์ภาระการครองตำแหน่ง Cook→Ternus และเงื่อนไขการหักล้างที่ระบุ)
+<!-- 2026-08-11 00:25 UTC+7 -->
