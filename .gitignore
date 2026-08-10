@@ -37,4 +37,12 @@ fundamental-opportunity-v0/output/*
 !institutional-intelligence-v0/output/
 institutional-intelligence-v0/output/*
 !institutional-intelligence-v0/output/institutional_signals.json
+
+# Equity Inflection Discovery (FD #89): scanner output + validation evidence are
+# committed artifacts (standing instrument evidence blocks, PIT validation pack)
+!discovery/equity_inflection/output/
+discovery/equity_inflection/output/*
+!discovery/equity_inflection/output/*.json
+!discovery/equity_inflection/output/*.md
+!discovery/equity_inflection/output/validation-2026-08-10/
 /backend/data/artifacts/

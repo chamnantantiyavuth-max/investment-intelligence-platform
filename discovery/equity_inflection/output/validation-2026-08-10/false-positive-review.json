@@ -1,0 +1,855 @@
+{
+  "AAPL": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-03-27",
+      "ttm_at_hit": 3.9715,
+      "ttm_next": 3.9715,
+      "ttm_next2": 5.11,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-06-26",
+      "ttm_at_hit": 5.11,
+      "ttm_next": 5.11,
+      "ttm_next2": 5.61,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-09-25",
+      "ttm_at_hit": 5.61,
+      "ttm_next": 5.61,
+      "ttm_next2": 6.03,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-03-30",
+      "latest_end": "2021-12-25",
+      "ttm_at_hit": 6.03,
+      "ttm_next": 6.03,
+      "ttm_next2": 6.15,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-06-30",
+      "latest_end": "2022-03-26",
+      "ttm_at_hit": 6.15,
+      "ttm_next": 6.15,
+      "ttm_next2": 6.05,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-30",
+      "ttm_at_hit": 6.43,
+      "ttm_next": 6.43,
+      "ttm_next2": 6.44,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-30",
+      "ttm_at_hit": 6.44,
+      "ttm_next": 6.44,
+      "ttm_next2": 6.58,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-06-29",
+      "ttm_at_hit": 6.58,
+      "ttm_next": 6.58,
+      "ttm_next2": 6.08,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-06-28",
+      "ttm_at_hit": 6.59,
+      "ttm_next": 6.59,
+      "ttm_next2": 7.46,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-12-31",
+      "latest_end": "2025-09-27",
+      "ttm_at_hit": 7.46,
+      "ttm_next": 7.46,
+      "ttm_next2": 7.9,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2026-03-30",
+      "latest_end": "2025-12-27",
+      "ttm_at_hit": 7.9,
+      "ttm_next": 7.9,
+      "ttm_next2": 8.26,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2026-06-30",
+      "latest_end": "2026-03-28",
+      "ttm_at_hit": 8.26,
+      "ttm_next": 8.26,
+      "ttm_next2": 8.71,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ],
+  "MSFT": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-03-31",
+      "ttm_at_hit": 7.34,
+      "ttm_next": 8.05,
+      "ttm_next2": 8.94,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-06-30",
+      "ttm_at_hit": 8.05,
+      "ttm_next": 8.94,
+      "ttm_next2": 9.39,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-09-30",
+      "ttm_at_hit": 8.94,
+      "ttm_next": 9.39,
+      "ttm_next2": 9.58,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2022-03-30",
+      "latest_end": "2021-12-31",
+      "ttm_at_hit": 9.39,
+      "ttm_next": 9.58,
+      "ttm_next2": 9.65,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2022-06-30",
+      "latest_end": "2022-03-31",
+      "ttm_at_hit": 9.58,
+      "ttm_next": 9.65,
+      "ttm_next2": 9.29,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-09-30",
+      "latest_end": "2022-06-30",
+      "ttm_at_hit": 9.65,
+      "ttm_next": 9.29,
+      "ttm_next2": 9.01,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2023-09-30",
+      "latest_end": "2023-06-30",
+      "ttm_at_hit": 9.68,
+      "ttm_next": 10.32,
+      "ttm_next2": 10.32,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2023-12-31",
+      "latest_end": "2023-09-30",
+      "ttm_at_hit": 10.32,
+      "ttm_next": 10.32,
+      "ttm_next2": 11.54,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 11.05,
+      "ttm_next": 11.54,
+      "ttm_next2": 11.54,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-31",
+      "ttm_at_hit": 11.54,
+      "ttm_next": 11.54,
+      "ttm_next2": 11.8,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-06-30",
+      "ttm_at_hit": 11.8,
+      "ttm_next": 11.8,
+      "ttm_next2": 12.11,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-12-31",
+      "latest_end": "2024-09-30",
+      "ttm_at_hit": 12.11,
+      "ttm_next": 12.11,
+      "ttm_next2": 12.41,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-03-30",
+      "latest_end": "2024-12-31",
+      "ttm_at_hit": 12.41,
+      "ttm_next": 12.93,
+      "ttm_next2": 12.93,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2025-06-30",
+      "latest_end": "2025-03-31",
+      "ttm_at_hit": 12.93,
+      "ttm_next": 12.93,
+      "ttm_next2": 13.64,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-06-30",
+      "ttm_at_hit": 13.64,
+      "ttm_next": 13.64,
+      "ttm_next2": 14.06,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-12-31",
+      "latest_end": "2025-09-30",
+      "ttm_at_hit": 14.06,
+      "ttm_next": 15.99,
+      "ttm_next2": 15.99,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2026-03-30",
+      "latest_end": "2025-12-31",
+      "ttm_at_hit": 15.99,
+      "ttm_next": 16.8,
+      "ttm_next2": 17.95,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2026-06-30",
+      "latest_end": "2026-03-31",
+      "ttm_at_hit": 16.8,
+      "ttm_next": 17.95,
+      "ttm_next2": 17.95,
+      "inflection_held": true,
+      "character": "confirmed"
+    }
+  ],
+  "NVDA": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-05-02",
+      "ttm_at_hit": 8.46,
+      "ttm_next": 2.9893,
+      "ttm_next2": 3.827,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-08-01",
+      "ttm_at_hit": 2.9893,
+      "ttm_next": 3.827,
+      "ttm_next2": 3.827,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-10-31",
+      "ttm_at_hit": 3.827,
+      "ttm_next": 3.827,
+      "ttm_next2": 3.73,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2023-09-30",
+      "latest_end": "2023-07-30",
+      "ttm_at_hit": 4.14,
+      "ttm_next": 7.58,
+      "ttm_next2": 11.93,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2023-12-31",
+      "latest_end": "2023-10-29",
+      "ttm_at_hit": 7.58,
+      "ttm_next": 11.93,
+      "ttm_next2": 11.93,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2024-01-28",
+      "ttm_at_hit": 11.93,
+      "ttm_next": 11.93,
+      "ttm_next2": 17.09,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-04-28",
+      "ttm_at_hit": 17.09,
+      "ttm_next": 17.09,
+      "ttm_next2": 3.0998,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-07-28",
+      "ttm_at_hit": 2.3568,
+      "ttm_next": 3.0998,
+      "ttm_next2": 3.0998,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-12-31",
+      "latest_end": "2024-10-27",
+      "ttm_at_hit": 3.0998,
+      "ttm_next": 3.0998,
+      "ttm_next2": -2.441,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-06-30",
+      "latest_end": "2025-04-27",
+      "ttm_at_hit": 3.1,
+      "ttm_next": 3.1,
+      "ttm_next2": 4.03,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-07-27",
+      "ttm_at_hit": 3.51,
+      "ttm_next": 4.03,
+      "ttm_next2": 4.03,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2025-12-31",
+      "latest_end": "2025-10-26",
+      "ttm_at_hit": 4.03,
+      "ttm_next": 4.03,
+      "ttm_next2": 6.53,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2026-03-30",
+      "latest_end": "2026-01-25",
+      "ttm_at_hit": 4.9,
+      "ttm_next": 6.53,
+      "ttm_next2": 6.53,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2026-06-30",
+      "latest_end": "2026-04-26",
+      "ttm_at_hit": 6.53,
+      "ttm_next": 6.53,
+      "ttm_next2": 6.53,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ],
+  "GOOGL": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-03-31",
+      "ttm_at_hit": 75.03,
+      "ttm_next": 92.16,
+      "ttm_next2": 103.75,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-06-30",
+      "ttm_at_hit": 92.16,
+      "ttm_next": 103.75,
+      "ttm_next2": 103.75,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-09-30",
+      "ttm_at_hit": 103.75,
+      "ttm_next": 103.75,
+      "ttm_next2": 110.53,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-03-30",
+      "latest_end": "2021-12-31",
+      "ttm_at_hit": 112.2,
+      "ttm_next": 110.53,
+      "ttm_next2": 110.38,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 5.8,
+      "ttm_next": 6.52,
+      "ttm_next2": 6.97,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-31",
+      "ttm_at_hit": 6.52,
+      "ttm_next": 6.97,
+      "ttm_next2": 6.97,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-06-30",
+      "ttm_at_hit": 6.97,
+      "ttm_next": 6.97,
+      "ttm_next2": 7.54,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-12-31",
+      "latest_end": "2024-09-30",
+      "ttm_at_hit": 7.54,
+      "ttm_next": 7.54,
+      "ttm_next2": 8.96,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-03-30",
+      "latest_end": "2024-12-31",
+      "ttm_at_hit": 8.04,
+      "ttm_next": 8.96,
+      "ttm_next2": 9.38,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2025-06-30",
+      "latest_end": "2025-03-31",
+      "ttm_at_hit": 8.96,
+      "ttm_next": 9.38,
+      "ttm_next2": 9.38,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-06-30",
+      "ttm_at_hit": 9.38,
+      "ttm_next": 9.38,
+      "ttm_next2": 10.13,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-12-31",
+      "latest_end": "2025-09-30",
+      "ttm_at_hit": 10.13,
+      "ttm_next": 10.13,
+      "ttm_next2": 10.81,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2026-03-30",
+      "latest_end": "2025-12-31",
+      "ttm_at_hit": 10.81,
+      "ttm_next": 13.11,
+      "ttm_next2": 19.91,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2026-06-30",
+      "latest_end": "2026-03-31",
+      "ttm_at_hit": 13.11,
+      "ttm_next": 19.91,
+      "ttm_next2": 19.91,
+      "inflection_held": true,
+      "character": "confirmed"
+    }
+  ],
+  "AMZN": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-03-31",
+      "ttm_at_hit": 52.55,
+      "ttm_next": 52.55,
+      "ttm_next2": 57.37,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-06-30",
+      "ttm_at_hit": 57.37,
+      "ttm_next": 57.37,
+      "ttm_next2": 51.12,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-03-30",
+      "latest_end": "2021-12-31",
+      "ttm_at_hit": 64.81,
+      "ttm_next": 41.46,
+      "ttm_next2": 1.836,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2023-03-30",
+      "latest_end": "2022-12-31",
+      "ttm_at_hit": 6.9118,
+      "ttm_next": 0.42,
+      "ttm_next2": 0.42,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 2.9,
+      "ttm_next": 2.9,
+      "ttm_next2": 3.57,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-31",
+      "ttm_at_hit": 3.57,
+      "ttm_next": 3.57,
+      "ttm_next2": 4.18,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-06-30",
+      "ttm_at_hit": 4.18,
+      "ttm_next": 4.18,
+      "ttm_next2": 4.67,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-12-31",
+      "latest_end": "2024-09-30",
+      "ttm_at_hit": 4.67,
+      "ttm_next": 4.67,
+      "ttm_next2": 5.53,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-03-30",
+      "latest_end": "2024-12-31",
+      "ttm_at_hit": 5.53,
+      "ttm_next": 5.53,
+      "ttm_next2": 6.14,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-06-30",
+      "latest_end": "2025-03-31",
+      "ttm_at_hit": 6.14,
+      "ttm_next": 6.14,
+      "ttm_next2": 6.56,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-06-30",
+      "ttm_at_hit": 6.56,
+      "ttm_next": 6.56,
+      "ttm_next2": 7.08,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-12-31",
+      "latest_end": "2025-09-30",
+      "ttm_at_hit": 7.08,
+      "ttm_next": 7.08,
+      "ttm_next2": 7.17,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2026-03-30",
+      "latest_end": "2025-12-31",
+      "ttm_at_hit": 7.17,
+      "ttm_next": 8.36,
+      "ttm_next2": 8.36,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2026-06-30",
+      "latest_end": "2026-03-31",
+      "ttm_at_hit": 8.36,
+      "ttm_next": 8.36,
+      "ttm_next2": 12.43,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ],
+  "META": [
+    {
+      "asof": "2021-06-30",
+      "latest_end": "2021-03-31",
+      "ttm_at_hit": 11.68,
+      "ttm_next": 13.49,
+      "ttm_next2": 14.0,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-06-30",
+      "ttm_at_hit": 13.49,
+      "ttm_next": 14.0,
+      "ttm_next2": 14.0,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-09-30",
+      "ttm_at_hit": 14.0,
+      "ttm_next": 14.0,
+      "ttm_next2": 13.19,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 14.87,
+      "ttm_next": 17.38,
+      "ttm_next2": 17.38,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-31",
+      "ttm_at_hit": 17.38,
+      "ttm_next": 17.38,
+      "ttm_next2": 19.56,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-09-30",
+      "latest_end": "2024-06-30",
+      "ttm_at_hit": 19.56,
+      "ttm_next": 19.56,
+      "ttm_next2": 21.2,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-12-31",
+      "latest_end": "2024-09-30",
+      "ttm_at_hit": 21.2,
+      "ttm_next": 21.2,
+      "ttm_next2": 23.86,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-03-30",
+      "latest_end": "2024-12-31",
+      "ttm_at_hit": 23.86,
+      "ttm_next": 23.86,
+      "ttm_next2": 25.58,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-06-30",
+      "latest_end": "2025-03-31",
+      "ttm_at_hit": 25.58,
+      "ttm_next": 25.58,
+      "ttm_next2": 27.56,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2025-09-30",
+      "latest_end": "2025-06-30",
+      "ttm_at_hit": 27.56,
+      "ttm_next": 27.56,
+      "ttm_next2": 22.58,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ],
+  "TSLA": [
+    {
+      "asof": "2022-06-30",
+      "latest_end": "2022-03-31",
+      "ttm_at_hit": 7.37,
+      "ttm_next": 8.3,
+      "ttm_next2": 3.5544,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-09-30",
+      "latest_end": "2022-06-30",
+      "ttm_at_hit": 8.3,
+      "ttm_next": 3.5544,
+      "ttm_next2": 3.5544,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-12-31",
+      "latest_end": "2022-09-30",
+      "ttm_at_hit": 3.5544,
+      "ttm_next": 3.5544,
+      "ttm_next2": 2.0994,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2023-06-30",
+      "latest_end": "2023-03-31",
+      "ttm_at_hit": 2.0994,
+      "ttm_next": 3.53,
+      "ttm_next2": 3.11,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 4.3,
+      "ttm_next": 3.91,
+      "ttm_next2": 3.55,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ],
+  "JNJ": [
+    {
+      "asof": "2021-09-30",
+      "latest_end": "2021-07-04",
+      "ttm_at_hit": 6.65,
+      "ttm_next": 6.69,
+      "ttm_next2": 6.69,
+      "inflection_held": true,
+      "character": "confirmed"
+    },
+    {
+      "asof": "2021-12-31",
+      "latest_end": "2021-10-03",
+      "ttm_at_hit": 6.69,
+      "ttm_next": 6.69,
+      "ttm_next2": 7.42,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2022-03-30",
+      "latest_end": "2022-01-02",
+      "ttm_at_hit": 7.81,
+      "ttm_next": 7.42,
+      "ttm_next2": 6.87,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2023-12-31",
+      "latest_end": "2023-10-01",
+      "ttm_at_hit": 13.46,
+      "ttm_next": 13.46,
+      "ttm_next2": 13.81,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-03-30",
+      "latest_end": "2023-12-31",
+      "ttm_at_hit": 13.81,
+      "ttm_next": 13.81,
+      "ttm_next2": 15.15,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    },
+    {
+      "asof": "2024-06-30",
+      "latest_end": "2024-03-31",
+      "ttm_at_hit": 15.18,
+      "ttm_next": 15.15,
+      "ttm_next2": 6.05,
+      "inflection_held": false,
+      "character": "faded/one-off"
+    }
+  ]
+}

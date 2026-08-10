@@ -1,0 +1,1074 @@
+{
+  "AAPL": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "MSFT": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "NVDA": {
+    "2025-09-30": {
+      "base_eligible": true,
+      "variants": {
+        "extension_lo": {
+          "eligible": true,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": true,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": true,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": true,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": true,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": true,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": true,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "GOOGL": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "AMZN": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "META": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "TSLA": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  },
+  "JNJ": {
+    "2025-09-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2025-12-31": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-03-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    },
+    "2026-06-30": {
+      "base_eligible": false,
+      "variants": {
+        "extension_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "extension_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_lo": {
+          "eligible": false,
+          "same": true
+        },
+        "slope_hi": {
+          "eligible": false,
+          "same": true
+        },
+        "range_narrow": {
+          "eligible": false,
+          "same": true
+        },
+        "window_6q": {
+          "eligible": false,
+          "same": true
+        },
+        "window_10q": {
+          "eligible": false,
+          "same": true
+        }
+      }
+    }
+  }
+}

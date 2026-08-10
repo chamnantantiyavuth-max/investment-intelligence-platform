@@ -1,0 +1,14 @@
+{
+  "candidates_per_cycle": [
+    3,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1
+  ],
+  "avg_per_cycle": 1.71,
+  "max_per_cycle": 3,
+  "total_candidate_snapshots": 12
+}

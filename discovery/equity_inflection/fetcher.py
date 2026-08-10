@@ -322,10 +322,11 @@ if __name__ == "__main__":
     out_dir = Path(__file__).parent / "output"
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = date.today().isoformat()
-    (out_dir / f"shadow-{stamp}.json").write_text(
+    # standing instrument output (FD #89 — shadow label retired)
+    (out_dir / f"standing-scan-{stamp}.json").write_text(
         json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    print(f"Equity Inflection Shadow Scan — {stamp} (FO-universe {len(payloads)} names)")
+    print(f"Equity Inflection Standing Scan — {stamp} (FO-universe {len(payloads)} names)")
     print("=" * 70)
     for r in results:
         flag = "CANDIDATE" if r["eligible"] else "     —"
@@ -333,5 +334,6 @@ if __name__ == "__main__":
         for reason in r.get("reasons", []):
             print(f"        - {reason}")
     print("=" * 70)
-    print(f"Output: {out_dir / f'shadow-{stamp}.json'}")
-    print("NOTE: shadow mode — no Task Idea Cards, no CoS triage, no research load (FD #88).")
+    print(f"Output: {out_dir / f'standing-scan-{stamp}.json'}")
+    print("NOTE: standing discovery instrument (FD #89) — deterministic evidence blocks;")
+    print("      no auto Task Idea Cards, no CoS triage, no research load.")
