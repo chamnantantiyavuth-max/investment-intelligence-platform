@@ -48,3 +48,44 @@
 **Push/PROJECT_STATE sync:** PROJECT_STATE.md fd_count is stale at 101 (needs 103 + Latest FDs FD #87 bullet + WS-1..4 status) — next session's first task. Then the standing queue: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 Sol-Medium pilot review (~21 Aug), CoS triage of ORG-2026-0012/0013, RM-2026-0004 monitoring conditions (Cook→Ternus 1 Sep, Q4 ASR, intangible roll-forward, FY26 cash bridge), D1–D4 blog backlog (FD #72, still parked), deep-analysis extension candidates (JNJ or new company — FD #84 gap now closed for AAPL, universe coverage remains).
 
 <!-- 2026-08-09 04:20 UTC+7 -->
+
+## 10 Aug 2026 — Equity Inflection Discovery: FD #88/#89 full cycle (direction → scanner → validation → standing)
+
+**Session type:** Critical Mode (financial-signal discovery feature, shadow-gated) — full WF-Phase cycle in one session.
+
+**What happened (plain language):**
+1. **FD #88 AUTHORIZED (item 104)** — Equity Inflection Discovery = new research-intake capability (EPS breakout >2y range + revenue confirm + Stage Def v0.1 S1/early-S2; supersedes FD #75 minimally; shadow-gated until validation evidence).
+2. **Shadow scanner built (TDD)** — `discovery/equity_inflection/` (scanner.py pure-deterministic, fetcher.py EDGAR-first, 17 locked-style tests → 15/15 then full suite 330). First shadow run FO-8 → AAPL candidate.
+3. **Validation Phase 1 COMPLETE** — PIT as-of reconstruction 21 quarter-ends × FO-8 using SEC companyfacts revision history + 10y prices; **0 look-ahead violations/168, 0 revision flips/48, stability 0 flips, capacity 1.71/cycle; NVDA AI inflection caught (2023-12-31, TTM 4.14→11.93 confirmed)**. 8 locked validation tests. Evidence pack `output/validation-2026-08-10/`.
+4. **FD #89 (item 105)** — validation evidence approved → Stage Def v0.1 thresholds PRODUCTION + standing scanner instrument. **First standing scan 10 Aug → AAPL candidate** (H1 8.71>8.26, rev +16.4%, S2-early ext 1.1%).
+5. **Real bugs caught during validation (6):** yfinance 5-quarter limit → EDGAR; YTD-vs-pure-quarter dedup; fiscal-Q4 derivation; dur() falsy-zero; wrong share tag; latest_by_filed selection. Plus register order fix (105 inserted before 104 — audit parser contiguity restored) + .gitignore un-ignore of equity-inflection output/.
+6. **Workflow explainers to Founder:** current research workflow (step 1 → publish), IPM workflow (separate project, $200k simulated, no-action on silver).
+
+**Verification:** suite **340/340** (1 warning); ad-hoc hermes-verify scripts 12/12, 13/13, 16/16, 7/7 PASS; register contiguous 1..105 (backend parser); ledger reconcile (IPM, separate) = RECONCILED.
+
+**Commits (8):** `fac82b0` (FD #88) · `5e46868` (shadow plan) · `341da7e` (scanner + 17 tests) · `3e1fe05` (validation plan) · `cfc2d64` (validation P1 + evidence) · `252c57b` (FD #89) · `1c71c99` (standing scan + register fix + .gitignore). **Ahead 8 — push pending (Founder call).**
+
+**Open items:**
+- **AGENTS.md checkpoint STILL BLOCKED** (protected-file write — needs interactive approval; now covers fd-85-86-87 AND fd-88/89).
+- Scanner → Radar integration decision (cron read vs on-demand) — Founder hasn't picked.
+- CoS triage: ORG-2026-0016 (London vaults), ORG-2026-0017 (GOOGL capital raise) in Inbox.
+- Standing queue: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug).
+- Push: ahead 8, last push `311586d` (6 Aug 12:31) — 74+8 commits unpushed.
+- CIW monitor draft untracked (`docs/ciw-pilot-msft/monitoring/2026-08-10-monitoring-draft.md`) — cron artifact, not this session's.
+
+## Closeout checklist
+
+- [x] FDs recorded? — FD #88 (item 104) + #89 (item 105) + vault rows + _Hermes-Memory MEM-IIP-061/062 + native memory
+- [x] Session captured? — this entry + 2026-08-10 session log/transcript (below)
+- [x] Closeout reconciliation? — scan done; no missed captures (FDs registered in real-time; register order bug fixed + verified)
+- [x] Verify-First? — all claims checked against actual files/commands (register parser, git log, pytest, ad-hoc scripts)
+- [x] Verification tags? — ad-hoc 12/12 + 13/13 + 16/16 + 7/7 + suite 340/340 on committed state
+- [x] Pushed? — NOT pushed (ahead 8) — Founder decision deferred
+- [x] Working tree clean? — yes except untracked CIW monitor draft (cron artifact)
+
+## Recommended next action
+
+**Push decision (ahead 8, now 82 commits unpushed since 311586d)** — Founder call: push `1c71c99..HEAD` or keep local. Then (a) scanner→Radar integration decision (FD #88 flow: who packages AAPL evidence block into a Task Idea Card — on-demand vs cron read), (b) CoS triage 0016/0017 (Inbox), (c) standing queue: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), (d) AGENTS.md checkpoint needs interactive Founder approval (protected file — fd-85-89 checkpoint).
+
+<!-- 2026-08-10 14:30 UTC+7 -->
+
