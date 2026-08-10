@@ -49,9 +49,13 @@
 
 <!-- 2026-08-09 04:20 UTC+7 -->
 
-## 10 Aug 2026 (late) — Thai i18n REVERTED (FD #91)
+## 10 Aug 2026 (late) — Thai i18n REVERTED (FD #91) + Article Readability (A+B+C)
 
-Founder reviewed the deployed Thai build and decided to remove Thai entirely — English-only restored. `git revert 22d467d 4c6af4f` (no history rewrite — commits c349d51 + 1238c5f), FD #90 kept as history + FD #91 registered (item 107, fd_count 107), PROJECT_STATE + SESSION_CLOSEOUT + vault + memory synced. Verified: tsc 0, build ✓, suite 340/340, no i18n leftovers, production iip-research.vercel.app English-only (title_th/content_th absent). Vercel deploy + FD #88/#89 + magazine UI unchanged.
+**Part 1 — Thai revert (FD #91):** Founder reviewed deployed Thai build → decided English-only. `git revert 22d467d 4c6af4f` (c349d51+1238c5f, no history rewrite), FD #90 kept as history + FD #91 registered (item 107, fd_count 107). Verified: tsc 0, build ✓, suite 340/340, no i18n leftovers, production EN-only. Vercel + FD #88/#89 + magazine UI unchanged.
+
+**Part 2 — Article Readability (PLAN ARTICLE-READABILITY v0.1, A+B+C, commit 25a4c90):** Founder: long reports = "เรียงเป็นพรืด ตาลาย" → verified via vision (no TOC, over-bolding, tight spacing) → implemented: (A) auto **TOC** from h2 (9 sections, IntersectionObserver scrollspy, anchor jump, mobile collapsible `<details>`, ≥3 sections gate), (B) **de-bold** (strong → body ink-2), (C) **ghost section numerals** (CSS counter, decimal-leading-zero, suppressed for markdown-numbered headings via `.has-number`) + h2 margin 4rem. Files: `lib/articleToc.ts` (new), `components/ArticleToc.tsx` (new), `ReportArticlePage.tsx`, `index.css`, PLAN doc. Verified: tsc 0, lint 0, build ✓, suite 340/340, mobile (320–768 no hscroll/wrap), browser vision "no longer an unbroken wall of text", ad-hoc 33/33 + 31/31 + 27/27; pushed + deployed (iip-research.vercel.app, alias re-pointed to nunc9bkfg).
+
+**Recommended next action:** งานค้างตามรายการด้านล่าง — อันดับแรก = WIL #3 (~13 Aug) + แปล/ขยาย deep-analysis หรือ CoS triage ตามที่ Founder เลือก
 
 ## 10 Aug 2026 (late session) — Thai language i18n (FD #90) + Vercel production live
 
