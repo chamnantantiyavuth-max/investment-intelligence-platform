@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useLayoutEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
@@ -7,6 +7,8 @@ import { getReport, getReports, type ReportDetail, type ReportMeta } from "@/api
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ArticleToc } from "@/components/ArticleToc";
+import { extractToc, type TocEntry } from "@/lib/articleToc";
 
 /**
  * Typeset report article — Long Document treatment (Hallmark macro 02,
@@ -95,6 +97,14 @@ export default function ReportArticlePage() {
     };
   }, [report, index.data]);
 
+  // TOC — extract h2 sections from the rendered article once content mounts.
+  const articleRef = useRef<HTMLElement | null>(null);
+  const [toc, setToc] = useState<TocEntry[]>([]);
+  useLayoutEffect(() => {
+    if (!articleRef.current) return;
+    setToc(extractToc(articleRef.current));
+  }, [report, content]);
+
   if (isLoading) return <Skeleton className="h-96 w-full" />;
   if (error || !report) {
     const status404 = (error as { status?: number } | null)?.status === 404;
@@ -121,7 +131,10 @@ export default function ReportArticlePage() {
         <TitleBlock r={report} />
       </div>
 
-      <article className="article-body mt-8">
+      {/* Table of contents — auto from h2 sections (≥3 sections only) */}
+      {toc.length >= 3 && <ArticleToc entries={toc} />}
+
+      <article ref={articleRef} className="article-body mt-8">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{

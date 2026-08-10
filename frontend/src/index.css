@@ -129,13 +129,18 @@
     line-height: 1.75;
   }
 
-  /* section heads: inline with the body flow — small caps bold, hairline
-     rule below, generous space above */
+  /* section heads: magazine numbering — ghost numeral via counter + generous
+     space above (PLAN ARTICLE-READABILITY v0.1, Option C) */
+  .article-body {
+    counter-reset: iip-section;
+  }
   .article-body h2 {
-    margin-top: 2.75rem;
-    margin-bottom: 0.25rem;
-    border-bottom: 1px solid var(--color-rule);
-    padding-bottom: 0.4rem;
+    counter-increment: iip-section;
+    position: relative;
+    margin-top: 4rem;
+    margin-bottom: 0.5rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--color-rule);
     font-family: var(--font-display);
     font-size: 1.3rem;
     font-weight: 600;
@@ -144,8 +149,24 @@
     overflow-wrap: anywhere;
     min-width: 0;
   }
+  /* ghost section numeral — editorial break, not a box (FD-032).
+     Suppressed for headings already numbered in the markdown source. */
+  .article-body h2::before {
+    content: counter(iip-section, decimal-leading-zero);
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--color-ink-3);
+  }
+  .article-body h2.has-number::before {
+    content: none;
+  }
   .article-body h3 {
-    margin-top: 2rem;
+    margin-top: 2.25rem;
     margin-bottom: 0.25rem;
     font-family: var(--font-display);
     font-size: 1.05rem;
@@ -177,9 +198,11 @@
     color: var(--color-ink-2);
   }
 
+  /* de-bolded emphasis (PLAN ARTICLE-READABILITY v0.1, Option B): strong
+     keeps weight but stays in the body ink — bold no longer shouts */
   .article-body strong {
     font-weight: 600;
-    color: var(--color-foreground);
+    color: var(--color-ink-2);
   }
   .article-body em {
     font-style: italic;
