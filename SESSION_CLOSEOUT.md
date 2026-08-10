@@ -49,6 +49,10 @@
 
 <!-- 2026-08-09 04:20 UTC+7 -->
 
+## 10 Aug 2026 (late) — Thai i18n REVERTED (FD #91)
+
+Founder reviewed the deployed Thai build and decided to remove Thai entirely — English-only restored. `git revert 22d467d 4c6af4f` (no history rewrite — commits c349d51 + 1238c5f), FD #90 kept as history + FD #91 registered (item 107, fd_count 107), PROJECT_STATE + SESSION_CLOSEOUT + vault + memory synced. Verified: tsc 0, build ✓, suite 340/340, no i18n leftovers, production iip-research.vercel.app English-only (title_th/content_th absent). Vercel deploy + FD #88/#89 + magazine UI unchanged.
+
 ## 10 Aug 2026 (late session) — Thai language i18n (FD #90) + Vercel production live
 
 **What happened:**
