@@ -65,17 +65,30 @@ async def auth_status(request: Request):
 
 # ── Loopback Host enforcement (F6) ────────────────────────────────────────────
 # Non-loopback hosts are rejected UNLESS explicitly allowed via IIP_ALLOWED_HOST
-# (comma-separated hostnames, set to the deployment domain on Vercel where the
-# cookie is Secure=True over HTTPS). The allowlist keeps the loopback default
-# unchanged for local dev (Secure=False cookies must stay loopback-only).
+# (comma-separated hostnames or *.vercel.app-style suffixes). On Vercel the
+# Host header can be the alias OR the per-deployment URL (both *.vercel.app), so
+# production deployments (IIP_HTTPS=1, Secure cookie) allow the *.vercel.app
+# suffix; the loopback default is unchanged for local dev (Secure=False cookies
+# must stay loopback-only).
 _ALLOWED_HOSTS = {h.strip().lower() for h in
                   os.environ.get("IIP_ALLOWED_HOST", "").split(",") if h.strip()}
+_ALLOW_VERCEL_SUFFIX = os.environ.get("IIP_HTTPS", "").lower() in ("1", "true", "on")
+
+
+def _host_allowed(host: str) -> bool:
+    if host in ("127.0.0.1", "localhost", "testserver", "::1"):
+        return True
+    if host in _ALLOWED_HOSTS:
+        return True
+    if _ALLOW_VERCEL_SUFFIX and host.endswith(".vercel.app"):
+        return True
+    return False
 
 
 @app.middleware("http")
 async def loopback_guard(request: Request, call_next):
     host = (request.headers.get("host") or "").split(":")[0].lower()
-    if host not in ("127.0.0.1", "localhost", "testserver", "::1") and host not in _ALLOWED_HOSTS:
+    if not _host_allowed(host):
         return Response(status_code=403, content="non-loopback host rejected")
     return await call_next(request)
 
