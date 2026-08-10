@@ -49,6 +49,19 @@
 
 <!-- 2026-08-09 04:20 UTC+7 -->
 
+## 10 Aug 2026 (late session) — Thai language i18n (FD #90) + Vercel production live
+
+**What happened:**
+1. **Vercel production LIVE** (Option A): SSO off, alias `iip-research.vercel.app` (also `investment-intelligence-platform-six.vercel.app`), vercel.json (Vite build + api/index.py FastAPI re-export, /tmp SQLite), .vercelignore, env IIP_AUTH_*/IIP_HTTPS=1/IIP_ALLOWED_HOST; loopback_guard allowlist + Secure cookie (HTTPS); login+reports+library verified end-to-end.
+2. **Thai language (FD #90, Option C scope / A default, commit 4c6af4f + 22d467d)**: i18n infra (LanguageContext th-default + translations.ts ~50 strings + LangToggle), 7 UI pages localized, bilingual report pipeline (title_th/summary_th frontmatter + reports/th/<slug>.md body, EN originals preserved), Apple Deep Analysis fully translated (QA 68/68 tokens — numbers/accessions/dates preserved), suite 340/340, tsc 0/lint 0, mobile OK (Thai no layout break), deployed live.
+3. **Deferred (Founder choice B)**: remaining 24 reports (~31k words) translated in later sessions (3–5/session, Apple series first, main+opposing pairs together, same QA standard).
+
+**Commits today:** `fac82b0` → `341da7e` (shadow scan) → `cfc2d64` (validation P1) → `252c57b` (FD #89) → `1c71c99` (register fix) → `447370a` (session closeout) → `4495ecb` (Hallmark mobile + article) → vercel.json → `20a9738` (auth loopback prod) → `4c6af4f` (i18n) → `22d467d` (screenshots TH) → push synced.
+
+**Open items:** translate 24 reports (batch B), AGENTS.md checkpoint (protected), CoS triage 0016/0017, WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug).
+
+**Recommended next action:** แปล Apple series ต่อ (บทคู่ main+opposing ด้วยกัน, 3–5 บท/session, QA token ทุกบท) — เริ่ม session ถัดไป
+
 ## 10 Aug 2026 (late session) — Vercel deployment + magazine closeout (FD #85)
 
 **What happened:**
