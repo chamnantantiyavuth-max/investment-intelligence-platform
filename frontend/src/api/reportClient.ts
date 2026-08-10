@@ -2,7 +2,6 @@
 export interface ReportMeta {
   slug: string
   title: string
-  title_th?: string | null
   type: string
   subject: string
   date: string
@@ -10,13 +9,11 @@ export interface ReportMeta {
   status: string
   updated: string
   summary: string
-  summary_th?: string | null
   path: string
 }
 
 export interface ReportDetail extends ReportMeta {
   content: string
-  content_th?: string | null
 }
 
 const BASE = "/api";
