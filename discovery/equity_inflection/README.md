@@ -46,7 +46,7 @@ discovery/equity_inflection/
 | **H1 — TTM EPS level breakout** | Latest TTM (trailing-4-quarter) diluted EPS > max TTM of the prior 8 quarters (~2y lookback) | EPS-level hypothesis; prior window = 8 quarters IMMEDIATELY before latest (stale history excluded) |
 | **Revenue confirmation** | Latest-quarter revenue NOT shrinking YoY (revenue >= year-ago quarter) | Filters buyback/tax/one-off EPS inflation |
 | **Stage eligibility** | Stage 1 (watch) or S2-early (priority); late-2/3/4 EXCLUDED | Stage Def v0.1 below |
-| **Liquidity sanity** | price >= $2 AND avg 50d volume >= 100k | PROPOSED values (FD #53) |
+| **Liquidity sanity** | price >= $2 AND avg 50d volume >= 100k | Production values (FD #89) |
 
 ### H2 — EPS-growth-rate acceleration (reported separately, NEVER combined silently)
 
@@ -59,7 +59,7 @@ until both are validated separately.
 relative strength percentile, volume trend, extension context — reported in the
 candidate record but NEVER affect eligibility (locked test asserts this).
 
-## Stage Definition v0.1 (deterministic — PROPOSED thresholds, FD #53)
+## Stage Definition v0.1 (deterministic — PRODUCTION thresholds, FD #89)
 
 | Stage | Rule (deterministic) | Eligible |
 |---|---|---|
@@ -70,8 +70,10 @@ candidate record but NEVER affect eligibility (locked test asserts this).
 | S1 | price within ±5% of 50MA; 50MA within ±5% of 150MA; slopes |slope| < 0.5%/mo; price in 30–70% of 52w range | ✓ watch |
 | UNCLASSIFIED | doesn't fit cleanly | ✗ (honest — no forced classification) |
 
-All numeric bands are PROPOSED — no production threshold without Founder approval
-supported by validation evidence (FD #53).
+All numeric bands are **PRODUCTION values approved by FD #89 (10 Aug 2026)** on
+validation Phase 1 evidence (0 look-ahead violations, 0 revision flips, stability
+0 flips — see `output/validation-2026-08-10/VALIDATION-REPORT.md`). Any NEW threshold
+still requires Founder approval with evidence (FD #53).
 
 ## Point-in-time discipline (FD #58)
 

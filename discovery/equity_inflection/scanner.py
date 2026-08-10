@@ -12,21 +12,21 @@ Boundaries (FD #88, binding):
   - Enrichment signals are ADVISORY — they never gate eligibility.
   - Every signal carries an as-of availability stamp (FD #58).
   - No invented production thresholds (FD #53): the numeric bands below are
-    PROPOSED values from Stage Definition v0.1 (design/equity-inflection-
-    discovery/FIRST-PASS-v0.1.md) pending Founder approval with evidence.
+    PRODUCTION values from Stage Definition v0.1, approved by FD #89 (10 Aug 2026)
+    on validation Phase 1 evidence (see output/validation-2026-08-10/).
 """
 from __future__ import annotations
 
 from typing import Any
 
-# ── proposed parameters (FD #53: NOT production thresholds until approved) ──
+# ── PRODUCTION parameters (FD #89, 10 Aug 2026 — approved on validation evidence) ──
 H1_TTM_WINDOW_QUARTERS = 4        # TTM = trailing 4 quarters
 H1_PRIOR_WINDOW_QUARTERS = 8      # comparison = prior 8 quarters (~2 years)
 H2_PRIOR_WINDOW_QUARTERS = 8      # YoY-growth comparison window
 MIN_QUARTERS_FOR_SCAN = 9         # 4 (TTM anchor) + 8 (prior window) - 3 overlap guard
 MIN_PRICE_SESSIONS = 200          # stage signature needs 150MA (150) + slope lookback
 
-# Stage Def v0.1 bands (PROPOSED)
+# Stage Def v0.1 bands (PRODUCTION — FD #89)
 STAGE1_PRICE_BAND = 0.05          # price within ±5% of 50MA
 STAGE1_MA_BAND = 0.05             # 50MA within ±5% of 150MA
 STAGE1_SLOPE_PCT_MONTH = 0.5      # |slope| < 0.5%/month (≈21 sessions)
@@ -237,8 +237,8 @@ def stage_signature(prices: list[dict]) -> dict:
 # ── liquidity sanity ─────────────────────────────────────────────────────────
 
 def liquidity_sanity(meta: dict | None) -> dict:
-    """Data/liquidity sanity: price floor + volume floor (PROPOSED values,
-    FD #53). meta: {"price": float, "avg_volume_50d": float} or None.
+    """Data/liquidity sanity: price floor + volume floor (production values,
+    FD #89). meta: {"price": float, "avg_volume_50d": float} or None.
     """
     if not meta:
         return {"ok": False, "reason": "no liquidity data", "as_of": None}
