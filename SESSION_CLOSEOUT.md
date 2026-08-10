@@ -1,3 +1,20 @@
+# Session Closeout — 2026-08-11 (FD #93 Sol Medium Delegation Reasoning → High)
+
+**Status:** COMPLETE — FD #73 medium-reasoning pilot ENDED EARLY by Founder call; delegation reasoning_effort reverted high across 13 configs; registered + committed + pushed.
+
+> Same-day continuation of the FD #92 Thai-content session.
+
+## What happened
+1. **Founder decision:** "FD #73 ใช้เป็น High ละกัน เป็น GPT5.6 Sol Reasoning = High" → end the 2-week medium pilot early, revert delegation reasoning to **high**.
+2. **13 configs changed + verified 13/13 high:** global config.yaml + iip (via `hermes config set`) + 11 org-* profiles (via patch). Sol Medium model unchanged (gpt-5.6-sol, openai-codex). CRO/challenger routing via Sol Medium (FD #73 core) unchanged.
+3. **SOUL.md:** iip Model Routing section updated (no pilot exception). **shared SOUL.md edit BLOCKED** (protected-file approval timed out) — shared still carries the medium clause → **governance-sync drift flagged; needs Founder approval** (FD-HERMES-008).
+4. **Registered:** FD #93 (FOUNDERS-DECISIONS item 109 + vault central + IIP project registers), fd_count 109, PROJECT_STATE (metrics + Latest FDs + item (c) resolved), this closeout.
+
+## Recommended next action
+**Approve shared SOUL.md update** (one line: remove the FD #73 medium-pilot exception clause → matches iip SOUL + config reality). Then: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug).
+
+---
+
 # Session Closeout — 2026-08-11 (FD #92 Research Content THAI-ONLY)
 
 **Status:** COMPLETE — all 24 published reports rewritten in Thai (English UI preserved), figures/accessions/dates preserved 100%, suite + build + browser verified. **5 commits AHEAD of origin — push is Founder call.**
