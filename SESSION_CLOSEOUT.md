@@ -1,3 +1,25 @@
+# Session Closeout — 2026-08-11 (FD #92 Research Content THAI-ONLY)
+
+**Status:** COMPLETE — all 24 published reports rewritten in Thai (English UI preserved), figures/accessions/dates preserved 100%, suite + build + browser verified. **5 commits AHEAD of origin — push is Founder call.**
+
+> Prior closeouts preserved in git history. This session = Founder's Thai-content direction (FD #92), distinct from reverted FD #90 (UI i18n) — content-only, no i18n infra, no toggle.
+
+## What happened this session
+
+1. **FD #92 registered immediately** (FOUNDERS-DECISIONS item 108 + vault central + IIP project registers; FD-91 backfilled): "Research Content THAI-ONLY — 24 published reports rewritten in Thai, English UI preserved, English originals removed from current tree (git history/evidence retain lineage §23.9); fresh Thai composition from evidence (not translation); easy Thai; figures/accessions/dates 100%; future research output Thai by default."
+2. **Plan approved (Founder: "A"):** overwrite in place (same slugs — URLs/links/series intact), UI untouched, Thai font fallback, verify numbers via token script vs English originals at `6502b79`.
+3. **All 24 reports rewritten in Thai** — 4 commits: `65473ba` (Silver 8: product note / deficit challenge + opposing / squeeze re-pricing + opposing / valuation-anchor correction / London vaults + opposing) · `bcabe49` (Apple series 6: moat + opposing / buyback mask + opposing / Services margin + opposing) · `e30666f` (Apple deep-analysis + opposing / leadership-transition + opposing) · `c30afcf` (JNJ + opposing / gold-transmission + opposing / weekly letters 1–2). Frontmatter title/summary → Thai; type/subject/date/author/status/updated unchanged; all cross-report links, accessions, point-in-time stamps preserved.
+4. **B0 (with B1):** Thai font fallback `--font-sans`/`--font-display` + Leelawadee UI/Tahoma (index.css) + reports/README Content-language contract (FD #92).
+5. **Verification (all PASS):** token-preservation script `evidence/qa/fd92-token-preservation.py` — **3,442 numeric/accession/date tokens, 0 missing** across 24 files (vs `6502b79`); pytest **340/340**; npm build exit 0; oxlint 0 errors (7 pre-existing warnings); browser desktop — login → /library (24 Thai titles, all series counts) → deep-analysis article (Thai typeset, TOC 01–08, tables, no tofu, console 0 errors, overflow 0); VISUAL_QA `evidence/ui/fd92-thai-reports/` + 2 screenshots.
+6. **State sync:** PROJECT_STATE.md (fd_count 108, metrics 352 commits / AHEAD push, session row, FD #92 bullet) + SESSION_CLOSEOUT this entry + FOUNDERS-DECISIONS item 108 committed + vault registers. **AGENTS.md checkpoint fd-90-91-92 NOT added** — protected file, approval prompt timed out (cron also blocked; needs interactive Founder approval).
+7. **Honest limits:** mobile 390 viewport NOT re-tested (browser fixed 1258px) — structural overflow guard (`overflow-x: clip`) + prior i18n mobile baseline; English originals remain in git history/evidence/research per §23.9; Thai relies on OS fonts (Leelawadee UI/Tahoma on Windows).
+
+## Recommended next action
+
+**Push decision** — 5 commits ahead (4 report batches + closeout). Options: A — push now (reco: content is verified and the live Vercel site still shows English until pushed+deployed); B — hold; C — push after mobile visual check. Then: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), AGENTS.md checkpoint approval.
+
+---
+
 # Session Closeout — 2026-08-09 (FD #86 Platform Restructure + RM-2026-0004 Deep Analysis)
 
 **Status:** COMPLETE — 4 workstreams delivered in one marathon session: blog = primary surface with full filter/sort, old platform trimmed to Org Office + Kanban Board (routes deleted), UI-4 Audit page shipped, first FO-universe deep analysis published (FD #84 gap closed). Pushed to origin.
@@ -122,4 +144,32 @@
 **Push decision (ahead 8, now 82 commits unpushed since 311586d)** — Founder call: push `1c71c99..HEAD` or keep local. Then (a) scanner→Radar integration decision (FD #88 flow: who packages AAPL evidence block into a Task Idea Card — on-demand vs cron read), (b) CoS triage 0016/0017 (Inbox), (c) standing queue: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), FD #73 pilot review (~21 Aug), (d) AGENTS.md checkpoint needs interactive Founder approval (protected file — fd-85-89 checkpoint).
 
 <!-- 2026-08-10 14:30 UTC+7 -->
+
+## 11 Aug 2026 (cron review) — 10 Aug world reconciled: Vercel live + Thai saga (FD #90→#91) + readability + radar round-4 + FD #92 pending
+
+**What this review found (evidence-backed):**
+
+1. **Radar round-4 COMPLETED after all** (11:33–12:15 run, commit `88b280b`): digest + 2 cards — ORG-2026-0016 (LBMA July silver vaults 907.059 Moz = ~5yr high / new upswing high during silver's +11% week, +16.6% YoY; COMMODITY P2 M2) + ORG-2026-0017 (Alphabet $65B capital-raise cluster — $25B 10-tranche IG debt settle 8/10 + $40B ATM equity program; EQUITY P2 M2). The 11:30 review's "round-4 MISSED" note was written before the delayed session spawned; **decision item (0) from the 10 Aug review is CLOSED** — next auto-run Mon 17 Aug 08:00.
+2. **FD #92 REGISTERED (item 108) — plan PENDING Founder A/B/C:** Thai-only rewrite of all 24 published reports (fresh Thai composition, English UI unchanged, English originals removed from tree, lineage via git history per §23.9). Registration in BOTH vault registers + FOUNDERS-DECISIONS item 108 (**uncommitted** in working tree — next session commits with execution).
+3. **Vercel production LIVE** — `https://iip-research.vercel.app` (SSO off; login+reports+library verified E2E in the 10 Aug session).
+4. **Market snapshot (Mon 10 Aug bars LIVE — US session open at 23:35 UTC+7):** gold futures 4,422.30 (+9.6% 5d), silver 65.32 (+13.3% 5d) — **silver now ABOVE the ~$62 SILVER-CORR-001 anchor**; SLV 58.74 (+12.0% 5d); AAPL 305.21 (−2.6% 1d — **Jefferies downgrade, iPhone setback warning**); FSLR 236.99 (−5.2% 1d consolidation after +18.5% tariff week); SMCI 31.93 (+11.5% 5d); WTI 81.14 (+3.8% 1d — Hormuz standoff); SPX 7,749.96 (+2.0% 5d); 10y real 2.43 (8/6). Silver/gold strength validates the 0006→0008→0009→0013 chain; LBMA July known-gap RESOLVED.
+5. **CIW MSFT monitor tick (10 Aug 11:30):** NO NEW FILINGS, NO TRIGGER across all 3 falsification conditions; price $499.99 (−9.7% from 52wk high, improved from −16.1%). Draft `2026-08-10-monitoring-draft.md` untracked in tree.
+6. **Verification:** suite **340/340** via `hermes-agent/venv/Scripts/python.exe` (cron-shell default python 3.14 fails pydantic_core ABI at collection — env-only, NOT regression; fix path added to governed-scheduled-review skill); published reports 24 (frontmatter grep); kanban cards 17 (0016/0017 present, no gaps); commits 348; push SYNCED (`6502b79`).
+
+**Dirty tree (not mine — enumerated, NOT committed per review discipline):** `M operational/FOUNDERS-DECISIONS.md` (FD #92 registration, in-flight session) + `?? docs/ciw-pilot-msft/monitoring/2026-08-10-monitoring-draft.md` (CIW cron draft). State docs updated only (PROJECT_STATE.md + this file); the next interactive session commits everything in one batch.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — register items 100–108; FD #92 pending-approval flagged, NOT executed
+- [x] Session captured? — this entry appended (SESSION_CLOSEOUT); vault registers already have FD-90/91/92 rows
+- [x] Verify-First? — every claim checked against git/pytest/files (radar commit ancestry, suite run, frontmatter count, digest content, CIW draft)
+- [x] Verification tags? — suite 340/340 (venv interpreter) + derived metrics re-derived (24 published / 17 cards / 348 commits)
+- [x] Pushed? — NOT this review (no commits made); repo SYNCED at `6502b79` from the 10 Aug sessions
+- [x] Working tree — dirty by design: FD #92 registration + CIW draft (enumerated above)
+
+## Recommended next action
+
+**(0) FD #92 A/B/C answer** (Founder) → execute Thai rewrite in batches (Silver series first per plan, token-preservation QA per batch, commit per batch). Then: WIL #3 (~13 Aug), IPM Week 2 (~14 Aug), CoS triage ORG-2026-0016/0017 (Inbox), AGENTS.md checkpoint (interactive session, protected file), FD #73 Sol-Medium pilot review (~21 Aug).
+
+<!-- 2026-08-11 00:20 UTC+7 -->
 
