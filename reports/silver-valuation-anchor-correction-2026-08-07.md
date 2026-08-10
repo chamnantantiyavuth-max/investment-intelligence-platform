@@ -1,56 +1,57 @@
 ---
-title: "Silver Valuation Anchor: Corrected on Synchronized Fixing Data"
+title: "จุดอ้างอิงมูลค่าเงิน: แก้ไขด้วยข้อมูล fixing แบบ synchronized"
 type: product
 subject: "Silver (precious metals)"
 date: 2026-08-07
 author: "IC Secretary synthesis (correction of published silver series, §23.9)"
 status: published
 updated: 2026-08-07 (published after Founder gate, Option A)
-summary: "Dated correction to the published silver series: the ~88:1 ratio / low-$20s anchor is not supported by synchronized official fixes — LBMA PM data (4–6 Aug 2026, pulled 7 Aug) show silver $58.79–61.74 and a ratio of 68.7–69.5 (~69:1), at not far above the ~65:1 median. The 'silver is unusually cheap' framing loses its quantitative basis; the structural supply story and the deficit/vault analyses are unaffected. Originals preserved; this note supersedes the anchor claims."
+summary: "บันทึกแก้ไขแบบลงวันที่ของซีรีส์เงินที่เผยแพร่: จุดอ้างอิง ~88:1 / low-$20s ไม่ได้รับการสนับสนุนจาก fixing ทางการแบบ synchronized — ข้อมูล LBMA PM (4–6 ส.ค. 2026, ดึง 7 ส.ค.) แสดงเงิน $58.79–61.74 และอัตราส่วน 68.7–69.5 (~69:1) ซึ่งอยู่ที่ ไม่ใช่สูงกว่า ค่ามัธยฐาน ~65:1 มาก กรอบ 'เงินถูกผิดปกติ' สูญเสียฐานเชิงปริมาณ; เรื่องเล่าโครงสร้างอุปทานและการวิเคราะห์ขาดดุล/คลังไม่ถูกกระทบ ต้นฉบับถูกเก็บรักษา; บันทึกนี้แทนที่ข้ออ้างจุดอ้างอิง"
 ---
 
-# Silver Valuation Anchor: Corrected on Synchronized Fixing Data
+# จุดอ้างอิงมูลค่าเงิน: แก้ไขด้วยข้อมูล fixing แบบ synchronized
 
-**Correction notice (§23.9).** This is a dated correction to the published silver series, issued under Constitution §23.9 (Correction Doctrine): the original records are preserved unchanged; this note records the defect, the correction reason, the replacement output, the actor, and the timestamp. It supersedes the valuation-anchor claims in the affected artifacts listed below.
+**ประกาศการแก้ไข (§23.9).** นี่คือการแก้ไขแบบลงวันที่ของซีรีส์เงินที่เผยแพร่ ออกภายใต้รัฐธรรมนูญ §23.9 (Correction Doctrine): บันทึกต้นฉบับถูกเก็บรักษาไม่เปลี่ยนแปลง; บันทึกนี้บันทึกข้อบกพร่อง เหตุผลการแก้ไข ผลลัพธ์ทดแทน ผู้ดำเนินการ และ timestamp มันแทนที่ข้ออ้างจุดอ้างอิงมูลค่าใน artifacts ที่ได้รับผลกระทบตามรายการด้านล่าง
 
-## The defect
+## ข้อบกพร่อง
 
-The published silver series carried a valuation anchor that is not supported by synchronized official fixing data:
+ซีรีส์เงินที่เผยแพร่มีจุดอ้างอิงมูลค่าที่ fixing ทางการแบบ synchronized ไม่สนับสนุน:
 
-1. **Silver product note (6 Aug)** — `reports/silver-product-note-2026-08-06.md` — asserts "~88:1 against a long-run median near 65:1" (cited as pipeline artifact, 2026-08-05) and frames silver as "cheap relative to gold."
-2. **Silver deficit challenge (6 Aug)** — `reports/silver-deficit-challenge-2026-08-06.md` — correctly flagged the internal arithmetic mismatch (88:1 with gold ≈ $4,206.60 implies silver ≈ $47.80, not the "low $20s"; a low-$20s price would imply a ratio near 175–191:1) and held "cheap relative to gold" as **unresolved** pending a synchronized re-pull.
-3. **CRO opposing essay (6 Aug)** — `reports/silver-deficit-challenge-opposing-2026-08-06.md` — defended the thesis on a timestamp-failure reading that could make silver *cheaper* than claimed (~175:1).
+1. **บันทึกสินค้าเงิน (6 ส.ค.)** — `reports/silver-product-note-2026-08-06.md` — อ้าง "~88:1 เทียบกับค่ามัธยฐานระยะยาวใกล้ 65:1" (อ้างเป็น pipeline artifact, 2026-08-05) และวางกรอบว่าเงิน "ถูกเมื่อเทียบกับทอง"
+2. **บันทึกท้าทายการขาดดุลเงิน (6 ส.ค.)** — `reports/silver-deficit-challenge-2026-08-06.md` — ชี้ความไม่ตรงกันเลขคณิตภายในอย่างถูกต้อง (88:1 กับทอง ≈ $4,206.60 ให้เงิน ≈ $47.80 ไม่ใช่ "low $20s"; ราคา low-$20s จะให้อัตราส่วนใกล้ 175–191:1) และถือ "ถูกเมื่อเทียบกับทอง" เป็น **ยังไม่ตัดสิน** รอการดึง synchronized ใหม่
+3. **บทความค้านของ CRO (6 ส.ค.)** — `reports/silver-deficit-challenge-opposing-2026-08-06.md` — ปกป้องธีมด้วยการอ่านแบบ timestamp ล้มเหลวที่อาจทำให้เงิน *ถูกกว่า* ที่อ้าง (~175:1)
 
-None of these was anchored to a synchronized gold/silver observation.
+ไม่มีข้อใดถูกยึดกับ observation ทอง/เงินแบบ synchronized
 
-## The replacement output
+## ผลลัพธ์ทดแทน
 
-Synchronized official fixes, pulled 2026-08-07 — LBMA PM fixes (independent project, IPM-DECISION-001-2026-08-07, portfolio-blind one-way consumption):
+fixing ทางการ synchronized ดึงเมื่อ 2026-08-07 — LBMA PM fixes (โครงการอิสระ, IPM-DECISION-001-2026-08-07, portfolio-blind ทางเดียว):
 
-| Date | Gold PM (USD/oz) | Silver PM (USD/oz) | Ratio |
+| วันที่ | Gold PM (USD/oz) | Silver PM (USD/oz) | อัตราส่วน |
 |------|------------------|--------------------|-------|
 | 2026-08-04 | 4,084.20 | 58.785 | 69.5 |
 | 2026-08-05 | 4,206.60 | 61.265 | 68.7 |
 | 2026-08-06 | 4,267.85 | 61.735 | 69.1 |
 
-Corroboration (2026-08-07): SilverPrice.org silver $62.02 / gold $4,250.38 (ratio 68.5); GoldBroker silver $61.99 / gold $4,249.19 (ratio 68.5); TradingEconomics silver $62.06. SLV ounces in trust 487.82 Moz as of 2026-08-06 (flat vs 486.47 Moz on 2026-08-05); NAV $55.80, YTD NAV total return −15.16%; 52-week NAV range 33.67–107.35.
+การยืนยัน (2026-08-07): SilverPrice.org เงิน $62.02 / ทอง $4,250.38 (อัตราส่วน 68.5); GoldBroker เงิน $61.99 / ทอง $4,249.19 (อัตราส่วน 68.5); TradingEconomics เงิน $62.06 ออนซ์ในทรัสต์ SLV 487.82 ล้านออนซ์ ณ 2026-08-06 (แบนเทียบ 486.47 ล้านออนซ์ 2026-08-05); NAV $55.80, ผลตอบแทนรวม NAV YTD −15.16%; ช่วง NAV 52 สัปดาห์ 33.67–107.35
 
-**The synchronized observation is silver ≈ $59–62/oz with a gold/silver ratio of ≈ 69:1** — at, not far above, the ~65:1 historical median referenced in the series. Both the published 88:1 ratio and the ~175:1 timestamp-failure defense are inconsistent with the synchronized fixes.
+**Observation แบบ synchronized คือเงิน ≈ $59–62/ออนซ์ อัตราส่วนทอง/เงิน ≈ 69:1** — อยู่ที่ ไม่ใช่สูงกว่า ค่ามัธยฐานประวัติศาสตร์ ~65:1 ที่อ้างอิงในซีรีส์ ทั้งอัตราส่วน 88:1 ที่เผยแพร่และการป้องกันแบบ timestamp ล้มเหลว ~175:1 ไม่สอดคล้องกับ fixing แบบ synchronized
 
-## Impact per artifact
+## ผลกระทบราย artifact
 
-- **Product note anchor — SUPERSEDED.** The "~88:1, far above median" claim and the "cheap relative to gold" framing lose their quantitative basis. The note's structural content — by-product supply inelasticity, flat supply curve, solar/electronics/EV demand rebuild, physical-vs-paper premium divergence, "the trigger is not yet visible" — is **not affected** by this correction.
-- **Challenge memo 0006 — RESOLVED, not contradicted.** The memo's discipline of holding "cheap relative to gold" as unresolved pending a synchronized re-pull is vindicated: the re-pull now resolves it — silver is at the historical median ratio, not unusually cheap on the ratio measure. The memo's reclassification of the deficit (persisting without demand growth; inventory-and-liquidity working hypothesis) stands.
-- **CRO opposing essay — REJECTED on the anchor point.** The timestamp-failure defense that silver may be *cheaper* than claimed (~175:1) is not supported by synchronized data; the CRO's structural points (deficits under falling demand/costs as supply-inelasticity evidence) are unaffected.
-- **Weekly Intelligence Letter #1 — unaffected** (carried no ratio claim).
+- **จุดอ้างอิงบันทึกสินค้า — ถูกแทนที่ (SUPERSEDED)** ข้ออ้าง "~88:1 สูงกว่าค่ามัธยฐานมาก" และกรอบ "ถูกเมื่อเทียบกับทอง" สูญเสียฐานเชิงปริมาณ เนื้อหาเชิงโครงสร้างของบันทึก — ความไม่ยืดหยุ่นของอุปทานผลพลอยได้ เส้นอุปทานแบน การสร้างอุปสงค์โซลาร์/อิเล็กทรอนิกส์/EV ความต่างพรีเมียมกายภาพ-กระดาษ "ตัวจุดชนวนยังมองไม่เห็น" — **ไม่ถูกกระทบ** โดยการแก้ไขนี้
+- **บันทึกท้าทาย 0006 — ได้รับการตัดสิน (RESOLVED) ไม่ถูกหักล้าง** ระเบียบวินัยของบันทึกที่ถือ "ถูกเมื่อเทียบกับทอง" เป็นยังไม่ตัดสินรอการดึง synchronized ได้รับการยืนยัน: การดึงใหม่ตัดสินแล้ว — เงินอยู่ที่อัตราส่วนค่ามัธยฐานประวัติศาสตร์ ไม่ใช่ถูกผิดปกติตามตัววัดอัตราส่วน การจัดประเภทการขาดดุลใหม่ของบันทึก (ขาดดุลต่อเนื่องโดยไม่มีอุปสงค์โต; สมมติฐานสต็อก/สภาพคล่อง) ยังคงอยู่
+- **บทความค้านของ CRO — ถูกปฏิเสธในประเด็นจุดอ้างอิง** การป้องกันแบบ timestamp ล้มเหลวที่ว่าเงินอาจ *ถูกกว่า* ที่อ้าง (~175:1) ไม่ได้รับการสนับสนุนจากข้อมูล synchronized; จุดเชิงโครงสร้างของ CRO (ขาดดุลภายใต้อุปสงค์/ต้นทุนลด เป็นหลักฐานความไม่ยืดหยุ่นอุปทาน) ไม่ถูกกระทบ
+- **จดหมายข่าวรายสัปดาห์ #1 — ไม่ถูกกระทบ** (ไม่มีการอ้างอัตราส่วน)
 
-## What this does NOT change
+## สิ่งที่บันทึกนี้ไม่เปลี่ยน
 
-- The fifth/sixth consecutive silver deficit (40.3Moz / 46.3Moz, World Silver Survey 2026) and its changed character.
-- The London vault rebuild finding (902.843 Moz, June 2026, +18.04% YoY — material adverse evidence for the visible-inventory depletion proxy).
-- The open watch items: lease rates, COMEX deliverable stocks, available-stock/free-float evidence.
-- Advisory-only, portfolio-blind status of all artifacts in the series.
+- การขาดดุลเงินติดต่อกันปีที่ห้า/หก (40.3Moz / 46.3Moz, World Silver Survey 2026) และลักษณะที่เปลี่ยนไป
+- ข้อค้นพบคลังลอนดอนสร้างใหม่ (902.843 ล้านออนซ์, มิถุนายน 2026, +18.04% YoY — หลักฐานลบที่มีสาระต่อตัวชี้วัดการลดลงของสต็อกที่มองเห็น)
+- จุดติดตามที่เปิดอยู่: อัตราเช่า สต็อกส่งมอบ COMEX หลักฐาน available-stock/free-float
+- สถานะ advisory-only portfolio-blind ของทุก artifact ในซีรีส์
 
-## Sources and limitations
+## ที่มาและข้อจำกัด
 
-LBMA PM fixes 2026-08-04/05/06 and corroborating spot quotes pulled 2026-08-07, as recorded in IPM-DECISION-001-2026-08-07 (independent portfolio office; sources cited therein as LBMA, SilverPrice.org, GoldBroker, TradingEconomics — point-in-time per FD #58 doctrine, re-verify before future reliance). SLV trust data per iShares (as of 2026-08-06). This correction addresses the valuation anchor only; it does not establish or refute any other claim in the series. Percentages and ratios derived from the table above are recomputable: 4,084.20/58.785 = 69.48; 4,206.60/61.265 = 68.66; 4,267.85/61.735 = 69.13.
+LBMA PM fixes 2026-08-04/05/06 และราคาสปอตยืนยันดึงเมื่อ 2026-08-07 ตามที่บันทึกใน IPM-DECISION-001-2026-08-07 (สำนักงานพอร์ตอิสระ; แหล่งอ้างในนั้นคือ LBMA, SilverPrice.org, GoldBroker, TradingEconomics — point-in-time ตามหลักคำสอน FD #58, ตรวจสอบใหม่ก่อนพึ่งพาครั้งถัดไป) ข้อมูลทรัสต์ SLV ตาม iShares (ณ 2026-08-06) การแก้ไขนี้จัดการเฉพาะจุดอ้างอิงมูลค่า; ไม่ได้ยืนยันหรือหักล้างข้ออ้างอื่นใดในซีรีส์ เปอร์เซ็นต์และอัตราส่วนที่คำนวณจากตารางด้านบนคำนวณซ้ำได้: 4,084.20/58.785 = 69.48; 4,206.60/61.265 = 68.66; 4,267.85/61.735 = 69.13
+<!-- 2026-08-10 23:50 UTC+7 -->

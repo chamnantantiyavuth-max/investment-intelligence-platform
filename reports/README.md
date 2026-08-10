@@ -28,6 +28,15 @@ summary: "One-line thesis for the library index"
 - Status flow: draft → review (IC Secretary) → published (Founder approval). Only `published`
   reports appear on the library front page (draft/review visible via status filter for the owner).
 
+## Content language
+
+Research content is written in **Thai** (FD #92, 10 Aug 2026) — plain, easy-to-understand Thai,
+composed fresh from the evidence (never a word-for-word translation of the English original).
+Figures, accessions, dates, and point-in-time stamps are preserved exactly (FD #58);
+financial/legal terms keep the English term in parentheses where needed (moat, CRO, ADEQUATE).
+English originals survive only in git history + `evidence/` + `research/` workspaces
+(evidence lineage — Constitution §23.9).
+
 ## Series
 
 Reports about the same `subject` form a series (e.g., Silver — first note, updates, what changed).

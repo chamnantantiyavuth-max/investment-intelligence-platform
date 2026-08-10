@@ -64,9 +64,9 @@
   --color-sidebar-ring: #1F4E79;
 
   /* Fonts */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', 'Leelawadee UI', 'Tahoma', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Consolas', monospace;
-  --font-display: Georgia, 'Times New Roman', serif;
+  --font-display: Georgia, 'Times New Roman', 'Leelawadee UI', 'Tahoma', serif;
 
   /* Type scale (Research Desk) */
   --text-hero: 2.5rem;             /* display serif headline */

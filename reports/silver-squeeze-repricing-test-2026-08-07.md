@@ -1,47 +1,48 @@
 ---
-title: "Silver's Squeeze Re-Pricing Under Test: The Visible Data Points Away From Scarcity"
+title: "ทดสอบการตั้งราคาใหม่ของเงิน: ข้อมูลที่มองเห็นชี้ไปจากความขาดแคลน"
 type: product
 subject: "Silver (precious metals)"
 date: 2026-08-07
 author: "Commodity Research (RM-2026-0002, from ORG-2026-0013 + folded 0014) — IC Secretary synthesis"
 status: published
 updated: 2026-08-07 (published after Founder gate, Option A)
-summary: "Silver's ~+11% week (Sep futures 57.67 → 63.99, 3–7 Aug) compressed the gold/silver ratio from ~69:1 to ~67:1 toward the ~65:1 median — while every visible inventory reading moved AGAINST a physical squeeze: London vaults at a series high (+18% YoY, 902.843 Moz) and COMEX registered stocks ACCUMULATING (+6.8 Moz/30d to 99.8 Moz) during the rally. On available evidence the move is consistent with rate-cut reflation beta, not a repriced liquidity squeeze; the 0006 inventory-liquidity working hypothesis takes further adverse evidence on its visible proxies. Lease rates and CME-primary confirmation remain unverified — the honest boundary."
+summary: "เงินบวก ~+11% ในสัปดาห์ (ฟิวเจอร์ส Sep 57.67 → 63.99, 3–7 ส.ค.) บีบอัตราส่วนทอง/เงินจาก ~69:1 เป็น ~67:1 เข้าหาค่ามัธยฐาน ~65:1 — ขณะที่การอ่านสต็อกทุกตัวที่มองเห็นได้เคลื่อนไปทางตรงข้ามกับสควีซกายภาพ: คลังลอนดอนสูงสุดเป็นประวัติการณ์ (+18% YoY, 902.843 ล้านออนซ์) และสต็อก registered COMEX สะสมเพิ่ม (+6.8 ล้านออนซ์/30 วัน เป็น 99.8 ล้านออนซ์) ระหว่างการรีบาวด์ จากหลักฐานที่มี การเคลื่อนไหวสอดคล้องกับ beta การรีเฟลชั่นจากคาดการณ์ลดดอกเบี้ย มากกว่าสควีซสภาพคล่องที่ถูกตั้งราคาใหม่ สมมติฐานสต็อก/สภาพคล่อง 0006 รับหลักฐานลบเพิ่มจากตัวชี้วัดที่มองเห็น อัตราเช่าและการยืนยันจาก CME หลักยังไม่ถูกตรวจสอบ — ขอบเขตที่ซื่อตรง"
 ---
 
-# Silver's Squeeze Re-Pricing Under Test
+# ทดสอบการตั้งราคาใหม่ของเงิน
 
-**Thesis.** The market repriced silver violently this week — roughly +11% in four sessions, outperforming gold by ~1.5× — and the question posed by the radar (ORG-2026-0013) was whether this is a physical liquidity squeeze finally being recognized, or silver riding the rate-cut reflation beta. The visible evidence points away from scarcity: London vault holdings sit at a series high, COMEX registered (deliverable) stocks are *rising* during the rally, ETF holdings are flat, and the gold/silver ratio is compressing *toward* its historical median — which is what normalization, not shortage, looks like. The squeeze reading is not established; on available data, the 2026 move is consistent with macro/beta-driven repricing. Two unverified items (lease rates, CME-primary confirmation) are the honest boundary where a squeeze could still hide.
+**ประเด็นหลัก (Thesis).** ตลาดตั้งราคาเงินใหม่รุนแรงในสัปดาห์นี้ — บวก ~11% ในสี่เซสชัน วิ่งแซงทอง ~1.5 เท่า — และคำถามที่เรดาร์ตั้ง (ORG-2026-0013) คือ นี่คือสควีซสภาพคล่องกายภาพที่เพิ่งถูกรับรู้ หรือเงินขี่ beta การรีเฟลชั่นจากการลดดอกเบี้ย หลักฐานที่มองเห็นได้ชี้ไปจากความขาดแคลน: การถือครองคลังลอนดอนอยู่ที่สูงสุดของซีรีส์ สต็อก registered (ส่งมอบได้) COMEX *เพิ่มขึ้น* ระหว่างรีบาวด์ การถือครอง ETF แบน และอัตราส่วนทอง/เงินกำลังบีบ *เข้าหา* ค่ามัธยฐานประวัติศาสตร์ — ซึ่งคือสิ่งที่การ normalization ดูเป็น ไม่ใช่การขาดแคลน การอ่านแบบสควีซยังไม่ถูกยืนยัน; จากข้อมูลที่มี การเคลื่อนไหวปี 2026 สอดคล้องกับการตั้งราคาใหม่ที่ขับเคลื่อนด้วยมหภาค/beta สองรายการที่ยังไม่ถูกตรวจสอบ (อัตราเช่า, การยืนยันจาก CME หลัก) คือขอบเขตที่ซื่อตรงที่สควีซยังซ่อนอยู่ได้
 
-## The move, quantified
+## การเคลื่อนไหวในตัวเลข
 
-- **Silver Sep futures (SI=F):** 57.67 (2026-08-03) → 63.99 (2026-08-07 intraday) = **+11.0%**; extended to **64.70 intraday (+12.2%)** by the mid-week watch pull (08:35 UTC); spot **$64.58** (gold-api, 2026-08-07 09:57 UTC).
-- **Gold (GC=F):** 4,033.70 → 4,344.70 = **+7.7%** in the same four sessions; spot **$4,317.70** (gold-api, same pull). Silver's beta to gold this week ≈ **1.4×** (11.0/7.7 = 1.43).
-- **Gold/silver ratio:** LBMA PM synchronized fixes 4–6 Aug (pulled 7 Aug): **69.5 / 68.7 / 69.1** (the corrected anchor, FD #77). Spot-implied 7 Aug: **66.9** (4,310.10/64.438 at 08:45 UTC) and **66.9** (4,317.70/64.576 at 09:57 UTC). Compression of **~2.2–2.6 points in three days** (69.5/69.1 → 66.9), toward the ~65:1 historical median referenced throughout the series.
+- **ฟิวเจอร์สเงิน Sep (SI=F):** 57.67 (2026-08-03) → 63.99 (2026-08-07 intraday) = **+11.0%**; ขยายเป็น **64.70 intraday (+12.2%)** จากการดึง mid-week watch (08:35 UTC); สปอต **$64.58** (gold-api, 2026-08-07 09:57 UTC)
+- **ทอง (GC=F):** 4,033.70 → 4,344.70 = **+7.7%** ในสี่เซสชันเดียวกัน; สปอต **$4,317.70** (gold-api, การดึงเดียวกัน) beta ของเงินต่อทองสัปดาห์นี้ ≈ **1.4×** (11.0/7.7 = 1.43)
+- **อัตราส่วนทอง/เงิน:** fixing synchronized LBMA PM 4–6 ส.ค. (ดึง 7 ส.ค.): **69.5 / 68.7 / 69.1** (จุดอ้างอิงที่แก้แล้ว, FD #77) spot-implied 7 ส.ค.: **66.9** (4,310.10/64.438 เวลา 08:45 UTC) และ **66.9** (4,317.70/64.576 เวลา 09:57 UTC) บีบ **~2.2–2.6 จุดในสามวัน** (69.5/69.1 → 66.9) เข้าหาค่ามัธยฐานประวัติศาสตร์ ~65:1 ที่อ้างอิงตลอดซีรีส์
 
-## The inventory evidence — against scarcity
+## หลักฐานสต็อก — ขัดกับความขาดแคลน
 
-1. **London vaults (published 0009, audit CLEAN WITH MINORS):** 902.843 Moz (June 2026) — highest observation in the May 2025–June 2026 LBMA extract, **+18.04% YoY (+137.954 Moz, 3.42× the 2025 deficit)**; June alone +15.1 Moz. No visible depletion anywhere in the London series.
-2. **COMEX deliverable stocks (new this week, folded 0014):** registered **99.8 Moz** / eligible 234.8 Moz / total 334.6 Moz as of **2026-08-06** (metalcharts third-party — CME primary IP-blocked, Data Steward D2 confirmation recommended). Registered is **UP +6.8 Moz from 93.0 Moz (2026-07-07)** — the deliverable pool is *accumulating while silver rallies +12%*. This is the first current reconciliation of the stale CoinWeek "<100 Moz" figure (2026-02-13) the Monday scan could only cite as stale.
-3. **ETF holdings:** SLV ounces in trust **487.82 Moz** (2026-08-06) vs 486.47 Moz (2026-08-05) — flat, no visible investor bid (IPM-DECISION-001 pull, 7 Aug; NAV $55.80, YTD total return −15.16%).
-4. **Lease rates:** **unverified** — no free verifiable source retrievable (OTC market; LBMA publishes no free current series). KNOWN-GAP per FD #82 retry policy.
+1. **คลังลอนดอน (เผยแพร่ 0009, audit CLEAN WITH MINORS):** 902.843 ล้านออนซ์ (มิถุนายน 2026) — การสังเกตสูงสุดในข้อมูล LBMA extract พฤษภาคม 2025–มิถุนายน 2026, **+18.04% YoY (+137.954 ล้านออนซ์, 3.42 เท่าของการขาดดุลปี 2025)**; เดือนมิถุนายนเดี่ยว +15.1 ล้านออนซ์ ไม่มีการลดลงที่มองเห็นในซีรีส์ลอนดอน
+2. **สต็อกส่งมอบ COMEX (ใหม่สัปดาห์นี้, รวม 0014):** registered **99.8 ล้านออนซ์** / eligible 234.8 ล้านออนซ์ / รวม 334.6 ล้านออนซ์ ณ **2026-08-06** (metalcharts บุคคลที่สาม — CME หลักถูก IP-block, แนะนำการยืนยัน D2 ของ Data Steward) registered **เพิ่ม +6.8 ล้านออนซ์จาก 93.0 ล้านออนซ์ (2026-07-07)** — สระส่งมอบ *สะสมในขณะที่เงินรีบาวด์ +12%* นี่คือการประสานปัจจุบันครั้งแรกของตัวเลข CoinWeek ที่เก่า "<100 ล้านออนซ์" (2026-02-13) ที่การสแกนวันจันทร์อ้างได้แค่ว่าเก่า
+3. **การถือครอง ETF:** ออนซ์ในกองทรัสต์ SLV **487.82 ล้านออนซ์** (2026-08-06) เทียบ 486.47 ล้านออนซ์ (2026-08-05) — แบน ไม่เห็นแรงซื้อนักลงทุน (การดึง IPM-DECISION-001, 7 ส.ค.; NAV $55.80, ผลตอบแทนรวม YTD −15.16%)
+4. **อัตราเช่า:** **ยังไม่ถูกตรวจสอบ** — ไม่มีแหล่งฟรีที่ตรวจสอบได้ (ตลาด OTC; LBMA ไม่เผยแพร่ซีรีส์ปัจจุบันฟรี) KNOWN-GAP ตามนโยบายรีไทร์ FD #82
 
-## Mechanism: what the compression means
+## กลไก: การบีบอัตราส่วนหมายความว่าอะไร
 
-A genuine deliverable shortage expresses itself through the *price of availability*: lease rates spiking, deliverable stocks drawn down, physical premiums dislocating, and the ratio *widening* as the constrained metal gaps higher relative to gold. This week shows the opposite pattern on every observable: deliverable stocks rising, vaults at highs, ETF flows flat, and the ratio *narrowing* as silver outperforms in a risk-on, rate-cut-expectation environment (FOMC held 3.50–3.75% on a 9–3 hawkish-vote split 7/29; 10y real yield 2.41% near its cycle peak; S&P at records; dollar soft at 99.7–100). High-beta metal outperforming in a reflation/risk-on regime is the classical mechanism — silver's dual industrial-monetary character makes it the higher-volatility expression of the same gold trade, not a separate scarcity signal. The ratio compression toward the ~65:1 median is also the natural continuation of the FD #77 correction finding: silver was never "unusually cheap" (the synchronized anchor was ~69:1, at the median) — the gap is closing, which is what normalization looks like.
+การขาดแคลนส่งมอบจริงแสดงออกผ่าน *ราคาของความพร้อมใช้*: อัตราเช่าพุ่ง สต็อกส่งมอบถูกดึงลง พรีเมียมกายภาพเคลื่อนผิดปกติ และอัตราส่วน *กว้างขึ้น* เมื่อโลหะที่ถูกจำกัด gap สูงขึ้นเทียบกับทอง สัปดาห์นี้แสดงรูปแบบตรงข้ามในทุกตัวที่สังเกตได้: สต็อกส่งมอบเพิ่ม คลังสูงสุดเป็นประวัติการณ์ กระแส ETF แบน และอัตราส่วน *แคบลง* ขณะที่เงินวิ่งแซงในสภาพแวดล้อม risk-on ที่คาดการณ์ลดดอกเบี้ย (FOMC คง 3.50–3.75% ด้วยคะแนนเสียงฮอว์ก 9–3 เมื่อ 7/29; ผลตอบแทนจริง 10 ปี 2.41% ใกล้จุดสูงสุดวงจร; S&P ทำสถิติ; ดอลลาร์อ่อนที่ 99.7–100) โลหะ beta สูงวิ่งแซงในระบอบรีเฟลชั่น/risk-on คือกลไกคลาสสิก — ลักษณะโลหะคู่ (อุตสาหกรรม-การเงิน) ของเงินทำให้มันเป็นการแสดงออกของเทรดทองเดียวกันที่ผันผวนกว่า ไม่ใช่สัญญาณขาดแคลนแยกต่างหาก การบีบอัตราส่วนเข้าหาค่ามัธยฐาน ~65:1 ยังเป็นความต่อเนื่องธรรมชาติของข้อค้นพบการแก้ไข FD #77: เงินไม่เคย "ถูกผิดปกติ" (จุดอ้างอิง synchronized คือ ~69:1, อยู่ที่ค่ามัธยฐาน) — ช่องว่างกำลังปิด ซึ่งคือสิ่งที่ normalization ดูเป็น
 
-## What would change the view (monitoring conditions, updated)
+## อะไรจะเปลี่ยนมุมมอง (เงื่อนไขติดตาม, อัปเดต)
 
-The squeeze reading would gain support from, in order of salience: (1) **lease-rate escalation** when a verifiable source appears; (2) **COMEX registered drawdown** below the ~93 Moz 30-day baseline / sustained depletion; (3) **LBMA July vault decline** (monthly release — retried automatically per known-gap policy); (4) **physical premium dislocation** (coin/bar premiums vs paper); (5) **SLV/ETF accumulation inflection** (investor bid arriving). Absent these, the visible-data read stands: no scarcity signal as of 7 Aug 2026, the move is macro/beta-driven on available evidence.
+การอ่านแบบสควีซจะได้แรงหนุนจาก ตามลำดับความสำคัญ: (1) **อัตราเช่าพุ่ง** เมื่อมีแหล่งที่ตรวจสอบได้; (2) **registered COMEX ดึงลง** ต่ำกว่าเส้นฐาน ~93 ล้านออนซ์/30 วัน / การลดลงต่อเนื่อง; (3) **คลัง LBMA เดือนกรกฎาคมลด** (ปล่อยรายเดือน — รีไทร์อัตโนมัติตามนโยบาย known-gap); (4) **พรีเมียมกายภาพเคลื่อนผิดปกติ** (พรีเมียมเหรียญ/แท่งเทียบกระดาษ); (5) **การสะสม SLV/ETF เปลี่ยนทิศ** (แรงซื้อนักลงทุนมาถึง) หากไม่มีสิ่งเหล่านี้ การอ่านจากข้อมูลที่มองเห็นยังอยู่: ไม่มีสัญญาณขาดแคลน ณ 7 ส.ค. 2026 การเคลื่อนไหวขับเคลื่อนด้วยมหภาค/beta จากหลักฐานที่มี
 
-## Honest limits
+## ขีดจำกัดที่ซื่อตรง
 
-- **Lease rates unverified** — a squeeze operating through the lease market would be invisible to this analysis; this is the single largest residual risk to the beta reading.
-- **COMEX via third-party aggregator** (metalcharts), not CME primary (IP-blocked) — directionally corroborated by the earlier CoinWeek figure but requires Data Steward D2 confirmation for primary-source status.
-- **Free-float/available-stock evidence still missing** (0009's unresolved watch item) — gross custody ≠ lendable metal.
-- Point-in-time (FD #58): all figures valid at the pull timestamps above; 7 Aug session still in progress at pull time; jobs report due 12:30 UTC may move the complex further.
-- Advisory research, portfolio-blind, not a buy/sell/allocate call.
+- **อัตราเช่าไม่ถูกตรวจสอบ** — สควีซที่ทำงานผ่านตลาดเช่าจะมองไม่เห็นในการวิเคราะห์นี้; นี่คือความเสี่ยงตกค้างใหญ่ที่สุดต่อการอ่านแบบ beta
+- **COMEX ผ่านตัวรวมบุคคลที่สาม** (metalcharts) ไม่ใช่ CME หลัก (IP-block) — ถูกยืนยันทิศทางคร่าว ๆ โดยตัวเลข CoinWeek ก่อนหน้า แต่ต้องยืนยัน D2 ของ Data Steward เพื่อสถานะแหล่งหลัก
+- **หลักฐาน free-float/available-stock ยังขาด** (จุดติดตามค้างของ 0009) — การถือครองรวม (gross custody) ≠ โลหะที่ให้ยืมได้
+- Point-in-time (FD #58): ตัวเลขทั้งหมดใช้ได้ ณ เวลาดึงด้านบน; เซสชัน 7 ส.ค. ยังดำเนินอยู่ตอนดึง; รายงานงานจ้าง (jobs report) กำหนด 12:30 UTC อาจขยับกลุ่มโลหะต่อ
+- งานวิจัยที่ปรึกษา portfolio-blind ไม่ใช่คำสั่งซื้อ/ขาย/จัดสรร
 
-## Sources
+## ที่มา
 
-LBMA PM fixes 4–6 Aug 2026 (pulled 7 Aug, per IPM-DECISION-001, independent office — as adopted by the FD #77 correction note); Yahoo Finance SI=F / GC=F intraday closes (pulled 7 Aug 07:55–08:35 UTC, weekly scan + mid-week watch); gold-api.com XAU/XAG spot (7 Aug 08:45 + 09:57 UTC); LBMA london-vault-data June 2026 (as published in ORG-2026-0009, audit CLEAN WITH MINORS); metalcharts.org COMEX silver inventories (2026-08-06, as filed in ORG-2026-0014); iShares SLV trust data (2026-08-06, per IPM-DECISION-001); FRED DFII10 (2.41%, 2026-08-05); FOMC statement 2026-07-29.
+LBMA PM fixes 4–6 ส.ค. 2026 (ดึง 7 ส.ค., ตาม IPM-DECISION-001, สำนักงานอิสระ — ตามที่บันทึกแก้ไข FD #77 รับมา); Yahoo Finance SI=F / GC=F ปิด intraday (ดึง 7 ส.ค. 07:55–08:35 UTC, สแกนรายสัปดาห์ + mid-week watch); gold-api.com XAU/XAG สปอต (7 ส.ค. 08:45 + 09:57 UTC); LBMA london-vault-data มิถุนายน 2026 (ตามที่เผยแพร่ใน ORG-2026-0009, audit CLEAN WITH MINORS); metalcharts.org COMEX สต็อกเงิน (2026-08-06, ตามที่ยื่นใน ORG-2026-0014); ข้อมูลทรัสต์ iShares SLV (2026-08-06, ตาม IPM-DECISION-001); FRED DFII10 (2.41%, 2026-08-05); คำแถลง FOMC 2026-07-29
+<!-- 2026-08-10 23:45 UTC+7 -->
