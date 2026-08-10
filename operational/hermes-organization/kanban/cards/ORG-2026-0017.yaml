@@ -1,0 +1,30 @@
+card_id: ORG-2026-0017
+title: "Radar: Alphabet activates ~$65B of capital-raising capacity in ~2 months — $25B 10-tranche IG debt priced 6 Aug (settling 10 Aug) + $40B ATM equity distribution program (syndicate expanded 6 Aug)"
+research_question: "Why is Alphabet (Aa2/AA+, large cash balance, record FCF) pricing a $25B 10-tranche investment-grade bond deal (trade 6 Aug, settle 10 Aug, coupons to 6.50% on the 2066s) while maintaining a $40B at-the-market EQUITY distribution program (prospectus 1 Jun 2026, Reg 333-296395) — what is the combined ~$65B of issuance capacity being raised for (AI-capex funding vs M&A vs buyback pre-funding vs opportunistic lock-in of long-dated rates), has any of the ATM been drawn (visible only in the next 10-Q), and does this change the capital-structure / capex-funding read on an FO-universe mega-cap that has historically favored debt over equity issuance?"
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: EQUITY
+principal_owner: org-equity-analyst
+assistant_owner: Equity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-10
+required_by: triage
+expected_artifact: "equity note — GOOGL capital-structure / funding-purpose assessment (FO-universe company; ATM drawdown confirmation via next 10-Q)"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: NOT ASSESSED
+validation_status: null
+risk_status: null
+audit_status: null
+radar_observation: "SEC EDGAR GOOGL (CIK 0001652044) filings 8/6–8/7 2026 (pulled 2026-08-10): (1) 424B2 (accession 0001193125-26-340264, filed 8/7) prices $25,000,000,000 of notes in TEN tranches — $750M FRN 2028, $1.25B 4.500% 2028, $500M FRN 2029, $2.0B 4.625% 2029, $3.5B 4.875% 2031, $2.5B 5.200% 2033, $4.5B 5.450% 2036, $3.0B 6.250% 2046, $4.5B 6.375% 2056, $2.5B 6.500% 2066 — trade date 8/6, settlement T+2 = 8/10, Moody's Aa2 (Stable) / S&P AA+ (Stable), 15 joint book-runners; (2) FWP pricing term sheet (0001193125-26-338750, 8/7); (3) 424B5 (0001193125-26-336853, 8/6) amends the Equity Distribution Agreement for the 'up to $40,000,000,000' Class A/Class C at-the-market program (prospectus dated 6/1/2026) adding 13 managers (BofA, Citi, Deutsche, HSBC, Wells Fargo, Barclays, BNP, BTIG, Credit Agricole, Mizuho, RBC, SG, TD) alongside Goldman/JPM/MS; (4) 424B5 (0001193125-26-336798, 8/6) = preliminary prospectus supplement for the notes deal. Combined: ~$65B of issuance capacity activated within ~2 months by a mega-cap with a large cash balance — the $40B ATM EQUITY program is the unusual part for Alphabet (equity issuance is dilutive; Alphabet has historically funded via debt/cash); the long-end coupons (6.250–6.500% on 2046–2066 tenors) lock in ~1.6–1.8pp over the 10y UST (4.66%, 8/7 close) at a moment when the Fed is debating a September hike (post-jobs-miss odds tumbled 8/7). Whether any ATM shares have actually been sold is NOT visible in these filings (drawdowns appear in the 10-Q; Q2 10-Q filed 7/23 — routine). Raises, does not answer: the purpose of the combined raise (AI-capex funding scale vs M&A vs buyback pre-funding), the capital-structure signal, and whether a $40B equity ATM at a mega-cap with ~$100B+ cash is a canary for AI-capex funding strain."
+radar_source: "SEC EDGAR submissions API https://data.sec.gov/submissions/CIK0001652044.json + filing index.json + primary docs: https://www.sec.gov/Archives/edgar/data/1652044/000119312526340264/d32286d424b2.htm (424B2 final pricing), /000119312526338750/d159970dfwp.htm (FWP), /000119312526336853/d140593d424b5.htm (424B5 ATM amendment), /000119312526336798/d32286d424b5.htm (preliminary PPS) — all pulled 2026-08-10, rate-limited; 10y UST 4.66% (Yahoo ^TNX close 8/7); news context: CNBC 'Odds the Fed will hike in September tumble following big July jobs miss' (8/7, via Google News RSS)"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-10

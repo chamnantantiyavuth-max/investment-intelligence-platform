@@ -1,0 +1,30 @@
+card_id: ORG-2026-0016
+title: "Radar: London silver vaults climb to 907.059 Moz in July 2026 — a ~5-year high and new high for the 2023+ upswing — during silver's +11% week, extending the 'no visible scarcity' series (0006→0009→0013)"
+research_question: "Does the July 2026 LBMA London vault print — silver 907.059 Moz, the highest since the 2021 era and a new high for the 2023+ upswing, +16.6% YoY — landing during silver's sharpest weekly rally of the recovery leg (~+11%, to ~$64) further disconfirm the physical-liquidity-squeeze re-pricing (0006/0009/0013 convergence — 'no visible scarcity signal as of 7 Aug'), and if so, what does that imply for the composition of the rally (positioning / reflation beta vs physical demand) and for the standing inventory-liquidity watch items (COMEX deliverable stocks, lease rates, available-stock vs gross-custody evidence)?"
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: COMMODITY
+principal_owner: org-commodity-analyst
+assistant_owner: Commodity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-10
+required_by: triage
+expected_artifact: "commodity note / 0006-0009-0013 watch-item update — July LBMA vault print vs squeeze-re-pricing and rally composition (positioning vs physical)"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: NOT ASSESSED
+validation_status: null
+risk_status: null
+audit_status: null
+radar_observation: "LBMA London Vault Holdings Data, July 2026 (file published on lbma.org.uk by ~9 Aug; downloaded + parsed 2026-08-10 from CDN xlsx): silver 907,058.96 koz (= 907.059 Moz) — +0.47% MoM vs 902.843 Moz (June 2026, the figure the 8/7 digest called a 'series high'), +16.6% YoY vs 778.013 Moz (July 2025); gold 306,526.61 koz (~9,533 t) — +0.74% MoM, +7.6% YoY. Precision note (FD #58): the full LBMA series in the same file goes back to 2016 — silver peaked ~1,176 Moz (mid-2021) and gold ~312,449 koz (~9,719 t, 2021), so July 2026 is the HIGHEST SINCE THE 2021 ERA and a new high for the 2023→2026 upswing, NOT an all-time record (the 8/7 digest's 'series high' framing for June was loose). Concurrency: silver Sep futures (SI=F) closed 57.67 (8/3) → 63.33 (8/7), +9.8% for the week, futures 64.03 and spot XAG 63.976 (gold-api.com, 2026-08-10 04:34 UTC); spot gold 4,335.40 (same pull); gold/silver ratio ~67.8 (spot-implied), vs ~69.1 (8/3). THE OBSERVATION: the visible-inventory depletion proxy continues to point AWAY from scarcity while silver makes its strongest weekly move in months — the first post-7-Aug monthly print extends the 0006→0009→0013 convergence ('no visible scarcity signal as of 7 Aug') with fresh official data. Raises, does not answer: whether the squeeze re-pricing has any visible inventory backing at all, and whether the rally is better characterized as positioning/reflation-beta — a question that interacts with the unverified COT positioning claim (see radar_source: Finimize 8/9, secondary, '2-year bullish extreme'; CFTC primary not retrievable this pass)."
+radar_source: "https://cdn.lbma.org.uk/downloads/LBMA-London-Vault-Holdings-Data-July-2026.xlsx (LBMA London Vault Data, July 2026 — downloaded + parsed 2026-08-10); https://query1.finance.yahoo.com/v8/finance/chart/SI=F + GC=F (daily closes, pulled 2026-08-10); https://api.gold-api.com/price/XAU + XAG (2026-08-10 04:34 UTC); https://news.google.com/rss/search?q=silver+market (Finimize 2026-08-09 — 'Large speculators just hit a 2-year bullish extreme in silver — And the commercials are shifting with them' — SECONDARY, CFTC primary 404 this pass; pulled 2026-08-10)"
+open_decision_slots: []
+dependencies: [ORG-2026-0006, ORG-2026-0009, ORG-2026-0013]
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-10
