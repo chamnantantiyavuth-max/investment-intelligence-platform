@@ -37,6 +37,14 @@ financial/legal terms keep the English term in parentheses where needed (moat, C
 English originals survive only in git history + `evidence/` + `research/` workspaces
 (evidence lineage — Constitution §23.9).
 
+**Editorial layer (FD #94, 11 Aug 2026):** published articles are editorially synthesized by the
+IC Secretary under `THAI-RESEARCH-EDITORIAL-STANDARD.md` — the article body is a clean
+Founder-facing investment article (no mandate IDs, FD refs, spec sections, audit status,
+workspace paths, or pipeline jargon); the internal governance layer lives in git history /
+`research/` / `evidence/` / Audit Center. Weekly letters (`type: weekly`) are organizational
+genre and keep internal references. Facts Locked: editorial edits never change figures, accessions,
+dates, uncertainty, material dissent, or conclusions (token-preservation check enforced).
+
 ## Series
 
 Reports about the same `subject` form a series (e.g., Silver — first note, updates, what changed).
