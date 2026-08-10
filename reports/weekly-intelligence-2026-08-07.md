@@ -1,64 +1,65 @@
 ---
-title: "Weekly Intelligence Letter — Week 2: The Loop Repeats, and a Thesis Takes Adverse Evidence"
+title: "จดหมายข่าวกรองรายสัปดาห์ — สัปดาห์ 2: วงวนเกิดซ้ำ และธีมรับหลักฐานลบ"
 type: weekly
 subject: IIP research organization — weekly intelligence
 date: 2026-08-07
 author: IC Secretary (org-ic-secretary)
 status: published
 updated: 2026-08-07 (published after Founder gate, Option A)
-summary: "Week 2: radar round 2 closed (6/6 cards published with CRO companions), the Apple moat report's governance omission was caught and corrected (FD #76), and the first cross-project test ran — IPM's Week 1 letter consumed all 14 published reports and took no action on silver, exposing an unsynchronized valuation anchor in the published silver series (Founder's call)."
+summary: "สัปดาห์ 2: เรดาร์รอบ 2 ปิด (6/6 การ์ดเผยแพร่พร้อมคู่ CRO), ความผิดพลาดด้านธรรมาภิบาลของรายงาน moat Apple ถูกจับและแก้ไข (FD #76), และการทดสอบข้ามโครงการครั้งแรกวิ่ง — จดหมายสัปดาห์ 1 ของ IPM บริโภครายงานที่เผยแพร่ทั้ง 14 ฉบับและไม่ดำเนินการกับเงิน เผยจุดอ้างอิงมูลค่าที่ไม่ synchronized ในซีรีส์เงินที่เผยแพร่ (การตัดสินของ Founder)"
 ---
 
-# Weekly Intelligence Letter — Week 2 (ending 2026-08-07)
+# จดหมายข่าวกรองรายสัปดาห์ — สัปดาห์ 2 (สิ้นสุด 2026-08-07)
 
-**Thesis.** The founding week's pipeline became a repeatable loop. Six more artifacts were published with CRO dissent companions — radar round 2 (London vaults, Services margin) and the Apple leadership-transition follow-up — closing the radar backlog at 6/6 cards. The organization's first published thesis took material adverse evidence on a named watch item (the London vault rebuild), and the first cross-project consumption test ran clean: IPM's Week 1 letter cited all 14 published IIP reports with explicit agreement and dissent, and acted on none of them. That test surfaced the week's sharpest open item — the published silver series carries an unsynchronized valuation anchor, and correcting it is the Founder's call.
+**ประเด็นหลัก (Thesis).** Pipeline ของสัปดาห์ก่อตั้งกลายเป็นวงวนที่ทำซ้ำได้ หก artifact เพิ่มถูกเผยแพร่พร้อมคู่ dissent CRO — เรดาร์รอบ 2 (คลังลอนดอน, margin Services) และบันทึกต่อเนื่องการเปลี่ยนผ่านผู้นำ Apple — ปิด backlog เรดาร์ที่ 6/6 การ์ด ธีมที่เผยแพร่ครั้งแรกขององค์กรรับหลักฐานลบที่มีสาระในจุดติดตามที่ระบุชื่อ (การสร้างคลังลอนดอนใหม่) และการทดสอบการบริโภคข้ามโครงการครั้งแรกวิ่งสะอาด: จดหมายสัปดาห์ 1 ของ IPM อ้างรายงาน IIP ที่เผยแพร่ทั้ง 14 ฉบับพร้อมเห็นด้วยและค้านชัดเจน และไม่ดำเนินการกับฉบับใดเลย การทดสอบนั้นผิวรายการค้างที่คมที่สุดของสัปดาห์ — ซีรีส์เงินที่เผยแพร่มีจุดอ้างอิงมูลค่าที่ไม่ synchronized และการแก้ไขมันคือการตัดสินของ Founder
 
-## What changed this week
+## อะไรเปลี่ยนสัปดาห์นี้
 
-1. **Radar round 2 closed (7 Aug).** Cards 0009 (London silver vaults) and 0010 (Apple Services margin) went through the full loop — evidence → analyst → cross-exam + CRO → Sol Medium audit → Founder gate → publish, each with a CRO opposing companion; 0011 (share count) was folded into 0010. **6/6 RADAR-001 cards are now published** — the radar → triage → research → publish loop has run end-to-end six times.
-2. **The flagship report's governance omission was caught and corrected (FD #76).** The Apple moat report (6 Aug) omitted the CEO succession announced 30 April 2026 — public three months before publication. The follow-up note adds the succession (Cook → Ternus, effective ~1 September; Cook to Executive Chairman; 30 July was Cook's final call), first-disclosed scale figures (installed base 2.5B+ devices, 1.5B+ paid subscriptions), Q1/Q2 FY26 filed financials, IDC/Counterpoint market share, and September-quarter guidance — then re-tests the moat report's eight change-conditions: **seven not triggered; product-margin Indeterminate**. The CRO's opposing essay argues continuity itself is the risk (incumbency load as the control point moves toward AI-mediated intent). Audit chain: MAJOR (F1–F8) → corrections → final confirmation **CLEARED**. A product defect found during verification — GFM tables leaking as raw pipe text in article pages — was fixed (remark-gfm), the first report with markdown tables having exposed it.
-3. **The first cross-project test ran (IPM Week 1, 7 Aug).** The portfolio office's first letter under IPM-FD-003 consumed **all 14 published IIP files** (8 main + 6 CRO opposing) with explicit agree/dissent per item, and reached **IPM-DECISION-001: no action on silver**. The synchronized LBMA fixing (~69:1 gold/silver; silver ~$62) does not support the cheap-and-scarce long thesis, regardless of how the ratio is computed. One-way flow held — no portfolio data moved toward the research org.
-4. **Scope discipline reaffirmed (FD #74 → #75).** The momentum-screen mandate was reversed before any execution — the org stays focused on fundamental, moat, and business-evidence research; the Founder reads charts himself.
-5. **Model-routing pilot live (FD #73).** CRO opposing-thesis drafting is delegated to Sol Medium at medium reasoning for a two-week cost/quality pilot; review ~21 August.
+1. **เรดาร์รอบ 2 ปิด (7 ส.ค.)** การ์ด 0009 (คลังเงินลอนดอน) และ 0010 (margin Services Apple) ผ่านวงเต็ม — หลักฐาน → นักวิเคราะห์ → cross-exam + CRO → audit Sol Medium → ประตู Founder → เผยแพร่ แต่ละฉบับมีคู่ค้าน CRO; 0011 (จำนวนหุ้น) ถูกพับเข้ากับ 0010 **การ์ด RADAR-001 6/6 เผยแพร่แล้ว** — วงเรดาร์ → triage → วิจัย → เผยแพร่รันครบหกครั้ง
+2. **ความผิดพลาดด้านธรรมาภิบาลของรายงานธงถูกจับและแก้ไข (FD #76)** รายงาน moat Apple (6 ส.ค.) ไม่กล่าวถึงการสืบทอด CEO ที่ประกาศ 30 เมษายน 2026 — เปิดเผยต่อสาธารณะสามเดือนก่อนเผยแพร่ บันทึกต่อเนื่องเพิ่มการสืบทอด (Cook → Ternus, มีผล ~1 กันยายน; Cook เป็น Executive Chairman; 30 กรกฎาคมคือการโทรสุดท้ายของ Cook), ตัวเลขสเกลที่เปิดเผยครั้งแรก (ฐานผู้ใช้ 2.5B+ อุปกรณ์, สมาชิกจ่าย 1.5B+), ผลประกอบการ Q1/Q2 FY26 ที่ยื่น ส่วนแบ่งตลาด IDC/Counterpoint และคำแนะนำไตรมาสกันยายน — แล้วทดสอบเงื่อนไขการเปลี่ยนแปลงแปดข้อของรายงาน moat ใหม่: **เจ็ดข้อไม่ถูกกระตุ้น; margin ผลิตภัณฑ์ระบุไม่ได้** บทความค้านของ CRO โต้แย้งว่าความต่อเนื่องเองคือความเสี่ยง (ภาระการครองตำแหน่งเมื่อจุดควบคุมย้ายสู่เจตนาที่ AI เป็นตัวกลาง) สายการตรวจสอบ: MAJOR (F1–F8) → การแก้ไข → การยืนยันสุดท้าย **CLEARED** ข้อบกพร่องผลิตภัณฑ์ที่พบระหว่างการตรวจสอบ — ตาราง GFM รั่วเป็นข้อความ pipe ดิบในหน้าบทความ — ถูกแก้ (remark-gfm) รายงานแรกที่มีตาราง markdown ที่เปิดเผยมัน
+3. **การทดสอบข้ามโครงการครั้งแรกวิ่ง (IPM สัปดาห์ 1, 7 ส.ค.)** จดหมายฉบับแรกของสำนักงานพอร์ตภายใต้ IPM-FD-003 บริโภค**ไฟล์ IIP ที่เผยแพร่ทั้ง 14** (8 หลัก + 6 ค้าน CRO) พร้อมเห็นด้วย/ค้านชัดเจนรายรายการ และถึง **IPM-DECISION-001: ไม่ดำเนินการกับเงิน** fixing LBMA แบบ synchronized (~69:1 ทอง/เงิน; เงิน ~$62) ไม่สนับสนุนธีมระยะยาวถูกและขาดแคลน ไม่ว่าคำนวณอัตราส่วนแบบใด การไหลทางเดียวคงอยู่ — ไม่มีข้อมูลพอร์ตเคลื่อนเข้าหาองค์กรวิจัย
+4. **วินัยขอบเขตยืนยันอีก (FD #74 → #75)** คำสั่ง momentum-screen ถูกพลิกก่อนการดำเนินการใด — องค์กรโฟกัสวิจัยพื้นฐาน moat และหลักฐานธุรกิจ; Founder อ่านชาร์ตเอง
+5. **Pilot การเส้นทางโมเดลมีชีวิต (FD #73)** การร่างธีมค้าน CRO ถูก delegate ให้ Sol Medium ที่ reasoning ปานกลางสำหรับ pilot ต้นทุน/คุณภาพสองสัปดาห์; ทบทวน ~21 สิงหาคม
 
-## The intelligence: thesis progression
+## ข่าวกรอง: ความคืบหน้าของธีม
 
-**1. Silver — the inventory-liquidity thesis took adverse evidence; the valuation anchor is unsynchronized.** (RADAR-001: 0006 → 0009, plus IPM Week 1)
+**1. เงิน — ธีมสต็อก/สภาพคล่องรับหลักฐานลบ; จุดอ้างอิงมูลค่าไม่ synchronized** (RADAR-001: 0006 → 0009, บวก IPM สัปดาห์ 1)
 
-The 0006 challenge memo's replacement hypothesis (deficit as an inventory-and-liquidity problem, not demand growth) was tested on its first named watch item: **London vault holdings rose to 902.843 Moz (June 2026) — the highest observation in the May 2025–June 2026 LBMA extract, +18.04% YoY (+137.954 Moz, more than 3× the 2025 deficit of 40.3 Moz)**. The rebuild materially weakens the visible-inventory depletion proxy — an interpretation centered on depletion of London's reported metal can no longer rest on the vault series alone. The CRO's preserved dissent: vault totals measure gross custody, not lendable free float; the rebuild may be the deposit side of the same dislocation. **Available-stock and liquidity normalization remain unresolved.** Separately, the published silver series carries an internal arithmetic mismatch — the 88:1 ratio and low-$20s price cannot describe the same synchronized observation (88:1 with gold at $4,206.60 implies silver ≈ $47.80) — and IPM's synchronized pull (~69:1, silver ~$62, LBMA 4–6 August) makes the anchor error concrete. This is a §23.9 correction candidate; see Decisions required.
+สมมติฐานทดแทนของบันทึกท้าทาย 0006 (ขาดดุลเป็นปัญหาสต็อก/สภาพคล่อง ไม่ใช่อุปสงค์โต) ถูกทดสอบที่จุดติดตามที่ระบุชื่อแรก: **การถือครองคลังลอนดอนเพิ่มเป็น 902.843 ล้านออนซ์ (มิถุนายน 2026) — การสังเกตสูงสุดใน LBMA extract พฤษภาคม 2025–มิถุนายน 2026, +18.04% YoY (+137.954 ล้านออนซ์, มากกว่า 3 เท่าของการขาดดุลปี 2025 ที่ 40.3 ล้านออนซ์)** การสร้างใหม่ลดน้ำหนักตัวชี้วัดการลดลงของสต็อกที่มองเห็นอย่างมีสาระ — การตีความที่ศูนย์กลางที่การสูญสิ้นของโลหะที่รายงานในลอนดอนไม่สามารถพึ่งซีรีส์คลังอย่างเดียวอีกต่อไป dissent ที่เก็บรักษาของ CRO: ยอดคลังวัดการถือครองรวม ไม่ใช่ free float ที่ให้ยืมได้; การสร้างใหม่อาจเป็นฝั่งเงินฝากของ dislocation เดียวกัน **available-stock และการ normalization สภาพคล่องยังไม่ตัดสิน** แยกต่างหาก ซีรีส์เงินที่เผยแพร่มีความไม่ตรงกันเลขคณิตภายใน — อัตราส่วน 88:1 กับราคา low-$20s ไม่สามารถอธิบายการสังเกต synchronized ชุดเดียวกัน (88:1 กับทองที่ $4,206.60 ให้เงิน ≈ $47.80) — และการดึง synchronized ของ IPM (~69:1, เงิน ~$62, LBMA 4–6 สิงหาคม) ทำให้ข้อผิดพลาดจุดอ้างอิงเป็นรูปธรรม นี่คือผู้สมัครแก้ไข §23.9; ดูการตัดสินใจที่ต้องการ
 
-**2. Apple — Services margin substantiated at the reported level; the trend and the tariff refund remain open.** (RADAR-001: 0007 → 0010, plus FD #76)
+**2. Apple — margin Services ยืนยันที่ระดับรายงาน; แนวโน้มและเงินคืนภาษียังเปิด** (RADAR-001: 0007 → 0010, บวก FD #76)
 
-The Q3 FY26 Services gross margin of **75.62%** (and Q3 FY25 **75.58%**) was reproduced line-by-line from the filed 10-Q (Services sales $30,739M / cost $7,494M), source-clearing the CRO dissent's ~75.6% *level* claim — but not the flattening inference, not the FY2023→FY2025 derived trend, and not the **unknown segment allocation of the ~2pp tariff refund**, which sits inside the margin's numerator. The buyback question from 0007 stays at ASR-timing-as-leading-hypothesis (9M cash paid −12.0% YoY in a +16.4% revenue quarter; $138B remaining authorization); durable deceleration remains unresolved. The leadership note adds an earlier, observable test: **the first Ternus-era capital-allocation and AI-investment signal, due with Q4 FY26 (~October 2026)**.
+margin ขั้นต้น Services Q3 FY26 **75.62%** (และ Q3 FY25 **75.58%**) ถูกทำซ้ำทีละบรรทัดจาก 10-Q ที่ยื่น (ยอดขาย Services $30,739M / ต้นทุน $7,494M) เคลียร์แหล่งข้ออ้าง *ระดับ* ~75.6% ของ dissent CRO — แต่ไม่ใช่การอนุมาน flattening ไม่ใช่แนวโน้ม derived FY2023→FY2025 และไม่ใช่**การจัดสรรเซกเมนต์ที่ไม่ทราบของเงินคืนภาษี ~2pp** ซึ่งอยู่ในตัวเศษของ margin คำถามซื้อคืนจาก 0007 ยังอยู่ที่ ASR-timing เป็นสมมติฐานนำ (เงินสดจ่าย 9M −12.0% YoY ในไตรมาสรายได้ +16.4%; วงเงินคงเหลือ $138B); การชะลอถาวรยังไม่ตัดสิน บันทึกผู้นำเพิ่มการทดสอบที่เร็วขึ้นและสังเกตได้: **สัญญาณการจัดสรรทุนและการลงทุน AI ยุค Ternus ครั้งแรก กำหนดกับ Q4 FY26 (~ตุลาคม 2026)**
 
-**3. Gold vs real rates — consistent, not established.** (RADAR-001: 0008)
+**3. ทองเทียบอัตราดอกเบี้ยจริง — สอดคล้อง ไม่ได้ยืนยัน** (RADAR-001: 0008)
 
-The flow-dominance hypothesis (conflict, inflation-risk, and policy-error hedging, with a possible official-sector component) remains consistent with gold +24.6% YoY ($4,206.60/oz LBMA PM, 5 Aug) alongside a 47bp rise in 10-year real yields and a hawkish 9–3 FOMC hold — but the evidence does not rank the flows and does not establish a permanent break in transmission. Unchanged this week.
+สมมติฐาน flow-dominance (การป้องกันสงคราม ความเสี่ยงเงินเฟ้อและนโยบายผิดพลาด โดยมีองค์ประกอบภาคทางการที่เป็นไปได้) ยังสอดคล้องกับทอง +24.6% YoY ($4,206.60/oz LBMA PM, 5 ส.ค.) คู่การเพิ่ม 47bp ในผลตอบแทนจริง 10 ปีและการคงฮอว์ก 9–3 ของ FOMC — แต่หลักฐานไม่ได้จัดอันดับกระแสและไม่ได้ยืนยันการแตกถาวรของการส่งผ่าน ไม่เปลี่ยนสัปดาห์นี้
 
-**4. Scope — momentum stays out.** The reversal (FD #75) is governance-side: no momentum cards, no RADAR-002, role 11 returns to discovery-only scanning. Research capacity stays on fundamental/moat/business evidence.
+**4. ขอบเขต — momentum อยู่นอก** การพลิก (FD #75) เป็นฝั่งธรรมาภิบาล: ไม่มีการ์ด momentum, ไม่มี RADAR-002, บทบาท 11 กลับสู่การสแกน discovery-only ความสามารถวิจัยอยู่ที่หลักฐานพื้นฐาน/moat/ธุรกิจ
 
-## What the org produced this week (published)
+## อะไรที่องค์กรผลิตสัปดาห์นี้ (เผยแพร่)
 
 - *London Silver Vaults: First Watch-Item Test* + *The Rebuild Measures Gross Custody, Not the Free Float* (CRO) — `reports/london-silver-vaults-watch-2026-08-06.md` (+ `-opposing-`)
-- *Apple Services Margin: Verification of the Reported Claim* + *The Verification Clears the Margin, Not the Flattening* (CRO) — `reports/apple-services-margin-verification-2026-08-06.md` (+ `-opposing-`; 0011 folded in)
+- *Apple Services Margin: Verification of the Reported Claim* + *The Verification Clears the Margin, Not the Flattening* (CRO) — `reports/apple-services-margin-verification-2026-08-06.md` (+ `-opposing-`; 0011 พับเข้า)
 - *Apple Leadership Transition: What the CEO Succession Changes (and Doesn't) for the Moat* + *Apple's Seamless Succession Is the Risk* (CRO) — `reports/apple-leadership-transition-2026-08-07.md` (+ `-opposing-`)
-- Library: **17 published** (this letter + WIL #1 + 15 research artifacts; 8 main essays + 7 CRO companions)
-- External: IPM PM Letter Week 1 — first full IPM-FD-003 consumption of the published series
+- Library: **17 เผยแพร่** (จดหมายนี้ + WIL #1 + 15 artifact วิจัย; 8 บทความหลัก + 7 คู่ CRO)
+- ภายนอก: จดหมาย PM IPM สัปดาห์ 1 — การบริโภค IPM-FD-003 เต็มครั้งแรกของซีรีส์ที่เผยแพร่
 
-## Decisions required from the Founder
+## การตัดสินใจที่ต้องการจาก Founder
 
-1. **Silver valuation anchor — §23.9 correction candidate.** The published silver series (product note 6 Aug; challenge memo 0006) carries an unsynchronized anchor: 88:1 ratio / low-$20s price vs the synchronized ~69:1 (silver ~$62, LBMA 4–6 Aug per IPM Week 1). Options: **A** — publish a dated correction note and align the anchor across the series (recommended: the mismatch is documented on the memo's own inputs, and IPM's synchronized pull makes it concrete); **B** — leave as-is and carry the caveat in letters; **C** — other.
-2. **Radar round 3 scanning pass** — next anomaly/divergence pass on request (no cron without a named FD). Options: run now / hold.
-3. **Blog format (deferred under FD #74)** — magazine-style research site, unrestricted writing — Founder's thinking, no action this week.
+1. **จุดอ้างอิงมูลค่าเงิน — ผู้สมัครแก้ไข §23.9** ซีรีส์เงินที่เผยแพร่ (บันทึกสินค้า 6 ส.ค.; บันทึกท้าทาย 0006) มีจุดอ้างอิงที่ไม่ synchronized: อัตราส่วน 88:1 / ราคา low-$20s เทียบ ~69:1 แบบ synchronized (เงิน ~$62, LBMA 4–6 ส.ค. ตาม IPM สัปดาห์ 1) ตัวเลือก: **A** — เผยแพร่บันทึกแก้ไขลงวันที่และปรับจุดอ้างอิงให้ตรงข้ามซีรีส์ (แนะนำ: ความไม่ตรงกันถูกบันทึกบนอินพุตของบันทึกเอง และการดึง synchronized ของ IPM ทำให้เป็นรูปธรรม); **B** — ปล่อยตามเดิมและพกคำเตือนในจดหมาย; **C** — อื่น
+2. **เรดาร์รอบ 3 การสแกน** — รอบความผิดปกติ/ความต่างครั้งถัดไปตามคำขอ (ไม่มี cron โดยไม่มี FD ที่ระบุชื่อ) ตัวเลือก: รันตอนนี้ / ถือ
+3. **รูปแบบบล็อก (เลื่อนภายใต้ FD #74)** — เว็บวิจัยสไตล์แมกกาซีน ไม่จำกัดรูปแบบการเขียน — ความคิดของ Founder ไม่มีการกระทำสัปดาห์นี้
 
-## What to watch next week
+## สิ่งที่ต้องดูสัปดาห์หน้า
 
-- **Silver:** lease rates and COMEX retry (IPM Week 2, ~14 Aug); synchronized ratio; available-stock vs gross-custody evidence.
-- **Apple:** authorization usage detail in the Q3 10-Q (settles timing vs deceleration); first Ternus-era signal at Q4 FY26 (~Oct 2026).
-- **IPM Week 2 letter** (~14 Aug) — second IPM-FD-003 consumption test.
-- **Cadence:** this letter was pulled forward from ~13 August at the Founder's request; next letter ~13 August unless the Founder resets the cadence.
-- **FD #73 pilot review** (~21 Aug): cost/quality verdict on delegated CRO drafting; revert to high reasoning on regression.
+- **เงิน:** อัตราเช่าและ COMEX retry (IPM สัปดาห์ 2, ~14 ส.ค.); อัตราส่วน synchronized; หลักฐาน available-stock เทียบ gross-custody
+- **Apple:** รายละเอียดการใช้วงเงินใน Q3 10-Q (ตัดสินจังหวะเทียบการชะลอ); สัญญาณยุค Ternus ครั้งแรกที่ Q4 FY26 (~ต.ค. 2026)
+- **จดหมาย IPM สัปดาห์ 2** (~14 ส.ค.) — การทดสอบบริโภค IPM-FD-003 ครั้งที่สอง
+- **จังหวะ:** จดหมายนี้ถูกดึงขึ้นจาก ~13 สิงหาคมตามคำขอของ Founder; จดหมายถัดไป ~13 สิงหาคมเว้นแต่ Founder ตั้งจังหวะใหม่
+- **ทบทวน pilot FD #73** (~21 ส.ค.): คำตัดสินต้นทุน/คุณภาพของการร่าง CRO ที่ delegate; กลับไป reasoning สูงเมื่อ regression
 
-## Sources and limitations
+## ที่มาและข้อจำกัด
 
-All figures are point-in-time (FD #58): LBMA silver vault extract May 2025–June 2026 and LBMA gold PM fix (2026-08-05); Apple Q3 FY26 10-Q (filed 2026-07-31) and Q1/Q2 FY26 filings + earnings-call transcripts; FOMC statement (2026-07-29) and FRED series; World Silver Survey 2026 (Silver Institute / Metals Focus, April 2026); IPM Week 1 letter synchronized LBMA fixing (4–6 Aug 2026). Audit chains are documented per artifact: 0008 MAJOR → CLEARED; 0010 MAJOR (7/7 corrections) → CLEARED; 0009 CLEAN WITH MINORS; leadership MAJOR (F1–F8) → CLEARED. The silver valuation anchor remains unsynchronized across the series and is the single open integrity item (Founder's call, above). The vault series measures gross custody, not free float. This letter is advisory, portfolio-blind, and changes no state.
+ตัวเลขทั้งหมดเป็น point-in-time (FD #58): LBMA silver vault extract พฤษภาคม 2025–มิถุนายน 2026 และ fixing PM ทอง LBMA (2026-08-05); Apple Q3 FY26 10-Q (ยื่น 2026-07-31) และเอกสารยื่น Q1/Q2 FY26 + transcripts earnings call; คำแถลง FOMC (2026-07-29) และซีรีส์ FRED; World Silver Survey 2026 (Silver Institute / Metals Focus, เมษายน 2026); fixing LBMA synchronized ในจดหมาย IPM สัปดาห์ 1 (4–6 ส.ค. 2026) สายการตรวจสอบถูกบันทึกต่อ artifact: 0008 MAJOR → CLEARED; 0010 MAJOR (การแก้ไข 7/7) → CLEARED; 0009 CLEAN WITH MINORS; leadership MAJOR (F1–F8) → CLEARED จุดอ้างอิงมูลค่าเงินยังไม่ synchronized ข้ามซีรีส์และเป็นรายการความสมบูรณ์ที่เปิดรายการเดียว (การตัดสินของ Founder, ข้างบน) ซีรีส์คลังวัด gross custody ไม่ใช่ free float จดหมายนี้เป็นที่ปรึกษา portfolio-blind และไม่เปลี่ยนสถานะใด
+<!-- 2026-08-11 00:55 UTC+7 -->

@@ -1,83 +1,84 @@
 ---
-title: "JNJ's Talc Proposal: A Conditional Schedule, Not Finality"
+title: "ข้อเสนอทาล์คของ JNJ: ตารางเวลาที่มีเงื่อนไข ไม่ใช่จุดจบ"
 type: company
 subject: "JNJ"
 date: 2026-08-07
 author: "Equity Research (RM-2026-0003, from ORG-2026-0015) — IC Secretary synthesis"
 status: published
 updated: 2026-08-07 (published after Founder gate, Option A — publish with dissent)
-summary: "JNJ's proposed $5.5B ovarian-talc resolution (8-K 7/28/26) is consistent with an attempt to compress a multi-decade legal overhang into a scheduled, financeable obligation — but it is not finality: it is participation-gated (at least 95% of 76,000 claims), cash-deferred (first payment of no more than $3B in 2027), and accounting-unproven (the $3.7B Q2-26 reserve predates the proposal) [SRC-01, 2026-07-27; SRC-04, 2026-06-28]. Residual channels remain (mesothelioma ~5%, Canada, securities class action, Imerys/Cyprus appeal, opioids). Within the 28 July–4 August filing window, JNJ closed Firefly ($1B cash) + Sail ($785M initial/$2.58B option) and cut 2026 adjusted-EPS guidance by $0.64 with sales guidance unchanged [SRC-02, 2026-07-29] — aggressive deployment with retained option control but unresolved funding overlap. The CRO dissents: cleanup exists only after participation, recognition, residual dockets, and capital commitments execute together."
+summary: "ข้อเสนอแก้ไขคดีทาล์คมะเร็งรังไข่ $5.5B ของ JNJ (8-K 28/7/26) สอดคล้องกับความพยายามบีบภาระกฎหมายหลายทศวรรษให้เป็นภาระผูกพันตามกำหนดที่จัดหาเงินได้ — แต่ไม่ใช่จุดจบ: มันถูกจำกัดด้วยการมีส่วนร่วม (อย่างน้อย 95% ของ 76,000 คดี), เลื่อนเงินสด (งวดแรกไม่เกิน $3B ในปี 2027), และบัญชียังไม่พิสูจน์ (สำรอง $3.7B ของ Q2-26 มีมาก่อนข้อเสนอ) [SRC-01, 2026-07-27; SRC-04, 2026-06-28] ช่องทางตกค้างยังมี (mesothelioma ~5%, แคนาดา, คดีกลุ่มหลักทรัพย์, การอุทธรณ์ Imerys/Cyprus, opioids) ในหน้าต่างยื่น 28 ก.ค.–4 ส.ค. JNJ ปิดดีล Firefly ($1B เงินสด) + Sail ($785M เริ่มต้น/$2.58B option) และลดคำแนะนำ adjusted-EPS ปี 2026 ลง $0.64 โดยคำแนะนำยอดขายคงเดิม [SRC-02, 2026-07-29] — การวางกำลังเชิงรุกที่คงการควบคุม option แต่ความทับซ้อนด้านเงินทุนยังไม่ตัดสิน CRO ค้าน: การเคลียร์มีอยู่หลังการมีส่วนร่วม การรับรู้ หมายเรียกตกค้าง และภาระผูกพันทุนทำงานพร้อมกันเท่านั้น"
 ---
 
-# JNJ's Talc Proposal: A Conditional Schedule, Not Finality
+# ข้อเสนอทาล์คของ JNJ: ตารางเวลาที่มีเงื่อนไข ไม่ใช่จุดจบ
 
-**Research mandate RM-2026-0003** (from radar card ORG-2026-0015, EDGAR filings scan FD #81) · 3–5 year horizon · Advisory research, not a recommendation · Portfolio-blind (IIP Constitution §23.8.1)
+**วิจัยตามคำสั่ง RM-2026-0003** (จากเรดาร์การ์ด ORG-2026-0015, การสแกนเอกสารยื่น EDGAR FD #81) · ขอบฟ้า 3–5 ปี · งานวิจัยที่ปรึกษา ไม่ใช่คำแนะนำ · Portfolio-blind (รัฐธรรมนูญ IIP §23.8.1)
 
-**The short answer.** The 28 July–4 August 2026 8-K cluster is consistent with an attempt to compress part of JNJ's talc overhang into a scheduled, financeable obligation — but it is not finality, and the contemporaneous capital actions increased deployment intensity without being disclosed as a coordinated cleanup program. The proposed $5.5B ovarian-talc resolution is participation-gated ("at least 95%" of remaining claims), cash-deferred (first payment of no more than $3B in 2027, no additional payments due before 2028), and accounting-unproven (no accrual disclosure yet — the Q2 2026 reserve of ~$3.7B present value predates the proposal) [SRC-01, 2026-07-27; SRC-04, 2026-06-28]. Within the 28 July–4 August filing window, JNJ closed a $1B cash acquisition (Firefly Bio), took a $785M initial position with a $2.58B acquisition option in Sail Biomedicines, cut 2026 adjusted-EPS guidance by exactly the $0.64 transaction impact, and raised no new debt [SRC-02, 2026-07-29; SRC-03, 2026-08-04]. The fundamental read improves conditionally: the overhang is being offered a conversion path, but the proof standard is execution — participation verification, a Q3 2026 accrual, and declining residual legal expense — not the announcement itself.
+**คำตอบสั้น ๆ** กลุ่ม 8-K 28 กรกฎาคม–4 สิงหาคม 2026 สอดคล้องกับความพยายามบีบส่วนหนึ่งของภาระทาล์คของ JNJ เป็นภาระผูกพันตามกำหนดที่จัดหาเงินได้ — แต่ไม่ใช่จุดจบ และการกระทำทุนร่วมสมัยเพิ่มความเข้มการวางกำลังโดยไม่ถูกเปิดเผยว่าเป็นโปรแกรมเคลียร์ที่ประสานกัน ข้อเสนอแก้ไขทาล์คมะเร็งรังไข่ $5.5B ถูกจำกัดด้วยการมีส่วนร่วม ("อย่างน้อย 95%" ของคดีที่เหลือ), เลื่อนเงินสด (งวดแรกไม่เกิน $3B ในปี 2027, ไม่มีการจ่ายเพิ่มก่อนปี 2028), และบัญชียังไม่พิสูจน์ (ยังไม่มีการเปิดเผย accrual — สำรอง Q2 2026 ~$3.7B มูลค่าปัจจุบันมีมาก่อนข้อเสนอ) [SRC-01, 2026-07-27; SRC-04, 2026-06-28] ในหน้าต่างยื่น 28 ก.ค.–4 ส.ค. JNJ ปิดการซื้อเงินสด $1B (Firefly Bio), วางตำแหน่งเริ่มต้น $785M พร้อม option ซื้อ $2.58B ใน Sail Biomedicines, ลดคำแนะนำ adjusted-EPS ปี 2026 ลงพอดีกับผลธุรกรรม $0.64 และไม่กู้ใหม่ [SRC-02, 2026-07-29; SRC-03, 2026-08-04] การอ่านพื้นฐานดีขึ้นแบบมีเงื่อนไข: ภาระที่ค้างอยู่กำลังถูกเสนอเส้นทางการแปลง แต่มาตรฐานการพิสูจน์คือการดำเนินการ — การยืนยันการมีส่วนร่วม accrual Q3 2026 และค่าใช้จ่ายกฎหมายตกค้างที่ลดลง — ไม่ใช่การประกาศเอง
 
-## The terms and timing of the proposed ovarian resolution
+## เงื่อนไขและจังหวะของข้อเสนอแก้ไขมะเร็งรังไข่
 
-The resolution, announced 27 July 2026 and filed 28 July (8-K accession 0000200406-26-000155, EX-99.1), covers the remaining **76,000 ovarian talc claims** [SRC-01, 2026-07-27]. Three structural features define it:
+ข้อเสนอ ประกาศ 27 กรกฎาคม 2026 และยื่น 28 กรกฎาคม (8-K accession 0000200406-26-000155, EX-99.1) ครอบคลุมคดีทาล์คมะเร็งรังไข่ที่เหลือ **76,000 คดี** [SRC-01, 2026-07-27] สามลักษณะเชิงโครงสร้างนิยามมัน:
 
-1. **$5.5 billion commitment**, per-claim payments, first payment of **no more than $3B in 2027**, **no additional payments due before 2028** [SRC-01, 2026-07-27]. This is a multi-year cash schedule, not an immediate balance-sheet event.
-2. **Conditioned on express participation by lead plaintiff firms representing "at least 95%" of remaining claims** in federal MDL and related state proceedings [SRC-01, 2026-07-27]. At exactly 95%, up to ~3,800 claims (76,000 × 5%) could remain outside; the mechanics for non-participants are not disclosed — no terms sheet is in the public record.
-3. **Post-quarter and accounting-unproven.** The June 28, 2026 10-Q shows a talc reserve of ~$3.7B present value (executed settlements, defense, other costs; ~40% current) [SRC-04, 2026-06-28]. The proposal came after that period-end and is not reflected in it. Whether/when a $5.5B commitment becomes an accrual is **not established** by the supplied filings — that is a Q3 2026 10-Q question.
+1. **ภาระผูกพัน $5.5 พันล้าน** การจ่ายต่อคดี งวดแรก**ไม่เกิน $3B ในปี 2027** **ไม่มีการจ่ายเพิ่มก่อนปี 2028** [SRC-01, 2026-07-27] นี่คือตารางเงินสดหลายปี ไม่ใช่เหตุการณ์งบดุลทันที
+2. **มีเงื่อนไขการมีส่วนร่วมอย่างชัดเจนของสำนักงานทนายโจทก์นำที่แทน "อย่างน้อย 95%" ของคดีที่เหลือ** ใน MDL กลางและคดีรัฐที่เกี่ยวข้อง [SRC-01, 2026-07-27] ที่ 95% พอดี มากถึง ~3,800 คดี (76,000 × 5%) อยู่นอกได้; กลไกสำหรับผู้ไม่เข้าร่วมไม่ถูกเปิดเผย — ไม่มี terms sheet ในบันทึกสาธารณะ
+3. **หลังสิ้นไตรมาสและบัญชียังไม่พิสูจน์** 10-Q 28 มิถุนายน 2026 แสดงสำรองทาล์ค ~$3.7B มูลค่าปัจจุบัน (การตกลงที่ดำเนินการ การป้องกัน ต้นทุนอื่น; ~40% หมุนเวียน) [SRC-04, 2026-06-28] ข้อเสนอมาหลังสิ้นงวดนั้นและไม่สะท้อนในมัน ไม่ว่าภาระผูกพัน $5.5B จะกลายเป็น accrual เมื่อใด/หรือไม่ **ไม่ถูกพิสูจน์** โดยเอกสารยื่นที่ให้มา — นั่นคือคำถามของ 10-Q Q3 2026
 
-The gap between the headline commitment and the standing reserve (~$1.8B: `$5.5B − $3.7B`) is a **comparison across different bases** — commitment vs present-valued reserve that also includes non-settlement costs — not a like-for-like shortfall [SRC-01, 2026-07-27; SRC-04, 2026-06-28; derived].
+ช่องว่างระหว่างภาระผูกพันพาดหัวกับสำรองที่มีอยู่ (~$1.8B: `$5.5B − $3.7B`) เป็น**การเปรียบเทียบข้ามฐานต่างกัน** — ภาระผูกพัน เทียบกับสำรองมูลค่าปัจจุบันที่รวมต้นทุนที่ไม่ใช่การตกลงด้วย — ไม่ใช่ส่วนขาดแบบเหมือนต่อเหมือน [SRC-01, 2026-07-27; SRC-04, 2026-06-28; คำนวณ]
 
-The backdrop explains the channel choice: three prior comprehensive-resolution attempts failed. LTL bankruptcy (October 2021) and LTL-2 (April 2023) were both dismissed; the May 2024 prepack plan — $6.475B present value over 25 years (nominal ~$8.0B at 4.4% discount), covering 99.75% of then-pending suits — was dismissed by the Texas Bankruptcy Court in March 2025, triggering a ~$7.0B reserve reversal [SRC-05, 2025-12-28]. After those failures, JNJ pursued a tort-system settlement. The MDL court's July 22, 2026 show-cause order (after plaintiffs withdrew two specific-causation experts in bellwether cases) appears procedurally favorable and may have increased JNJ's settlement leverage — but the disclosed evidence does not rank it against prior legal positions, establish dismissal probability, or prove the tort system was the only legally available channel; "strongest legal position" is the issuer's characterization, not an independently adjudicated finding [SRC-01, 2026-07-27; SRC-04, 2026-06-28]. The proposal offers a conditional path to convert apparent procedural leverage into a controlled cash schedule; it has not yet completed that conversion.
+ฉากหลังอธิบายการเลือกช่องทาง: ความพยายามแก้ไขรวมสามครั้งก่อนหน้าล้มเหลว ล้มละลาย LTL (ตุลาคม 2021) และ LTL-2 (เมษายน 2023) ถูกยกฟ้องทั้งคู่; แผน prepack พฤษภาคม 2024 — $6.475B มูลค่าปัจจุบันตลอด 25 ปี (nominal ~$8.0B ที่ส่วนลด 4.4%) ครอบคลุม 99.75% ของคดีที่ค้างตอนนั้น — ถูกยกฟ้องโดยศาลล้มละลายเท็กซัสในมีนาคม 2025 กระตุ้นการกลับสำรอง ~$7.0B [SRC-05, 2025-12-28] หลังความล้มเหลวเหล่านั้น JNJ เดินช่องทางตกลงในระบบ tort คำสั่ง show-cause 22 กรกฎาคม 2026 ของศาล MDL (หลังโจทก์ถอนผู้เชี่ยวชาญ specific-causation สองคนในคดี bellwether) ดูเป็นผลดีเชิงกระบวนการและอาจเพิ่มเลเวอเรจการตกลงของ JNJ — แต่หลักฐานที่เปิดเผยไม่ได้จัดอันดับมันเทียบตำแหน่งกฎหมายก่อนหน้า ไม่ได้ยืนยันความน่าจะเป็นของการยกฟ้อง หรือพิสูจน์ว่าระบบ tort เป็นช่องทางเดียวที่กฎหมายเปิด "ตำแหน่งกฎหมายแข็งที่สุด" คือการระบุลักษณะของผู้ออกเอกสาร ไม่ใช่ข้อค้นพบที่ศาลตัดสินอิสระ [SRC-01, 2026-07-27; SRC-04, 2026-06-28] ข้อเสนอให้เส้นทางมีเงื่อนไขในการแปลงเลเวอเรจเชิงกระบวนการที่ปรากฏเป็นตารางเงินสดที่ควบคุม; มันยังไม่เสร็จสิ้นการแปลงนั้น
 
-## What contingent liability demonstrably remains
+## หนี้สินที่อาจเกิดขึ้นใดที่ยังเหลืออย่างชัดเจน
 
-"Finality" is ovarian-specific, not company-wide. The disclosed residual channels:
+"จุดจบ" เฉพาะมะเร็งรังไข่ ไม่ใช่ทั้งบริษัท ช่องทางตกค้างที่เปิดเผย:
 
-- **Mesothelioma:** ~95% of filed suits settled as of 27 July 2026 — a ~5% tail remains, and the PR's own language ("about 95% of filed") leaves the door open to new filings [SRC-01, 2026-07-27].
-- **Canada:** talc litigation continues; JNJ retained talc liabilities and indemnifies Kenvue for U.S. and Canadian costs [SRC-01, 2026-07-27; SRC-04, 2026-06-28].
-- **Securities class action (2018):** class certification affirmed July 2025; Supreme Court denied certiorari April 2026; expert discovery proceeding [SRC-04, 2026-06-28].
-- **Imerys/Cyprus settlement order:** insurers' appeal denied at district court August 2025; Third Circuit appeal fully briefed, ruling pending [SRC-04, 2026-06-28].
-- **Opioids:** up to $5.0B settlement agreed July 2021, ~80% paid by end-FY2025; ~23 state + 285 Ohio MDL + 3 other federal cases remain, with ~$1.1B remaining to settle [SRC-05, 2025-12-28].
+- **Mesothelioma:** ~95% ของคดีที่ยื่นตกลงแล้ว ณ 27 กรกฎาคม 2026 — หาง ~5% ยังเหลือ และภาษาของ PR เอง ("about 95% of filed") เปิดประตูให้การยื่นใหม่ [SRC-01, 2026-07-27]
+- **แคนาดา:** การฟ้องทาล์คดำเนินต่อ; JNJ เก็บหนี้สินทาล์คและชดใช้ค่าใช้จ่ายสหรัฐและแคนาดาให้ Kenvue [SRC-01, 2026-07-27; SRC-04, 2026-06-28]
+- **คดีกลุ่มหลักทรัพย์ (2018):** การรับรองกลุ่ม (class certification) ยืนยันกรกฎาคม 2025; ศาลฎีกาปฏิเสธ certiorari เมษายน 2026; การสอบสวนผู้เชี่ยวชาญดำเนินอยู่ [SRC-04, 2026-06-28]
+- **คำสั่งตกลง Imerys/Cyprus:** การอุทธรณ์ของผู้ประกันถูกปฏิเสธที่ศาลแขวงสิงหาคม 2025; การอุทธรณ์ Third Circuit ครบถ้วน รอคำตัดสิน [SRC-04, 2026-06-28]
+- **Opioids:** ตกลงสูงถึง $5.0B กรกฎาคม 2021, จ่าย ~80% ภายในสิ้น FY2025; ~23 รัฐ + 285 คดี Ohio MDL + 3 คดีกลางอื่นเหลือ โดย ~$1.1B คงเหลือต้องตกลง [SRC-05, 2025-12-28]
 
-Each channel can preserve legal expense and episodic charges after ovarian headlines fade.
+แต่ละช่องทางรักษาค่าใช้จ่ายกฎหมายและค่าใช้จ่ายรายงวดได้หลังพาดหัวมะเร็งรังไข่จาง
 
-## The capital-deployment read: aggressive deployment with retained option control but unresolved funding overlap
+## การอ่านการวางกำลังทุน: วางกำลังเชิงรุกที่คงการควบคุม option แต่ความทับซ้อนด้านเงินทุนยังไม่ตัดสิน
 
-The actions are concurrent, but the disclosures do not establish a coordinated sequence: pipeline commitments and shareholder distributions may overlap with legal cash obligations from 2027 onward, and no liquidity waterfall, debt-maturity schedule, minimum-cash assumption, or downside case is published.
+การกระทำเกิดพร้อมกัน แต่การเปิดเผยไม่ได้ยืนยันลำดับที่ประสานกัน: ภาระผูกพัน pipeline และการกระจายผู้ถือหุ้นอาจทับซ้อนกับภาระเงินสดกฎหมายตั้งแต่ปี 2027 ต่อ และไม่มี liquidity waterfall ตารางครบกำหนดหนี้ สมมติฐานเงินสดขั้นต่ำ หรือกรณี downside เผยแพร่
 
-- **Firefly Bio (closed 29 July):** $1B cash; accounted for as an asset acquisition → ~$1B in-process R&D charge in Q3 2026; −$0.46 adjusted-EPS dilution 2026, −$0.08 2027 [SRC-02, 2026-07-29].
-- **Sail Biomedicines (same day):** collaboration + **$785M total initial payments including a $465M equity investment**, up to **$140M contingent development payments**, and an **exclusive option to acquire Sail for $2.58B**; −$0.18 adjusted-EPS 2026; −$1.28 in 2027 **if** milestones are met and the option is exercised [SRC-02, 2026-07-29, EX-99.2].
-- **Guidance:** 2026 adjusted-EPS midpoint cut from **$11.68** (15 July) to **$11.04** (29 July) — both bridges shown: `$11.68 − $11.04 = $0.64 = $0.46 + $0.18` (Firefly + Sail transaction impact) [SRC-06, 2026-07-15; SRC-02, 2026-07-29; derived] — while reported-sales guidance stayed at **$101.1B / +7.3%** [SRC-06, 2026-07-15]. The revision isolates to capital deployment; the operating-sales outlook was untouched.
-- **No new financing:** the 4 August 8-K's note list was the Section 12(b) registered-securities table (standing classes), not a new offering — the filing's substantive event was the officer transition (Taubert retirement → Cavanaugh as EVP, Worldwide Chairman Innovative Medicine, effective 1 September) [SRC-03, 2026-08-04].
+- **Firefly Bio (ปิด 29 กรกฎาคม):** $1B เงินสด; บันทึกเป็นการซื้อสินทรัพย์ → ค่าใช้จ่าย in-process R&D ~$1B ใน Q3 2026; dilution adjusted-EPS 2026 −$0.46, 2027 −$0.08 [SRC-02, 2026-07-29]
+- **Sail Biomedicines (วันเดียวกัน):** ความร่วมมือ + **การจ่ายเริ่มต้นรวม $785M รวมการลงทุน equity $465M**, การจ่ายพัฒนาแบบมีเงื่อนไขสูงถึง **$140M**, และ **option เฉพาะสิทธิ์ซื้อ Sail ที่ $2.58B**; adjusted-EPS 2026 −$0.18; −$1.28 ในปี 2027 **ถ้า** ผ่าน milestone และใช้ option [SRC-02, 2026-07-29, EX-99.2]
+- **คำแนะนำ:** จุดกึ่งกลาง adjusted-EPS 2026 ลดจาก **$11.68** (15 กรกฎาคม) เป็น **$11.04** (29 กรกฎาคม) — ทั้งสองสะพานแสดง: `$11.68 − $11.04 = $0.64 = $0.46 + $0.18` (ผลธุรกรรม Firefly + Sail) [SRC-06, 2026-07-15; SRC-02, 2026-07-29; คำนวณ] — ขณะที่คำแนะนำยอดขายที่รายงานคงที่ **$101.1B / +7.3%** [SRC-06, 2026-07-15] การปรับแยกถึงการวางกำลังทุน; แนวโน้มยอดขายดำเนินงานไม่ถูกแตะ
+- **ไม่มีการเงินใหม่:** รายการหมายเหตุใน 8-K 4 สิงหาคมคือตารางหลักทรัพย์จดทะเบียน Section 12(b) (ชั้นคงอยู่) ไม่ใช่การเสนอขายใหม่ — เหตุการณ์สาระของเอกสารยื่นคือการเปลี่ยนผู้บริหาร (Taubert เกษียณ → Cavanaugh เป็น EVP, Worldwide Chairman Innovative Medicine, มีผล 1 กันยายน) [SRC-03, 2026-08-04]
 
-Capacity context (June 28, 2026): cash + marketable securities **$20,758M** vs total debt **$49,036M** (loans/notes $11,692M + long-term $37,344M) [SRC-04, 2026-06-28]. H1 2026 estimated free cash flow ~$8.7B [SRC-06, 2026-07-15]. Buybacks H1 2026 **$4,253M including excise tax** (treasury/equity basis; cash-flow basis $4,249M). Mechanical monthly run-rate comparison (arithmetic, not company guidance): `(($4,253M/6) / ($5,953M/12)) − 1 = 42.89% ≈ ~43% faster` than the FY2025 pace [SRC-04, 2026-06-28; SRC-05, 2025-12-28; derived]. Dividend: increased for the 63rd consecutive year in FY2025 ($5.14/share) [SRC-05, 2025-12-28]. The disclosed snapshot does not establish combined affordability; it only shows the dated cash, debt, FCF, and deployment amounts — the interaction between litigation cash, pipeline commitments, buybacks, and dividends is untested.
+บริบทความสามารถ (28 มิถุนายน 2026): เงินสด + หลักทรัพย์ในตลาด **$20,758M** เทียบหนี้รวม **$49,036M** (เงินกู้/หมายเหตุ $11,692M + ระยะยาว $37,344M) [SRC-04, 2026-06-28] กระแสเงินสดอิสระ H1 2026 ประมาณ ~$8.7B [SRC-06, 2026-07-15] ซื้อคืน H1 2026 **$4,253M รวมภาษีสรรพสามิต** (เกณฑ์ treasury/equity; เกณฑ์กระแสเงินสด $4,249M) การเปรียบเทียบอัตรารายเดือนเชิงกลไก (เลขคณิต ไม่ใช่คำแนะนำบริษัท): `(($4,253M/6) / ($5,953M/12)) − 1 = 42.89% ≈ ~43% เร็วขึ้น` เทียบจังหวะ FY2025 [SRC-04, 2026-06-28; SRC-05, 2025-12-28; คำนวณ] เงินปันผล: เพิ่มปีที่ 63 ติดต่อกันใน FY2025 ($5.14/หุ้น) [SRC-05, 2025-12-28] สแนปช็อตที่เปิดเผยไม่ได้ยืนยันความสามารถจ่ายรวม; มันแค่แสดงเงินสด หนี้ FCF และยอดวางกำลังตามวันที่ — ปฏิสัมพันธ์ระหว่างเงินสดคดี ภาระผูกพัน pipeline ซื้อคืน และปันผลยังไม่ถูกทดสอบ
 
-## Change-conditions (monitoring) — one operational test, rest monitoring indicators
+## เงื่อนไขการเปลี่ยนแปลง (การติดตาม) — การทดสอบดำเนินงานหนึ่งรายการ ที่เหลือเป็นตัวชี้ติดตาม
 
-The disclosed record supplies **one source-defined failure condition**: the at-least-95% participation condition is not met (observable via JNJ disclosure of claimant elections or closing) [SRC-01, 2026-07-27]. Everything else is a **monitoring indicator, not a pass/fail test** — no source-supported ex ante threshold, baseline, period, or formula exists from current disclosures:
+บันทึกที่เปิดเผยให้**เงื่อนไขล้มเหลวหนึ่งรายการที่นิยามโดยแหล่ง**: เงื่อนไขการมีส่วนร่วมอย่างน้อย 95% ไม่เป็นไปตาม (สังเกตได้ผ่านการเปิดเผยการเลือกผู้เรียกร้องหรือการปิดดีลของ JNJ) [SRC-01, 2026-07-27] ที่เหลือทั้งหมดเป็น**ตัวชี้ติดตาม ไม่ใช่การทดสอบผ่าน/ไม่ผ่าน** — ไม่มีเกณฑ์ก่อนกำหนด ฐาน เส้น ระยะ หรือสูตรที่แหล่งสนับสนุนจากข้อมูลเปิดเผยปัจจุบัน:
 
-1. **Participation confirmation** — *operational test:* at-least-95% threshold met (8-K/10-Q disclosure of elections or closing). This is the only source-defined threshold.
-2. **Q3 2026 accrual** — *monitoring indicator:* the 10-Q records a talc accrual or reserve reclassification. The recognized amount need not equal the $5.5B nominal commitment (timing, scope, accounting basis differ); "bounded" is a judgment call until the schedule is disclosed.
-3. **Residual docket behavior** — *monitoring indicator:* reserve roll-forwards and 10-Q legal-proceedings updates; channel-level legal expense is not separately filed, so expense direction is proxied by docket events + reserve movements, not a clean test.
-4. **Holdout economics** — *monitoring indicator:* JNJ does not file non-participant counts or holdout terms; use participation disclosure + reserve movements as proxies.
-5. **Capital productivity** — *monitoring indicator:* pipeline clinical milestones (named programs advancing) and disclosed capital-return continuity; "de-risk on timelines that justify the deployed capital" is a judgment call on disclosed development data, not a filed metric.
+1. **การยืนยันการมีส่วนร่วม** — *การทดสอบดำเนินงาน:* เกณฑ์อย่างน้อย 95% ผ่าน (การเปิดเผยการเลือกหรือการปิดใน 8-K/10-Q) นี่คือเกณฑ์เดียวที่แหล่งนิยาม
+2. **Accrual Q3 2026** — *ตัวชี้ติดตาม:* 10-Q บันทึก accrual ทาล์คหรือการจัดประเภทสำรองใหม่ ยอดรับรู้อาจไม่เท่ากับภาระผูกพัน nominal $5.5B (จังหวะ ขอบเขต เกณฑ์บัญชีต่างกัน); "ถูกจำกัดขอบเขต" คือการตัดสินจนกว่าตารางเวลาจะถูกเปิดเผย
+3. **พฤติกรรมหมายเรียกตกค้าง** — *ตัวชี้ติดตาม:* roll-forward สำรองและการอัปเดตการดำเนินคดี 10-Q; ค่าใช้จ่ายกฎหมายระดับช่องทางไม่ได้ยื่นแยก ดังนั้นทิศทางค่าใช้จ่ายใช้เหตุการณ์ docket + การเคลื่อนไหวสำรองเป็น proxy ไม่ใช่การทดสอบสะอาด
+4. **เศรษฐศาสตร์ผู้ไม่เข้าร่วม (holdout)** — *ตัวชี้ติดตาม:* JNJ ไม่ยื่นจำนวนผู้ไม่เข้าร่วมหรือเงื่อนไข holdout; ใช้การเปิดเผยการมีส่วนร่วม + การเคลื่อนไหวสำรองเป็น proxy
+5. **ผลิตภาพทุน** — *ตัวชี้ติดตาม:* milestone คลินิก pipeline (โปรแกรมที่ชื่อดำเนินหน้า) และความต่อเนื่องการคืนทุนที่เปิดเผย; "de-risk ตามไทม์ไลน์ที่ทำให้ทุนที่วางกำลังสมเหตุสมผล" คือการตัดสินจากข้อมูลพัฒนาที่เปิดเผย ไม่ใช่เมตริกที่ยื่น
 
-Where the field is not filed, the condition is a monitoring question with a proxy, not a falsifiable test on this evidence set. No numeric materiality threshold is invented to repair the gap (audit finding 3).
+จุดที่ข้อมูลไม่ได้ยื่น เงื่อนไขคือคำถามติดตามพร้อม proxy ไม่ใช่การทดสอบที่หักล้างได้ในชุดหลักฐานนี้ ไม่มีการประดิษฐ์เกณฑ์ความมีสาระเชิงตัวเลขเพื่อซ่อมช่องว่าง (ข้อค้นพบตรวจสอบ 3)
 
-## The dissenting view (CRO opposing essay, prepared as a review-stage companion)
+## ความเห็นค้าน (บทความค้าน CRO, จัดทำเป็นคู่ระยะทบทวน)
 
-> Companion report: [JNJ's Talc Cleanup Can Fail by Sequence, Not Shock](/library/jnj-talc-resolution-opposing-2026-08-07) — the CRO's full independent opposing thesis ("The Cleanup Can Fail by Sequence, Not Shock").
+> รายงานคู่: [JNJ's Talc Cleanup Can Fail by Sequence, Not Shock](/library/jnj-talc-resolution-opposing-2026-08-07) — ธีมค้านอิสระเต็มของ CRO ("การเคลียร์ของ JNJ ล้มเหลวได้ด้วยลำดับ ไม่ใช่ช็อก")
 
-The CRO's strongest coherent counter-case holds that the announcement is not yet a cleanup because participation, recognition, residual dockets, and capital deployment must execute through the same control point. Ordinary sequential slippage — incomplete claimant files, uneven state-court implementation, a revised accrual, recurring residual expense — can preserve strong sales, managed adjusted EPS, buyback-supported per-share results, and favorable pipeline news while legal cash and expense remain recurrent. The main essay's response: the favorable MDL development and the exact $0.64 transaction bridge are real and support the conditional-improvement read, but they establish negotiating strength and clean transaction attribution, not settlement execution. The disagreement is real and preserved: a conditioned schedule as evidence of uncertainty compression vs verified participation, stable recognition, and declining residual expense as the event that constitutes it.
+กรณีค้านที่สอดคล้องแข็งที่สุดของ CRO ถือว่าการประกาศยังไม่ใช่การเคลียร์ เพราะการมีส่วนร่วม การรับรู้ หมายเรียกตกค้าง และการวางกำลังทุนต้องทำงานผ่านจุดควบคุมเดียวกัน การลื่นไถลตามลำดับธรรมดา — แฟ้มผู้เรียกร้องไม่ครบ การดำเนินการศาลรัฐไม่สม่ำเสมอ accrual ที่ปรับปรุง ค่าใช้จ่ายตกค้างเกิดซ้ำ — รักษายอดขายแข็ง adjusted EPS ที่จัดการ ผลต่อหุ้นที่หนุนด้วยซื้อคืน และข่าว pipeline ดีได้ ขณะที่เงินสดและค่าใช้จ่ายกฎหมายยังเกิดซ้ำ คำตอบของบทความหลัก: การพัฒนา MDL ที่ดีและสะพานธุรกรรม $0.64 ที่ตรงเป็นจริงและสนับสนุนการอ่านการปรับปรุงแบบมีเงื่อนไข แต่พวกมันยืนยันความแข็งแกร่งในการต่อรองและการระบุที่มาธุรกรรมสะอาด ไม่ใช่การดำเนินการตกลง ความเห็นต่างเป็นจริงและถูกเก็บรักษา: ตารางเวลาที่มีเงื่อนไขในฐานะหลักฐานการบีบความไม่แน่นอน เทียบกับการมีส่วนร่วมที่ตรวจสอบแล้ว การรับรู้ที่มั่นคง และค่าใช้จ่ายตกค้างที่ลดลงในฐานะเหตุการณ์ที่ประกอบมัน
 
-## Uncertainty and honest limits
+## ความไม่แน่นอนและขีดจำกัดที่ซื่อตรง
 
-- The $5.5B commitment's accounting treatment is **unverified** until Q3 2026 disclosure — "not yet accrued" cannot be established from the supplied filings (the Q2 10-Q predates the proposal).
-- No terms sheet for the ovarian resolution is in the public record — non-participant handling, firm exclusivity, and state-court mechanics are unknown.
-- "Prevailed in the overwhelming majority of ovarian cases tried" is issuer claim, not an independently adjudicated statistic.
-- The ~$1.2B residual between the simple post-reversal reserve balance and the reported Q4 2025 reserve — arithmetic only: `$11.6B − $7.0B = $4.6B`; `$4.6B − $3.4B = $1.2B` [SRC-05, 2025-12-28; derived] — is **unexplained**; no roll-forward is disclosed, and the $1.2B attribution is unverified.
-- The Sail −$1.28 2027 impact and $2.58B option are conditional on milestones + exercise — optionality now, capital commitment later.
-- Point-in-time (FD #58): all figures valid at the pull timestamps (7 Aug 2026); filings cited are the latest available as of that date.
-- Advisory research, portfolio-blind, not a buy/sell/allocate call. No price target or valuation formula (FD #53).
+- การปฏิบัติทางบัญชีของภาระผูกพัน $5.5B **ยังไม่ถูกตรวจสอบ** จนกว่าการเปิดเผย Q3 2026 — "ยังไม่ accrual" ไม่สามารถยืนยันได้จากเอกสารยื่นที่ให้มา (10-Q Q2 มาก่อนข้อเสนอ)
+- ไม่มี terms sheet ของข้อเสนอแก้ไขมะเร็งรังไข่ในบันทึกสาธารณะ — การจัดการผู้ไม่เข้าร่วม ความเฉพาะของสำนักงาน และกลไกศาลรัฐไม่ทราบ
+- "Prevailed in the overwhelming majority of ovarian cases tried" คือข้ออ้างของผู้ออกเอกสาร ไม่ใช่สถิติที่ศาลตัดสินอิสระ
+- ส่วนตกค้าง ~$1.2B ระหว่างยอดสำรองหลังการกลับง่ายกับสำรอง Q4 2025 ที่รายงาน — เลขคณิตเท่านั้น: `$11.6B − $7.0B = $4.6B`; `$4.6B − $3.4B = $1.2B` [SRC-05, 2025-12-28; คำนวณ] — **อธิบายไม่ได้**; ไม่มี roll-forward เปิดเผย และการระบุที่มา $1.2B ไม่ถูกตรวจสอบ
+- ผล Sail −$1.28 ปี 2027 และ option $2.58B มีเงื่อนไขกับ milestone + การใช้สิทธิ — optionality ตอนนี้ ภาระผูกพันทุนทีหลัง
+- Point-in-time (FD #58): ตัวเลขทั้งหมดใช้ได้ ณ เวลาดึง (7 ส.ค. 2026); เอกสารยื่นที่อ้างคือล่าสุดที่มี ณ วันที่นั้น
+- งานวิจัยที่ปรึกษา portfolio-blind ไม่ใช่คำสั่งซื้อ/ขาย/จัดสรร ไม่มีเป้าหมายราคาหรือสูตรประเมินมูลค่า (FD #53)
 
-## Sources
+## ที่มา
 
-SRC-01 (8-K 7/28/26, EX-99.1 talc PR) · SRC-02 (8-K 7/29/26, EX-99.1 Firefly + EX-99.2 Sail + cover guidance table) · SRC-03 (8-K 8/4/26, Item 5.02 + EX-99.1) · SRC-04 (10-Q Q2 FY26, period 6/28/26) · SRC-05 (10-K FY2025, period 12/28/25) · SRC-06 (Q2 FY26 earnings 8-K, 7/15/26, EX-99.1). Full citations in `research/companies/JNJ/talc-litigation-resolution/evidence-log.md`. Independent verification: Data Steward (first-pass-data-steward.md, PASS WITH CORRECTIONS), cross-examination (cross-examination.md, 2 SUSTAINED/3 PARTIAL/1 REJECTED — corrections applied), Internal Audit (audit-note.md).
+SRC-01 (8-K 28/7/26, EX-99.1 PR ทาล์ค) · SRC-02 (8-K 29/7/26, EX-99.1 Firefly + EX-99.2 Sail + ตารางคำแนะนำหน้าปก) · SRC-03 (8-K 4/8/26, Item 5.02 + EX-99.1) · SRC-04 (10-Q Q2 FY26, งวด 28/6/26) · SRC-05 (10-K FY2025, งวด 28/12/25) · SRC-06 (earnings 8-K Q2 FY26, 15/7/26, EX-99.1) การอ้างเต็มใน `research/companies/JNJ/talc-litigation-resolution/evidence-log.md` การตรวจสอบอิสระ: Data Steward (first-pass-data-steward.md, PASS WITH CORRECTIONS), cross-examination (cross-examination.md, 2 SUSTAINED/3 PARTIAL/1 REJECTED — ใช้การแก้ไข), Internal Audit (audit-note.md)
+<!-- 2026-08-11 00:45 UTC+7 -->

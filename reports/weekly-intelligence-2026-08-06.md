@@ -1,58 +1,57 @@
 ---
-title: "Weekly Intelligence Letter — Week 1: The Org Stands Up"
+title: "จดหมายข่าวกรองรายสัปดาห์ — สัปดาห์ 1: องค์กรตั้งขึ้น"
 type: weekly
 subject: IIP research organization — weekly intelligence
 date: 2026-08-06
 author: IC Secretary (org-ic-secretary)
 status: published
 updated: 2026-08-06 (published after Founder gate, Option A)
-summary: "Founding week: reports are the product, the radar layer is live with three live questions, and the portfolio office now consumes published work one-way."
+summary: "สัปดาห์ก่อตั้ง: รายงานคือผลิตภัณฑ์ ชั้นเรดาร์ทำงานแล้วพร้อมคำถามมีชีวิตสามข้อ และสำนักงานพอร์ตเริ่มบริโภคงานที่เผยแพร่แบบทางเดียว"
 ---
 
-# Weekly Intelligence Letter — Week 1 (ending 2026-08-06)
+# จดหมายข่าวกรองรายสัปดาห์ — สัปดาห์ 1 (สิ้นสุด 2026-08-06)
 
-**Thesis.** The organization is no longer a pipeline; it is a research office that publishes. This founding week stood up the full loop — evidence → isolated first-pass → essay → challenge → audit → Founder gate → published report → portfolio-office consumption — and added the missing input side: a radar layer that turns massive public data into task idea cards. Three live questions now sit in the research queue, each connected to work already read.
+**ประเด็นหลัก (Thesis).** องค์กรไม่ใช่ pipeline อีกต่อไป; มันคือสำนักงานวิจัยที่เผยแพร่ สัปดาห์ก่อตั้งนี้ตั้งวงเต็ม — หลักฐาน → first-pass แยกอิสระ → บทความ → ท้าทาย → ตรวจสอบ → ประตู Founder → รายงานเผยแพร่ → การบริโภคของสำนักงานพอร์ต — และเพิ่มฝั่งอินพุตที่ขาด: ชั้นเรดาร์ที่เปลี่ยนข้อมูลสาธารณะมหาศาลเป็นการ์ดงานสามใบ คำถามมีชีวิตสามข้อนั่งในคิววิจัยตอนนี้ แต่ละข้อเชื่อมกับงานที่อ่านแล้ว
 
-## What changed this week
+## อะไรเปลี่ยนสัปดาห์นี้
 
-1. **Reports became the product.** The Silver product note and the Apple moat deep-dive (main essay + CRO opposing essay) published after the Founder gate; the library renders them typeset (FD #61/#62).
-2. **The radar layer went live (FD #71).** Role 11 (`org-radar-scout`) installed; the first scanning pass returned 3 task idea cards; all 3 were triaged into the research queue.
-3. **The portfolio office connected one-way (IPM-FD-003).** IPM now consumes all published IIP reports as standing research input — the PM cites them and states agreement/dissent in every letter. Portfolio data still never flows toward the research org.
-4. **Workflow sharpened (FD #71).** Cross-examination now targets material claims only — claims whose falsity would change the thesis — and the Data Steward's first pass is explicitly a data-capability statement, not a competing thesis.
+1. **รายงานกลายเป็นผลิตภัณฑ์** บันทึกสินค้าเงินและบทวิเคราะห์เจาะลึก moat Apple (บทความหลัก + บทความค้าน CRO) เผยแพร่หลังประตู Founder; library เรนเดอร์แบบ typeset (FD #61/#62)
+2. **ชั้นเรดาร์ทำงาน (FD #71)** ติดตั้งบทบาท 11 (`org-radar-scout`); การสแกนครั้งแรกคืนการ์ดงานสามใบ; ทั้งสามถูก triage เข้าคิววิจัย
+3. **สำนักงานพอร์ตเชื่อมแบบทางเดียว (IPM-FD-003)** IPM เริ่มบริโภครายงาน IIP ที่เผยแพร่ทั้งหมดเป็นอินพุตวิจัยประจำ — PM อ้างมันและระบุเห็นด้วย/ค้านในทุกจดหมาย ข้อมูลพอร์ตไม่เคยไหลเข้าหาองค์กรวิจัย
+4. **Workflow คมขึ้น (FD #71)** Cross-examination เป้าหมายเฉพาะข้ออ้างที่มีสาระ — ข้ออ้างที่ความเท็จเปลี่ยนประเด็นหลัก — และ first pass ของ Data Steward เป็นคำประกาศความสามารถข้อมูลอย่างชัดเจน ไม่ใช่ธีมคู่แข่ง
 
-## The intelligence: three live questions
+## ข่าวกรอง: คำถามมีชีวิตสามข้อ
 
-**1. Silver deficit — changing character?** (ORG-2026-0006 · COMMODITY · M2)
+**1. การขาดดุลเงิน — ลักษณะเปลี่ยน?** (ORG-2026-0006 · COMMODITY · M2)
 
-World Silver Survey 2026: a fifth consecutive deficit (40.3Moz in 2025) despite total demand −2% and industrial demand −3%; 2026 forecast: industrial demand −3% again, mine output 844.1Moz (−0.3%), a sixth deficit of 46.3Moz; primary-mine AISC fell 1% to $12.21/oz; the October 2025 liquidity squeeze eased as metal returned to London. The question: has the deficit become an inventory-and-liquidity problem rather than a demand-growth problem? This directly challenges the published Silver note's "demand grows faster than supply" framing. What would change the view: continued inventory drawdowns and elevated lease rates (confirm); inventory rebuilding and normalized lease rates (refute). (Silver Institute / Metals Focus, April 2026)
+World Silver Survey 2026: การขาดดุลปีที่ห้าติดต่อกัน (40.3Moz ในปี 2025) ทั้งที่อุปสงค์รวม −2% และอุปสงค์อุตสาหกรรม −3%; คาดการณ์ปี 2026: อุปสงค์อุตสาหกรรม −3% อีกครั้ง ผลผลิตเหมือง 844.1Moz (−0.3%) การขาดดุลปีที่หก 46.3Moz; AISC เหมืองหลักลด 1% เป็น $12.21/oz; สควีซสภาพคล่องตุลาคม 2025 คลี่คลายเมื่อโลหะกลับสู่ลอนดอน คำถาม: การขาดดุลกลายเป็นปัญหาสต็อก/สภาพคล่อง มากกว่าปัญหาอุปสงค์โตหรือไม่? สิ่งนี้ท้าทายกรอบ "อุปสงค์โตเร็วกว่าอุปทาน" ของบันทึกเงินที่เผยแพร่โดยตรง อะไรจะเปลี่ยนมุมมอง: การลดสต็อกต่อเนื่องและอัตราเช่าสูง (ยืนยัน); การสร้างสต็อกใหม่และอัตราเช่าปกติ (หักล้าง) (Silver Institute / Metals Focus, เมษายน 2026)
 
-**2. Apple buybacks — deceleration or timing?** (ORG-2026-0007 · EQUITY · M2)
+**2. การซื้อคืน Apple — ชะลอหรือจังหวะ?** (ORG-2026-0007 · EQUITY · M2)
 
-Q3 FY26 (ended 2026-06-27): revenue $109.4B (+16%), EPS $2.02 (+29%), Services +12.1% to $30.7B with derived Services gross margin essentially flat (75.62% vs 75.58%) — yet nine-month cash paid for repurchases fell 12% YoY to $62.1B. Buyback spending declined in a record quarter, which is the first observable test of the "buyback mask" claim from the CRO opposing essay. What would change the view: full-year buyback cash flow, authorization usage, diluted share-count progression, management commentary. (Apple newsroom + FY26 Q3 consolidated financial statements, 2026-07-30)
+Q3 FY26 (สิ้นสุด 2026-06-27): รายได้ $109.4B (+16%), EPS $2.02 (+29%), Services +12.1% เป็น $30.7B โดย margin ขั้นต้น Services ที่คำนวณแบนโดยพื้นฐาน (75.62% เทียบ 75.58%) — แต่เงินสดจ่ายซื้อคืน 9 เดือนลด 12% YoY เป็น $62.1B การใช้จ่ายซื้อคืนลดลงในไตรมาสสถิติ ซึ่งคือการทดสอบครั้งแรกที่สังเกตได้ของข้ออ้าง "buyback mask" จากบทความค้าน CRO อะไรจะเปลี่ยนมุมมอง: กระแสเงินสดซื้อคืนทั้งปี การใช้วงเงิน การคืบหน้าของจำนวนหุ้น diluted ความเห็นฝ่ายบริหาร (Apple newsroom + งบการเงินรวม Q3 FY26, 2026-07-30)
 
-**3. Gold vs real rates — is the transmission breaking?** (ORG-2026-0008 · CROSS-ASSET · M2)
+**3. ทองเทียบอัตราดอกเบี้ยจริง — การส่งผ่านกำลังแตก?** (ORG-2026-0008 · CROSS-ASSET · M2)
 
-The FOMC held the funds rate at 3.50–3.75% on a 9–3 vote with all three dissents preferring a hike (2026-07-29); two-year, ten-year, and ten-year real yields are up 73bp, 45bp, and 47bp since year-end; gold is still +24.6% YoY ($4,206.60/oz LBMA PM, 2026-08-05) while the Fed broad dollar is only −1.7% YoY; June core CPI 2.57%. Gold is ignoring the traditional real-yield drag. The question: are conflict- and inflation-risk flows overpowering rate transmission? What would change the view: gold's behavior on further real-yield increases; persistent official-sector demand evidence; fading hawkish dissents. (Federal Reserve, FRED, LBMA — 2026-07-29 to 2026-08-05)
+FOMC คงอัตรากองทุน 3.50–3.75% ด้วยคะแนน 9–3 โดย dissent ทั้งสามชอบขึ้น (2026-07-29); ผลตอบแทนสองปี สิบปี และสิบปีจริงเพิ่ม 73bp, 45bp และ 47bp ตั้งแต่สิ้นปี; ทองยัง +24.6% YoY ($4,206.60/oz LBMA PM, 2026-08-05) ขณะที่ดอลลาร์กว้างของเฟดแค่ −1.7% YoY; CPI แกนกลางมิถุนายน 2.57% ทองไม่สนใจแรงถ่วงผลตอบแทนจริงดั้งเดิม คำถาม: กระแสป้องกันสงครามและความเสี่ยงเงินเฟ้อครอบงำการส่งผ่านอัตรา? อะไรจะเปลี่ยนมุมมอง: พฤติกรรมทองต่อการเพิ่มผลตอบแทนจริงเพิ่ม; หลักฐานอุปสงค์ภาคทางการคงอยู่; dissent ฮอว์กจาง (Federal Reserve, FRED, LBMA — 2026-07-29 ถึง 2026-08-05)
 
-## What the org produced this week (published)
+## อะไรที่องค์กรผลิตสัปดาห์นี้ (เผยแพร่)
 
-- *The Metals Trade Hiding in Plain Sight* (Silver product note) — `reports/silver-product-note-2026-08-06.md`
-- *Apple's Moat: How Durable, and What Would Break It* (main essay) + *The Case Against the Moat* (CRO opposing) — `reports/apple-moat-2026-08-06.md` · `reports/apple-moat-opposing-2026-08-06.md`
+- *The Metals Trade Hiding in Plain Sight* (บันทึกสินค้าเงิน) — `reports/silver-product-note-2026-08-06.md`
+- *Apple's Moat: How Durable, and What Would Break It* (บทความหลัก) + *The Case Against the Moat* (ค้าน CRO) — `reports/apple-moat-2026-08-06.md` · `reports/apple-moat-opposing-2026-08-06.md`
 
-## Decisions required from the Founder
+## การตัดสินใจที่ต้องการจาก Founder
 
-- **Blog design review** — A (accept as-is) / B (+selects restyle) / C (+selects + series hint) / D (return). Pending.
-- **Radar pilot continuation** — scanning cadence for week 2 (manual/ad-hoc; no cron without a named FD).
+- **การทบทวนการออกแบบบล็อก** — A (รับตามเดิม) / B (+selects restyle) / C (+selects + series hint) / D (คืน) รออยู่
+- **การดำเนินเรดาร์ต่อ** — จังหวะการสแกนสัปดาห์ 2 (manual/ad-hoc; ไม่มี cron โดยไม่มี FD ที่ระบุชื่อ)
 
-## What to watch next week
+## สิ่งที่ต้องดูสัปดาห์หน้า
 
-- **Silver:** lease rates, COMEX inventories, London metal flows — confirms or refutes the inventory-liquidity framing.
-- **Apple:** FY26 Q3 10-Q detail on authorization usage and share counts — settles timing vs deceleration.
-- **Macro:** next FOMC commentary and gold's behavior on real-yield moves; equity breadth re-pull (Reuters detail was CAPTCHA-blocked this pass).
-- **IPM Week 1 letter:** the first PM letter that must cite IIP published reports (IPM-FD-003).
+- **เงิน:** อัตราเช่า สต็อก COMEX การไหลของโลหะลอนดอน — ยืนยันหรือหักล้างกรอบสต็อก/สภาพคล่อง
+- **Apple:** รายละเอียด Q3 FY26 10-Q เรื่องการใช้วงเงินและจำนวนหุ้น — ตัดสินจังหวะเทียบการชะลอ
+- **มหภาค:** ความเห็น FOMC ครั้งถัดไปและพฤติกรรมทองต่อการเคลื่อนผลตอบแทนจริง; การดึง breadth หุ้นใหม่ (รายละเอียด Reuters ถูก CAPTCHA-block ในรอบนี้)
+- **จดหมาย IPM สัปดาห์ 1:** จดหมาย PM ฉบับแรกที่ต้องอ้างรายงาน IIP ที่เผยแพร่ (IPM-FD-003)
 
-## Sources and limitations
+## ที่มาและข้อจำกัด
 
-All figures above are point-in-time (FD #58): World Silver Survey 2026 (Silver Institute / Metals Focus, Apr 2026); Apple Q3 FY26 release + consolidated financial statements (2026-07-30); FOMC statement (2026-07-29); FRED series DGS2 / DGS10 / DFII10 / CPIAUCSL / CPILFESL / DTWEXBGS; LBMA gold PM fix (2026-08-05). The three radar questions are M2 hypotheses raised by the radar layer — not conclusions; each is triaged and awaiting research execution. One data gap: equity-breadth detail could not be pulled this pass (Reuters CAPTCHA); the macro question rests on the yield/gold/dollar triangle until breadth is re-pulled.
-
-
+ตัวเลขทั้งหมดข้างต้นเป็น point-in-time (FD #58): World Silver Survey 2026 (Silver Institute / Metals Focus, เม.ย. 2026); release Apple Q3 FY26 + งบการเงินรวม (2026-07-30); คำแถลง FOMC (2026-07-29); ซีรีส์ FRED DGS2 / DGS10 / DFII10 / CPIAUCSL / CPILFESL / DTWEXBGS; fixing PM ทอง LBMA (2026-08-05) คำถามเรดาร์สามข้อเป็นสมมติฐาน M2 ที่ชั้นเรดาร์ยก — ไม่ใช่ข้อสรุป; แต่ละข้อถูก triage และรอการดำเนินวิจัย ช่องว่างข้อมูลหนึ่งจุด: รายละเอียด breadth หุ้นดึงไม่ได้ในรอบนี้ (CAPTCHA Reuters); คำถามมหภาคพึ่งสามเหลี่ยมอัตราผลตอบแทน/ทอง/ดอลลาร์จนกว่า breadth จะถูกดึงใหม่
+<!-- 2026-08-11 00:55 UTC+7 -->
