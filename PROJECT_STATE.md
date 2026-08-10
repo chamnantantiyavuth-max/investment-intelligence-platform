@@ -55,7 +55,7 @@
 - No schema or migration without explicit authorization.
 ## Next allowed action
 
-**STATE AS OF 11 Aug 2026 cron review — all execution tracks current.** Reconstitution (FD #63–69) COMPLETE · RADAR-001 pilot + rounds 2–4 (9 cards → Inbox/published) · RM-2026-0002/0003/0004 PUBLISHED · platform pivot (FD #62) + blog format (FD #84/#85) + restructure + UI-4 (FD #86) + **Vercel production LIVE** + Article Readability · Equity Inflection scanner PRODUCTION (FD #88/#89, AAPL candidate) · Thai i18n FD #90 authorized → **REVERTED same day (FD #91)** · **FD #92 (Thai-only rewrite) REGISTERED — plan PENDING (decision item 0)** · push state SYNCED (origin/main == HEAD `6502b79`, verified 11 Aug).
+**STATE AS OF 11 Aug 2026 (FD #92 session closeout) — all execution tracks current.** Reconstitution (FD #63–69) COMPLETE · RADAR-001 pilot + rounds 2–4 (9 cards → Inbox/published) · RM-2026-0002/0003/0004 PUBLISHED · platform pivot (FD #62) + blog format (FD #84/#85) + restructure + UI-4 (FD #86) + **Vercel production LIVE** + Article Readability · Equity Inflection scanner PRODUCTION (FD #88/#89, AAPL candidate) · Thai i18n FD #90 authorized → **REVERTED same day (FD #91)** · **FD #92 (Research Content THAI-ONLY) DELIVERED + PUSHED (24 reports Thai, origin/main == HEAD `3a29e57`, Vercel re-aliased + verified)** · push state SYNCED.
 
 Standing cadence (cron live):
 1. **Weekly Radar Auto-Scan (FD #78)** — Mon 08:00 UTC+7 (`8ba233e88015`). **Round-4 (10 Aug) COMPLETED — late-run 11:33–12:15** (08:00 claim delayed: execution record `b3a3130b` claimed 11:13 with started_at NULL, session spawned 11:33): digest + 2 cards (ORG-2026-0016 LBMA silver vaults / 0017 GOOGL capital raise) committed `88b280b` — in main and pushed with the 10 Aug sessions. Next auto-run: Mon 17 Aug 08:00.
@@ -64,7 +64,7 @@ Standing cadence (cron live):
 4. **Nick-Weekly Pipeline Run (AM EOD)** — weekly cron; last run AM-V0-20260809-002654 (as-of 2026-08-07, fresh ≤7d bound).
 
 Next Founder-facing items in order:
-(0) **DECISION REQUIRED — FD #92 Thai-only research rewrite (registered item 108, 10 Aug 23:00):** plan presented with ONE question — A: rewrite all 24 published reports in Thai (overwrite in place, English UI unchanged — recommended), B: new Thai filenames, C: narrow scope first. Founder A/B/C **PENDING** — do NOT execute until approved. Registration: vault fd-register rows FD-90/91/92 (both registers) + FOUNDERS-DECISIONS item 108 (**UNCOMMITTED** in working tree — next session commits with execution).
+(0) ~~FD #92~~ **RESOLVED + DELIVERED (11 Aug):** Research Content THAI-ONLY — 24 reports rewritten Thai (65473ba→3a29e57), Vercel re-aliased + live-verified. Remaining from that session: Thai mobile 390 live re-confirmation (low risk, optional).
 (a) **WIL #3 (~13 Aug)** — weekly cadence (Founder may pull forward as with WIL #2).
 (b) **IPM Week 2 Portfolio Review (~14 Aug)** — separate project/profile `ipm`; consumes published IIP reports per IPM-FD-003.
 (c) **FD #73 Sol-Medium delegation pilot review (~21 Aug)** — 2-week cost/quality measurement; revert delegation reasoning to high on council/audit regression.
