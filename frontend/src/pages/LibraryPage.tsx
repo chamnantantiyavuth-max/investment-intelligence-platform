@@ -373,7 +373,7 @@ export default function LibraryPage() {
             <Link to="/library" className="whitespace-nowrap hover:text-primary">Weekly</Link>
           </nav>
           <p className="mt-3 font-mono text-[10.5px] text-ink-3">
-            Portfolio-blind · Point-in-time data (FD #58) · No buy/sell instruction. {published.length} published reports.
+            Advisory only · Data as of publication · No buy/sell instruction. {published.length} published reports.
           </p>
         </footer>
       </div>

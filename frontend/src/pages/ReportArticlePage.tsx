@@ -59,7 +59,7 @@ function TitleBlock({ r }: { r: ReportDetail }) {
           <span className="size-1.5 rounded-full bg-positive" aria-hidden="true" /> Real data · sourced &amp; dated
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-info" aria-hidden="true" /> Portfolio-blind
+          <span className="size-1.5 rounded-full bg-info" aria-hidden="true" /> The system never sees your holdings
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-ink-3" aria-hidden="true" /> Advisory only — no buy/sell instruction
@@ -167,7 +167,7 @@ export default function ReportArticlePage() {
       </div>
       {/* ── Magazine footer (standalone shell — FD #84) ── */}
       <footer className="mx-auto w-full max-w-[1120px] border-t border-ink px-6 py-5 text-[10px] uppercase tracking-[0.12em] text-ink-3">
-        Advisory only · Portfolio-blind · Point-in-time data (FD #58)
+        Advisory only · Data as of publication
       </footer>
     </div>
   );
