@@ -20,6 +20,19 @@ from backend import persistence
 SESSION_COOKIE = "iip_session"
 SESSION_TTL_SECONDS = 12 * 3600  # 12h advisory; server enforces expires_at
 
+
+def _is_https_origin() -> bool:
+    """True when this deployment serves HTTPS (Secure cookie required).
+
+    On Vercel (serverless, stateless per request) the signal is deployment
+    config, not request headers: set IIP_HTTPS=1 there. Local loopback dev
+    stays Secure=False so the cookie works over plain http://localhost."""
+    proto = os.environ.get("IIP_HTTPS", "").lower()
+    if proto in ("1", "true", "on"):
+        return True
+    legacy = os.environ.get("HTTPS", "").lower()
+    return legacy in ("1", "true", "on")
+
 USERNAME = os.environ.get("IIP_AUTH_USER", "founder")
 PASSWORD = os.environ.get("IIP_AUTH_PASSWORD", "")
 SECRET = os.environ.get("IIP_AUTH_SECRET", "")
@@ -86,7 +99,8 @@ def login(username: str, password: str, response: Response) -> bool:
     persistence.set_active_nonce(nonce)
     token = _issue_token(nonce)
     response.set_cookie(
-        SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=SESSION_TTL_SECONDS)
+        SESSION_COOKIE, token, httponly=True, samesite="lax", max_age=SESSION_TTL_SECONDS,
+        secure=_is_https_origin())
     return True
 
 

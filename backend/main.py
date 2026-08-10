@@ -7,6 +7,7 @@ ASGI capture: response_sha256 logged over exact serialized bytes (F2/NF6).
 from __future__ import annotations
 
 import hashlib
+import os
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -63,10 +64,18 @@ async def auth_status(request: Request):
 
 
 # ── Loopback Host enforcement (F6) ────────────────────────────────────────────
+# Non-loopback hosts are rejected UNLESS explicitly allowed via IIP_ALLOWED_HOST
+# (comma-separated hostnames, set to the deployment domain on Vercel where the
+# cookie is Secure=True over HTTPS). The allowlist keeps the loopback default
+# unchanged for local dev (Secure=False cookies must stay loopback-only).
+_ALLOWED_HOSTS = {h.strip().lower() for h in
+                  os.environ.get("IIP_ALLOWED_HOST", "").split(",") if h.strip()}
+
+
 @app.middleware("http")
 async def loopback_guard(request: Request, call_next):
-    host = (request.headers.get("host") or "").split(":")[0]
-    if host not in ("127.0.0.1", "localhost", "testserver", "::1"):
+    host = (request.headers.get("host") or "").split(":")[0].lower()
+    if host not in ("127.0.0.1", "localhost", "testserver", "::1") and host not in _ALLOWED_HOSTS:
         return Response(status_code=403, content="non-loopback host rejected")
     return await call_next(request)
 
