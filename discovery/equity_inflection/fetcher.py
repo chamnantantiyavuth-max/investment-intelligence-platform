@@ -63,6 +63,12 @@ def _split_adjust(series: list[dict], share_series: list[dict]) -> list[dict]:
     return _sa(series, share_series)
 
 
+def _edgar_companyfacts(cik: str) -> dict:
+    """Fetch and cache raw SEC companyfacts for a CIK."""
+    url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+    return _sec_get(url)
+
+
 def _edgar_quarterly(cik: str):
     """Fetch quarterly DilutedEPS + Revenues from SEC companyfacts (PIT).
 
@@ -83,7 +89,6 @@ def _edgar_quarterly(cik: str):
     url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
     facts = _sec_get(url)
     tax = facts.get("facts", {}).get("us-gaap", {})
-
     def dedup_raw(tag: str) -> list[dict]:
         """All 10-Q/10-K values, deduped per period_end (shortest duration)."""
         by_end: dict[str, dict] = {}
@@ -137,7 +142,10 @@ def _edgar_quarterly(cik: str):
         return out
 
     eps = build("EarningsPerShareDiluted")
-    shares = build("DilutedAverageShares")
+    # share count tag: companyfacts uses WeightedAverageNumberOfDilutedSharesOutstanding
+    shares = build("WeightedAverageNumberOfDilutedSharesOutstanding")
+    if not shares:
+        shares = build("WeightedAverageNumberOfSharesOutstandingBasic")
     eps = _split_adjust(eps, shares)
     # revenue tag: MERGE all candidates — filers switch tags across eras
     # (e.g. AAPL: SalesRevenueNet pre-FY2018 -> RevenueFromContract... post-ASC606).
@@ -229,6 +237,64 @@ def fetch_ticker(ticker: str) -> dict:
         "as_of": str(hist.index[-1].date()),
     }
     return {"quarters": quarters, "prices": prices, "meta": meta}
+
+
+def fetch_validation_data(ticker: str) -> dict:
+    """Fetch FULL revision history (every filed-date entry, not just latest)
+    + 10y price history for validation Phase 1 (PIT as-of reconstruction).
+
+    Returns {"ticker": str, "eps_entries": [...], "rev_entries": [...],
+             "share_entries": [...], "prices": [...]} where each entry is
+    {"period_end": str, "value": float, "filed": str, "start": str,
+     "form": str, "fp": str}. ALL 10-Q/10-K entries preserved (restatement
+    history intact) — the PIT as-of view is built later by validation.py.
+    """
+    cik = FO_UNIVERSE.get(ticker)
+    if not cik:
+        raise ValueError(f"{ticker}: no CIK in FO_UNIVERSE")
+    facts = _edgar_companyfacts(cik)
+    tax = facts.get("facts", {}).get("us-gaap", {})
+
+    def all_entries(tag: str) -> list[dict]:
+        out = []
+        for u in tax.get(tag, {}).get("units", {}).values():
+            for v in u:
+                if v.get("form") not in ("10-Q", "10-K") or v.get("end") is None or v.get("val") is None:
+                    continue
+                out.append({
+                    "period_end": v["end"], "value": float(v["val"]),
+                    "filed": v.get("filed", v["end"]),
+                    "start": v.get("start", v["end"]),
+                    "form": v.get("form", ""), "fp": v.get("fp", ""),
+                })
+        return sorted(out, key=lambda x: (x["period_end"], x["filed"]))
+
+    rev_tags = ("Revenues", "SalesRevenueNet",
+                "RevenueFromContractWithCustomerExcludingAssessedTax")
+    rev_entries = []
+    for tag in rev_tags:
+        rev_entries.extend(all_entries(tag))
+
+    # share count tag: companyfacts uses WeightedAverageNumberOfDilutedSharesOutstanding
+    # (verified 2026-08-10 — "DilutedAverageShares" returns 0 entries)
+    share_tag = "WeightedAverageNumberOfDilutedSharesOutstanding"
+    share_entries = all_entries(share_tag)
+    if not share_entries:  # fallback: basic weighted average
+        share_entries = all_entries("WeightedAverageNumberOfSharesOutstandingBasic")
+
+    stock = yf.Ticker(ticker)
+    hist = stock.history(period="10y")
+    if hist is None or hist.empty:
+        raise ValueError(f"{ticker}: yfinance 10y price history empty")
+    prices = [{"date": str(idx.date()), "close": round(float(row["Close"]), 4),
+               "volume": int(row["Volume"])} for idx, row in hist.iterrows()]
+    return {
+        "ticker": ticker,
+        "eps_entries": all_entries("EarningsPerShareDiluted"),
+        "rev_entries": rev_entries,
+        "share_entries": share_entries,
+        "prices": prices,
+    }
 
 
 def fetch_universe(tickers: list[str] | None = None) -> dict[str, dict]:
