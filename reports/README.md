@@ -13,6 +13,7 @@ reader never sees raw markdown.
 ---
 title: "Report title"
 type: company | product | weekly | quarterly | theme
+category: company_weekly | deep_research_radar | deep_research_inflection | deep_research_quality | cs_product | weekly
 subject: "AAPL" | "Silver (SLV)" | ...
 date: 2026-08-06
 author: "org-role (e.g., Commodity Analyst)"
@@ -22,6 +23,15 @@ summary: "One-line thesis for the library index"
 ---
 ```
 
+- `category` (FD #95, 11 Aug 2026) drives the /library section grouping:
+  - `company_weekly` — Weekly กลุ่มบริษัท (new genre, no reports yet)
+  - `deep_research_radar` — 1.2.1 หุ้นที่คัดจากข้อมูลผิดปกติ (Radar, FD #71)
+  - `deep_research_inflection` — 1.2.2 Equity Inflection (FD #88/#89)
+  - `deep_research_quality` — 1.2.3 on-demand/cron (Buffett/Pabrai/Li Lu/100 Baggers — WP2)
+  - `cs_product` — 2. Close System products (commodity research)
+  - `weekly` — org weekly letters
+  A companion (opposing CRO) report inherits the main report's category and is
+  nested under it on the library (never a standalone row).
 - Body: free-form analytical markdown. Quality bar (FD #62): depth to the mechanism, real point
   of view, informative, reliable (every material figure date-stamped + sourced; point-in-time
   rule FD #58 applies — stale figures flagged).
