@@ -2,7 +2,7 @@ card_id: ORG-2026-0018
 title: "Inflection: AbbVie (ABBV) — EPS TTM breakout ($3.54 vs prior 2y max $3.00) + revenue +10.2% YoY, Stage S2-early (price $247.97, +8.3%/mo 50MA slope)"
 research_question: "AbbVie's TTM diluted EPS broke its prior 2-year ceiling (latest $3.54 vs prior max $3.00, as of 2026-06-30 EDGAR filed) with revenue confirming (+10.2% YoY, $16.99B vs $15.42B) while price is only 1.1% above the 50MA in an S2-early stage (price $247.97 > 50MA $240.71 > 150MA $222.39, 50MA +8.3%/mo) — does this EPS inflection reflect durable operating momentum (Humira patent cliff fully absorbed, Skyrizi/Rinvoq growth, pipeline optionality) or one-off/tax/financing effects, and does the early-stage price setup satisfy the FD #89 stage discipline (not yet extended)?"
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Research
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ inflection_source: "SEC EDGAR companyfacts (CIK 0000001551152, PIT filed dates) 
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "research COMPLETE — RM-2026-0005 published (reports/abbv-inflection-deep-research-2026-08-11.md + CRO companion), 11-stage pipeline CLEAN READY, awaiting Founder gate"
 last_updated: 2026-08-11

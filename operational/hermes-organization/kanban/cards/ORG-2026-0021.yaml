@@ -2,7 +2,7 @@ card_id: ORG-2026-0021
 title: "Inflection: Vertex Pharmaceuticals (VRTX) — EPS TTM breakout + revenue confirming, Stage S2-early (CF franchise + CASGEVY expansion era)"
 research_question: "Vertex's TTM diluted EPS broke its prior 2-year ceiling (as of 2026-06-30 EDGAR filed) with revenue confirming (latest vs year-ago, EDGAR PIT) while price sits S2-early — with the CF franchise maturing, CASGEVY (exa-cel) expanding and the VX-880/type-1 diabetes and pain programs as pipeline optionality, is this inflection durable (real operating momentum beyond one-time IP/royalty items) and does the early-stage price setup still satisfy FD #89 stage discipline?"
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Research
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ inflection_source: "SEC EDGAR companyfacts (CIK 000000875320, PIT filed dates) +
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "research COMPLETE — RM-2026-000-2 published (reports/vrtx-inflection-deep-research-2026-08-11.md + CRO companion), 11-stage pipeline CLEAN READY, awaiting Founder gate"
 last_updated: 2026-08-11

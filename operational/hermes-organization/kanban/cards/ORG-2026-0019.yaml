@@ -2,7 +2,7 @@ card_id: ORG-2026-0019
 title: "Inflection: Bristol-Myers Squibb (BMY) — EPS TTM breakout ($4.65 vs prior 2y max $4.23) + revenue +15.8% YoY, Stage S2-early (price $64.84)"
 research_question: "Bristol-Myers' TTM diluted EPS broke its prior 2-year ceiling (latest $4.65 vs prior max $4.23, as of 2026-06-30 EDGAR filed) with revenue confirming strongly (+15.8% YoY, $12.97B vs $11.20B) while price sits S2-early (price $64.84 > 50MA $58.61 > 150MA $57.73, 50MA +4.1%/mo) — is this the post-Eliquis/Opdivo LOE transition finally inflecting (new-launch portfolio: Breyanzi, Reblozyl, Camzyos, milvexian/COVID pivot), or a transient (inventory/timing/pipeline-milestone quarter), and does the early-stage setup still satisfy FD #89 stage discipline?"
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Research
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ inflection_source: "SEC EDGAR companyfacts (CIK 00000014272, PIT filed dates) + 
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "research COMPLETE — RM-2026-0006 published (reports/bmy-inflection-deep-research-2026-08-11.md + CRO companion), 11-stage pipeline CLEAN READY, awaiting Founder gate"
 last_updated: 2026-08-11
