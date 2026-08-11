@@ -37,7 +37,7 @@ def test_type_product_maps_to_cs_product():
 def test_weekly_type_maps_to_weekly():
     # org weekly letters (type=weekly, subject contains "organization") → weekly
     weeklies = [r for r in list_reports() if r["type"] == "weekly" and "organization" in (r["subject"] or "").lower()]
-    assert len(weeklies) == 2, f"expected 2 org weekly letters, got {len(weeklies)}"
+    assert len(weeklies) == 3, f"expected 3 org weekly letters (WIL #1/#2/#3), got {len(weeklies)}"
     for r in weeklies:
         assert r["category"] == "weekly"
 
