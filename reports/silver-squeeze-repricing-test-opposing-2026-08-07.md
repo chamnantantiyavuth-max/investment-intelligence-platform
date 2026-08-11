@@ -1,6 +1,7 @@
 ---
 title: "สต็อกที่เพิ่มขึ้นไม่ได้ล้างสควีซ — บทความค้านของ CRO"
 type: product
+category: cs_product
 subject: "Silver (precious metals)"
 date: 2026-08-07
 author: "Chief Risk Officer (บทความค้าน)"
@@ -8,7 +9,6 @@ status: published
 updated: 2026-08-07 (published after Founder gate, Option A)
 summary: "ข้อตัดสิน 'beta ไม่ใช่สควีซ' วิ่งนำหน้าหลักฐานของมัน: การถือครองรวม (gross custody) พิสูจน์ free float ไม่ได้ สัญญาณชี้ขาดอย่างอัตราเช่าหายไป และการบีบอัตราส่วนที่สังเกตได้คือกลไกที่เงินวิ่งแซงทองที่ธีมขาดแคลนพยากรณ์ไว้พอดี"
 ---
-
 # สต็อกที่เพิ่มขึ้นไม่ได้ล้างสควีซ
 
 ## ประเด็นหลัก — ข้อตัดสินที่ไม่เป็นมิตร

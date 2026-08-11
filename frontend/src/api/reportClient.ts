@@ -3,6 +3,7 @@ export interface ReportMeta {
   slug: string
   title: string
   type: string
+  category: string
   subject: string
   date: string
   author: string
