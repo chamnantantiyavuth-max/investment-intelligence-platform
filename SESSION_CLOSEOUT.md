@@ -1,3 +1,32 @@
+# Session Closeout — 2026-08-11 (cron review 12:10) — FD #93/#94 world reconciled
+
+**Status:** COMPLETE — 11 Aug sessions reconciled: FD #93 (delegation high revert) + FD #94 (publication firewall + Thai editorial standard) delivered, committed, PUSHED (origin/main == HEAD `ddb203d`, 363 commits, fd 110). CS Product Discovery deferred by Founder (Option C, 11 Aug). Suite re-run 339/340 (1 stale-assertion failure, see F1).
+
+## What this review found (evidence-backed)
+
+1. **FD #93/#94 DELIVERED + PUSHED (verified).** HEAD `ddb203d` (02:29 closeout), 363 commits (`git rev-list --count main`), FDs 110, `ls-remote origin main` == HEAD `ddb203d` → push SYNCED. Register contiguous 1..110 (`grep -c "^[0-9]*\. FD #"` pattern + parser test contiguity asserts pass). SESSION_CLOSEOUT has the FD #93/#94 entry (top of file — closeout prepends). Governance sync: SOUL.md shared vs iip differ ONLY in the per-profile splice block (expected); v3.7.1 count 7/7 both files → **FD-HERMES-008 PASS**.
+2. **F1 — SUITE 339/340 (was 340/340 at 00:25 cron):** `tests/locked/test_audit_api.py::test_decisions_register_contiguous_and_parsed` FAILS — hard-coded `latest["date"] == "10 Aug 2026"` assertion; FD #93/#94 registered **11 Aug** → assertion stale. Register itself contiguous 1..110 ✅ (the contiguity asserts passed; only the date literal failed). **Fix for next interactive session: bump the assertion to "11 Aug 2026".** Not a regression — a locked test with a date literal that sessions must bump when the register advances (same class as the 10 Aug "register order" fix).
+3. **F2 — AGENTS.md checkpoint claim FALSIFIED:** lifecycle_sync earlier claimed "AGENTS.md ✅ (checkpoint fd-90-91-92 added this session)" — grep `fd-8|fd-9` = **0 matches**; file still ends at the 07 Aug 09:58 footer (last checkpoint fd-76-77-78). FD #79–94 checkpoints missing. Protected file (blocked in cron shell) → needs an interactive session to append.
+4. **F3 — vault ~/.hermes/vault/fd-register.md mirror STALE (stopped at FD #87):** AppData central register ✅ (FD-90..94 rows, verified 02:08 mtime) + project register ✅ (FD-88..94 rows, verified) — but the review-maintained `~/.hermes/vault/fd-register.md` mirror ended at FD #87 (08-09). **BACKFILLED this review: FD-88..94 (7 entries, chronological position after FD-87, same format + timestamp footers).**
+5. **Market snapshot (11 Aug 12:11 UTC+7):** equities as-of **Mon 10 Aug completed EOD** — AAPL 308.26 (−1.62% 1d, Jefferies-downgrade digestion; recovered from 305.21 intraday), MSFT 506.06 (+1.21% — CIW monitor context, improved from 499.99), JNJ 261.81 (+0.99%), GOOGL 357.52 (+0.91% 1d, −4.28% 5d — capital-raise overhang), FSLR 239.33 (−4.29% 1d consolidation after tariff pop), SMCI 31.46 (+1.06%), NVDA 217.55 (−2.86% 1d), SLV 59.41 (+3.32% 1d, **+13.25% 5d**), SPX 7,753.11 (−0.06% 1d). Futures 11 Aug **LIVE intraday**: GC=F 4,465.70 (**+2.38% 1d, +9.04% 5d**), SI=F 65.69 (+0.90% 1d, **+9.39% 5d** — still above the ~$62 SILVER-CORR-001 anchor), CL=F 82.27 (+0.17% 1d, +8.58% 5d — Hormuz premium building). Gold news-driver lookup bot-gated (irrelevant hits) — driver not confirmed; context = radar chain 0006→0008→0009→0013 (silver/gold strength validates the thesis chain; LBMA July gap resolved). No >±10% single-ticker 1d moves to explain; gold +2.4% intraday labeled LIVE pending close.
+6. **DB lineage:** `pipeline_runs` am 2026-08-09 (fresh ≤7d) / fo 2026-08-03 (≤30d) / ii content-addressed (≤120d) — all within bounds; `api_reads` 854 rows, last served 10 Aug 19:10 UTC (v5, /api/reports 200) — healthy. No servers listening (8000/5173) — normal (session-started app; state note, not regression).
+7. **Dirty tree:** ONLY the untracked CIW 10 Aug monitor draft (not mine — cron artifact). No other uncommitted changes; FD #92/#93/#94 registrations all committed.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — register items 100–110 = FD #84–94; contiguity ✅ (1..110); F1 date-literal fix queued for interactive session
+- [x] Session captured? — FD #93/#94 entry already at SESSION_CLOSEOUT top (session wrote it); this review entry appended
+- [x] Verify-First? — every claim checked against git/pytest/DB/registers (suite re-run, ls-remote, grep counts, register reads)
+- [x] Verification tags? — suite 339/340 (F1 documented), derived metrics re-derived (363 commits / 24 published / 110 FDs / 7 vault rows backfilled)
+- [x] Pushed? — repo SYNCED at `ddb203d` (sessions pushed); review made docs-only edits, NOT committed (defer to interactive session per review discipline — dirty-tree rule: only untracked CIW draft present)
+- [x] Working tree — clean except untracked CIW draft (enumerated, not mine)
+
+## Recommended next action
+
+**(a) Next interactive session: bump `test_decisions_register_contiguous_and_parsed` date assertion "10 Aug 2026" → "11 Aug 2026"** (1-line locked-test fix, restores 340/340) **+ append AGENTS.md checkpoint fd-79-94** (protected file). Then standing queue: **WIL #3 (~13 Aug)** → **IPM Week 2 (~14 Aug)** → **radar Mon 17 Aug 08:00** + **mid-week watch Thu 13 Aug 08:00** (EDGAR delta per FD #81) → CS Product Discovery revisit on Founder call → RM-2026-0004 monitoring (Cook→Ternus eff. 1 Sep; Q4 FY26 call ~Oct).
+
+---
+
 # Session Closeout — 2026-08-11 (FD #94 Publication Firewall + CS Discovery review)
 
 **Status:** COMPLETE — FD #94 delivered end-to-end (standard + 21 articles cleaned + UI stamps + verified + pushed + deployed); ChatGPT Close-System proposal FIT-GAP'd (pipeline-jargon gap CONFIRMED + fixed); **CS Product Discovery stream DEFERRED (Founder Option C) — revisit on Founder call.**
