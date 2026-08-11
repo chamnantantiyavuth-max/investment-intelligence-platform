@@ -1,3 +1,39 @@
+# Session Closeout — 2026-08-11 (FD #95–97 + WIL #3 + audit plan)
+
+**Status:** COMPLETE — FD #95 (FIT-GAP WP1-3) + FD #96 (blog layout) + FD #97 (4-item execution: WP2 live + CS discovery + company_weekly + inflection research ×4) + WIL #3 + silver-anchor live fix + correction-propagation governance lesson + FULL AUDIT PLAN prepared. HEAD `599e0d6`, fd_count 113, suite 206/206 + 5/5 py314, library 33 published/19 mains, push SYNCED.
+
+## What happened (this session, in order)
+
+1. **FD #95 — ChatGPT FIT-GAP WP1-3** (commits 74d8e51/dc2f3ac/1ebca4f): WP1 Shared Equity Universe (98 names CIK-verified) · WP2 Quality & Asymmetry (4 archetypes, PROPOSED thresholds) · WP3 Deep Research Standing Contract (template 16).
+2. **FD #96 — Blog Layout Structure A** (84d332c + e783948): category sections on /library + companion nesting (24→14 rows) + fixed real bug (`-opposing$` regex never matched `<base>-opposing-<date>`).
+3. **AGENTS.md checkpoint fd-79-96** (854c102): 6 new checkpoint lines, interactive approval obtained — cron F1+F2 CLOSED.
+4. **FD #97 — "ทำทั้ง 4 ข้อเลย"** (ef96a5f → c56b4c3):
+   - WP2 fetcher live (EDGAR annual + yfinance, merged XBRL tags, series alignment) → 62 shadow evidence blocks (98-universe)
+   - CS Product Discovery un-deferred → `discovery/cs_product/` engine + 7 tests
+   - company_weekly #1 (reports/company-weekly-2026-08-11.md)
+   - **Inflection universe scan (98 names) → 4 candidates (ABBV/BMY/LLY/VRTX) → CoS triage A → 4 full 11-stage deep research + 4 CRO companions published** (RM-2026-0005..0008)
+5. **WIL #3** (weekly-intelligence-2026-08-11.md): week 3 letter, library 33/19, locked test weekly 2→3.
+6. **Silver anchor live-surface fix** (2279405): Founder caught stale 88:1/low-$20s on live library (actual ~$64.80, ratio ~67:1) — root cause = §23.9 correction (7 Aug) never back-propagated to product-note summary. Fixed summary + 3 body pointers. **Sol Medium NOT at fault** (audit deleg_f133cc14 caught it as T-03..T-07/F1 — scope-limited, no propagation step existed).
+7. **Governance lesson encoded** (bcbac49): template 16 stage 7b Correction Propagation MANDATORY + template 12 §10 weekly sweep + MEM-IIP-LESSON-004.
+8. **FULL AUDIT PLAN** (599e0d6): `docs/FULL-AUDIT-PLAN-2026-08-11.md` — execution next round via Sol Medium (FD-HERMES-007).
+
+## Verification
+
+- Suite: **206/206** pytest venv + **5/5** py314 (python3) — final full run after all edits
+- tsc 0, lint 0 errors, build exit 0 (earlier in session, no frontend change after)
+- Browser + vision: local + production (iip-research.vercel.app) — categories, inflection section (4 mains + CRO), WIL #3, silver pointer; console 0 errors
+- Pushed: origin/main == HEAD `599e0d6` (18 commits this session)
+
+## Open items (next session)
+
+- **FULL AUDIT (delegated)** — plan at `docs/FULL-AUDIT-PLAN-2026-08-11.md`; Founder: "ผมจะให้ทำ full audit รอบถัดไป" → delegate Sol Medium, evidence/audit-2026-08-XX/
+- Radar mid-week Thu 13 Aug 08:00 (cron auto) · IPM Week 2 (~14 Aug) · radar Mon 17 Aug · WIL #4 (~per cadence)
+- Cards 0016/0017 in Research (triage A) — research execution pending
+- CS Product Discovery validation path (data sources: LBMA gold ok, silver 404)
+- WP2 validation (thresholds PROPOSED → FD #53 approval path like FD #88→#89)
+
+---
+
 # Session Closeout — 2026-08-11 (FD #95 WP1-3 + FD #96 Blog Layout Structure A)
 
 **Status:** COMPLETE — ChatGPT FIT-GAP WP1-3 DELIVERED (Shared Equity Universe + Quality & Asymmetry Discovery + Deep Research Standing Contract) + Blog Layout Structure A (category sections on /library, companion nesting). 7 commits, fd_count 112, suite 198/198. **AHEAD 7 — push is Founder call.**
