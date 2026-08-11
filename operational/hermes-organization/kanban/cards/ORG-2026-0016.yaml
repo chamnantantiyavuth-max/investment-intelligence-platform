@@ -2,7 +2,7 @@ card_id: ORG-2026-0016
 title: "Radar: London silver vaults climb to 907.059 Moz in July 2026 — a ~5-year high and new high for the 2023+ upswing — during silver's +11% week, extending the 'no visible scarcity' series (0006→0009→0013)"
 research_question: "Does the July 2026 LBMA London vault print — silver 907.059 Moz, the highest since the 2021 era and a new high for the 2023+ upswing, +16.6% YoY — landing during silver's sharpest weekly rally of the recovery leg (~+11%, to ~$64) further disconfirm the physical-liquidity-squeeze re-pricing (0006/0009/0013 convergence — 'no visible scarcity signal as of 7 Aug'), and if so, what does that imply for the composition of the rally (positioning / reflation beta vs physical demand) and for the standing inventory-liquidity watch items (COMEX deliverable stocks, lease rates, available-stock vs gross-custody evidence)?"
 decision_user: Founder
-workflow_column: Inbox
+workflow_column: Research
 approval_status: null
 monitoring_status: null
 thesis_status: null
@@ -26,5 +26,5 @@ radar_source: "https://cdn.lbma.org.uk/downloads/LBMA-London-Vault-Holdings-Data
 open_decision_slots: []
 dependencies: [ORG-2026-0006, ORG-2026-0009, ORG-2026-0013]
 blocked_reason: null
-next_action: "awaiting CoS triage"
+next_action: "CoS triage A (11 Aug 2026, Founder) — assigned to org-commodity-analyst; research question: does the July vault rebuild (~5yr high 907.059 Moz) during the sharpest silver rally of the recovery leg contradict the no-scarcity reading, and what does it mean for available-stock vs gross custody?"
 last_updated: 2026-08-10
