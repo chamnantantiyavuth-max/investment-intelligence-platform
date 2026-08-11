@@ -25,6 +25,12 @@
 
 ## 10. Data Incidents and Limitations
 
+> **Correction-propagation sweep (mandatory, lesson 2026-08-11):** if any §23.9
+> correction or data-incident was recorded this week, grep all published reports
+> for the superseded figure/anchor and confirm every live surface carries a
+> pointer to the correction + current value. Report the sweep result in this
+> section (e.g. "sweep: 0 stale surfaces / 2 pointers added").
+
 ## 11. Risk and Dissent
 
 ## 12. Founder Decisions Required

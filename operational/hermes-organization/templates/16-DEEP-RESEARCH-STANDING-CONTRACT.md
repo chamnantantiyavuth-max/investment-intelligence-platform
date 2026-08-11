@@ -40,6 +40,14 @@ what the analyst thinks or writes.
 6.  CRO OPPOSING THESIS — independent dissent (via Sol Medium, FD #73 routing)
 7.  AUDIT → RE-AUDIT — corrections applied; originals preserved (Constitution
     §23.9 CORRECTIONS-RECORD); verdict recorded
+7b. CORRECTION PROPAGATION (MANDATORY, lesson 2026-08-11 silver anchor) — when a
+    §23.9 correction supersedes any figure/anchor/claim, scan EVERY published
+    artifact that referenced it (grep the stale figure across reports/ + research/)
+    and add an explicit pointer to the correction + current figure on each live
+    surface (summary/frontmatter included). A correction is NOT complete until
+    no live surface presents the superseded figure as current fact. Original
+    text stays preserved in git per §23.9; pointers are additive, never
+    destructive. Same discipline for WIL cadence letters.
 8.  FACTS LOCKED — editor may rewrite/reorder/shorten/explain but NEVER change
     figures/accessions/dates/uncertainty/material dissent/conclusions
     (FD #94 THAI-RESEARCH-EDITORIAL-STANDARD)
