@@ -120,14 +120,26 @@ def _roic(fin: dict) -> Optional[float]:
 
 
 def _incremental_roic(fin: dict) -> Optional[float]:
-    """ΔNOPAT / Δinvested capital over the last 3 annual observations."""
+    """ΔNOPAT / Δinvested capital over the last 3 annual observations.
+
+    Series may be left-padded with None (balance-sheet tags start later than
+    flow tags) — walk from the tail and collect the last 4 non-None points so
+    the window is always computed on real values."""
     oi = _as_list(fin.get("operating_income", []))
     assets = _as_list(fin.get("total_assets", []))
     cash = _as_list(fin.get("cash", []))
-    if len(oi) < 4 or len(assets) < 4 or len(cash) < 4:
+
+    def last_non_none(xs: list[Optional[float]], n: int) -> list[float]:
+        vals = [float(x) for x in xs if x is not None]
+        return vals[-n:] if len(vals) >= n else []
+
+    oi4 = last_non_none(oi, 4)
+    a4 = last_non_none(assets, 4)
+    c4 = last_non_none(cash, 4)
+    if len(oi4) < 4 or len(a4) < 4 or len(c4) < 4:
         return None
-    d_nopat = (oi[-1] - oi[-4]) * (1 - 0.21)
-    d_inv = (assets[-1] - cash[-1]) - (assets[-4] - cash[-4])
+    d_nopat = (oi4[-1] - oi4[0]) * (1 - 0.21)
+    d_inv = (a4[-1] - c4[-1]) - (a4[0] - c4[0])
     if d_inv <= 0:
         return None
     return d_nopat / d_inv
@@ -150,12 +162,16 @@ def _fcf_series(fin: dict) -> list[Optional[float]]:
 def _fcf_conversion_3y(fin: dict) -> Optional[float]:
     fcf = _fcf_series(fin)
     ni = _as_list(fin.get("net_income", []))
-    if len(fcf) < 3 or len(ni) < 3:
+    # fcf/ni are flow series — may be shorter than the padded axis; walk the
+    # last 3 non-None points so None padding never reaches the arithmetic.
+    fcf_last = [float(x) for x in fcf if x is not None][-3:]
+    ni_last = [float(x) for x in ni if x is not None][-3:]
+    if len(fcf_last) < 3 or len(ni_last) < 3:
         return None
     vals = []
-    for i in range(-3, 0):
-        if fcf[i] is not None and ni[i] not in (None, 0):
-            vals.append(fcf[i] / ni[i])
+    for fv, nv in zip(fcf_last, ni_last):
+        if nv not in (0,):
+            vals.append(fv / nv)
     return _avg(vals) if vals else None
 
 
@@ -192,10 +208,13 @@ def archetype_a_durable_compounder(fin: dict, market: Optional[dict] = None) -> 
     assets = _as_list(fin.get("total_assets", []))
     cash = _as_list(fin.get("cash", []))
     roic_5y = None
-    if len(oi) >= 5:
+    oi_vals = [float(x) for x in oi if x is not None]
+    assets_vals = [float(x) for x in assets if x is not None]
+    cash_vals = [float(x) for x in cash if x is not None]
+    if len(oi_vals) >= 5 and len(assets_vals) >= 5 and len(cash_vals) >= 5:
         vals = []
         for i in range(-5, 0):
-            o, a, c = oi[i], assets[i], cash[i]
+            o, a, c = oi_vals[i], assets_vals[i], cash_vals[i]
             if o and a and c is not None and (a - c) > 0:
                 vals.append(o * (1 - 0.21) / (a - c))
         roic_5y = _avg(vals) if vals else None

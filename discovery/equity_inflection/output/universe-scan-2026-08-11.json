@@ -1,0 +1,4573 @@
+{
+ "AAPL": {
+  "ticker": "AAPL",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 8.44,
+    "prior_max_ttm_eps": 8.46,
+    "as_of": "2026-06-27 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.224242,
+    "prior_max_yoy": 1.028571,
+    "as_of": "2026-06-27 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 109417000000.0,
+    "year_ago_revenue": 95359000000.0,
+    "yoy_pct": 14.7422,
+    "as_of": "2026-06-27 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 308.26,
+    "ma50": 309.4388,
+    "ma150": 281.491,
+    "slope50_pct_month": 4.0234,
+    "slope150_pct_month": 6.3229,
+    "range_position": 0.7275
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 308.26,
+   "avg_volume_50d": 56619253.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-27 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ABBV": {
+  "ticker": "ABBV",
+  "eligible": true,
+  "reasons": [],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 3.54,
+    "prior_max_ttm_eps": 3.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 58
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 2.903846,
+    "prior_max_yoy": 52.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 58
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 16990000000.0,
+    "year_ago_revenue": 15423000000.0,
+    "yoy_pct": 10.1602,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 247.97,
+    "ma50": 240.7097,
+    "ma150": 222.3915,
+    "slope50_pct_month": 8.2639,
+    "slope150_pct_month": 2.411,
+    "range_position": 0.783,
+    "extension_above_ma50_pct": 3.0162,
+    "weeks_since_cross": 7.0,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 247.97,
+   "avg_volume_50d": 6777841.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ABT": {
+  "ticker": "ABT",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 3.32,
+    "prior_max_ttm_eps": 3.65,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.351064,
+    "prior_max_yoy": 0.442857,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 11164000000.0,
+    "year_ago_revenue": 10635000000.0,
+    "yoy_pct": 4.9741,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 108.62,
+    "ma50": 95.3143,
+    "ma150": 100.5858,
+    "slope50_pct_month": 7.6329,
+    "slope150_pct_month": -11.6183,
+    "range_position": 0.5168
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 108.62,
+   "avg_volume_50d": 12513022.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ACN": {
+  "ticker": "ACN",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 12.52,
+    "prior_max_ttm_eps": 12.56,
+    "as_of": "2026-05-31 (EDGAR filed)",
+    "quarters_used": 72
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.088825,
+    "prior_max_yoy": 0.237209,
+    "as_of": "2026-05-31 (EDGAR filed)",
+    "quarters_used": 72
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 18718144000.0,
+    "year_ago_revenue": 17727871000.0,
+    "yoy_pct": 5.586,
+    "as_of": "2026-05-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 178.25,
+    "ma50": 152.6612,
+    "ma150": 190.0822,
+    "slope50_pct_month": -4.7837,
+    "slope150_pct_month": -17.0117,
+    "range_position": 0.3461
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 178.25,
+   "avg_volume_50d": 8650053.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ADBE": {
+  "ticker": "ADBE",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 16.97,
+    "prior_max_ttm_eps": 16.86,
+    "as_of": "2026-05-29 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.02657,
+    "prior_max_yoy": 1.897059,
+    "as_of": "2026-05-29 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 6618000000.0,
+    "year_ago_revenue": 5714000000.0,
+    "yoy_pct": 15.8208,
+    "as_of": "2026-05-29 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 272.96,
+    "ma50": 230.419,
+    "ma150": 252.4703,
+    "slope50_pct_month": -0.938,
+    "slope150_pct_month": -15.0363,
+    "range_position": 0.4571
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 272.96,
+   "avg_volume_50d": 6474277.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-29 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ADSK": {
+  "ticker": "ADSK",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 6.08,
+    "prior_max_ttm_eps": 5.03,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 0.826772,
+    "prior_max_yoy": 0.733333,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1934000000.0,
+    "year_ago_revenue": 1570000000.0,
+    "yoy_pct": 23.1847,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 256.07,
+    "ma50": 216.2572,
+    "ma150": 236.0199,
+    "slope50_pct_month": -2.7576,
+    "slope150_pct_month": -12.591,
+    "range_position": 0.4915
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 256.07,
+   "avg_volume_50d": 2645633.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "AMGN": {
+  "ticker": "AMGN",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 16.29,
+    "prior_max_ttm_eps": 17.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 55
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.365625,
+    "prior_max_yoy": 13.619048,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 55
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 10054000000.0,
+    "year_ago_revenue": 8149000000.0,
+    "yoy_pct": 23.3771,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 417.2,
+    "ma50": 363.5982,
+    "ma150": 352.6432,
+    "slope50_pct_month": 6.0007,
+    "slope150_pct_month": 5.6645,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 14.742,
+    "weeks_since_cross": 7.0,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 417.2,
+   "avg_volume_50d": 2718920.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "AMZN": {
+  "ticker": "AMZN",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 12.16,
+    "prior_max_ttm_eps": 8.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 2.616352,
+    "prior_max_yoy": 5.7,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 200606000000.0,
+    "year_ago_revenue": 155667000000.0,
+    "yoy_pct": 28.8687,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 278.09,
+    "ma50": 247.5888,
+    "ma150": 238.5805,
+    "slope50_pct_month": -2.5374,
+    "slope150_pct_month": 4.147,
+    "range_position": 0.9304
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 278.09,
+   "avg_volume_50d": 50451080.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ASML": {
+  "ticker": "ASML",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "AVGO": {
+  "ticker": "AVGO",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 5.29,
+    "prior_max_ttm_eps": 24.87,
+    "as_of": "2026-05-03 (EDGAR filed)",
+    "quarters_used": 33
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.675439,
+    "prior_max_yoy": 4.75,
+    "as_of": "2026-05-03 (EDGAR filed)",
+    "quarters_used": 33
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 22187000000.0,
+    "year_ago_revenue": 14916000000.0,
+    "yoy_pct": 48.7463,
+    "as_of": "2026-05-03 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 422.4,
+    "ma50": 394.7618,
+    "ma150": 369.3641,
+    "slope50_pct_month": -2.7623,
+    "slope150_pct_month": 5.2528,
+    "range_position": 0.6979
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 422.4,
+   "avg_volume_50d": 25878658.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-03 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "AZN": {
+  "ticker": "AZN",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "BABA": {
+  "ticker": "BABA",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "BAC": {
+  "ticker": "BAC",
+  "eligible": false,
+  "reasons": [
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 4.28,
+    "prior_max_ttm_eps": 3.96,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 55
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.359551,
+    "prior_max_yoy": 0.37037,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 55
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 31558000000.0,
+    "year_ago_revenue": 28247000000.0,
+    "yoy_pct": 11.7216,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 63.86,
+    "ma50": 58.6215,
+    "ma150": 53.7459,
+    "slope50_pct_month": 8.1747,
+    "slope150_pct_month": 3.8414,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 8.9361,
+    "weeks_since_cross": 9.6,
+    "late_by_extension": false,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 63.86,
+   "avg_volume_50d": 35676866.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "BHP": {
+  "ticker": "BHP",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "BLK": {
+  "ticker": "BLK",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 40.19,
+    "prior_max_ttm_eps": 37.84,
+    "as_of": "2024-06-30 (EDGAR filed)",
+    "quarters_used": 22
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.307592,
+    "prior_max_yoy": 0.509915,
+    "as_of": "2024-06-30 (EDGAR filed)",
+    "quarters_used": 22
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 4805000000.0,
+    "year_ago_revenue": 4243000000.0,
+    "yoy_pct": 13.2453,
+    "as_of": "2024-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 1131.4,
+    "ma50": 1040.8804,
+    "ma150": 1041.0373,
+    "slope50_pct_month": 0.8542,
+    "slope150_pct_month": -1.1591,
+    "range_position": 0.8041
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 1131.4,
+   "avg_volume_50d": 783017.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2024-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "BMY": {
+  "ticker": "BMY",
+  "eligible": true,
+  "reasons": [],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 4.65,
+    "prior_max_ttm_eps": 4.23,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.35,
+    "prior_max_yoy": 1.183333,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 12973000000.0,
+    "year_ago_revenue": 11201000000.0,
+    "yoy_pct": 15.82,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 64.84,
+    "ma50": 58.6074,
+    "ma150": 57.7292,
+    "slope50_pct_month": 4.1099,
+    "slope150_pct_month": 9.1994,
+    "range_position": 0.9575,
+    "extension_above_ma50_pct": 10.6344,
+    "weeks_since_cross": 5.4,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 64.84,
+   "avg_volume_50d": 12406438.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "BP": {
+  "ticker": "BP",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "BRK-B": {
+  "ticker": "BRK-B",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "BSX": {
+  "ticker": "BSX",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 2.55,
+    "prior_max_ttm_eps": 2.39,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 57
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.355556,
+    "prior_max_yoy": 1.8125,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 57
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 5442000000.0,
+    "year_ago_revenue": 4663000000.0,
+    "yoy_pct": 16.706,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 50.46,
+    "ma50": 45.9222,
+    "ma150": 62.8389,
+    "slope50_pct_month": -7.9199,
+    "slope150_pct_month": -25.1838,
+    "range_position": 0.1195
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 50.46,
+   "avg_volume_50d": 20894001.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "CAT": {
+  "ticker": "CAT",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 22.74,
+    "prior_max_ttm_eps": 22.35,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 0.85,
+    "prior_max_yoy": 0.741214,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 20543000000.0,
+    "year_ago_revenue": 14249000000.0,
+    "yoy_pct": 44.1715,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 837.58,
+    "ma50": 914.6858,
+    "ma150": 804.7268,
+    "slope50_pct_month": -1.002,
+    "slope150_pct_month": 22.7143,
+    "range_position": 0.6579
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 837.58,
+   "avg_volume_50d": 3237334.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "COST": {
+  "ticker": "COST",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 18.29,
+    "prior_max_ttm_eps": 17.38,
+    "as_of": "2026-05-10 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.226368,
+    "prior_max_yoy": 0.37884,
+    "as_of": "2026-05-10 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 70527000000.0,
+    "year_ago_revenue": 63723000000.0,
+    "yoy_pct": 10.6775,
+    "as_of": "2026-05-10 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 952.75,
+    "ma50": 949.4664,
+    "ma150": 975.765,
+    "slope50_pct_month": -3.4971,
+    "slope150_pct_month": 2.9416,
+    "range_position": 0.4323
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 952.75,
+   "avg_volume_50d": 2400568.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-10 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "CRM": {
+  "ticker": "CRM",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 8.16,
+    "prior_max_ttm_eps": 7.32,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.531646,
+    "prior_max_yoy": 41.666667,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 11133000000.0,
+    "year_ago_revenue": 9444000000.0,
+    "yoy_pct": 17.8844,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 197.51,
+    "ma50": 172.4919,
+    "ma150": 187.2541,
+    "slope50_pct_month": -0.0671,
+    "slope150_pct_month": -14.2837,
+    "range_position": 0.4129
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 197.51,
+   "avg_volume_50d": 14896161.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "CRWD": {
+  "ticker": "CRWD",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "CSCO": {
+  "ticker": "CSCO",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 2.99,
+    "prior_max_ttm_eps": 2.99,
+    "as_of": "2026-04-25 (EDGAR filed)",
+    "quarters_used": 62
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.393443,
+    "prior_max_yoy": 0.565217,
+    "as_of": "2026-04-25 (EDGAR filed)",
+    "quarters_used": 62
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 15841000000.0,
+    "year_ago_revenue": 13991000000.0,
+    "yoy_pct": 13.2228,
+    "as_of": "2026-04-25 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 122.57,
+    "ma50": 117.7415,
+    "ma150": 95.6774,
+    "slope50_pct_month": 3.8538,
+    "slope150_pct_month": 23.5781,
+    "range_position": 0.8926,
+    "extension_above_ma50_pct": 4.1009,
+    "weeks_since_cross": 1.0,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 122.57,
+   "avg_volume_50d": 25204912.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-25 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "CVS": {
+  "ticker": "CVS",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 2.28,
+    "prior_max_ttm_eps": 5.76,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.638298,
+    "prior_max_yoy": 31.857143,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 106096000000.0,
+    "year_ago_revenue": 94588000000.0,
+    "yoy_pct": 12.1664,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 95.67,
+    "ma50": 101.4622,
+    "ma150": 86.3471,
+    "slope50_pct_month": 6.4348,
+    "slope150_pct_month": 12.5185,
+    "range_position": 0.697
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 95.67,
+   "avg_volume_50d": 8339129.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "DDOG": {
+  "ticker": "DDOG",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "DE": {
+  "ticker": "DE",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "DIS": {
+  "ticker": "DIS",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 7.04,
+    "prior_max_ttm_eps": 7.56,
+    "as_of": "2026-06-27 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.165746,
+    "prior_max_yoy": 293.0,
+    "as_of": "2026-06-27 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 25248000000.0,
+    "year_ago_revenue": 23621000000.0,
+    "yoy_pct": 6.8879,
+    "as_of": "2026-06-27 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 103.18,
+    "ma50": 98.6102,
+    "ma150": 101.9918,
+    "slope50_pct_month": -2.1878,
+    "slope150_pct_month": -3.6143,
+    "range_position": 0.4505
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 103.18,
+   "avg_volume_50d": 10597138.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-27 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "DXCM": {
+  "ticker": "DXCM",
+  "eligible": false,
+  "reasons": [
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 2.3,
+    "prior_max_ttm_eps": 1.93,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 32
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 1.37037,
+    "prior_max_yoy": 1.916667,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 32
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1308400000.0,
+    "year_ago_revenue": 1036000000.0,
+    "yoy_pct": 26.2934,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 87.65,
+    "ma50": 74.7784,
+    "ma150": 69.7039,
+    "slope50_pct_month": 8.5646,
+    "slope150_pct_month": 5.3172,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 17.213,
+    "weeks_since_cross": 2.2,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 87.65,
+   "avg_volume_50d": 5813396.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "EW": {
+  "ticker": "EW",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 2.14,
+    "prior_max_ttm_eps": 7.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.311475,
+    "prior_max_yoy": 7.142857,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1741000000.0,
+    "year_ago_revenue": 1412700000.0,
+    "yoy_pct": 23.2392,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 92.03,
+    "ma50": 88.1206,
+    "ma150": 84.1205,
+    "slope50_pct_month": 2.0531,
+    "slope150_pct_month": 2.4264,
+    "range_position": 0.8602,
+    "extension_above_ma50_pct": 4.4364,
+    "weeks_since_cross": 1.2,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 92.03,
+   "avg_volume_50d": 4987155.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "FTNT": {
+  "ticker": "FTNT",
+  "eligible": false,
+  "reasons": [
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 2.73,
+    "prior_max_ttm_eps": 2.47,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 49
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.464286,
+    "prior_max_yoy": 1.121212,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 49
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 2047900000.0,
+    "year_ago_revenue": 1539700000.0,
+    "yoy_pct": 33.0064,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 164.21,
+    "ma50": 153.5636,
+    "ma150": 109.8065,
+    "slope50_pct_month": 14.3665,
+    "slope150_pct_month": 33.0833,
+    "range_position": 0.9565,
+    "extension_above_ma50_pct": 6.9329,
+    "weeks_since_cross": 15.6,
+    "late_by_extension": false,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 164.21,
+   "avg_volume_50d": 6086340.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "GILD": {
+  "ticker": "GILD",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": -2.85,
+    "prior_max_ttm_eps": 6.64,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -9.125,
+    "prior_max_yoy": 1.467066,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 7803000000.0,
+    "year_ago_revenue": 6667000000.0,
+    "yoy_pct": 17.0391,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 133.06,
+    "ma50": 129.4753,
+    "ma150": 134.3266,
+    "slope50_pct_month": 0.132,
+    "slope150_pct_month": 3.2807,
+    "range_position": 0.5409
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 133.06,
+   "avg_volume_50d": 7752745.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "GOOGL": {
+  "ticker": "GOOGL",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 19.4,
+    "prior_max_ttm_eps": 13.1,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 2.241993,
+    "prior_max_yoy": 1.410377,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 119796000000.0,
+    "year_ago_revenue": 90234000000.0,
+    "yoy_pct": 32.7615,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 357.52,
+    "ma50": 355.8269,
+    "ma150": 340.0261,
+    "slope50_pct_month": -4.5072,
+    "slope150_pct_month": 10.3819,
+    "range_position": 0.7797
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 357.52,
+   "avg_volume_50d": 32987656.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "GS": {
+  "ticker": "GS",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "HD": {
+  "ticker": "HD",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 14.95,
+    "prior_max_ttm_eps": 17.76,
+    "as_of": "2026-05-03 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.100817,
+    "prior_max_yoy": 0.261708,
+    "as_of": "2026-05-03 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 41765000000.0,
+    "year_ago_revenue": 40217000000.0,
+    "yoy_pct": 3.8491,
+    "as_of": "2026-05-03 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 350.78,
+    "ma50": 334.9859,
+    "ma150": 341.5479,
+    "slope50_pct_month": 3.75,
+    "slope150_pct_month": -3.4602,
+    "range_position": 0.4643
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 350.78,
+   "avg_volume_50d": 4725836.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-03 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "HDB": {
+  "ticker": "HDB",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "HON": {
+  "ticker": "HON",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 21.8,
+    "prior_max_ttm_eps": 11.94,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 69
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 2.638776,
+    "prior_max_yoy": 1.076271,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 69
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 9719000000.0,
+    "year_ago_revenue": 9322000000.0,
+    "yoy_pct": 4.2587,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 242.93,
+    "ma50": 234.641,
+    "ma150": 235.3665,
+    "slope50_pct_month": 1.6713,
+    "slope150_pct_month": 6.024,
+    "range_position": 0.7512
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 242.93,
+   "avg_volume_50d": 4591189.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "INFY": {
+  "ticker": "INFY",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "INTU": {
+  "ticker": "INTU",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 25.18,
+    "prior_max_ttm_eps": 20.81,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 5.640719,
+    "prior_max_yoy": 13.033333,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 8558000000.0,
+    "year_ago_revenue": 3963000000.0,
+    "yoy_pct": 115.9475,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 334.43,
+    "ma50": 291.6251,
+    "ma150": 387.1451,
+    "slope50_pct_month": -8.7085,
+    "slope150_pct_month": -27.4253,
+    "range_position": 0.1768
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 334.43,
+   "avg_volume_50d": 5443833.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ISRG": {
+  "ticker": "ISRG",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 8.33,
+    "prior_max_ttm_eps": 7.96,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.192708,
+    "prior_max_yoy": 0.677778,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 2892300000.0,
+    "year_ago_revenue": 2253400000.0,
+    "yoy_pct": 28.3527,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 393.38,
+    "ma50": 392.5738,
+    "ma150": 453.248,
+    "slope50_pct_month": -7.4029,
+    "slope150_pct_month": -11.1171,
+    "range_position": 0.2352
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 393.38,
+   "avg_volume_50d": 3072082.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "JNJ": {
+  "ticker": "JNJ",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 8.82,
+    "prior_max_ttm_eps": 15.18,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 42
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.5,
+    "prior_max_yoy": 45.666667,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 42
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 25310000000.0,
+    "year_ago_revenue": 21893000000.0,
+    "yoy_pct": 15.6077,
+    "as_of": "2026-06-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 261.81,
+    "ma50": 248.3474,
+    "ma150": 236.6597,
+    "slope50_pct_month": 5.3923,
+    "slope150_pct_month": 9.4827,
+    "range_position": 0.945,
+    "extension_above_ma50_pct": 5.4209,
+    "weeks_since_cross": 7.0,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 261.81,
+   "avg_volume_50d": 8328395.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "JPM": {
+  "ticker": "JPM",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "revenue confirmation failed \u2014 revenue shrinking YoY",
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 3.92,
+    "prior_max_ttm_eps": 5.8,
+    "as_of": "2014-09-30 (EDGAR filed)",
+    "quarters_used": 20
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.15625,
+    "prior_max_yoy": 0.558824,
+    "as_of": "2014-09-30 (EDGAR filed)",
+    "quarters_used": 20
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 24246000000.0,
+    "year_ago_revenue": 25211000000.0,
+    "yoy_pct": -3.8277,
+    "as_of": "2014-09-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 359.79,
+    "ma50": 333.5748,
+    "ma150": 312.4625,
+    "slope50_pct_month": 6.2958,
+    "slope150_pct_month": 2.9148,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 7.8589,
+    "weeks_since_cross": 9.2,
+    "late_by_extension": false,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 359.79,
+   "avg_volume_50d": 9163488.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2014-09-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "KO": {
+  "ticker": "KO",
+  "eligible": false,
+  "reasons": [
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 3.42,
+    "prior_max_ttm_eps": 3.17,
+    "as_of": "2026-04-03 (EDGAR filed)",
+    "quarters_used": 26
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.378788,
+    "prior_max_yoy": 0.613636,
+    "as_of": "2026-04-03 (EDGAR filed)",
+    "quarters_used": 26
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 12472000000.0,
+    "year_ago_revenue": 11854000000.0,
+    "yoy_pct": 5.2134,
+    "as_of": "2026-04-03 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 86.87,
+    "ma50": 82.5892,
+    "ma150": 78.1763,
+    "slope50_pct_month": 2.8972,
+    "slope150_pct_month": 7.8358,
+    "range_position": 0.9106,
+    "extension_above_ma50_pct": 5.1832,
+    "weeks_since_cross": 9.0,
+    "late_by_extension": false,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 86.87,
+   "avg_volume_50d": 17934496.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-03 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "LIN": {
+  "ticker": "LIN",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 15.95,
+    "prior_max_ttm_eps": 15.31,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 30
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.182336,
+    "prior_max_yoy": 3.310811,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 30
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 9289000000.0,
+    "year_ago_revenue": 8112000000.0,
+    "yoy_pct": 14.5094,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 492.46,
+    "ma50": 511.6734,
+    "ma150": 492.3395,
+    "slope50_pct_month": 0.0053,
+    "slope150_pct_month": 8.0699,
+    "range_position": 0.6609
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 492.46,
+   "avg_volume_50d": 2306538.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "LLY": {
+  "ticker": "LLY",
+  "eligible": true,
+  "reasons": [],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 28.7,
+    "prior_max_ttm_eps": 23.82,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 52
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 1.594771,
+    "prior_max_yoy": 52.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 52
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 22974000000.0,
+    "year_ago_revenue": 12729000000.0,
+    "yoy_pct": 80.4855,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 1231.9399,
+    "ma50": 1159.6532,
+    "ma150": 1046.8254,
+    "slope50_pct_month": 6.7471,
+    "slope150_pct_month": 7.5197,
+    "range_position": 0.994,
+    "extension_above_ma50_pct": 6.2335,
+    "weeks_since_cross": 0.8,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 1231.94,
+   "avg_volume_50d": 3036903.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "LOW": {
+  "ticker": "LOW",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 12.97,
+    "prior_max_ttm_eps": 14.85,
+    "as_of": "2026-05-01 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.0301,
+    "prior_max_yoy": 11.24,
+    "as_of": "2026-05-01 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 23078000000.0,
+    "year_ago_revenue": 20170000000.0,
+    "yoy_pct": 14.4175,
+    "as_of": "2026-05-01 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 218.88,
+    "ma50": 213.7147,
+    "ma150": 236.1061,
+    "slope50_pct_month": -2.1229,
+    "slope150_pct_month": -3.6819,
+    "range_position": 0.206
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 218.88,
+   "avg_volume_50d": 3075807.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-05-01 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MA": {
+  "ticker": "MA",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 17.73,
+    "prior_max_ttm_eps": 16.35,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.384401,
+    "prior_max_yoy": 0.448718,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 9277000000.0,
+    "year_ago_revenue": 7250000000.0,
+    "yoy_pct": 27.9586,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 563.17,
+    "ma50": 522.414,
+    "ma150": 517.5985,
+    "slope50_pct_month": 4.75,
+    "slope150_pct_month": -3.0575,
+    "range_position": 0.7423
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 563.17,
+   "avg_volume_50d": 3576932.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MCD": {
+  "ticker": "MCD",
+  "eligible": false,
+  "reasons": [
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 12.42,
+    "prior_max_ttm_eps": 12.05,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.276923,
+    "prior_max_yoy": 0.98125,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 7099000000.0,
+    "year_ago_revenue": 5956000000.0,
+    "yoy_pct": 19.1907,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 273.72,
+    "ma50": 273.752,
+    "ma150": 294.8425,
+    "slope50_pct_month": -1.5203,
+    "slope150_pct_month": -3.7204,
+    "range_position": 0.1474
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 273.72,
+   "avg_volume_50d": 4606180.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MCO": {
+  "ticker": "MCO",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 15.57,
+    "prior_max_ttm_eps": 14.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.453757,
+    "prior_max_yoy": 0.909091,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 2185000000.0,
+    "year_ago_revenue": 1924000000.0,
+    "yoy_pct": 13.5655,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 478.14,
+    "ma50": 471.6992,
+    "ma150": 464.8423,
+    "slope50_pct_month": 3.7506,
+    "slope150_pct_month": -1.7462,
+    "range_position": 0.5345
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 478.14,
+   "avg_volume_50d": 987296.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MDLZ": {
+  "ticker": "MDLZ",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.81,
+    "prior_max_ttm_eps": 3.97,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.301587,
+    "prior_max_yoy": 1.666667,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 10080000000.0,
+    "year_ago_revenue": 9204000000.0,
+    "yoy_pct": 9.5176,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 61.53,
+    "ma50": 60.8664,
+    "ma150": 58.8696,
+    "slope50_pct_month": 0.2521,
+    "slope150_pct_month": 3.7029,
+    "range_position": 0.7588,
+    "extension_above_ma50_pct": 1.0902,
+    "weeks_since_cross": 2.2,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 61.53,
+   "avg_volume_50d": 9130127.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MELI": {
+  "ticker": "MELI",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 36.05,
+    "prior_max_ttm_eps": 38.36,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 40
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.056468,
+    "prior_max_yoy": 1.996923,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 40
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 7055000000.0,
+    "year_ago_revenue": 4191000000.0,
+    "yoy_pct": 68.3369,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 1824.34,
+    "ma50": 1750.3022,
+    "ma150": 1819.8456,
+    "slope50_pct_month": 3.9849,
+    "slope150_pct_month": -7.8949,
+    "range_position": 0.2878
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 1824.34,
+   "avg_volume_50d": 514877.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "META": {
+  "ticker": "META",
+  "eligible": false,
+  "reasons": [
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 25.06,
+    "prior_max_ttm_eps": 24.76,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 45
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.731343,
+    "prior_max_yoy": 1.871951,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 45
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 56311000000.0,
+    "year_ago_revenue": 40589000000.0,
+    "yoy_pct": 38.7346,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 594.92,
+    "ma50": 598.8285,
+    "ma150": 622.7878,
+    "slope50_pct_month": -0.2094,
+    "slope150_pct_month": -4.0436,
+    "range_position": 0.2658
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 594.92,
+   "avg_volume_50d": 18115604.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MRK": {
+  "ticker": "MRK",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.82,
+    "prior_max_ttm_eps": 7.33,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 37
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -1.268657,
+    "prior_max_yoy": 1.52766,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 37
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 16607000000.0,
+    "year_ago_revenue": 15529000000.0,
+    "yoy_pct": 6.9419,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 130.92,
+    "ma50": 123.8871,
+    "ma150": 117.5598,
+    "slope50_pct_month": 5.2613,
+    "slope150_pct_month": 11.8833,
+    "range_position": 0.9839,
+    "extension_above_ma50_pct": 5.6769,
+    "weeks_since_cross": 7.0,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 130.92,
+   "avg_volume_50d": 10202090.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MRSH": {
+  "ticker": "MRSH",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 8.95,
+    "prior_max_ttm_eps": 9.39,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 10
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.057348,
+    "prior_max_yoy": 0.897959,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 10
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 7404000000.0,
+    "year_ago_revenue": 7061000000.0,
+    "yoy_pct": 4.8577,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 190.79,
+    "ma50": 174.4241,
+    "ma150": 173.8802,
+    "slope50_pct_month": 5.6838,
+    "slope150_pct_month": -2.754,
+    "range_position": 0.6799
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 190.79,
+   "avg_volume_50d": 2706796.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MS": {
+  "ticker": "MS",
+  "eligible": false,
+  "reasons": [
+   "revenue confirmation failed \u2014 revenue shrinking YoY"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 2.57,
+    "prior_max_ttm_eps": 2.51,
+    "as_of": "2018-03-31 (EDGAR filed)",
+    "quarters_used": 29
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.746988,
+    "prior_max_yoy": 1.818182,
+    "as_of": "2018-03-31 (EDGAR filed)",
+    "quarters_used": 29
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 5910000000.0,
+    "year_ago_revenue": 8907000000.0,
+    "yoy_pct": -33.6477,
+    "as_of": "2018-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 215.33,
+    "ma50": 215.0759,
+    "ma150": 189.8379,
+    "slope50_pct_month": 4.477,
+    "slope150_pct_month": 11.5013,
+    "range_position": 0.8618,
+    "extension_above_ma50_pct": 0.1182,
+    "weeks_since_cross": 0.4,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 215.33,
+   "avg_volume_50d": 5935730.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2018-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "MSFT": {
+  "ticker": "MSFT",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 16.61,
+    "prior_max_ttm_eps": 15.57,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 70
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.321981,
+    "prior_max_yoy": 0.563636,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 70
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 82886000000.0,
+    "year_ago_revenue": 69632000000.0,
+    "yoy_pct": 19.0344,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 506.06,
+    "ma50": 408.5934,
+    "ma150": 411.3813,
+    "slope50_pct_month": 1.3053,
+    "slope150_pct_month": -8.1867,
+    "range_position": 0.8246
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 506.06,
+   "avg_volume_50d": 41193747.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "NET": {
+  "ticker": "NET",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "NKE": {
+  "ticker": "NKE",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "revenue confirmation failed \u2014 revenue shrinking YoY",
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.91,
+    "prior_max_ttm_eps": 3.61,
+    "as_of": "2026-02-28 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.551282,
+    "prior_max_yoy": 0.107527,
+    "as_of": "2026-02-28 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 11279000000.0,
+    "year_ago_revenue": 12354000000.0,
+    "yoy_pct": -8.7016,
+    "as_of": "2026-02-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 42.11,
+    "ma50": 43.149,
+    "ma150": 49.9741,
+    "slope50_pct_month": -0.7908,
+    "slope150_pct_month": -14.652,
+    "range_position": 0.0375
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 42.11,
+   "avg_volume_50d": 23302582.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-02-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "NOW": {
+  "ticker": "NOW",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 3.51,
+    "prior_max_ttm_eps": 9.18,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.340909,
+    "prior_max_yoy": 10.7,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 3987000000.0,
+    "year_ago_revenue": 3088000000.0,
+    "yoy_pct": 29.1127,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 127.44,
+    "ma50": 107.69,
+    "ma150": 108.1073,
+    "slope50_pct_month": 5.7564,
+    "slope150_pct_month": -20.192,
+    "range_position": 0.4068
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 127.44,
+   "avg_volume_50d": 27723656.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "NVDA": {
+  "ticker": "NVDA",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 5.53,
+    "prior_max_ttm_eps": 3.92,
+    "as_of": "2026-04-26 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 2.064103,
+    "prior_max_yoy": 2.12,
+    "as_of": "2026-04-26 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 81615000000.0,
+    "year_ago_revenue": 35082000000.0,
+    "yoy_pct": 132.6407,
+    "as_of": "2026-04-26 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 217.55,
+    "ma50": 206.1197,
+    "ma150": 196.5514,
+    "slope50_pct_month": -1.4129,
+    "slope150_pct_month": 5.2169,
+    "range_position": 0.7458
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 217.55,
+   "avg_volume_50d": 150599853.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-26 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "NVO": {
+  "ticker": "NVO",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "NVS": {
+  "ticker": "NVS",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "ORCL": {
+  "ticker": "ORCL",
+  "eligible": false,
+  "reasons": [
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 5.4,
+    "prior_max_ttm_eps": 5.23,
+    "as_of": "2026-02-28 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.154545,
+    "prior_max_yoy": 1.038835,
+    "as_of": "2026-02-28 (EDGAR filed)",
+    "quarters_used": 54
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 17190000000.0,
+    "year_ago_revenue": 14059000000.0,
+    "yoy_pct": 22.2704,
+    "as_of": "2026-02-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 151.05,
+    "ma50": 158.8827,
+    "ma150": 163.8418,
+    "slope50_pct_month": -12.9134,
+    "slope150_pct_month": -14.8676,
+    "range_position": 0.172
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 151.05,
+   "avg_volume_50d": 31453230.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-02-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "PANW": {
+  "ticker": "PANW",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.23,
+    "prior_max_ttm_eps": 3.88,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -1.578947,
+    "prior_max_yoy": 39.666667,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 3002000000.0,
+    "year_ago_revenue": 2257000000.0,
+    "yoy_pct": 33.0084,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 385.04,
+    "ma50": 318.4982,
+    "ma150": 225.7162,
+    "slope50_pct_month": 19.2474,
+    "slope150_pct_month": 23.3032,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 20.8924,
+    "weeks_since_cross": 13.6,
+    "late_by_extension": true,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 385.04,
+   "avg_volume_50d": 7915401.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "PDD": {
+  "ticker": "PDD",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "PEP": {
+  "ticker": "PEP",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 6.7,
+    "prior_max_ttm_eps": 8.08,
+    "as_of": "2026-06-13 (EDGAR filed)",
+    "quarters_used": 56
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.639098,
+    "prior_max_yoy": 1.174757,
+    "as_of": "2026-06-13 (EDGAR filed)",
+    "quarters_used": 56
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 24181000000.0,
+    "year_ago_revenue": 17919000000.0,
+    "yoy_pct": 34.9461,
+    "as_of": "2026-06-13 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 137.73,
+    "ma50": 140.2457,
+    "ma150": 148.6724,
+    "slope50_pct_month": -3.4226,
+    "slope150_pct_month": -0.4147,
+    "range_position": 0.1019
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 137.73,
+   "avg_volume_50d": 8794387.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-13 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "PFE": {
+  "ticker": "PFE",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.56,
+    "prior_max_ttm_eps": 2.47,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 47
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -1.076923,
+    "prior_max_yoy": 61.0,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 47
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 15034000000.0,
+    "year_ago_revenue": 13715000000.0,
+    "yoy_pct": 9.6172,
+    "as_of": "2026-06-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 27.05,
+    "ma50": 24.7669,
+    "ma150": 25.427,
+    "slope50_pct_month": -0.6995,
+    "slope150_pct_month": 1.9064,
+    "range_position": 0.9003
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 27.05,
+   "avg_volume_50d": 41994180.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "PG": {
+  "ticker": "PG",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "revenue confirmation failed \u2014 revenue shrinking YoY",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 6.9,
+    "prior_max_ttm_eps": 7.15,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.132979,
+    "prior_max_yoy": 0.37594,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 21235000000.0,
+    "year_ago_revenue": 21882000000.0,
+    "yoy_pct": -2.9568,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 146.44,
+    "ma50": 146.7465,
+    "ma150": 146.7963,
+    "slope50_pct_month": 1.0285,
+    "slope150_pct_month": 0.6013,
+    "range_position": 0.3842
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 146.44,
+   "avg_volume_50d": 8867334.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "PLTR": {
+  "ticker": "PLTR",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 1.06,
+    "prior_max_ttm_eps": 0.73,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 20
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 4.125,
+    "prior_max_yoy": 5.0,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 20
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1935464000.0,
+    "year_ago_revenue": 883855000.0,
+    "yoy_pct": 118.9798,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 175.23,
+    "ma50": 133.2384,
+    "ma150": 142.6838,
+    "slope50_pct_month": -0.0104,
+    "slope150_pct_month": -12.1321,
+    "range_position": 0.6802
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 175.23,
+   "avg_volume_50d": 43645767.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "QCOM": {
+  "ticker": "QCOM",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "revenue confirmation failed \u2014 revenue shrinking YoY",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 13.96,
+    "prior_max_ttm_eps": 14.61,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.257937,
+    "prior_max_yoy": 1.431095,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 67
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 9947000000.0,
+    "year_ago_revenue": 10979000000.0,
+    "yoy_pct": -9.3998,
+    "as_of": "2026-06-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 162.17,
+    "ma50": 190.0899,
+    "ma150": 166.7217,
+    "slope50_pct_month": -7.9178,
+    "slope150_pct_month": 7.1711,
+    "range_position": 0.3048
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 162.17,
+   "avg_volume_50d": 19148780.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "RIO": {
+  "ticker": "RIO",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "ROP": {
+  "ticker": "ROP",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "SAP": {
+  "ticker": "SAP",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "SBUX": {
+  "ticker": "SBUX",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 2.11,
+    "prior_max_ttm_eps": 3.5,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 1.676471,
+    "prior_max_yoy": 0.177215,
+    "as_of": "2026-06-28 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 9322700000.0,
+    "year_ago_revenue": 8761600000.0,
+    "yoy_pct": 6.4041,
+    "as_of": "2026-06-28 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 104.65,
+    "ma50": 102.5772,
+    "ma150": 98.6384,
+    "slope50_pct_month": 0.1275,
+    "slope150_pct_month": 9.3064,
+    "range_position": 0.8816,
+    "extension_above_ma50_pct": 2.0207,
+    "weeks_since_cross": 6.8,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 104.65,
+   "avg_volume_50d": 7792031.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-28 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "SHEL": {
+  "ticker": "SHEL",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "SHOP": {
+  "ticker": "SHOP",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "SHW": {
+  "ticker": "SHW",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 11.93,
+    "prior_max_ttm_eps": 11.68,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.715,
+    "prior_max_yoy": 0.902174,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 68
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 6789300000.0,
+    "year_ago_revenue": 5305700000.0,
+    "yoy_pct": 27.9624,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 362.71,
+    "ma50": 329.8388,
+    "ma150": 332.6096,
+    "slope50_pct_month": 3.907,
+    "slope150_pct_month": -0.8898,
+    "range_position": 0.8762
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 362.71,
+   "avg_volume_50d": 2419580.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "SNOW": {
+  "ticker": "SNOW",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S2-late not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": -3.91,
+    "prior_max_ttm_eps": -2.67,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 18
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 0.122449,
+    "prior_max_yoy": 0.084211,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 18
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1390951000.0,
+    "year_ago_revenue": 942094000.0,
+    "yoy_pct": 47.6446,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-late",
+   "eligible": false,
+   "details": {
+    "close": 334.7,
+    "ma50": 264.1106,
+    "ma150": 202.4196,
+    "slope50_pct_month": 25.6908,
+    "slope150_pct_month": 0.1084,
+    "range_position": 1.0,
+    "extension_above_ma50_pct": 26.7272,
+    "weeks_since_cross": 10.2,
+    "late_by_extension": true,
+    "late_by_time": true
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 334.7,
+   "avg_volume_50d": 7662990.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "SNY": {
+  "ticker": "SNY",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "SONY": {
+  "ticker": "SONY",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "SPGI": {
+  "ticker": "SPGI",
+  "eligible": false,
+  "reasons": [
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 15.59,
+    "prior_max_ttm_eps": 14.01,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.508039,
+    "prior_max_yoy": 0.94375,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 66
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 4171000000.0,
+    "year_ago_revenue": 3575000000.0,
+    "yoy_pct": 16.6713,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 410.94,
+    "ma50": 412.9574,
+    "ma150": 419.6024,
+    "slope50_pct_month": 3.2897,
+    "slope150_pct_month": -5.4645,
+    "range_position": 0.2664
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 410.94,
+   "avg_volume_50d": 2348805.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "SYK": {
+  "ticker": "SYK",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 9.65,
+    "prior_max_ttm_eps": 9.33,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 72
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.441048,
+    "prior_max_yoy": 0.560284,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 72
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 6589000000.0,
+    "year_ago_revenue": 6022000000.0,
+    "yoy_pct": 9.4155,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 345.81,
+    "ma50": 320.0169,
+    "ma150": 334.3378,
+    "slope50_pct_month": 3.7709,
+    "slope150_pct_month": -5.2299,
+    "range_position": 0.5895
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 345.81,
+   "avg_volume_50d": 2706293.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "TM": {
+  "ticker": "TM",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "TMO": {
+  "ticker": "TMO",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "TMUS": {
+  "ticker": "TMUS",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 10.51,
+    "prior_max_ttm_eps": 10.52,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.158915,
+    "prior_max_yoy": 21.222222,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 22791000000.0,
+    "year_ago_revenue": 20886000000.0,
+    "yoy_pct": 9.1209,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 178.2,
+    "ma50": 181.9704,
+    "ma150": 193.4579,
+    "slope50_pct_month": -2.0081,
+    "slope150_pct_month": -5.1262,
+    "range_position": 0.1211
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 178.2,
+   "avg_volume_50d": 5407383.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "TSLA": {
+  "ticker": "TSLA",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S4 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 1.17,
+    "prior_max_ttm_eps": 2.99,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 1.666667,
+    "prior_max_yoy": -0.025,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 34
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 28236000000.0,
+    "year_ago_revenue": 19335000000.0,
+    "yoy_pct": 46.0357,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S4",
+   "eligible": false,
+   "details": {
+    "close": 330.88,
+    "ma50": 378.2166,
+    "ma150": 395.9789,
+    "slope50_pct_month": -7.5709,
+    "slope150_pct_month": -5.4467,
+    "range_position": 0.17
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 330.88,
+   "avg_volume_50d": 44442856.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "TSM": {
+  "ticker": "TSM",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "TXN": {
+  "ticker": "TXN",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 6.71,
+    "prior_max_ttm_eps": 8.04,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": true,
+    "latest_yoy": 0.671875,
+    "prior_max_yoy": 0.213115,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 5463000000.0,
+    "year_ago_revenue": 4069000000.0,
+    "yoy_pct": 34.259,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 280.44,
+    "ma50": 292.9395,
+    "ma150": 247.7545,
+    "slope50_pct_month": -1.6807,
+    "slope150_pct_month": 27.6232,
+    "range_position": 0.7211
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 280.44,
+   "avg_volume_50d": 8698000.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "UBER": {
+  "ticker": "UBER",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 5.04,
+    "prior_max_ttm_eps": 7.78,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 27
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.409639,
+    "prior_max_yoy": 31.1,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 27
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 14191000000.0,
+    "year_ago_revenue": 11533000000.0,
+    "yoy_pct": 23.0469,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 78.03,
+    "ma50": 71.889,
+    "ma150": 74.5013,
+    "slope50_pct_month": -1.6373,
+    "slope150_pct_month": -8.962,
+    "range_position": 0.3539
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 78.03,
+   "avg_volume_50d": 20685682.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "UL": {
+  "ticker": "UL",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "UNH": {
+  "ticker": "UNH",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 19.27,
+    "prior_max_ttm_eps": 23.56,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 60
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.118248,
+    "prior_max_yoy": 3.444444,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 60
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 112032000000.0,
+    "year_ago_revenue": 109575000000.0,
+    "yoy_pct": 2.2423,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 408.74,
+    "ma50": 412.8255,
+    "ma150": 348.6487,
+    "slope50_pct_month": 4.2687,
+    "slope150_pct_month": 9.9402,
+    "range_position": 0.8551
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 408.74,
+   "avg_volume_50d": 6277359.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "V": {
+  "ticker": "V",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "VOD": {
+  "ticker": "VOD",
+  "error": "insufficient data (q=0, p=251)"
+ },
+ "VRTX": {
+  "ticker": "VRTX",
+  "eligible": true,
+  "reasons": [],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 16.52,
+    "prior_max_ttm_eps": 14.7,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.730924,
+    "prior_max_yoy": 1.301724,
+    "as_of": "2026-06-30 (EDGAR filed)",
+    "quarters_used": 63
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 3333900000.0,
+    "year_ago_revenue": 2770200000.0,
+    "yoy_pct": 20.3487,
+    "as_of": "2026-06-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S2-early",
+   "eligible": true,
+   "details": {
+    "close": 523.91,
+    "ma50": 474.675,
+    "ma150": 461.1207,
+    "slope50_pct_month": 4.4678,
+    "slope150_pct_month": 3.3212,
+    "range_position": 0.9634,
+    "extension_above_ma50_pct": 10.3724,
+    "weeks_since_cross": 7.8,
+    "late_by_extension": false,
+    "late_by_time": false
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 523.91,
+   "avg_volume_50d": 1582224.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-06-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "WFC": {
+  "ticker": "WFC",
+  "error": "HTTP Error 404: Not Found"
+ },
+ "WMT": {
+  "ticker": "WMT",
+  "eligible": false,
+  "reasons": [
+   "stage S3 not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 2.88,
+    "prior_max_ttm_eps": 2.78,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 0.175439,
+    "prior_max_yoy": 8.333333,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 65
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 175684000000.0,
+    "year_ago_revenue": 168003000000.0,
+    "yoy_pct": 4.5719,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "S3",
+   "eligible": false,
+   "details": {
+    "close": 112.66,
+    "ma50": 114.4888,
+    "ma150": 121.1629,
+    "slope50_pct_month": -5.582,
+    "slope150_pct_month": 3.5922,
+    "range_position": 0.4438
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 112.66,
+   "avg_volume_50d": 23673969.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "XOM": {
+  "ticker": "XOM",
+  "eligible": false,
+  "reasons": [
+   "H1 (TTM EPS level breakout) not fired \u2014 latest TTM below prior max",
+   "revenue confirmation failed \u2014 revenue shrinking YoY",
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": false,
+    "latest_ttm_eps": 6.16,
+    "prior_max_ttm_eps": 13.62,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": -0.479167,
+    "prior_max_yoy": 0.515625,
+    "as_of": "2026-03-31 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "revenue": {
+    "confirmed": false,
+    "latest_revenue": 85138000000.0,
+    "year_ago_revenue": 90016000000.0,
+    "yoy_pct": -5.419,
+    "as_of": "2026-03-31 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 159.79,
+    "ma50": 146.7382,
+    "ma150": 147.4242,
+    "slope50_pct_month": 0.0867,
+    "slope150_pct_month": 10.6821,
+    "range_position": 0.8447
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 159.79,
+   "avg_volume_50d": 16488609.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-03-31 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ },
+ "ZM": {
+  "ticker": "ZM",
+  "eligible": false,
+  "reasons": [
+   "stage UNCLASSIFIED not eligible"
+  ],
+  "signals": {
+   "h1": {
+    "hypothesis": "H1",
+    "signal": true,
+    "latest_ttm_eps": 5.4,
+    "prior_max_ttm_eps": 4.64,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "h2": {
+    "hypothesis": "H2",
+    "signal": false,
+    "latest_yoy": 1.151515,
+    "prior_max_yoy": 13.0,
+    "as_of": "2026-04-30 (EDGAR filed)",
+    "quarters_used": 28
+   },
+   "revenue": {
+    "confirmed": true,
+    "latest_revenue": 1239006000.0,
+    "year_ago_revenue": 1177541000.0,
+    "yoy_pct": 5.2198,
+    "as_of": "2026-04-30 (EDGAR filed)"
+   }
+  },
+  "stage": {
+   "stage": "UNCLASSIFIED",
+   "eligible": false,
+   "details": {
+    "close": 107.2,
+    "ma50": 93.2986,
+    "ma150": 89.8502,
+    "slope50_pct_month": -3.4857,
+    "slope150_pct_month": 5.2118,
+    "range_position": 0.8889
+   },
+   "as_of": "2026-08-10"
+  },
+  "liquidity": {
+   "ok": true,
+   "price": 107.2,
+   "avg_volume_50d": 4125201.0,
+   "reasons": [],
+   "as_of": null
+  },
+  "enrichment": {
+   "rs_percentile": null,
+   "volume_trend": null,
+   "extension_context": null,
+   "advisory_only": true
+  },
+  "as_of": {
+   "price_as_of": "2026-08-10",
+   "quarters_as_of": "2026-04-30 (EDGAR filed)",
+   "source": "yfinance (shadow fetch) / constructed"
+  },
+  "firewall": "discovery evidence block \u2014 no card, no CoS triage, no research load (FD #88)"
+ }
+}

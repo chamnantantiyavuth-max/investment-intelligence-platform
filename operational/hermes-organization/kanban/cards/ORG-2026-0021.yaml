@@ -1,0 +1,30 @@
+card_id: ORG-2026-0021
+title: "Inflection: Vertex Pharmaceuticals (VRTX) — EPS TTM breakout + revenue confirming, Stage S2-early (CF franchise + CASGEVY expansion era)"
+research_question: "Vertex's TTM diluted EPS broke its prior 2-year ceiling (as of 2026-06-30 EDGAR filed) with revenue confirming (latest vs year-ago, EDGAR PIT) while price sits S2-early — with the CF franchise maturing, CASGEVY (exa-cel) expanding and the VX-880/type-1 diabetes and pain programs as pipeline optionality, is this inflection durable (real operating momentum beyond one-time IP/royalty items) and does the early-stage price setup still satisfy FD #89 stage discipline?"
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: EQUITY
+principal_owner: org-equity-analyst
+assistant_owner: Equity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-11
+required_by: triage
+expected_artifact: "deep research note (inflection discovery path — FD #88/#89): Vertex EPS inflection quality + stage discipline assessment"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: PARTIAL — EDGAR companyfacts quarterly (PIT filed stamps) + yfinance prices as-of 2026-08-10; no earnings-call transcript or segment detail yet
+validation_status: null
+risk_status: null
+audit_status: null
+inflection_observation: "Equity Inflection universe scan 2026-08-11 (98 names, FD #89 standing instrument): H1 fired (latest TTM EPS > prior 2-year max, as_of 2026-06-30 EDGAR filed); revenue confirmed YoY; stage S2-early — price above 50MA > 150MA, both sloping up, extension minimal; liquidity passes. H2 NOT fired (hypothesis separation preserved). Artifact: discovery/equity_inflection/output/universe-scan-2026-08-11.json"
+inflection_source: "SEC EDGAR companyfacts (CIK 000000875320, PIT filed dates) + yfinance daily prices (as-of 2026-08-10); scanner = discovery/equity_inflection (17 locked tests, FD #88/#89)"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-11

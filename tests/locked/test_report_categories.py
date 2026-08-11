@@ -35,10 +35,19 @@ def test_type_product_maps_to_cs_product():
 
 
 def test_weekly_type_maps_to_weekly():
-    weeklies = [r for r in list_reports() if r["type"] == "weekly"]
-    assert len(weeklies) == 2, f"expected 2 weekly letters, got {len(weeklies)}"
+    # org weekly letters (type=weekly, subject contains "organization") → weekly
+    weeklies = [r for r in list_reports() if r["type"] == "weekly" and "organization" in (r["subject"] or "").lower()]
+    assert len(weeklies) == 2, f"expected 2 org weekly letters, got {len(weeklies)}"
     for r in weeklies:
         assert r["category"] == "weekly"
+
+
+def test_company_weekly_genre():
+    # FD #96 structure 1.1 — company weekly digest → company_weekly category
+    cw = [r for r in list_reports() if r["category"] == "company_weekly"]
+    assert len(cw) >= 1, "expected at least one company_weekly report (FD #96 genre 1.1)"
+    for r in cw:
+        assert r["type"] == "weekly", f"{r['slug']}: company_weekly should be type=weekly"
 
 
 def test_radar_origin_reports_category():

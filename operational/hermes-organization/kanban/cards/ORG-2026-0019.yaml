@@ -1,0 +1,30 @@
+card_id: ORG-2026-0019
+title: "Inflection: Bristol-Myers Squibb (BMY) — EPS TTM breakout ($4.65 vs prior 2y max $4.23) + revenue +15.8% YoY, Stage S2-early (price $64.84)"
+research_question: "Bristol-Myers' TTM diluted EPS broke its prior 2-year ceiling (latest $4.65 vs prior max $4.23, as of 2026-06-30 EDGAR filed) with revenue confirming strongly (+15.8% YoY, $12.97B vs $11.20B) while price sits S2-early (price $64.84 > 50MA $58.61 > 150MA $57.73, 50MA +4.1%/mo) — is this the post-Eliquis/Opdivo LOE transition finally inflecting (new-launch portfolio: Breyanzi, Reblozyl, Camzyos, milvexian/COVID pivot), or a transient (inventory/timing/pipeline-milestone quarter), and does the early-stage setup still satisfy FD #89 stage discipline?"
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: EQUITY
+principal_owner: org-equity-analyst
+assistant_owner: Equity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-11
+required_by: triage
+expected_artifact: "deep research note (inflection discovery path — FD #88/#89): Bristol-Myers EPS inflection quality + stage discipline assessment"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: PARTIAL — EDGAR companyfacts quarterly (PIT filed stamps) + yfinance prices as-of 2026-08-10; no earnings-call transcript or segment detail yet
+validation_status: null
+risk_status: null
+audit_status: null
+inflection_observation: "Equity Inflection universe scan 2026-08-11 (98 names, FD #89 standing instrument): H1 fired — latest TTM diluted EPS $4.65 breaks prior 2-year max $4.23 (quarters_used=67, as_of 2026-06-30 EDGAR filed); revenue confirmed +15.8% YoY ($12.97B vs $11.20B); stage S2-early — price $64.84 > 50MA $58.61 > 150MA $57.73, 50MA slope +4.1%/mo; liquidity passes. H2 NOT fired (hypothesis separation preserved). Artifact: discovery/equity_inflection/output/universe-scan-2026-08-11.json"
+inflection_source: "SEC EDGAR companyfacts (CIK 00000014272, PIT filed dates) + yfinance daily prices (as-of 2026-08-10); scanner = discovery/equity_inflection (17 locked tests, FD #88/#89)"
+open_decision_slots: []
+dependencies: []
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-11
