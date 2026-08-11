@@ -26,5 +26,5 @@ inflection_source: "SEC EDGAR companyfacts (CIK 0000059478, PIT filed dates) + y
 open_decision_slots: []
 dependencies: []
 blocked_reason: null
-next_action: "research COMPLETE — RM-2026-000-3 published (reports/lly-inflection-deep-research-2026-08-11.md + CRO companion), 11-stage pipeline CLEAN READY, awaiting Founder gate"
+next_action: "research COMPLETE — RM-2026-0007 published (reports/lly-inflection-deep-research-2026-08-11.md + CRO companion), 11-stage pipeline CLEAN READY, awaiting Founder gate"
 last_updated: 2026-08-11
