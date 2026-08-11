@@ -1,3 +1,34 @@
+# Session Closeout — 2026-08-11 (FD #95 WP1-3 + FD #96 Blog Layout Structure A)
+
+**Status:** COMPLETE — ChatGPT FIT-GAP WP1-3 DELIVERED (Shared Equity Universe + Quality & Asymmetry Discovery + Deep Research Standing Contract) + Blog Layout Structure A (category sections on /library, companion nesting). 7 commits, fd_count 112, suite 198/198. **AHEAD 7 — push is Founder call.**
+
+## What happened
+
+1. **Founder direction:** "C แก้พวก workflow ที่ ChatGPT เสนอให้เสร็จก่อนครับ" — complete the 3 remaining WPs of the 4-WP ChatGPT external-review FIT-GAP (WP4 = FD #94 done). Then blog layout: "บทความค่อนข้างกระรัดกระจายไม่ได้แยกหมวดหมู่ชัดเจน" → structure A approved.
+2. **FD #95 — WP1-3 (commits 74d8e51/dc2f3ac/1ebca4f):**
+   - **WP1 Shared Equity Universe** (`discovery/equity_universe.py`): 98 names, CIKs verified vs SEC company_tickers.json (2026-08-11), FO-8 core + large/mid-cap + ADRs, PIT identity, ADR flags, deterministic membership (FD #53); fetcher FO_UNIVERSE derives from shared layer; 10 locked tests.
+   - **WP2 Quality & Asymmetry Discovery** (`discovery/quality_asymmetry/`): 4 archetype lenses (Durable Compounder / Long-Runway 100-Bagger / Mispriced Quality / Asymmetric Value), pure deterministic, NO score, thresholds PROPOSED (FD #53), evidence-only firewall (FD #88 pattern), role 05 Principal Owner; 10 locked tests.
+   - **WP3 Deep Research Standing Contract** (template 16): 11-stage reusable workflow from RM-2026-0004, free-form content (FD #64 item 7), registered in template index.
+3. **Locked test fix (bb6401b):** audit decisions register date 10→11 Aug 2026 — cron-review F1 CLOSED (register grew past FD #89; Acceptance Lock respected with FD ref).
+4. **FD #96 — Blog Layout Structure A (84d332c + e783948):**
+   - `category` frontmatter field on all 24 reports (deterministic mapping, YAML re-parse 24/24 valid).
+   - `report_store.py`: category parse + REPORT_CATEGORIES/CATEGORY_LABELS + backward-compat default.
+   - `LibraryPage.tsx`: section grouping (หุ้นที่คัดจากข้อมูลผิดปกติ / หุ้นที่คัดตามคำขอ Buffett-Pabrai-LiLu-100Baggers / Close System Products / Weekly Intelligence) + companion nesting.
+   - **Real bug fixed:** old companion matcher `-opposing$` never matched the actual `<base>-opposing-<date>` naming convention → new pairing key `slug.replace("-opposing-", "-")`. 24 published → 14 research notes shown.
+   - 7 locked category tests; VISUAL_QA `evidence/ui/fd95-blog-categories/`.
+5. **Verification:** suite 198/198 (was 190 + 8 new category tests; env = pytest venv 3.11), tsc 0, lint 0 errors, build exit 0, browser-verified (4 sections, companion links nested, console 0 errors, no h-scroll, vision-confirmed).
+
+## FDs recorded this session
+
+- **FD #95 (item 111)** — ChatGPT FIT-GAP WP1-3 DELIVERED.
+- **FD #96 (item 112)** — Blog Layout Structure A: category sections + companion nesting.
+
+## Recommended next action
+
+**Push decision (7 commits ahead: 74d8e51→e783948).** Options: A — push now (reco: content verified, Vercel deploy shows new layout live); B — hold; C — push after mobile 390 check. Then: **WIL #3 (~13 Aug)** → IPM Week 2 (~14 Aug) → radar mid-week Thu 13 Aug → radar Mon 17 Aug → AGENTS.md checkpoint (protected, interactive session).
+
+---
+
 # Session Closeout — 2026-08-11 (cron review 12:10) — FD #93/#94 world reconciled
 
 **Status:** COMPLETE — 11 Aug sessions reconciled: FD #93 (delegation high revert) + FD #94 (publication firewall + Thai editorial standard) delivered, committed, PUSHED (origin/main == HEAD `ddb203d`, 363 commits, fd 110). CS Product Discovery deferred by Founder (Option C, 11 Aug). Suite re-run 339/340 (1 stale-assertion failure, see F1).
