@@ -28,13 +28,13 @@ from pathlib import Path
 
 import yfinance as yf
 
-# FO-universe first (data-proven, FD #88 plan §8); expand later per validation.
-# CIKs from role 11 PRINCIPAL.md / FD #81 (verified against company_tickers.json).
-FO_UNIVERSE = {
-    "AAPL": "0000320193", "MSFT": "0000789019", "NVDA": "0001045810",
-    "GOOGL": "0001652044", "AMZN": "0001018724", "META": "0001326801",
-    "TSLA": "0001318605", "JNJ": "0000200406",
-}
+# Shared Equity Universe (WP1 — ChatGPT FIT-GAP): CIKs verified against SEC
+# company_tickers.json (2026-08-11). FO-8 core = data-proven subset (FD #88/#89);
+# the full 98-name universe is available via get_universe() for broader scans.
+from discovery.equity_universe import get_fo8, get_entry
+
+# Backward-compatible alias: FO_UNIVERSE now derives from the shared layer.
+FO_UNIVERSE = {t: e.cik for t, e in get_fo8().items()}
 
 USER_AGENT = "IIP-Research/1.0 (admin@iip.local)"
 REQUEST_DELAY = 0.15  # SEC: 10 req/s limit
