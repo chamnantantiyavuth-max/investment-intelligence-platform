@@ -17,6 +17,7 @@ Mapped org forms (TEMPLATE-DISPOSITION v0.1, FD #54). Every form maps to a canon
 | 13-AUDIT-FINDING | Audit finding | governance-audit / audit-gap-remediation | Evidence-linked |
 | 14-CHANGE-REQUEST | Material change proposal | CHANGE-CONTROL-AND-APPROVAL (12 fields) | |
 | 15-ASSISTANT-WORKLOG | Assistant handoff | label contract (Standard §9) | |
+| 16-DEEP-RESEARCH-STANDING-CONTRACT | Full Company Deep Research workflow | RM-2026-0004 precedent (FD #87) + FD #88/#94 rules | WP3 — reusable stages, free-form content; feeds all deep research mandates |
 
 Rejected (not copied): pack `04-DEEP-DIVE-RESEARCH-PAPER` (CIW-RESULT-CONTRACT + Phase 8 §8 exist; Master Paper deferred) and `05-THEME-HYPOTHESIS-CARD` (canonical Theme Card exists, THEME-MODEL §7).
 <!-- 2026-08-05 14:55 UTC+7 -->
