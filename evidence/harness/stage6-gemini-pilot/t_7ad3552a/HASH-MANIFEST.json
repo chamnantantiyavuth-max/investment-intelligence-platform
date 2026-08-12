@@ -1,0 +1,61 @@
+{
+  "task": "t_7ad3552a",
+  "stage": "S2 — Independent Hermes Pass A (anti-anchoring)",
+  "asset": "AAPL",
+  "analyst": "org-equity-analyst",
+  "frozen_at": "2026-08-12T22:35:00+07:00",
+  "hash_algorithm": "SHA-256",
+  "normalization": "UTF-8, LF line endings, no trailing-newline stripping (raw file bytes hashed per section)",
+  "file": "pass-a-view/pass-a-view.md",
+  "whole_file_sha256": "80e88c9a0cc1b7286aafe7c7084b932ba33597889c006416660dfe2c7187d74e",
+  "views": {
+    "VIEW 1 — Business Understanding (Module A)": {
+      "sha256": "8b8da64e36bf35231a5fa45e6cf26f30402f8847637d9540afeed8463535f30b",
+      "chars": 2107
+    },
+    "VIEW 2 — Financial Quality (Module F)": {
+      "sha256": "6dbfb4e03755fa3e544558bcb96f53f2e1d576036eb09ec0134289299d865e88",
+      "chars": 2820
+    },
+    "VIEW 3 — Returns & Reinvestment (Module H)": {
+      "sha256": "ccba5b6e64502efeec460d72895edf9eddbc71f760262ba321e3a50492d8cd90",
+      "chars": 1054
+    },
+    "VIEW 4 — Balance-Sheet Resilience (Module J-stress inputs)": {
+      "sha256": "af98aa824ac07f99102164651b0aac54df1feec84c1175e7d950fbf0c1632b2d",
+      "chars": 1093
+    },
+    "VIEW 5 — Competitive Durability / Moat Mechanics (Module C)": {
+      "sha256": "0957e38042c8a5ce5cadba9b5b941f8f1c5c0dcda7f3bf5fdff34175cb09c4c8",
+      "chars": 3158
+    },
+    "VIEW 6 — Growth Quality & Predictability (Modules I, D)": {
+      "sha256": "2aa6411bbd92a729f4741a959c1cd72429b9f7a6a84cf01b4b58e6eabe81ecb7",
+      "chars": 1097
+    },
+    "VIEW 7 — Valuation Context (Modules M/N/O — advisory only, no recommendation)": {
+      "sha256": "a4f3fe31c897c5e7e506ec96fa3514328580ccffd7c3a29908ef4cc2a58fc6b7",
+      "chars": 885
+    },
+    "VIEW 8 — Permanent-Loss Risk & Inversion (Modules K/L)": {
+      "sha256": "b036850736eef3653aaa8482366837d89d4cb24bb35fb1740f0c39a0b629b2d2",
+      "chars": 1887
+    },
+    "VIEW 9 — Research Confidence & Unresolved (Module Q inputs)": {
+      "sha256": "7552aa8322a506ab423d9853cb1eeea092a52124303a68f8863d51b45c489d11",
+      "chars": 2091
+    }
+  },
+  "sources": {
+    "10k-fy2025.htm": "548ae59778cf08ee",
+    "10k-fy2025.txt": "9f131e15932db18d",
+    "10q-q3fy2026.htm": "4ad5bea67cedfa75",
+    "10q-q3fy2026.txt": "b48511826d5cb147",
+    "8k-ex99-q3fy2026.htm": "070abd6a9cdb7070",
+    "8k-ex99-q3fy2026.txt": "43d7fbb718356d72",
+    "8k-index.json": "11f2b1e98e28910e",
+    "8k-q3fy2026.htm": "d8a173f0b8cb911e",
+    "companyfacts.json": "73a86c6aedc31f77",
+    "submissions.json": "705a5cb6e9c7b8b2"
+  }
+}
