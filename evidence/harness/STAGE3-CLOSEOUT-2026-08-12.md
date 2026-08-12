@@ -1,10 +1,11 @@
 # STAGE 3 — Non-Canonical Kanban Technical Pilot Closeout
 
-**Status:** COMPLETE — recommendation: **PASS WITH CONDITIONS** (see §11)
-**Date:** 2026-08-12
-**Board:** `iip` (display name "Capital Intelligence") — ONE board, ZERO production impact
+**Status:** COMPLETE — recommendation: **PASS** (amended per C6 — see STAGE3.2-CLOSURE for the evidence-language corrections; all previously "pending" items now verified)
+**Date:** 2026-08-12 (amended 2026-08-12 via Stage 3.2 C6)
+**Board:** `iip` (display name "Capital Intelligence") — ONE board
 **Authorization:** FD #99 (Stage 3 conditional GO, 24 constraints)
 **Scope honored:** PILOT-NONCANONICAL only · no real repo-board mirror · no /kanban rewire · no Cron migration · no v3.8 promotion · no SOUL switch · no MEMORY/USER mutation · no board other deletion · no real IPM repo access
+**Impact statement (C6 correction):** **ZERO canonical research/portfolio-state impact; bounded live runtime-config changes occurred for the technical pilot** (kanban toolset enabled on iip/org-cos/org-data-steward; ipm pilot model + toolset). Pilot-only configs restored post-pilot per C5 (least privilege).
 
 ---
 
@@ -52,18 +53,17 @@ t_ce872540  [ipm]     PILOT 5 tenant (gpt-5.6-sol pilot)   → done
 
 Worker spawn evidence: pid 41116 (P1), pid 27656 (P4 run 6), etc. Heartbeat + comment persistence verified in every run.
 
-## 5. Restart Durability Evidence
+## 5. Restart Durability Evidence (C2-amended)
 
-- All 6 tasks persist in `kanban/boards/iip/kanban.db` across separate CLI/worker processes (SQLite-backed — durable by design; verified by independent DB read after worker processes exited).
-- Dependency link persists in `task_links` table.
-- Comments/events persist per task (verified counts).
+- **DB persistence: PASS** — all 6 tasks persist in `kanban/boards/iip/kanban.db` across separate CLI/worker processes (SQLite-backed); dependency link + comments/events persist.
+- **Gateway restart recovery: PASS (verified in C2, Stage 3.2)** — real `hermes gateway restart` (PID 8060 → 43016): task persisted, board remained `iip`, dispatcher resumed (run 9, worker pid 8920), single worker no duplicate, no task redirected to board `other`.
 
 ## 6. Failure/Recovery Evidence
 
-- **Timeout path:** worker exceeding `max_runtime` → dispatcher records `timed_out` with elapsed/limit → re-queued `ready` with retry.
+- **Timeout path (granularity recorded):** configured `max_runtime=5s`; observed worker termination ≈ **60–61s** (dispatcher tick granularity 60s). `max_runtime` is NOT exact wall-clock enforcement — do not use as second-level SLA until dispatcher granularity is understood (C6 note).
 - **Failure limit / circuit breaker:** 2 consecutive non-success → `blocked` with `consecutive_failures=2, failure_limit=2, last_error` metadata. **No worker storm** (only 2 runs then auto-block).
 - **Block semantics:** worker attempting `complete` while blocked → kernel rejects ("already terminal") — verified as designed.
-- **Orphan recovery:** no orphans observed in pilot window (dispatcher `reconcile_orphans` default on).
+- **Orphan recovery: PASS (verified in C3, Stage 3.2)** — worker pid 19232 deliberately killed mid-run → dispatcher detected stale run ("pid 19232 not alive"), reconciled to `ready`, spawned exactly ONE replacement (run 11, pid 37812) → completed. No storm, no duplicate workers.
 
 ## 7. Tenant / Privacy Findings
 
@@ -72,28 +72,27 @@ Worker spawn evidence: pid 41116 (P1), pid 27656 (P4 run 6), etc. Heartbeat + co
 - **Synthetic IPM workspace used:** `Antigravity/harness-pilot/ipm-test/` — real `independent-portfolio-manager` repo **never touched** (verified: pilot task workspace=dir:harness-pilot/ipm-test).
 - **Finding S3-F1 (real defect):** `HERMES_KANBAN_BOARD=other` env var is injected by the Hermes runtime/session env and overrides the `kanban/current` file (env has precedence in `get_current_board()`). First pilot task landed on board `other` before detection. **Workaround:** always pass `--board iip` explicitly + export `HERMES_KANBAN_BOARD=iip` in worker shells. **Root fix (Stage 4+):** set env correctly at session/gateway level or document board-pinning convention.
 
-## 8. Filesystem Isolation — VERDICT: **A (HARD ISOLATION AVAILABLE) — Docker adopted as feasible**
+## 8. Filesystem Isolation — VERDICT: **A (HARD ISOLATION AVAILABLE AND ADOPTED AS TARGET) — PRODUCTION READINESS (C4-verified)**
 
-Feasibility test executed (real containers, real sentinels):
+**A1 — Hard-isolation primitive: PROVEN (Stage 3).** Docker 29.6.1 + WSL2 Ubuntu; container mount test both directions (IIP container cannot read ipm sentinel; IPM container cannot read iip sentinel).
 
-```
-Docker 29.6.1 + Docker Desktop (daemon starts in ~5s) — AVAILABLE
-WSL2 Ubuntu default distro — AVAILABLE
+**A2 — Hermes worker Docker compatibility: PROVEN (C4, Stage 3.2).** Real Kanban worker on `terminal.backend: docker`:
 
-IIP container (mounts ONLY iip-test):
-  read iip sentinel        → sentinel-iip          ✓
-  read ipm sentinel (rel)  → BLOCKED (not mounted) ✓
-  read host ipm path       → BLOCKED (not mounted) ✓
+| Check | Result |
+|---|---|
+| Worker launches in Docker | PASS — spawned as root, `.dockerenv` present |
+| IIP synthetic workspace readable | PASS — `sentinel-iip` read |
+| Opposite IPM workspace | PASS (isolated) — `/workspace/ipm-test` absent (mount not provided) |
+| Reverse (IPM profile container) | PASS — only ipm mounted; iip-test absent |
+| Python | PASS — 3.11.15 |
+| Git | PASS — 2.47.3 |
+| Node | PASS — v20.20.2 |
+| Heartbeat/comment/complete | PASS — persisted back to board (run 12) |
+| Result persistence | PASS — summary + events in `kanban/boards/iip/kanban.db` |
 
-IPM container (mounts ONLY ipm-test):
-  read ipm sentinel        → sentinel-ipm-private  ✓
-  read iip sentinel        → BLOCKED (not mounted) ✓
-```
+**Operational cost (measured):** Docker Desktop daemon startup ~5s; idle overhead ~42MB / 0.27% RAM for existing containers. Hermes docker backend uses `nikolaik/python-nodejs:python3.11-nodejs20` image (python+node+git available). Worker startup latency: one-time image pull on first run; subsequent runs fast. Complexity: per-profile `terminal.backend: docker` + `docker_volumes` mount mapping (IIP-only vs IPM-only) — contained in profile config.
 
-**Operational cost assessment:**
-- Docker Desktop daemon startup ~5s; idle RAM overhead for existing containers ~42MB / 0.27% (measured `docker stats`); one existing unrelated container (`capital-circuit-research-lab-db-1`) untouched.
-- **But:** Hermes terminal backend is currently `local` (all profiles). Workers run on host with full FS access today. Adopting Docker as the worker runtime requires a **terminal backend switch + per-profile mount mapping** — this is a Stage 4+ engineering change, NOT a Stage 3 pilot outcome.
-- **Verdict:** Hard isolation via Docker is **feasible and demonstrated**. Residual risk TODAY (logical-only workers) remains; the path to hard isolation is concrete and tested. Founder acceptance of the transition plan is a Stage 4 decision.
+**FILESYSTEM ISOLATION VERDICT — PRODUCTION READINESS: A (hard isolation available and adopted as target architecture).** Production IPM tasks may proceed on the shared board once the production IPM profile is configured with docker backend + IPM-only mounts (Stage 7 cutover decision; Founder approval still required for production IPM model).
 
 ## 9. Rollback Proof
 
@@ -106,21 +105,21 @@ IPM container (mounts ONLY ipm-test):
 
 | ID | Severity | Description | Owner |
 |---|---|---|---|
-| S3-F1 | Medium | `HERMES_KANBAN_BOARD=other` env overrides board file — wrong-board task placement risk | Harness (Stage 4+) |
+| S3-F1 | **Medium → FIXED (C1, Stage 3.2)** | `HERMES_KANBAN_BOARD` env injected by `_pin_kanban_board_env()` at session boot overrides board file. Root cause identified (`hermes_cli/main.py:2445-2463` pins env at chat boot from then-current board). **C1 mitigation:** `scripts/board-guard.sh` fail-closed assertion (4/4 tests: stale env → block; force/fresh/explicit → pass) — organizational tasks MUST resolve board=iip or STOP. Full upstream fix deferred to Stage 4 (S3-F1 is the Stage 4 engineering pilot candidate). | Harness |
 | S3-F2 | Low | `kanban boards show <slug>` subcommand syntax differs (needs `show` without arg) — cosmetic CLI discoverability | Hermes docs |
 | S3-F3 | Low | `set-default-workdir iip` (no path) did NOT clear; explicit `""` did — CLI semantics misleading | Hermes docs |
-| S3-F4 | Info | Worker `timed_out` elapsed ≈60s vs max_runtime 5s — dispatcher tick granularity (60s dispatch_interval) means sub-60s runtime caps round up | Acceptable for IIP cadence |
-| S3-F5 | Info | Board `other` retains 185 junk tasks (untouched per constraint) + 1 archived pilot (t_657aab4e) — deletion still deferred (O5) | Founder |
+| S3-F4 | Info | Worker `timed_out` elapsed ≈60s vs max_runtime 5s — dispatcher tick granularity (60s dispatch_interval); max_runtime ≠ exact wall-clock (C6 note) | Acceptable for IIP cadence |
+| S3-F5 | Info | Board `other` retains 185 junk tasks (untouched per constraint) + 1 archived pilot (t_657aab4e) + 1 done pilot (t_4c6afbcd landed there pre-fix) — deletion still deferred (O5) | Founder |
 
-## 11. Recommendation: **PASS WITH CONDITIONS**
+## 11. Recommendation: **PASS** (amended from PASS WITH CONDITIONS — C2/C3/C4 verified the previously-pending items)
 
-**PASS** — Hermes Kanban works end-to-end as an organizational runtime on this machine: worker lifecycle, dependency promotion, block/unblock, circuit breaker, tenant cross-visibility, Sol pilot model dispatch, privacy cleanliness, rollback — all verified with real worker evidence.
+**PASS** — Hermes Kanban works end-to-end as an organizational runtime on this machine: worker lifecycle, dependency promotion, block/unblock, circuit breaker, tenant cross-visibility, Sol pilot model dispatch, privacy cleanliness, gateway restart recovery, orphan reconciliation, and Docker hard isolation (A1+A2) — all verified with real worker evidence.
 
-**Conditions for Stage 4 (v3.8 engineering pilot):**
-1. Resolve S3-F1 board-pinning (env var) before multi-board production traffic.
-2. Decide filesystem isolation transition: adopt Docker worker backend (hard isolation proven) or Founder-accept logical-only with documented residual risk.
-3. Review board `other` disposition (O5) — still deferred.
-4. Apply Stage 4 scope: ONE bounded engineering task on v3.8 candidate; rollback to v3.7.1 on regression.
+**Stage 4 entry conditions (now satisfied or scoped):**
+1. ✅ S3-F1 board-pinning mitigated fail-closed (`board-guard.sh`); root fix = Stage 4 pilot scope.
+2. ✅ Filesystem isolation: A (hard) PROVEN incl. Hermes worker (C4) — production-readiness verdict issued; production IPM config still needs Stage 7 cutover decision.
+3. ⏸ Board `other` disposition (O5) — still deferred, not a Stage 4 blocker.
+4. ✅ Stage 4 scope: ONE bounded engineering task (S3-F1 board-pinning root fix) on v3.8 candidate; rollback to v3.7.1 on regression.
 
 **Stage 4 NOT started. STOP — awaiting Founder review.**
 
