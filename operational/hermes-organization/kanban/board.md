@@ -30,3 +30,15 @@ Inbox → Triage → Scoped → Data Ready → In Research → Cross-Review → 
 - Only an explicit Founder decision changes canonical governance state.
 - Cards: `cards/<card_id>.yaml` (schema KANBAN-CONTRACT §3). Holds: `holds/<hold_id>.yaml`.
 <!-- 2026-08-05 14:55 UTC+7 -->
+
+---
+
+## ⛔ FROZEN — Stage 7 Production Cutover (2026-08-13)
+
+**This repo board is FROZEN as migration source only.** New writes STOPPED effective 2026-08-13 (Stage 7.1, FD #106).
+
+- ONE authoritative organizational work-state source = **Hermes Capital Intelligence board** (`kanban/boards/iip/`, board name "Capital Intelligence")
+- Live cards migrate to Hermes board per Stage 7.3 mapping (see `evidence/harness/S7.3-*`)
+- This board remains FROZEN/read-only pending **Stage 8** (deletion — separate authorization)
+- Historical record preserved: cards 0001-0021, digests, holds (do NOT modify)
+- Do NOT create new cards here — use Hermes kanban (board-safety hook enforced on all org profiles)
