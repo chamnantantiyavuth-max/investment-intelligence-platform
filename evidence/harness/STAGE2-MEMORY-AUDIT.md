@@ -84,3 +84,6 @@ v0.20.0 support verified:
 7. Only if the flow works cleanly on the real surface → propose production enablement
 
 **If the approval workflow is broken/awkward on the active surface:** do NOT silently leave approval off; use stricter profile/tool/filesystem write boundaries until fixed (Harness §35 gate).
+
+---
+<!-- 2026-08-12 19:10:33 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->

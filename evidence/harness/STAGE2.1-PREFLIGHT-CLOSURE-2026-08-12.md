@@ -8,7 +8,7 @@
 
 ## P1 — Canonical Founder Decision Lineage ✅
 
-- **Vault register:** FD-98 added (11 Aug row; verified present)
+- **Vault register:** FD-98 added (12 Aug row; verified present — M3 corrected from "11 Aug")
 - **Repo register:** FD-98 added to `operational/FOUNDERS-DECISIONS.md` **item 114** on the clean `harness/stage2-prep` branch (main dirty tree untouched) — exact same Stage 2 scope as vault entry
 - Both registers now carry the identical authorization text. Stage 3 authorization will be recorded through the same dual-register mechanism.
 
@@ -107,3 +107,6 @@ Stage 2.1     : P1–P7 COMPLETE ← current position
 Stage 3       : AUTHORIZED (per Founder direction) — awaiting explicit GO after this report
 Stages 4–9    : NOT AUTHORIZED
 ```
+
+---
+<!-- 2026-08-12 19:10:33 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->

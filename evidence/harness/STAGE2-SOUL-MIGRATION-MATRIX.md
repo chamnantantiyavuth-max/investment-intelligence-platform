@@ -113,3 +113,6 @@ Stage 2 constraint: **no production switch.** Proof in staging worktree (`iip-ha
 - `sync-governance.py` composes SOUL from shared/SOUL.md — the canonical must become the NEW research SOUL (or the script learns per-project SOUL selection).
 - Script PROFILES list must gain `org-radar-scout` (currently missing — Stage 1.1 finding) before any sync run that touches org profiles.
 - **Stage 2 does NOT edit sync-governance.py** (would mutate production sync behavior) — flagged for Stage 3.
+
+---
+<!-- 2026-08-12 19:10:33 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->

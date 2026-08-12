@@ -75,3 +75,6 @@ IPM
 - `ipm-operating-review` = **NOT needed** (simulated-portfolio-office owns)
 
 **Exact diffs for Stage 3** (after Founder approves responsibilities): one diff per skill (extend/reshape), each with content-level change list. No skill is created/edited in Stage 2.
+
+---
+<!-- 2026-08-12 19:10:33 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->

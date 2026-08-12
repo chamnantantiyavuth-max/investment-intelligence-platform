@@ -59,12 +59,15 @@
 
 | Verdict | Count | Items |
 |---|---|---|
-| KEEP | 25 | 1,2,5,7,9,10,11,12,14,18,19,20,23,24,25,26,27,28,29,30,33,35,36,37,38,39,40,41,42,43 |
-| RE-SCOPE | 10 | 3,6,13,15,16,17,21,26a,31,32,34 |
+| KEEP | 30 | 1,2,5,7,9,10,11,12,14,18,19,20,23,24,25,26,27,28,29,30,33,35,36,37,38,39,40,41,42,43 |
+| RE-SCOPE | 8 | 3,6,13,15,16,17,21,34 |
 | MOVE | 1 | 8 |
-| RETIRE | 2 | 4,22 |
+| RETIRE | 4 | 4,22,31,32 |
+| **TOTAL** | **43** | (M2 correction: #31/#32 are RETIRE (hard-coding), not RE-SCOPE; nonexistent `26a` removed) |
 
 **P5 focus capabilities — all preserved:** Session Preflight (#9), Project Truth Map (#10), Property/Invariant Testing (#29), Mutation Testing Lite (#28), deterministic hooks (gate-check/isolation-scan #12), Close Beta/E2E (#37), Golden Project/regression (#38), security/secret (#39), rollback (#40), verification doctrine (#41).
+
+**Arithmetic (M2 correction):** 43 rows = **30 KEEP / 8 RE-SCOPE / 1 MOVE / 4 RETIRE**. #31 (hard-coded model routing) + #32 (hard-coded Config Dependencies) are RETIRE — runtime config owns routing; nonexistent `26a` removed.
 
 **Gap found during matrix:** v3.8 candidate §Verification omits explicit mention of `session-preflight.sh` + `PROJECT_TRUTH_MAP.md` + mutation/property testing references — candidate text updated below to carry these references (see v3.8 §Verification Test-Strength Checks + References).
 

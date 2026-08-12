@@ -114,7 +114,7 @@ Material engineering decisions (architecture, schema, permission/security, irrev
 - Milestone Evidence Log: `references/milestone-evidence-log.md`
 - Gate check + isolation scan: `references/gate-check-template.sh` + `references/isolation-scan.sh`
 - Security/secret discipline + rollback: §Core Principles #8 + §Rollback
-- Full capability classification: `V38-CAPABILITY-PRESERVATION-MATRIX.md` (43 items: 30 KEEP, 10 RE-SCOPE, 1 MOVE, 2 RETIRE)
+- Full capability classification: `V38-CAPABILITY-PRESERVATION-MATRIX.md` (43 items: 30 KEEP, 8 RE-SCOPE, 1 MOVE, 4 RETIRE — M2 corrected)
 
 ## Delegation
 

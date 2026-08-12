@@ -158,3 +158,6 @@ Stage 2  (preparation)   : COMPLETE ← current position (this report)
 Stage 3  (technical pilot): NOT AUTHORIZED — awaiting Founder review of this report
 Stages 4–9: NOT AUTHORIZED
 ```
+
+---
+<!-- 2026-08-12 19:10:33 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->
