@@ -1,0 +1,14 @@
+{
+  "rehearsal": "NotebookLM Deep Research browser path (R4, Stage 6.6)",
+  "transport": "authenticated browser/CDP (chrome 151, port 9222, profile hermes-profiles/chrome-iip)",
+  "prompt_sha256": "47a1d49961d52001",
+  "prompt_excerpt": "Research Apple Inc. moat durability with focus on the AI-interface disintermedia",
+  "started": "2026-08-13 01:54:03 +0700",
+  "status": "COMPLETED",
+  "completed": "2026-08-13 01:59:36 +0700",
+  "report_title": "The Gatekeeper Dilemma: Assessing Apple Inc.'s Moat Durability and AI-Interface Disintermediation Risk",
+  "sources_discovered": 41,
+  "report_raw_chars": 30929,
+  "report_raw_sha256": "4389f9d74bffb836",
+  "frozen": "R4-NOTEBOOKLM-REPORT-FROZEN.md (identical copy)"
+}
