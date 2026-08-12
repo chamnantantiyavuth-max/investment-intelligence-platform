@@ -1,13 +1,15 @@
-"""Org-workflow API routes (FD #55, UI-0) — read-only operational tracking.
+"""Org-workflow API routes (FD #55, UI-0 + Stage 7.5, FD #106) — read-only.
 
-Serves kanban cards, holds, and the research-artifact registry from committed
-repo files. Operational tracking ONLY — never domain state (KANBAN-CONTRACT
-§1). No writes; git is the single writer and audit trail.
+Serves kanban cards, holds, and the research-artifact registry. Since Stage 7.5
+cutover the ONE authoritative organizational work-state source is the Hermes
+Capital Intelligence board (`hermes_kanban_store`); legacy repo-board YAML is
+FROZEN (Stage 7.1) and no longer read for live work-state. Operational tracking
+ONLY — never domain state (KANBAN-CONTRACT §1). No writes; read-only UI.
 
 Endpoints:
-  GET /org-queue                — kanban columns + cards (+ holds join)
-  GET /org-holds                — hold records (active + cleared)
-  GET /research-artifacts       — artifact registry
+  GET /org-queue                — Hermes board columns + tasks
+  GET /org-holds                — hold records (empty on Hermes board; legacy holds frozen)
+  GET /research-artifacts       — artifact registry (unchanged — repo artifacts)
   GET /research-artifacts/{id}  — single artifact (markdown content)
 
 Provenance is explicit per surface (data_source field). Auth-protected like
@@ -17,19 +19,29 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from backend import auth, org_store
+from backend import auth, hermes_kanban_store, org_store
 
 router = APIRouter(prefix="/api", tags=["org-workflow"], dependencies=[Depends(auth.require_auth)])
 
 
 @router.get("/org-queue")
 async def get_org_queue():
-    cards = org_store.list_cards()
+    try:
+        cards = hermes_kanban_store.list_tasks()
+        meta = hermes_kanban_store.board_meta()
+        columns = hermes_kanban_store.COLUMNS
+        holds = hermes_kanban_store.list_holds()
+        data_source = meta.get("data_source", "hermes_kanban_board")
+    except FileNotFoundError:
+        # Hard-fail closed: do NOT silently fall back to the frozen legacy board
+        # as live work-state (Stage 7.1 freeze). Surface the error honestly.
+        raise HTTPException(status_code=503, detail="Hermes kanban board unavailable (frozen legacy board is not live work-state)")
     return {
-        "data_source": "org_workflow_kanban",
-        "columns": org_store.COLUMNS,
+        "data_source": data_source,
+        "columns": columns,
         "cards": cards,
-        "holds": org_store.list_holds(),
+        "holds": holds,
+        "board": {"slug": meta.get("slug"), "name": meta.get("name")},
     }
 
 
