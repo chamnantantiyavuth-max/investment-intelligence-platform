@@ -49,3 +49,7 @@ S1–S5 from radar pass deleg_c98d7277 (browser-verified public sources). S6 der
 | CPILFESL (core CPI) | 336.065 (2026-06) | 327.658 (2025-06) | +2.5658% | 2.57% | REPRODUCED (336.065/327.658−1) |
 
 Source: FRED fredgraph.csv (pulled 2026-08-07, curl). All three radar-reported percentages independently reproduced — no discrepancy.
+
+## Watch-item test (ORG-2026-0012, 2026-08-13)
+
+The driver-ranking watch-item test (card ORG-2026-0012, deferred Founder triage A 7 Aug — "re-test at a settled macro window") has been executed at the 12 Aug observation: gold +11.01% from 8/3 (GC=F 4,477.90 close; $4,500 intraday), DFII10 2.43% (8/10), Hormuz premise inverted (standoff live, WTI +10.53% 5d), July NFP −23k + July CPI 3.4% clearing the data window. Marginal driver of the 11–12 Aug leg = monetary-policy expectations (rate-path repricing); 0008 thesis consistent-with, permanent break NOT established (expectation channel explains the move). Artifacts: `research/macro/gold-watch-item-0012/` (evidence-log, analyst-note, cro-opposing-essay, draft-report-thai). Publication pending Founder gate.
