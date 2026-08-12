@@ -49,14 +49,18 @@ evidence/harness/STAGE4-COMPARISON-V37-V38.md
 ```yaml
 hooks:
   pre_tool_call:
-  - matcher: kanban_|hermes kanban
+  - matcher: kanban_.*|terminal
     command: "C:/Program Files/Git/usr/bin/bash.EXE C:/Users/Admin/Desktop/Antigravity/iip-harness-prep/scripts/board-safety-hook.sh"
     timeout: 10
     fail_closed: true
 hooks_auto_accept: true
 ```
 - **Hook runtime fix discovered:** hook runner uses `subprocess.run(shell=False)` → bare `bash` resolves to WSL bash (can't read Windows paths); must use full git-bash path `C:/Program Files/Git/usr/bin/bash.EXE`. (WinError 193 / exit 127 during testing → fixed.)
-- Backup: `profiles/iip/config.yaml.bak-2026-08-12-stage4`
+- **B1 fix (worker-verified):** matcher `kanban_|hermes kanban` uses fullmatch semantics → never matches real tool names; corrected to `kanban_.*|terminal` (`hermes config set hooks.pre_tool_call.0.matcher`).
+- **B2 fix (worker-verified):** `HERMES_KANBAN_DB` compared as raw string — live env carries `C:\...` while EXPECTED_DB is MSYS `/c/...` → false-block; added `norm_path()` (cygpath -m, lowercase fallback).
+- **R-ADD-2 fix (review finding):** inline env assignment `HERMES_KANBAN_BOARD=other hermes kanban create` inside terminal command string bypassed the hook process env; hook now scans command string for inline board assignment before resolving.
+- **Root fix (review Required Change #1):** `HERMES_KANBAN_BOARD=iip` added to `profiles/iip/.env` (loaded with `override=True` at `main.py:700` BEFORE `_pin_kanban_board_env()` at 2737) — corrects stale inherited `other` at process startup. Verified: `HERMES_KANBAN_BOARD=other hermes --profile iip -z ...` → fresh process resolves `BOARD=iip`; non-IIP profile `capcmd` → `BOARD=unset` (unrelated projects unaffected).
+- Backup: `profiles/iip/config.yaml.bak-2026-08-12-stage4` + `profiles/iip/.env.bak-2026-08-12-stage4`
 
 ## 5. Locked Acceptance Evidence
 
@@ -109,4 +113,4 @@ hooks_auto_accept: true
 **Stage 5 NOT started. STOP — awaiting Founder review.**
 
 ---
-<!-- 2026-08-12 20:38:00 +0700 — captured at write time via scripts/artifact_timestamp.py -->
+<!-- 2026-08-12 20:41:30 +0700 — captured via scripts/artifact_timestamp.py (system clock at write) -->

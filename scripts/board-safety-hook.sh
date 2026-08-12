@@ -86,7 +86,14 @@ except Exception: print('')" 2>/dev/null)
         case "$CMD" in
           *create*|*assign*|*complete*|*block*|*unblock*|*comment*|*link*|*archive*|*move*|*promote*|*dispatch*)
             BOARD_ARG=$(printf '%s' "$CMD" | grep -oE '\-\-board [a-z0-9-]+' | head -1 | awk '{print $2}')
-            guard_kanban "$BOARD_ARG" ""
+            # R-ADD-2: inline env assignment overrides the hook process env —
+            # detect HERMES_KANBAN_BOARD=<x> inside the command string.
+            INLINE_BOARD=$(printf '%s' "$CMD" | grep -oE 'HERMES_KANBAN_BOARD=[a-z0-9_-]+' | head -1 | cut -d= -f2)
+            if [ -n "$INLINE_BOARD" ]; then
+              guard_kanban "$INLINE_BOARD" ""
+            else
+              guard_kanban "$BOARD_ARG" ""
+            fi
             ;;
           *) exit 0 ;;  # read-only kanban cmd (list/show/runs) — allow
         esac
