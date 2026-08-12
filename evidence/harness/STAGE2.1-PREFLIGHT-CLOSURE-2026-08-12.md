@@ -84,7 +84,7 @@
 
 ```
 Branch: harness/stage2-prep (from main 9967459)
-Commit: <SHA recorded at commit time>
+Commit: 765b24a621faa61c295dc3c1620adc23e83d99cc
 Files: operational/FOUNDERS-DECISIONS.md (FD-98 item 114)
        evidence/harness/STAGE2-CLOSEOUT-2026-08-12.md
        evidence/harness/STAGE2-SOUL-MIGRATION-MATRIX.md
