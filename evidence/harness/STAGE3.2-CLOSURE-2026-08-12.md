@@ -91,4 +91,4 @@ All previously-pending evidence items (C2 restart recovery, C3 orphan recovery, 
 **Stage 4 NOT started. STOP — awaiting Founder review.**
 
 ---
-<!-- 2026-08-12 20:05:00 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected) -->
+<!-- 2026-08-12 20:00:45 +0700 — M1: captured via scripts/artifact_timestamp.py (system clock at correction; agent-guessed timestamps rejected; corrected because prior footer 20:05 was agent-guessed future time) -->
