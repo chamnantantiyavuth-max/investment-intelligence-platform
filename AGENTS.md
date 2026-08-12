@@ -52,7 +52,7 @@ Rules:
 | Task class | Workflow | Auto-load? |
 |---|---|---|
 | Software / schema / config / Harness / UI / pipeline engineering, deterministic financial code, Hermes config/SOUL/AGENTS/skills/memory changes, Kanban/Cron/release | `project-workflow` v3.8 (engineering/change-control) | ✅ YES |
-| Discovery / investment research / Gemini Deep Research / CRO / research audit / editorial / IPM investment reasoning | IIP research skills (iip-evidence, iip-deep-research, iip-publication, iip-discovery-audit, capital-kanban) — challenge chain (Cross-Exam → CRO → research audit → Facts Locked → Founder) | ❌ NO — do NOT load `project-workflow` |
+| Discovery / investment research / Gemini Deep Research / CRO / research audit / editorial / IPM investment reasoning | Research tasks load only the task-relevant APPROVED and INSTALLED research skills/contracts (e.g. `fundamental-company-research`, `sec-edgar-research`, `iip-evidence`, `iip-discovery-audit`, `iip-editorial-publication`, `iip-hermes-workforce`; canonical Evidence Model, Discovery Recall v1.1 contract) — challenge chain (Cross-Exam → CRO → research audit → Facts Locked → Founder) | ❌ NO — do NOT load `project-workflow`; do NOT universally load every research skill on every research task |
 
 Mode selection (engineering tasks only):
 
