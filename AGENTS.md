@@ -47,7 +47,14 @@ Rules:
 
 ## Workflow Governance
 
-Auto-load `project-workflow` skill for ALL tasks. Mode selection:
+**Trigger-based workflow routing (P2, FD #105 — pre-cutover alignment):**
+
+| Task class | Workflow | Auto-load? |
+|---|---|---|
+| Software / schema / config / Harness / UI / pipeline engineering, deterministic financial code, Hermes config/SOUL/AGENTS/skills/memory changes, Kanban/Cron/release | `project-workflow` v3.8 (engineering/change-control) | ✅ YES |
+| Discovery / investment research / Gemini Deep Research / CRO / research audit / editorial / IPM investment reasoning | IIP research skills (iip-evidence, iip-deep-research, iip-publication, iip-discovery-audit, capital-kanban) — challenge chain (Cross-Exam → CRO → research audit → Facts Locked → Founder) | ❌ NO — do NOT load `project-workflow` |
+
+Mode selection (engineering tasks only):
 
 | Mode | Use for | Steps |
 |---|---|---|
@@ -56,7 +63,9 @@ Auto-load `project-workflow` skill for ALL tasks. Mode selection:
 
 **Auto-detect rule:** "if unsure → Quick → escalate to Critical if smoke test fails"
 
-Critical Mode gates (2R, 5, 7) are MANDATORY for any task touching financial logic, architecture, or new features.
+Critical Mode gates (2R, 5, 7) are MANDATORY for any engineering task touching financial logic, architecture, or new features.
+
+**Research/engineering boundary:** if a research run discovers a software change is needed → create a separate `[ENGINEERING]` task and apply `project-workflow` v3.8 there; do not contaminate the research first-pass context with engineering governance.
 
 **Phase Naming Convention:** Use prefixes to avoid ambiguity:
 - `IIP-Phase X:` Product roadmap milestone (0-10)
