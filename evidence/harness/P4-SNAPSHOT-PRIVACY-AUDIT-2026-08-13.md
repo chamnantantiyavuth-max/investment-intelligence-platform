@@ -78,4 +78,44 @@ For `stage8-preflight-baseline` and any future checkpoint, store in the repo ONL
 This preserves rollback integrity (hash-verifiable, restore from the private backup
 location) while keeping the public repo metadata-clean.
 
-<!-- 2026-08-13 15:05 UTC+7 (artifact_timestamp.py clock basis) -->
+## 7. A+ REMEDIATION EXECUTED (Founder decision, 13 Aug 2026) + ACCEPTED RESIDUAL
+
+Founder chose **Option A+** (no history rewrite; no force-push; historical
+exposure ACCEPTED as documented residual — P4 audit found no credentials, email
+identity, holdings, positions, cost basis, accounts, transactions, or other
+portfolio-sensitive data).
+
+Executed:
+1. **Private backup preserved & hash-verified** — raw DB copied to
+   `_private-backups/iip-harness/stage8-preflight/` (OUTSIDE the public repo);
+   SHA-256 match verified: `10a71c1b0db96a307f5577d2cdfd38d09077bb7248da7a23557dd2decc4f5bed`
+   (565,248 bytes, both copies).
+2. **Raw DB removed from current branch** — `git rm` of
+   `evidence/harness/stage8-preflight-baseline/kanban-iip.db.snapshot-2026-08-13`
+   (normal commit; NO filter-repo/rebase/force-push). Historical blob remains in
+   prior published commit history (intentional, accepted).
+3. **Sanitized rollback evidence added** — `kanban-snapshot-manifest.json`
+   (captured_at, sha256, byte_size, task_count 72, status_counts
+   {done 63, blocked 5, archived 4}, board slug/name, contains_raw_database=false,
+   raw_backup_location=PRIVATE/LOCAL, privacy classification, restore procedure)
+   + `sanitized-board-summary.json` + `README.md` (doctrine). NO bodies/comments/
+   results/prompts/local paths/attachments/model routing/run metadata.
+4. **Preventive .gitignore** (narrow scope, Harness evidence dirs only):
+   `evidence/harness/**/kanban-*.db*`, `evidence/harness/**/*.sqlite*`,
+   `evidence/harness/**/*.sqlite3*` — verified: synthetic
+   `kanban-fake.db.snapshot` + `kanban-fake.sqlite3` both blocked.
+5. **Doctrine recorded** (this file + dir README):
+   > Public repo rollback evidence = hash + sanitized export + counts.
+   > Raw runtime DB = private backup only.
+
+### Verification (P4 A+)
+
+| Check | Result |
+|---|---|
+| raw DB absent from current HEAD tree | ✅ (git rm; `git ls-files` clean) |
+| manifest contains no absolute local path | ✅ (fields audited; location = "PRIVATE / LOCAL" only) |
+| .gitignore blocks synthetic raw Harness DB snapshot | ✅ (check-ignore line 56 + 58) |
+| tests unaffected | ✅ docs-only change (suite verified 206/206 earlier this session) |
+| git diff scope | ✅ only P4 remediation files; unrelated Founder dirty work untouched |
+
+<!-- 2026-08-13 15:25 UTC+7 (artifact_timestamp.py clock basis) -->

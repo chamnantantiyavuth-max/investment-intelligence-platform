@@ -1,0 +1,25 @@
+{
+  "captured_at": "2026-08-13T14:02:45+07:00",
+  "captured_at_note": "Deterministic clock (artifact_timestamp.py / file mtime); session clock basis verified 14:37 UTC+7",
+  "board": {
+    "slug": "iip",
+    "name": "Capital Intelligence"
+  },
+  "raw_database": {
+    "filename": "kanban-iip.db.snapshot-2026-08-13",
+    "sha256": "10a71c1b0db96a307f5577d2cdfd38d09077bb7248da7a23557dd2decc4f5bed",
+    "byte_size": 565248,
+    "contains_raw_database_in_repo": false,
+    "raw_backup_location": "PRIVATE / LOCAL (outside the public repository — exact path not published)",
+    "privacy_classification_raw": "PUBLIC-UNSAFE (P4 audit 2026-08-13: local paths, internal prompts, model routing, run history; NO credentials/email/portfolio data)",
+    "privacy_classification_manifest": "PUBLIC-SAFE"
+  },
+  "task_count": 72,
+  "status_counts": {
+    "done": 63,
+    "blocked": 5,
+    "archived": 4
+  },
+  "restore_procedure": "1) stop the Hermes gateway/dispatcher; 2) restore the raw DB from the private backup location (hash-verified); 3) restart; 4) verify board with `hermes kanban list`; 5) rollback adapter/git state per S7 closeout if needed.",
+  "doctrine": "Public repo rollback evidence = hash + sanitized export + counts. Raw runtime DB = private backup only. (P4 A+, FD #107 round 3, 2026-08-13)"
+}

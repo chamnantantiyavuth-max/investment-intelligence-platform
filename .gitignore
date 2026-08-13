@@ -49,3 +49,10 @@ discovery/equity_inflection/output/*
 
 .vercel
 .env*
+
+# P4 A+ (2026-08-13): raw Hermes Kanban/runtime DB snapshots under Harness
+# evidence/checkpoint dirs are PRIVATE-ONLY — never commit to public repo.
+# Sanitized rollback evidence (hash + manifest) is committed instead.
+evidence/harness/**/kanban-*.db*
+evidence/harness/**/*.sqlite*
+evidence/harness/**/*.sqlite3*

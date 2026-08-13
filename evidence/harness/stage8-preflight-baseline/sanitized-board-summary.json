@@ -1,0 +1,17 @@
+{
+  "board": {
+    "slug": "iip",
+    "name": "Capital Intelligence",
+    "description": "IIP operational work queue; does not replace Bible or phase gates."
+  },
+  "snapshot": {
+    "captured_at": "2026-08-13T14:02:45+07:00",
+    "task_count": 72,
+    "status_counts": {
+      "done": 63,
+      "blocked": 5,
+      "archived": 4
+    },
+    "note": "Sanitized summary only — no task bodies, comments, results, prompts, paths, attachments, model/provider routing, or run metadata. Full raw backup is PRIVATE/LOCAL (see kanban-snapshot-manifest.json)."
+  }
+}
