@@ -1,3 +1,22 @@
+# Session — 2026-08-13 (night): Live Office v1 FINAL PASS + production freeze (FD #110)
+
+- Phase 3.1 Live Reliability Closure delivered (R1–R3): WS reconnect cursor +
+  state reconcile (since=965 proven), WS auth FAIL-CLOSED (unit x4 + E2E),
+  profile filter BEFORE LIMIT (unit + E2E). Suite 229 → 235. Commits: 9236c52.
+- **Founder verdict: LIVE OFFICE v1 = FINAL PASS ✅** — verified 9236c52 on
+  remote. Production baseline FREEZE (architecture/data semantics/presentation/
+  security all frozen). No more Live Office dev phase.
+- Backlog (explicitly NOT to fix now): archived-task task_title mapping may
+  show task ID only for old archived events in drawer history (cosmetic).
+- Return to Harness: Stage 7 = PASS WITH CONDITIONS, Stage 8 = HOLD pending
+  17 Aug Weekly Radar cadence proof — that run doubles as Live Office
+  real-world acceptance test (observe state changes/handoffs/lines/worker
+  truth/gates at :9119).
+- Commits: 9236c52 (3.1), closeout docs (FD #110, item 127). remote==local.
+- Not touched: Stage 8, old-board ACL, board other, Hermes core, IPM, portfolio.
+- Recommended next action: wait for 17 Aug 08:00 Weekly Radar run → observe
+  Live Office against the real workflow → then Stage 7 FINAL + Stage 8 decision.
+
 # Session Closeout — 2026-08-13 (cron review, late — FD #107–#109 world + Phase 3.1 in-progress)
 
 **Status:** COMPLETE (review-only, no code of mine) — 13 Aug world reconciled: interactive session pushed FD #107/#108/#109 (HEAD `a92bbf8`, **remote == local**); suite **235/235** in working tree (229 committed baseline + 6 new UNCOMMITTED Phase 3.1 hardening tests — R1 WS reconnect cursor contract, R2 WS auth FAIL-CLOSED, R3 activity profile-filter-before-limit); **Phase 3.1 changes UNCOMMITTED** (plugin_api.py +63 / dist/index.js +13 / test_capital_office_semantics.py +83 — session open at 23:41, next interactive session completes + commits); radar mid-week 13 Aug COMPLETED (digest + ORG-2026-0022 chain DONE awaiting Founder publish gate); vault central fd-register backfilled FD-107/108/109; docs committed docs-only, **push NOT performed** (working tree carries in-progress session work).
