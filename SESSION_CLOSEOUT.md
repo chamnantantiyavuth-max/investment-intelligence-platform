@@ -1,3 +1,24 @@
+# Session — 2026-08-13 (late): Live Office Phase 2.1 + Phase 3 Visual Polish (FD #109)
+
+- Phase 2.1 Semantic Hardening (S1–S4) delivered + verified: handoffs ACTIVE/RECENT/HISTORICAL
+  (39 links = 15 edges ALL historical — the old "15 live lines" were stale; 0 shown by default
+  + History toggle), Error > Recently Completed + dual-field crash detection, structured
+  diagnostics classification (no substring), HERMES_HOME profile resolution. +23 tests → 229/229.
+  Founder PASS (f8a6f8e).
+- LOGIC FREEZE declared by Founder. Phase 3 Visual Polish (Living Office v1.2.0) implemented:
+  pod-zone floor, role-motif pixel workstations, truthful animations, ▲ FOUNDER chips,
+  desk-edge handoff lines, read-only detail drawer, summary strip, 1440/1920 responsive.
+- Checkpoint 9/9 delivered: 1440/1920 clean, Working (real [VERIFY] run — [TEST] = diagnostics
+  by frozen H2/S3 can't drive desk state), Awaiting Founder 2 GATEs, ACTIVE CoS→Quant line +
+  packet (in-DOM t+1.0–3.5s), zero-active quiet office, drawer, 0 console errors, 229/229.
+- Genuine-defect fixes: WS /events live-tail (cursor MAX(id); old cursor-0 replay delayed
+  live events minutes) + /activity?profile= filter for drawer.
+- Commits: f8a6f8e (2.1), fba165a (P3) — pushed, remote==local. FD #109 registered (item 126).
+- Not touched: Stage 8 (HOLD), old-board ACL, board other, Hermes core, IPM, portfolio data.
+- Recommended next action: Founder visual review of Phase 3 (screenshots in evidence/ui/
+  live-office-plugin/, dashboard live at :9119) → if PASS: isometric/richer pixel polish,
+  task drawer, orchestration visualization (Phase 3+), or freeze.
+
 # Session — 2026-08-13 (evening): Capital Intelligence Live Office v1 (FD #108)
 
 - Phase -1: native Kanban dashboard tab restored (root cause: global plugins.disabled kanban + stale server; config-only fix + restart; no core patch) — ACCEPTED baseline.
