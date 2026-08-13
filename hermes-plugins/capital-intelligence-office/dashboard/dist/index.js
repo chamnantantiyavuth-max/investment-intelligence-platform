@@ -183,15 +183,19 @@
     const [pulseEdge, setPulseEdge] = useState(null);
     const floorRef = useRef(null);
     const [lines, setLines] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [handoffCount, setHandoffCount] = useState(0);
+    const showHistoryRef = useRef(false);
 
     const refresh = useCallback(function () {
+      const scopeQ = showHistoryRef.current ? "all" : "active";
       return Promise.all([
         authedFetch(API + "/health").catch(function () { return null; }),
         authedFetch(API + "/desks").catch(function () { return null; }),
         authedFetch(API + "/founder-attention").catch(function () { return null; }),
         authedFetch(API + "/activity?limit=14").catch(function () { return null; }),
         authedFetch(API + "/workers?limit=8").catch(function () { return null; }),
-        authedFetch(API + "/handoffs").catch(function () { return null; }),
+        authedFetch(API + "/handoffs?scope=" + scopeQ).catch(function () { return null; }),
       ]).then(function (res) {
         const ok = res[0] && res[1];
         setHealth(safeObj(res[0]));
@@ -200,6 +204,8 @@
         setActivity(safeList(res[3] && res[3].items));
         setWorkers(safeList(res[4] && res[4].items));
         setHandoffs(safeList(res[5] && res[5].items));
+        setHandoffCount(res[5] && typeof res[5].historical_count === "number"
+          ? res[5].historical_count : 0);
         setDegraded(!ok);
       });
     }, []);
@@ -252,9 +258,12 @@
       safeList(handoffs).forEach(function (e) {
         const a = pos[e.from], b = pos[e.to];
         if (a && b) {
+          const hist = e.class === "historical";
           drawn.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y,
             from: e.from_role, to: e.to_role, task_ids: e.task_ids,
-            active: pulseEdge && e.task_ids.indexOf(pulseEdge) >= 0 });
+            cls: e.class || "active",
+            // packet animation ONLY when the event maps to an ACTIVE/RECENT edge
+            active: !hist && pulseEdge && e.task_ids.indexOf(pulseEdge) >= 0 });
         }
       });
       setLines(drawn);
@@ -295,7 +304,9 @@
             lines.map(function (l, i) {
               return h("g", { key: i },
                 h("line", { x1: l.x1, y1: l.y1, x2: l.x2, y2: l.y2,
-                  className: "co-handoff-line" + (l.active ? " co-handoff-line--active" : "") }),
+                  className: "co-handoff-line"
+                    + (l.cls === "recent" ? " co-handoff-line--recent" : "")
+                    + (l.active ? " co-handoff-line--active" : "") }),
                 l.active && h("circle", { className: "co-handoff-packet", cx: l.x1, cy: l.y1, r: 3 }));
             })),
           h(FounderDesk, { items: founderList, degraded: degraded }),
@@ -313,6 +324,15 @@
       h("div", { className: "co-rail" },
         h("button", { className: "co-rail-toggle", onClick: function () { setRailOpen(!railOpen); } },
           railOpen ? "▾ Activity & Runs" : "▸ Activity & Runs"),
+        h("label", { className: "co-rail-history",
+            title: "Recorded task-links that are neither open nor recently active — shown for reference only" },
+          h("input", { type: "checkbox", checked: showHistory,
+            onChange: function () {
+              showHistoryRef.current = !showHistory;
+              setShowHistory(!showHistory);
+              refresh();
+            } }),
+          " Handoff history (" + handoffCount + ")"),
         railOpen && h("div", { className: "co-rail-body" },
           h("div", { className: "co-rail-col" },
             h("div", { className: "co-rail-head" }, "Recent Activity"),

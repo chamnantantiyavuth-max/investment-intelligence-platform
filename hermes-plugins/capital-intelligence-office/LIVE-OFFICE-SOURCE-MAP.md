@@ -75,4 +75,73 @@ All kanban-DB access lives behind ONE `LiveOfficeDataAdapter` in
 task_runs/task_events/task_links are isolated there). The frontend is
 completely schema-independent (consumes only the JSON API).
 
-<!-- 2026-08-13 17:20 UTC+7 (artifact_timestamp.py) -->
+## Phase 2.1 — Semantic Hardening (S1–S4, Founder PASS WITH CONDITIONS)
+
+### S1 — handoff classification: ACTIVE / RECENT / HISTORICAL
+
+A recorded `task_links` relationship is NOT proof of live coordination.
+`/handoffs` classifies every desk-to-desk edge per request:
+
+| Class | Definition | Presentation |
+|---|---|---|
+| ACTIVE | parent or child is currently open (status ∈ open set) OR has a live worker (active run) | normal visible line + packet animation |
+| RECENT | both sides closed, but either side saw an event or a finished run within the 30-minute window (`_HANDOFF_RECENT_WINDOW = 1800`) | subdued dashed fading line |
+| HISTORICAL | both sides completed/archived and no activity in the window | NOT shown by default; exposed via `scope=all` (History toggle) |
+
+- Edge class = worst class across its links (any open link keeps the edge ACTIVE).
+- `load_board(include_archived=True)` is used ONLY by `/handoffs` so archived
+  tasks stay in the classification universe (spec: "both sides completed/archived").
+- Packet animation fires ONLY when a real WS event maps to a rendered
+  ACTIVE/RECENT edge (`task_ids` contains the event's task; historical edges
+  never pulse).
+- Verified live 2026-08-13: the 39 recorded links collapse into 15 desk edges
+  — ALL historical (DR/PILOT/DISC chains, all done, no recent activity).
+  Default office honestly draws 0 lines; History toggle reports 15.
+
+### S2 — Error precedence + crash detection
+
+Desk-state precedence (updated): Awaiting Founder > Working > Blocked >
+Reviewing > Queued > **Error** > Recently Completed > Idle. A recent failure
+can NEVER be masked by a recent success.
+
+Failure/success detection follows the actual `task_runs` schema (verified in
+kanban_db.py): `status ∈ {crashed, timed_out, failed}` OR
+`outcome ∈ {crashed, timed_out, spawn_failed, gave_up}` ⇒ failure; success
+when `status ∈ {done, completed}` OR `outcome == completed`. Both fields are
+checked (old code checked outcome only).
+
+### S3 — structured diagnostics classification
+
+Replaces broad free-text substring matching ("synthetic", "test residue") with
+a strict order:
+1. explicit structured task metadata — the `tasks` table exposes NO
+   type/kind/tags column (verified against schema 2026-08-13) → tier currently
+   unavailable, kept as the documented hook;
+2. exact standardized title PREFIXES: `[PILOT-NONCANONICAL]`, `[TEST]`,
+   `[SYNTHETIC]` (case-insensitive, startswith);
+3. known harness/test profiles: {harness-canary-ipm, harness-docker-test,
+   harness-test}.
+
+An operational task titled "Analyze synthetic data exposure" stays Operational
+(locked negative test). Verified: no live-board title contains the old markers,
+so zero reclassification side-effects.
+
+### S4 — Hermes-home profile resolution
+
+`_profiles_dir()` resolves through the Hermes runtime
+(`hermes_cli.config.get_hermes_home()` → profiles root when HERMES_HOME is
+profile-shaped; else `<HERMES_HOME>/profiles`). The Windows AppData absolute
+path remains only as a last-resort fallback. Verified: resolves to
+`…\AppData\Local\hermes\profiles` with all 11 org-* profiles present.
+
+### Locked acceptance tests
+
+`tests/test_capital_office_semantics.py` — 23 bounded tests (S1 classification
++ archived inclusion, S2 precedence + dual-field run semantics, S3 positive +
+negative classification, S4 resolution). Suite: **229/229 passed**.
+Bounded live probes (2 task pairs, [TEST] prefix) created → verified
+active/recent/historical classification + desk-state isolation → archived +
+unlinked (zero residue). Browser smoke: 11 desks, 2 Founder GATEs, 0 handoff
+lines (honest), History toggle (15), 0 console errors, 1440×900 clean.
+
+<!-- 2026-08-13 18:33 UTC+7 (artifact_timestamp.py) -->

@@ -1,8 +1,19 @@
 """Capital Intelligence Live Office v1 — dashboard plugin backend (READ-ONLY).
 
-Phase 2: Spatial Office. Pure read-only projection of the Hermes Capital
-Intelligence board. No POST/PUT/PATCH/DELETE routes; no tables/files created;
-every response derived per request.
+Phase 2: Spatial Office. Phase 2.1: Semantic Hardening (S1–S4).
+Pure read-only projection of the Hermes Capital Intelligence board.
+No POST/PUT/PATCH/DELETE routes; no tables/files created; every response
+derived per request.
+
+S1 — handoffs are classified ACTIVE / RECENT / HISTORICAL (HISTORICAL hidden
+by default; scope=all for the History toggle). Recorded task_links are NOT
+live coordination.
+S2 — state precedence puts Error above Recently Completed; failure detection
+checks BOTH task_runs.status and task_runs.outcome.
+S3 — diagnostics classification is structured (exact prefixes + known harness
+profiles); no broad free-text substring matching.
+S4 — profile root resolves through the Hermes runtime (HERMES_HOME), with the
+Windows AppData path only as a last-resort fallback.
 
 H3 — all DB access is encapsulated behind ONE adapter (LiveOfficeDataAdapter):
   * preferred: supported ``hermes_cli.kanban_db`` helpers (list_tasks, …)
@@ -56,17 +67,44 @@ _EVENT_POLL_SECONDS = 2.0
 _OPEN_STATUSES = {"triage", "todo", "scheduled", "ready", "running", "blocked", "review"}
 
 # H2 — diagnostics/test classification (presentation-only).
+# Structured, in priority order (Phase 2.1 S3):
+#   1. explicit structured task metadata — the tasks table exposes NO
+#      type/kind/tags column (verified against the kanban schema 2026-08-13),
+#      so this tier is currently unavailable; kept as the documented hook.
+#   2. exact standardized title PREFIXES: [PILOT-NONCANONICAL] / [TEST] / [SYNTHETIC]
+#   3. known harness/test profiles.
+# NO broad free-text substring matching (e.g. "synthetic") — an operational
+# task titled "Analyze synthetic data exposure" must remain operational.
 _DIAGNOSTIC_PROFILES = {"harness-canary-ipm", "harness-docker-test", "harness-test"}
-_DIAGNOSTIC_TITLE_MARKERS = (
-    "[PILOT-NONCANONICAL]", "[TEST]", "[SYNTHETIC]", "synthetic", "test residue",
-)
+_DIAGNOSTIC_TITLE_PREFIXES = ("[PILOT-NONCANONICAL]", "[TEST]", "[SYNTHETIC]")
 
 
 def _is_diagnostic(task: dict) -> bool:
     if task.get("assignee") in _DIAGNOSTIC_PROFILES:
         return True
-    title = (task.get("title") or "").lower()
-    return any(m.lower() in title for m in _DIAGNOSTIC_TITLE_MARKERS)
+    title = (task.get("title") or "").strip().upper()
+    return any(title.startswith(p) for p in _DIAGNOSTIC_TITLE_PREFIXES)
+
+
+# S2 — Hermes task_runs failure/success semantics (kanban_db.py schema
+# docstring, verified 2026-08-13):
+#   status:   running | done | blocked | crashed | timed_out | failed | released
+#   outcome:  completed | blocked | crashed | timed_out | spawn_failed |
+#             gave_up | reclaimed | (null while still running)
+# A run is a FAILURE if EITHER field says so; success likewise. Checking only
+# ``outcome`` (old code) missed status-only crashes.
+_FAIL_STATUSES = {"crashed", "timed_out", "failed"}
+_FAIL_OUTCOMES = {"crashed", "timed_out", "spawn_failed", "gave_up"}
+_DONE_STATUSES = {"done", "completed"}
+_DONE_OUTCOMES = {"completed"}
+
+
+def _run_failed(r: dict) -> bool:
+    return r.get("status") in _FAIL_STATUSES or r.get("outcome") in _FAIL_OUTCOMES
+
+
+def _run_completed(r: dict) -> bool:
+    return r.get("status") in _DONE_STATUSES or r.get("outcome") in _DONE_OUTCOMES
 
 
 # ---------------------------------------------------------------------------
@@ -84,8 +122,8 @@ class LiveOfficeDataAdapter:
     def _connect(self):
         return kanban_db.connect(board=self.board)
 
-    def list_tasks(self, conn) -> list:
-        return kanban_db.list_tasks(conn)
+    def list_tasks(self, conn, include_archived: bool = False) -> list:
+        return kanban_db.list_tasks(conn, include_archived=include_archived)
 
     # -- read-only SQL fallbacks (isolated here) ----------------------------
     def task_runs(self, conn) -> list[dict]:
@@ -148,11 +186,17 @@ class LiveOfficeDataAdapter:
         except Exception:
             return 0
 
-    def load_board(self) -> dict:
-        """One pass over tasks/runs/events/links; returns normalized task dicts."""
+    def load_board(self, include_archived: bool = False) -> dict:
+        """One pass over tasks/runs/events/links; returns normalized task dicts.
+
+        include_archived=True (handoffs only): archived tasks stay in the
+        classification universe so their links can be HISTORICAL — per the S1
+        contract "both sides completed/archived". Desks/founder use the
+        default (operational view, no archived tasks).
+        """
         conn = self._connect()
         try:
-            tasks = self.list_tasks(conn)
+            tasks = self.list_tasks(conn, include_archived=include_archived)
             now = time.time()
             runs = self.task_runs(conn)
             active_run_map: dict[str, dict] = {}
@@ -187,8 +231,17 @@ class LiveOfficeDataAdapter:
 # ---------------------------------------------------------------------------
 
 def _profiles_dir() -> Path:
-    # The dashboard process home is the same root kanban_db uses for boards.
-    return Path.home() / "AppData/Local/hermes/profiles"
+    # S4 — resolve through the Hermes runtime (HERMES_HOME) first, not a
+    # hard-coded Windows path. The AppData absolute path remains ONLY as a
+    # last-resort fallback for exotic deployments.
+    try:
+        from hermes_cli.config import get_hermes_home
+        home = Path(get_hermes_home())
+        if home.parent.name == "profiles":
+            return home.parent
+        return home / "profiles"
+    except Exception:
+        return Path.home() / "AppData/Local/hermes/profiles"
 
 
 def _profile_installed(profile: str) -> bool:
@@ -206,9 +259,10 @@ def _desk_state_for_tasks(tasks: list[dict], last_event_kind: Optional[str],
                           recent_run_failed: bool) -> tuple[str, Optional[dict]]:
     """Derive the desk presentation state from its OPERATIONAL tasks.
 
-    Priority: awaiting_founder > working > blocked > reviewing > queued >
-    recently_completed > idle. ``error`` when a recent run crashed/gave up and
-    there is no higher signal. Missing data is handled by the caller (unavailable).
+    Priority (Phase 2.1 S2): awaiting_founder > working > blocked > reviewing >
+    queued > error > recently_completed > idle. A recent failure can NEVER be
+    masked by a recently completed run (old order had recently_completed first).
+    Missing data is handled by the caller (unavailable).
     """
     state = "idle"
     current = None
@@ -239,10 +293,10 @@ def _desk_state_for_tasks(tasks: list[dict], last_event_kind: Optional[str],
     if state == "idle" and open_tasks:
         state = "queued"
         current = min(open_tasks, key=lambda t: t.get("created_at") or 0)
-    if state == "idle" and last_event_kind == "completed":
-        state = "recently_completed"
     if state == "idle" and recent_run_failed:
         state = "error"
+    if state == "idle" and last_event_kind == "completed":
+        state = "recently_completed"
     return state, current
 
 
@@ -335,10 +389,10 @@ def desks(board: Optional[str] = Query(None)):
             run_map = data["runs_by_task"]
             for t in operational:
                 for r in run_map.get(t["id"], []):
-                    if r.get("status") in ("done", "completed") and \
+                    if _run_completed(r) and \
                        (r.get("ended_at") or 0) > time.time() - 600:
                         last_kind = "completed"
-                    if r.get("outcome") in ("crashed", "gave_up", "timed_out") and \
+                    if _run_failed(r) and \
                        (r.get("ended_at") or 0) > time.time() - 1800:
                         recent_failed = True
             state, current = _desk_state_for_tasks(operational, last_kind, recent_failed)
@@ -427,30 +481,83 @@ def workers(board: Optional[str] = Query(None), limit: int = Query(15, ge=1, le=
         conn.close()
 
 
+# ---------------------------------------------------------------------------
+# S1 — handoff semantics: ACTIVE vs RECENT vs HISTORICAL
+# ---------------------------------------------------------------------------
+
+# A relationship is RECENT when either side saw activity (event or finished
+# run) within this window. Documented in LIVE-OFFICE-SOURCE-MAP.md.
+_HANDOFF_RECENT_WINDOW = 1800  # 30 minutes
+_HANDOFF_CLASS_ORDER = {"active": 0, "recent": 1, "historical": 2}
+
+
+def _classify_handoff(parent: dict, child: dict, runs_by_task: dict, now: float) -> str:
+    """Recorded task_links are NOT proof of live coordination.
+
+    active:      either side is still open (open status) or has a live worker
+    recent:      either side saw an event / finished run within the window
+    historical:  both sides closed and no recent activity — hidden by default
+    """
+    if parent["status"] in _OPEN_STATUSES or child["status"] in _OPEN_STATUSES:
+        return "active"
+    if parent.get("active_run") or child.get("active_run"):
+        return "active"
+    last = max(parent.get("last_activity") or 0, child.get("last_activity") or 0)
+    if last and now - last <= _HANDOFF_RECENT_WINDOW:
+        return "recent"
+    for t in (parent, child):
+        for r in runs_by_task.get(t["id"], []):
+            if r.get("ended_at") and now - r["ended_at"] <= _HANDOFF_RECENT_WINDOW:
+                return "recent"
+    return "historical"
+
+
 @router.get("/handoffs")
-def handoffs(board: Optional[str] = Query(None)):
-    """Real task-link relationships mapped to desk-to-desk flow (read-only)."""
+def handoffs(board: Optional[str] = Query(None), scope: str = Query("active")):
+    """Real task-link relationships mapped to desk-to-desk flow (read-only).
+
+    scope=active (default): ACTIVE (normal line) + RECENT (subdued line) only;
+    HISTORICAL relationships are NOT shown by default. scope=all additionally
+    returns HISTORICAL edges (for the History/Diagnostics toggle). Never
+    deletes task_links; the classification is derived per request.
+    """
+    if scope not in ("active", "all"):
+        raise HTTPException(status_code=400, detail="scope must be 'active' or 'all'")
     adapter = LiveOfficeDataAdapter(_resolve_board(board))
+    # include archived so completed relationships stay classifiable (S1)
+    data = adapter.load_board(include_archived=True)
     conn = adapter._connect()
     try:
         links = adapter.task_links(conn)
-        assignee_map = {t.id: t.assignee for t in adapter.list_tasks(conn)}
-        profile_to_role = {d["profile"]: d["role"] for d in DESKS}
-        desk_set = set(profile_to_role.keys())
-        edges = {}
-        for lk in links:
-            pa, ca = assignee_map.get(lk["parent_id"]), assignee_map.get(lk["child_id"])
-            if pa in desk_set and ca in desk_set and pa != ca:
-                key = (pa, ca)
-                e = edges.setdefault(key, {"from": pa, "to": ca, "task_ids": []})
-                e["task_ids"].append(lk["child_id"])
-        items = [{"from": k[0], "to": k[1], "from_role": profile_to_role[k[0]],
-                  "to_role": profile_to_role[k[1]], "task_ids": v["task_ids"]}
-                 for k, v in sorted(edges.items())]
-        slug = _active_board_slug()
-        return {"board": slug, "board_name": _board_name(slug), "items": items}
     finally:
         conn.close()
+    task_by_id = {t["id"]: t for t in data["tasks"]}
+    profile_to_role = {d["profile"]: d["role"] for d in DESKS}
+    desk_set = set(profile_to_role.keys())
+    now = time.time()
+    edges: dict[tuple, dict] = {}
+    for lk in links:
+        parent, child = task_by_id.get(lk["parent_id"]), task_by_id.get(lk["child_id"])
+        if not parent or not child:
+            continue
+        pa, ca = parent["assignee"], child["assignee"]
+        if pa in desk_set and ca in desk_set and pa != ca:
+            key = (pa, ca)
+            e = edges.setdefault(key, {"from": pa, "to": ca, "task_ids": [], "class": None})
+            e["task_ids"].append(lk["child_id"])
+            cls = _classify_handoff(parent, child, data["runs_by_task"], now)
+            # worst-class wins: any active link keeps the edge ACTIVE
+            if e["class"] is None or _HANDOFF_CLASS_ORDER[cls] < _HANDOFF_CLASS_ORDER[e["class"]]:
+                e["class"] = cls
+    items = [{"from": k[0], "to": k[1], "from_role": profile_to_role[k[0]],
+              "to_role": profile_to_role[k[1]], "task_ids": v["task_ids"], "class": v["class"]}
+             for k, v in sorted(edges.items())]
+    historical = [i for i in items if i["class"] == "historical"]
+    if scope == "active":
+        items = [i for i in items if i["class"] != "historical"]
+    slug = _active_board_slug()
+    return {"board": slug, "board_name": _board_name(slug),
+            "scope": scope, "historical_count": len(historical), "items": items}
 
 
 @router.websocket("/events")
