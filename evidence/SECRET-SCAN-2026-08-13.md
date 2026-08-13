@@ -40,4 +40,23 @@ origin/main..HEAD (15 commits: 13 Aug Harness chain 280c98b..d0ec255 + correctio
 credential material; unrelated Founder dirty work (3 deleted ChatGPT files +
 untracked research drafts) NOT staged.
 
-<!-- 2026-08-13 14:40 UTC+7 (artifact_timestamp.py clock basis) -->
+## CORRECTION (appended 13 Aug 2026, Founder round-3 review — P3)
+
+1. **`.env.*` residual finding was FALSE.** Actual `.gitignore` (verified directly,
+   commit 3dfdcd8) contains lines 18–21 + 51: `.env`, `.env.*`, `*.env`,
+   `!.env.example`, `.env*` — so `.env.*` (e.g. `.env.production`) IS ignored.
+   The scan-script's `check-ignore` probe misread a non-existent-path probe
+   (known pitfall in the git-secret-scan skill). Original PASS verdict stands;
+   the "Recommended: add .env.*" note is withdrawn.
+2. **Push-range count was misstated** as "15 commits". Actual final GitHub range:
+   `9967459..1469de9 = 12 commits` (280c98b, f1ec9ec, adb4214, 998e6e6, 02cf21f,
+   57b1695, 39576f1, 8ed372e, d0ec255, f844dde, 3b0938a, 1469de9). Verified via
+   `gh` compare + `git rev-list --count origin/main..HEAD`.
+3. **NEW residual raised by Founder (P4):** the push range included a raw SQLite
+   board snapshot (`evidence/harness/stage8-preflight-baseline/kanban-iip.db…`)
+   on a PUBLIC repo — content audited separately in
+   `evidence/harness/P4-SNAPSHOT-PRIVACY-AUDIT-2026-08-13.md` (classified
+   PUBLIC-UNSAFE; remediation pending Founder decision). No credentials involved.
+
+<!-- 2026-08-13 15:10 UTC+7 (artifact_timestamp.py clock basis) -->
+
