@@ -446,12 +446,20 @@ def founder_attention(board: Optional[str] = Query(None)):
 
 
 @router.get("/activity")
-def activity(board: Optional[str] = Query(None), limit: int = Query(25, ge=1, le=100)):
+def activity(board: Optional[str] = Query(None), limit: int = Query(25, ge=1, le=100),
+             profile: Optional[str] = Query(None)):
+    """Recent task_events (read-only). Optional ``profile`` filter narrows to
+    events of tasks assigned to that profile — used by the Phase-3 agent
+    detail drawer. Additive only; no semantics change."""
     adapter = LiveOfficeDataAdapter(_resolve_board(board))
     conn = adapter._connect()
     try:
         events = adapter.recent_events(conn, limit)
-        title_map = {t.id: t.title for t in adapter.list_tasks(conn)}
+        tasks = adapter.list_tasks(conn)
+        title_map = {t.id: t.title for t in tasks}
+        if profile:
+            assignee_map = {t.id: t.assignee for t in tasks}
+            events = [e for e in events if assignee_map.get(e["task_id"]) == profile]
         for e in events:
             e["task_title"] = title_map.get(e["task_id"])
         slug = _active_board_slug()
@@ -572,13 +580,26 @@ async def stream_events(ws: WebSocket):
         return
     await ws.accept()
     try:
-        cursor = 0
-        try:
-            cursor = int(ws.query_params.get("since", "0"))
-        except ValueError:
-            cursor = 0
         ws_board = ws.query_params.get("board")
         adapter = LiveOfficeDataAdapter(ws_board)
+        since_q = ws.query_params.get("since")
+        if since_q:
+            try:
+                cursor = int(since_q)
+            except ValueError:
+                cursor = 0
+        else:
+            # Live tail: start from the current newest event so the full
+            # history is NOT replayed through the 200-per-poll window (which
+            # delayed genuine live events by minutes on boards with long
+            # histories). Genuine-liveness fix exposed by Phase-3 visual work.
+            conn = adapter._connect()
+            try:
+                cursor = conn.execute(
+                    "SELECT COALESCE(MAX(id), 0) AS m FROM task_events"
+                ).fetchone()["m"]
+            finally:
+                conn.close()
 
         def _fetch_new(cursor_val: int) -> tuple[int, list[dict]]:
             conn = adapter._connect()

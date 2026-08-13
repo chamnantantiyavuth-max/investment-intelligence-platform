@@ -144,4 +144,25 @@ active/recent/historical classification + desk-state isolation → archived +
 unlinked (zero residue). Browser smoke: 11 desks, 2 Founder GATEs, 0 handoff
 lines (honest), History toggle (15), 0 console errors, 1440×900 clean.
 
-<!-- 2026-08-13 18:33 UTC+7 (artifact_timestamp.py) -->
+## Phase 3 — Visual Polish / Living Office (v1.2.0, LOGIC FREEZE)
+
+Presentation-layer only (per Founder freeze 2026-08-13): pod-zone floor
+(Founder Office focal → TRANSITION → ORCHESTRATION → RESEARCH/INTELLIGENCE
+pods → REVIEW/CONTROL → EXTERNAL SENSING), role-motif pixel workstations
+(monitors/rack/radar/shield/docs/chart…), truthful per-state visuals,
+`▲ FOUNDER` chip on awaiting desks, desk-edge handoff lines, enlarged glowing
+packet, read-only agent detail drawer, top summary strip, compact rail.
+Semantics unchanged (S1–S4 frozen).
+
+Two backend touches (both read-only / genuine-defect fixes exposed by visual
+work):
+1. `/activity?profile=<p>` — additive per-desk event filter for the drawer.
+2. `/events` WS live-tail — cursor now starts at `MAX(id)` at connect instead
+   of 0 (which replayed the full history at 200 events/2s and delayed real
+   events by minutes). Packet pulse now fires ≤1s after a real event.
+
+Evidence: `evidence/ui/live-office-plugin/PHASE3-VISUAL-POLISH-2026-08-13.md`
++ `VISUAL_QA.md` + screenshots (1440/1920 clean, drawer, working, active
+handoff packet, full-page). Suite 229/229. 0 console errors.
+
+<!-- 2026-08-13 22:36 UTC+7 (system clock) -->
