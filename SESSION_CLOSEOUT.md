@@ -1,3 +1,13 @@
+# Session — 2026-08-13 (evening): Capital Intelligence Live Office v1 (FD #108)
+
+- Phase -1: native Kanban dashboard tab restored (root cause: global plugins.disabled kanban + stale server; config-only fix + restart; no core patch) — ACCEPTED baseline.
+- First Visual Checkpoint: Hermes Dashboard plugin `capital-intelligence-office` (user-plugin mechanism) — nav Kanban+Capital Office, 11-desk floor, Founder Desk 2 GATEs, agreement 11/11 vs Native Kanban/CLI/oracle, WS live, DEGRADED no-fabrication, zero-write, no persistent state → **FOUNDER PASS**.
+- Phase 2 Spatial Office (approved): H1 profile truth (11/11 installed; unavailable≠idle) · H2 operational vs diagnostics (DIAG badge; Data Steward Idle) · H3 LiveOfficeDataAdapter · spatial floor + pixel avatars + event-tied animations + 15 real handoff lines + activity rail · acceptance 10/10 · 1440×900 vision-QA clean.
+- Commits: 1978f93 (checkpoint), 80dde14 (Phase 2) — pushed, remote==local.
+- FD #108 registered (item 125) + vault mirrors + obsidian.
+- Not touched: Stage 8 (HOLD), old-board ACL, board other, Hermes core, IPM, portfolio data.
+- Recommended next action: Founder visual review of Phase 2 → if PASS, next = visual polish / Phase 2+ items (deferred list) or freeze at Founder's call.
+
 # Session Closeout — 2026-08-13 (correction session — FD #107: Stage 7 PASS WITH CONDITIONS, C1–C7, Luna preflight)
 
 **Status:** COMPLETE — Founder reviewed the Stage-7 cutover against Harness v1.1 semantic standards (ChatGPT independent review) → **STAGE 7 = PASS WITH CONDITIONS (no rollback; Hermes Capital Intelligence board = authoritative) · STAGE 8 = HOLD (no deletion) · correction pass C1–C7 closed · Luna High preflight: PASS WITH CONDITIONS / HOLD** · suite **206/206** (3 stale org-workflow locked tests + audit date fixed) · FD #107 registered (item 124, fd_count 124) · **UNPUSHED** (push = Founder call).
