@@ -370,13 +370,22 @@
     useEffect(function () {
       refresh();
       let ws, closed = false;
+      // Phase 3.1 R1 — reconnect contract: remember the last processed event
+      // cursor so a reconnect resumes from it (?since=) instead of jumping to
+      // the current tail and skipping events that occurred while disconnected.
+      const lastCursorRef = { current: null };
       function connect() {
         if (closed) return;
-        ws = new WebSocket(buildWsUrl());
-        ws.onopen = function () { setDegraded(false); };
+        let url = buildWsUrl();
+        if (lastCursorRef.current != null) {
+          url += (url.indexOf("?") >= 0 ? "&" : "?") + "since=" + lastCursorRef.current;
+        }
+        ws = new WebSocket(url);
+        ws.onopen = function () { setDegraded(false); refresh(); }; // reconcile every (re)connect
         ws.onmessage = function (ev) {
           try {
             const msg = JSON.parse(ev.data);
+            if (msg.cursor != null) lastCursorRef.current = msg.cursor;
             if (msg.events && msg.events.length) {
               const last = msg.events[msg.events.length - 1];
               setLastEvent(last);

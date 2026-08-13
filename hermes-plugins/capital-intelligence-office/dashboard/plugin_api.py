@@ -153,12 +153,28 @@ class LiveOfficeDataAdapter:
             pass
         return out
 
-    def recent_events(self, conn, limit: int) -> list[dict]:
-        rows = conn.execute(
-            "SELECT id, task_id, run_id, kind, payload, created_at "
-            "FROM task_events ORDER BY id DESC LIMIT ?",
-            (limit,),
-        ).fetchall()
+    def recent_events(self, conn, limit: int, profile: Optional[str] = None) -> list[dict]:
+        """Newest task_events. With ``profile`` the profile filter applies
+        BEFORE the LIMIT (Phase 3.1 R3): events of tasks assigned to P,
+        newest first, then capped at ``limit`` — not global-LIMIT-then-filter.
+
+        Archived-task events ARE included: the drawer's recent history doubles
+        as the desk's audit trail, consistent with handoffs' include-archived
+        classification (documented rule, covered by test_s3_*_archived_rule).
+        """
+        if profile:
+            rows = conn.execute(
+                "SELECT te.id, te.task_id, te.run_id, te.kind, te.payload, te.created_at "
+                "FROM task_events te JOIN tasks t ON t.id = te.task_id "
+                "WHERE t.assignee = ? ORDER BY te.id DESC LIMIT ?",
+                (profile, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT id, task_id, run_id, kind, payload, created_at "
+                "FROM task_events ORDER BY id DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
         out = []
         for r in rows:
             try:
@@ -454,12 +470,10 @@ def activity(board: Optional[str] = Query(None), limit: int = Query(25, ge=1, le
     adapter = LiveOfficeDataAdapter(_resolve_board(board))
     conn = adapter._connect()
     try:
-        events = adapter.recent_events(conn, limit)
+        # Phase 3.1 R3: profile filter BEFORE LIMIT (in the adapter query)
+        events = adapter.recent_events(conn, limit, profile)
         tasks = adapter.list_tasks(conn)
         title_map = {t.id: t.title for t in tasks}
-        if profile:
-            assignee_map = {t.id: t.assignee for t in tasks}
-            events = [e for e in events if assignee_map.get(e["task_id"]) == profile]
         for e in events:
             e["task_title"] = title_map.get(e["task_id"])
         slug = _active_board_slug()
@@ -568,14 +582,24 @@ def handoffs(board: Optional[str] = Query(None), scope: str = Query("active")):
             "scope": scope, "historical_count": len(historical), "items": items}
 
 
+def _ws_authorized(ws) -> bool:
+    """Fail-closed WebSocket authorization (Phase 3.1 R2).
+
+    Auth-helper unavailable / error / exception => unauthorized => the
+    connection is rejected. Auth failure is NEVER converted into
+    authorization — raw task-event data is not exposed when authentication
+    cannot be established.
+    """
+    try:
+        from hermes_cli import web_server as _ws_mod
+        return bool(_ws_mod._ws_auth_ok(ws))
+    except Exception:
+        return False
+
+
 @router.websocket("/events")
 async def stream_events(ws: WebSocket):
-    try:
-        from hermes_cli import web_server as _ws
-        authorized = bool(_ws._ws_auth_ok(ws))
-    except Exception:
-        authorized = True
-    if not authorized:
+    if not _ws_authorized(ws):
         await ws.close(code=1008)
         return
     await ws.accept()
@@ -627,8 +651,11 @@ async def stream_events(ws: WebSocket):
 
         while True:
             cursor, events = await asyncio.to_thread(_fetch_new, cursor)
-            if events:
-                await ws.send_json({"events": events, "cursor": cursor})
+            # Always send (even with zero events): the cursor is the client's
+            # reconnect baseline (?since=) — Phase 3.1 R1. A silent socket
+            # would never hand the client a cursor AND may be treated as
+            # idle; the 2s poll doubles as a lightweight heartbeat.
+            await ws.send_json({"events": events, "cursor": cursor})
             await asyncio.sleep(_EVENT_POLL_SECONDS)
     except WebSocketDisconnect:
         return

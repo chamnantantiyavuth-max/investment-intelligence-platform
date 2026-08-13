@@ -199,8 +199,89 @@ def test_s1_window_boundary_is_documented():
 
 
 # ---------------------------------------------------------------------------
-# S4 — profile root resolution
+# Phase 3.1 — R2 WS auth FAIL-CLOSED / R3 profile filter BEFORE LIMIT
 # ---------------------------------------------------------------------------
+
+def test_r2_ws_auth_accepts_when_helper_ok(monkeypatch):
+    import types
+    fake = types.SimpleNamespace(_ws_auth_ok=lambda ws: True)
+    monkeypatch.setitem(sys.modules, "hermes_cli.web_server", fake)
+    from plugin_api import _ws_authorized
+    assert _ws_authorized(object()) is True
+
+
+def test_r2_ws_auth_rejects_when_helper_denies(monkeypatch):
+    import types
+    fake = types.SimpleNamespace(_ws_auth_ok=lambda ws: False)
+    monkeypatch.setitem(sys.modules, "hermes_cli.web_server", fake)
+    from plugin_api import _ws_authorized
+    assert _ws_authorized(object()) is False
+
+
+def test_r2_ws_auth_rejects_when_helper_raises(monkeypatch):
+    """Fail-CLOSED: auth-helper exception must NOT become authorization."""
+    import types
+
+    def boom(ws):
+        raise RuntimeError("auth subsystem broken")
+
+    fake = types.SimpleNamespace(_ws_auth_ok=boom)
+    monkeypatch.setitem(sys.modules, "hermes_cli.web_server", fake)
+    from plugin_api import _ws_authorized
+    assert _ws_authorized(object()) is False
+
+
+def test_r2_ws_auth_rejects_when_module_missing(monkeypatch):
+    """Fail-CLOSED: helper module unavailable must reject, not allow."""
+    monkeypatch.setitem(sys.modules, "hermes_cli.web_server", None)  # None => ImportError
+    from plugin_api import _ws_authorized
+    assert _ws_authorized(object()) is False
+
+
+def test_r3_activity_profile_filter_before_limit():
+    """R3 contract: profile filter applies BEFORE LIMIT — a target-profile
+    event must survive even when >N newer events exist for other profiles."""
+    import sqlite3
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT, assignee TEXT, status TEXT)")
+    conn.execute("CREATE TABLE task_events (id INTEGER PRIMARY KEY, task_id TEXT, run_id TEXT,"
+                 " kind TEXT, payload TEXT, created_at REAL)")
+    conn.execute("INSERT INTO tasks VALUES ('t_target', 'target task', 'org-equity-analyst', 'todo')")
+    conn.execute("INSERT INTO tasks VALUES ('t_noise', 'noise task', 'org-cos', 'todo')")
+    conn.execute("INSERT INTO task_events VALUES (1, 't_target', NULL, 'created', NULL, 1000.0)")
+    for i in range(20):
+        conn.execute("INSERT INTO task_events VALUES (?, 't_noise', NULL, 'created', NULL, ?)",
+                     (2 + i, 2000.0 + i))
+    conn.commit()
+    from plugin_api import LiveOfficeDataAdapter
+    adapter = LiveOfficeDataAdapter("test")
+    events = adapter.recent_events(conn, limit=8, profile="org-equity-analyst")
+    assert len(events) == 1 and events[0]["task_id"] == "t_target", \
+        "target-profile event must survive other desks' newer noise"
+    # global path unchanged: newest 8 across the board
+    global_events = adapter.recent_events(conn, limit=8)
+    assert len(global_events) == 8 and all(e["task_id"] == "t_noise" for e in global_events)
+    conn.close()
+
+
+def test_r3_archived_task_events_included_in_drawer_history():
+    """Documented rule: archived-task events ARE part of the desk's recent
+    history (audit trail, consistent with handoffs include-archived)."""
+    import sqlite3
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE tasks (id TEXT PRIMARY KEY, title TEXT, assignee TEXT, status TEXT)")
+    conn.execute("CREATE TABLE task_events (id INTEGER PRIMARY KEY, task_id TEXT, run_id TEXT,"
+                 " kind TEXT, payload TEXT, created_at REAL)")
+    conn.execute("INSERT INTO tasks VALUES ('t_arch', 'archived probe', 'org-cro', 'archived')")
+    conn.execute("INSERT INTO task_events VALUES (1, 't_arch', NULL, 'created', NULL, 1000.0)")
+    conn.commit()
+    from plugin_api import LiveOfficeDataAdapter
+    adapter = LiveOfficeDataAdapter("test")
+    events = adapter.recent_events(conn, limit=8, profile="org-cro")
+    assert len(events) == 1 and events[0]["task_id"] == "t_arch"
+    conn.close()
 
 def test_s4_profiles_dir_resolves_and_contains_all_11_desks():
     root = _profiles_dir()

@@ -165,4 +165,28 @@ Evidence: `evidence/ui/live-office-plugin/PHASE3-VISUAL-POLISH-2026-08-13.md`
 + `VISUAL_QA.md` + screenshots (1440/1920 clean, drawer, working, active
 handoff packet, full-page). Suite 229/229. 0 console errors.
 
-<!-- 2026-08-13 22:36 UTC+7 (system clock) -->
+## Phase 3.1 — Live Reliability Closure (R1–R3, v1.2.1)
+
+Bounded reliability/security closure (no visual change, no S1–S4 reopen):
+
+- **R1 WS reconnect contract** — backend now always sends `{events, cursor}`
+  every 2s poll (cursor = client reconnect baseline + heartbeat); frontend
+  tracks the cursor, reconnects with `?since=<last_cursor>`, and runs a
+  read-only `refresh()` on every (re)connect. First load stays live-tail (no
+  history replay). Live proof: reconnect URL `&since=965`, gap event caught
+  up (sub advanced to `created 11:46 PM`), state reconciled without a future
+  event.
+- **R2 WS auth FAIL-CLOSED** — `_ws_authorized(ws)`: helper
+  unavailable/error/exception ⇒ unauthorized ⇒ close 1008. Unit ×4
+  (ok/deny/raise/module-missing) + E2E (missing + invalid credential
+  rejected; office's own token connection still accepted).
+- **R3 profile filter BEFORE LIMIT** — `recent_events(conn, limit, profile)`
+  filters inside the SQL (JOIN tasks.assignee) before LIMIT; archived-task
+  events included in drawer history (documented rule + test). E2E: target
+  profile's older event returned despite newer noise.
+
+Suite **235/235** (229 + 6 new). Browser smoke: 11 desks, 2 GATEs, 0 lines,
+drawer, 0 console errors. Evidence:
+`evidence/ui/live-office-plugin/PHASE3.1-LIVE-RELIABILITY-CLOSURE-2026-08-13.md`.
+
+<!-- 2026-08-13 23:47 UTC+7 (system clock) -->
