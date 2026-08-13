@@ -51,11 +51,28 @@ DELETE routes exist; no tables/files created).
 
 Desk-state precedence: Awaiting Founder > Working > Blocked > Reviewing > Queued > Idle.
 
-## Why no Options Strategist tasks on the board (honest note)
+## H1 — profile truth (Phase 2)
 
-Desk 6 (Options Strategist, profile `org-options-strategist`) is registered in
-ROLE-REGISTRY v0.1 but has no tasks and no installed profile in the current
-org — it renders Idle (and will show a state only when real work is assigned).
-No synthetic desk data is invented.
+All 11 organizational profiles ARE installed in the runtime (verified
+2026-08-13: `profiles/` contains org-cos … org-options-strategist … org-radar-scout).
+`org-options-strategist` exists → its Idle is genuine (profile exists, no work).
+The adapter still distinguishes (H1): `available: false` → presentation state
+`unavailable`/Not Installed (never Idle) if a profile is ever missing.
+
+## H2 — operational vs diagnostics (Phase 2)
+
+Presentation-only classification: PILOT-NONCANONICAL / harness-canary / test /
+synthetic tasks (assignee in {harness-canary-ipm, harness-docker-test,
+harness-test} OR title markers) are exposed in a `diagnostics` layer per desk
+(e.g. Data Steward `DIAG done:4 blocked:1` — the pilot failure-test residue)
+but do NOT drive the main desk state. Main state derives from Operational work
+only. Hermes truth is never filtered (tasks remain on the board).
+
+## H3 — adapter isolation (Phase 2)
+
+All kanban-DB access lives behind ONE `LiveOfficeDataAdapter` in
+`plugin_api.py` (kanban_db helpers preferred; the read-only SELECTs on
+task_runs/task_events/task_links are isolated there). The frontend is
+completely schema-independent (consumes only the JSON API).
 
 <!-- 2026-08-13 17:20 UTC+7 (artifact_timestamp.py) -->
