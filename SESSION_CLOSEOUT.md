@@ -1,3 +1,33 @@
+# Session Closeout — 2026-08-13 (cron review, late — FD #107–#109 world + Phase 3.1 in-progress)
+
+**Status:** COMPLETE (review-only, no code of mine) — 13 Aug world reconciled: interactive session pushed FD #107/#108/#109 (HEAD `a92bbf8`, **remote == local**); suite **235/235** in working tree (229 committed baseline + 6 new UNCOMMITTED Phase 3.1 hardening tests — R1 WS reconnect cursor contract, R2 WS auth FAIL-CLOSED, R3 activity profile-filter-before-limit); **Phase 3.1 changes UNCOMMITTED** (plugin_api.py +63 / dist/index.js +13 / test_capital_office_semantics.py +83 — session open at 23:41, next interactive session completes + commits); radar mid-week 13 Aug COMPLETED (digest + ORG-2026-0022 chain DONE awaiting Founder publish gate); vault central fd-register backfilled FD-107/108/109; docs committed docs-only, **push NOT performed** (working tree carries in-progress session work).
+
+## What happened (this review)
+
+1. **Recent sessions reviewed:** `20260813_114716_95bd58` (11:47 → ~23:41, the marathon interactive session): FD #107 correction pass C1–C7 (committed 8ed372e etc.) → FD #108 (Live Office v1 Phase -1 + First Checkpoint + Phase 2 Spatial Office) → FD #109 (Phase 2.1 PASS + logic freeze + Phase 3 Living Office delivered, checkpoint 9/9, suite 229/229) → **Phase 3.1 hardening started at 23:41 and left UNCOMMITTED** (R1 WS reconnect `since=` cursor + onopen refresh; R2 `_ws_authorized` FAIL-CLOSED — auth-helper exception/module-missing ⇒ reject; R3 `/activity?profile=` filter BEFORE LIMIT + archived-events-in-drawer rule). Suite with these changes: **235/235** ✅ (re-run by this review via hermes-agent venv).
+2. **State verify:** HEAD `a92bbf8` == origin/main (`a92bbf8`), **push SYNCED** (interactive session pushed the harness chain + Live Office commits at 23:01). FD register contiguous through item 126 (FD #109); Obsidian CURRENT-STATE current through FD #109.
+3. **Board/cron check:** radar mid-week 13 Aug run 72 COMPLETED — digest at `evidence/radar/digests/2026-08-13-radar-midweek.md` (FRED DFII10 gap **RESOLVED**; LBMA Aug not yet published; COMEX 403 / CFTC 404 known-gaps unchanged; EDGAR delta: GOOGL $25B 10-tranche debt-close 8-K completes ORG-2026-0017, NVDA director RSU grant, JNJ N-PX routine, MSFT quiet) + card **ORG-2026-0022** (IEA OMR oil supply dislocation: 2026 demand −1.6 mb/d, supply −4.3 mb/d, 8.3 mb/d Gulf shut-in, stocks −410 mb) → **full chain DONE on board** (INBOX t_bef038f6 → RESEARCH t_8ca2aac1 → CRO t_675a738e; drafts in `research/commodities/oil-hormuz-0022/` uncommitted) — **awaiting Founder publish gate**; feeds ORG-2026-0012 re-test. Blocked GATEs: D5 t_51e3be79 (A/B/C), gold 0012 t_2342aa1d (publish), 0016/0017 t_8411623f/t_d5019196 (crashed; drafts uncommitted). Radar standing tasks archived per C3; next observation run = Mon 17 Aug weekly (Luna preflight condition #4).
+4. **Vault registers:** central `fd-register.md` missing FD-107/108/109 → **backfilled** (3 rows; project + ~/.hermes mirrors already had them — 3 mirrors contiguous through FD-109).
+5. **Market snapshot (13 Aug 23:44 SEAST, live mid-session):** equities Thu live — AAPL 303.24 +0.33% 1d (−2.94% 5d) / MSFT 494.12 +0.34% / JNJ 261.49 +0.24% / GOOGL 346.04 +0.73% (−3.27% 5d) / FSLR 221.85 **−2.17% 1d −9.13% 5d** / SMCI 39.64 **+5.40% 1d +34.92% 5d** / NVDA 225.02 +0.42% / SLV 58.54 −0.88% / SPY 776.43 +0.51% / ABBV 251.04 +0.92% / BMY 64.89 +1.88% / LLY 1216.94 −0.27% / VRTX 525.36 −0.07% (+8.54% 5d). Futures: GC=F 4,422.10 +0.30% 1d (+4.25% 5d) / SI=F 64.93 −0.96% 1d (+5.67% 5d — **above ~$62 SILVER-CORR-001 anchor, ratio ~68:1**) / CL=F 82.02 **−1.50% 1d** (+6.12% 5d — Hormuz premium cooling vs the 12 Aug +10.7% observation used for the 0012 re-test).
+6. **State docs updated:** PROJECT_STATE.md (Session row + Build Metrics 235/235 + cadence item 2 + Next-allowed-action items m/n + footer) + SESSION_CLOSEOUT.md (this entry) + vault central fd-register. **Committed docs-only; push NOT performed** (working tree carries in-progress Phase 3.1 + research drafts — next interactive session).
+
+## Verification
+
+- Suite **235/235** (hermes-agent venv; includes 6 uncommitted Phase 3.1 tests) — re-run by this review
+- HEAD `a92bbf8` == origin/main — push SYNCED
+- FD register contiguous 1..126; vault 3 mirrors FD-107/108/109 ✅ (central backfilled this review)
+- Radar mid-week digest present + 0022 board chain done; GATEs enumerated
+- git status re-checked after edits (only my 2 docs files staged)
+
+## Open items (next session — Founder-gated)
+
+- **(m) Phase 3.1 completion + commit + push** — R1/R2/R3 hardening green in working tree (235/235), uncommitted; interactive session completes (browser verify) + commits + pushes
+- **(n) ORG-2026-0022 publish gate (Founder)** — IEA OMR oil reconciliation + CRO done on board; Thai draft + CRO uncommitted; publish → commit
+- **(0)** Push state currently SYNCED; next interactive session's commits will go ahead of remote — push then
+- **(a)** IC Decision Pack D5 — Founder decision A/B/C (t_51e3be79) · **(b)** gold watch-item 0012 publish gate (t_2342aa1d) · **(c)** 0016/0017 research recovery (blocked, drafts uncommitted) · **(d)** FULL AUDIT (Luna, plan docs/FULL-AUDIT-PLAN-2026-08-11.md) · **(e)** Stage 8 observation gate (first post-correction radar run Mon 17 Aug) · **(f)** IPM Week 2 · WIL #4 · hermes venv numpy ABI repair
+
+---
+
 # Session — 2026-08-13 (late): Live Office Phase 2.1 + Phase 3 Visual Polish (FD #109)
 
 - Phase 2.1 Semantic Hardening (S1–S4) delivered + verified: handoffs ACTIVE/RECENT/HISTORICAL
