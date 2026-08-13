@@ -23,6 +23,12 @@ ChatGPT
 *.zip
 *.mp4
 *.svg
+# scanner/dev modules — not needed by the serverless function (13 Aug 2026:
+# discovery/quality_asymmetry data cache = 327MB → CLI deploy bundle 437MB > 225MB)
+discovery
+institutional-intelligence-v0
+alpha-momentum-v0
+fundamental-opportunity-v0
 Thumbs.db
 .obsidian
 _Hermes-Memory
