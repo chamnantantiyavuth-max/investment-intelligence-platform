@@ -1,6 +1,6 @@
 # IIP AI Organization — Role Registry
 
-**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05)
+**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05). **Updated 2026-08-13 (C5):** work-state = Hermes Capital Intelligence board (native statuses); repo-board tree frozen; radar digests → `evidence/radar/digests/`; holds (historical) → `evidence/organization/holds/`. FD amendment rows below are historical records, not current write-path instructions.
 **Version:** 0.1
 **Authority:** Subordinate to the IIP Constitution + `AI-ORGANIZATION-OPERATING-STANDARD-v0.1.md`; detailed contracts in `ROLE-MAPPING-v0.1.md` + `roles/`.
 

@@ -5,8 +5,9 @@ import { getOrgQueue, getResearchArtifacts, type OrgCard, type ResearchArtifact 
 import { linkArtifact, latestCardUpdate } from "@/lib/researchWorkflow";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Read-only kanban VISUAL board (FD #59) — the 11 canonical columns
- *  (KANBAN-CONTRACT §2) rendered as column stacks from GET /org-queue.
+/** Read-only kanban VISUAL board (FD #59) — Hermes Capital Intelligence board
+ *  native columns (Stage 7.5, FD #106; C6 — triage/todo/scheduled/ready/running/
+ *  blocked/review/done/archived) rendered as column stacks from GET /org-queue.
  *
  *  Operational tracking only — card state never equals domain state
  *  (KANBAN-CONTRACT §1). Read-only by design: movement rights belong to

@@ -1,6 +1,6 @@
 # IIP AI Organization Operating Standard
 
-**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05, org-workflow scope)
+**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05, org-workflow scope). **Work-state mechanics SUPERSEDED 2026-08-13 (Stage 7, FD #106):** the org board now runs on the Hermes Capital Intelligence board (board slug `iip`, native statuses); the repo-board tree is frozen migration source. This standard remains authoritative for org governance, Holds semantics, and role authority — see C5 banner below for board-mechanics deltas.
 **Version:** 0.1
 **Authority:** Subordinate operational artifact under the IIP Constitution, Founder's Decisions, approved Project Definitions, ADRs, and plans. **This is NOT a constitution and has no independent amendment authority.**
 **Source:** Adapted from `_staging/IIP_Hermes_Organization_Pack_v0.1/00-IIP-ORG-CONSTITUTION-v0.1.md` per `evidence/organization/ORG-INTEGRATION-FIT-GAP-v0.1.md` findings F-01..F-22 (state model corrected to canonical axes; amendment rule replaced by Constitution §21 reference).
@@ -128,7 +128,7 @@ CIW workflow statuses (Proposed for Research → Published) are workflow-level a
 
 ### 5.6 Workflow (Kanban) Columns — Operational Only
 
-`Inbox` · `Triage` · `Scoped` · `Data Ready` · `In Research` · `Cross-Review` · `Validation` · `Founder Review` · `Monitoring` · `Blocked` · `Closed`
+Legacy 11-column workflow (HISTORICAL — superseded by Hermes Capital Intelligence board native statuses 2026-08-13, FD #106): `Inbox` · `Triage` · `Scoped` · `Data Ready` · `In Research` · `Cross-Review` · `Validation` · `Founder Review` · `Monitoring` · `Blocked` · `Closed`. The Hermes board exposes its own native statuses (triage/todo/scheduled/ready/running/blocked/review/done/archived); the old columns are NOT recreated as a state machine (Stage 7.5 contract).
 
 Kanban columns are **operational tracking only**. A card move never changes governance state, thesis status, research state, or artifact status.
 
@@ -220,7 +220,7 @@ The following roles may issue a formal Hold within their domain:
 
 A Hold record must state: scope, triggering condition, evidence, remediation required, owner, review condition, and whether partial work may continue.
 
-Only the issuing role may clear its Hold, unless the Founder explicitly overrides it in a recorded decision (Constitution §21) with rationale and accepted residual risk. Hold registers live in `operational/hermes-organization/kanban/holds/` (git-tracked).
+Only the issuing role may clear its Hold, unless the Founder explicitly overrides it in a recorded decision (Constitution §21) with rationale and accepted residual risk. Hold registers (HISTORICAL — both HOLD-* cleared 2026-08-05) live in `evidence/organization/holds/` (relocated from `operational/hermes-organization/kanban/holds/` per C4, 2026-08-13). Active work-state = Hermes Capital Intelligence board.
 
 ## 11. Canonical Artifacts and Source of Truth
 

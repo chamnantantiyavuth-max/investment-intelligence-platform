@@ -1,14 +1,18 @@
-"""Locked acceptance tests — Org-Workflow Read-Only API (FD #55, UI-0).
+"""Locked acceptance tests — Org-Workflow Read-Only API (FD #55 UI-0, amended FD #106 Stage 7.5).
 
 Charter:
   1. Route inventory  — the 4 new /api/org-* + /api/research-artifacts* routes
                         return 401 without a session cookie (FD #46 auth boundary)
-  2. /org-queue       — 200 with auth; data_source = org_workflow_kanban;
-                        canonical 11 columns (KANBAN-CONTRACT §2); all 5 pilot
-                        cards present with the mandatory card fields; holds join
-                        (cleared holds attached, never in active_holds)
-  3. /org-holds       — 200; HOLD-DATA-001 + HOLD-RISK-001 with issuer, reason,
-                        remediation, clear_record (status CLEARED, honest)
+  2. /org-queue       — 200 with auth; data_source = hermes_kanban_board (Stage 7.5,
+                        FD #106 — ONE work-state source = Hermes Capital Intelligence
+                        board); columns = Hermes-native statuses (triage/todo/scheduled/
+                        ready/running/blocked/review/done/archived — C6 correction,
+                        no legacy 11-column state machine); migrated legacy cards
+                        present as [MIGRATED:ORG-####] tasks; [GATE] tasks carry the
+                        human-gate semantics (blocked) from the C1 repair
+  3. /org-holds       — 200; HOLD-DATA-001 + HOLD-RISK-001 (HISTORICAL records,
+                        relocated to evidence/organization/holds/ per C4) with issuer,
+                        reason, remediation, clear_record (status CLEARED, honest)
   4. /research-artifacts — 200; registry contains the REAL CIW artifacts
                         (research-result.md v1, research-result-2.md v2) with
                         identity fields parsed from the artifact's own table
@@ -20,11 +24,11 @@ Charter:
                         never claim domain state (shape contract only)
 
 Environment isolation follows tests/locked/test_real_data_api.py: env vars
-set BEFORE importing the app. Org endpoints read committed repo files (not
-IIP_ARTIFACT_BASE) — they are stable because the artifacts are committed.
+set BEFORE importing the app. /org-queue reads the LIVE Hermes board DB
+(Stage 7.5 contract) — the frozen legacy YAML is NOT live work-state.
 
-Do NOT modify expected values without a Bible quote or FD (Acceptance Lock
-Rule, FD-108).
+Expected values updated 2026-08-13 per approved FD #106 (Stage 7.5 contract)
++ C1/C4/C6 correction pass — Acceptance Lock satisfied by FD reference.
 """
 from __future__ import annotations
 
@@ -69,49 +73,62 @@ def test_org_endpoints_require_auth():
 
 # ── 2. /org-queue ────────────────────────────────────────────────────────────
 
+NATIVE_COLUMNS = [
+    "Triage", "Todo", "Scheduled", "Ready", "Running",
+    "Blocked", "Review", "Done", "Archived",
+]  # Hermes runtime VALID_STATUSES (C6, FD #106)
+
 def test_org_queue_shape_and_provenance():
     _login()
     r = client.get("/api/org-queue")
     assert r.status_code == 200
     body = r.json()
-    assert body["data_source"] == "org_workflow_kanban"  # provenance truthfulness
-    assert body["columns"] == [
-        "Inbox", "Triage", "Scoped", "Data Ready", "In Research",
-        "Cross-Review", "Validation", "Founder Review", "Monitoring",
-        "Blocked", "Closed",
-    ]  # KANBAN-CONTRACT §2
-    assert len(body["cards"]) >= 5  # ORG-2026-0001..0005 pilot cards
-    ids = [c["card_id"] for c in body["cards"]]
-    assert "ORG-2026-0004" in ids and "ORG-2026-0001" in ids
+    assert body["data_source"] == "hermes_kanban_board"  # Stage 7.5, FD #106
+    assert body["board"]["slug"] == "iip"
+    assert body["board"]["name"] == "Capital Intelligence"
+    assert body["columns"] == NATIVE_COLUMNS  # no legacy 11-column state machine
+    assert len(body["cards"]) >= 5
+    titles = [c["title"] for c in body["cards"]]
+    # Migrated legacy live cards present as [MIGRATED:ORG-####] tasks
+    assert any("[MIGRATED:ORG-2026-0004]" in t for t in titles)
+    assert any("[MIGRATED:ORG-2026-0012]" in t for t in titles)
+    # C1 repair: human-gate [GATE] tasks exist
+    assert any("[GATE][ORG-2026-0004]" in t for t in titles)
+    assert any("[GATE][ORG-2026-0012]" in t for t in titles)
 
 
-def test_org_queue_card_fields():
-    _login()
-    cards = client.get("/api/org-queue").json()["cards"]
-    c4 = next(c for c in cards if c["card_id"] == "ORG-2026-0004")
-    # Mandatory card fields (KANBAN-CONTRACT §3) surfaced for the UI row
-    assert c4["workflow_column"] == "Founder Review"
-    assert c4["approval_status"] is None          # canonical state untouched
-    assert c4["artifact_state"] == "Draft"
-    assert c4["domain"] == "GOVERNANCE"
-    assert c4["principal_owner"] == "IC Secretary (simulated)"
-    assert c4["priority"] == "P1" and c4["materiality"] == "M2"
-    assert c4["data_status"] == "DATA READY WITH LIMITATIONS"
-    assert c4["validation_status"] == "PENDING"
-    assert c4["risk_status"] == "REVIEWED WITH OPEN RISKS"
-    assert c4["next_action"]  # non-empty next required action
-    assert "created_at" in c4 and "last_updated" in c4
-
-
-def test_org_queue_holds_join():
+def test_org_queue_native_status_semantics():
+    """C6: every card maps to a Hermes-native column; no legacy column leaks."""
     _login()
     body = client.get("/api/org-queue").json()
-    holds = body["holds"]
-    assert {h["hold_id"] for h in holds} == {"HOLD-DATA-001", "HOLD-RISK-001"}
-    # Both pilot holds are CLEARED -> attached but never "active"
-    c2 = next(c for c in body["cards"] if c["card_id"] == "ORG-2026-0002")
-    assert any(h["hold_id"] == "HOLD-DATA-001" for h in c2["holds"])
-    assert c2["active_holds"] == []  # cleared hold is not an active hold
+    cards = body["cards"]
+    assert cards, "queue must not be empty"
+    for c in cards:
+        assert c["workflow_column"] in NATIVE_COLUMNS, c["card_id"]
+    # Legacy 11-column labels must NOT appear (no replacement state machine).
+    # Note: "Triage" exists in BOTH vocabularies — native status wins; the
+    # legacy-only labels are the ones that must never leak.
+    legacy = {"Inbox", "Scoped", "Data Ready", "In Research",
+              "Cross-Review", "Validation", "Founder Review", "Monitoring",
+              "Closed", "Published"}
+    for c in cards:
+        assert c["workflow_column"] not in legacy, f"{c['card_id']}: {c['workflow_column']}"
+    # C1 semantic repair: the Founder decision pack gate is BLOCKED (needs_input),
+    # never Done — a Founder/human gate cannot be satisfied by an autonomous worker
+    gate = next(c for c in cards if "[GATE][ORG-2026-0004]" in c["title"])
+    assert gate["workflow_column"] == "Blocked"
+    assert gate["principal_owner"] == "org-ic-secretary"
+    migrated = next(c for c in cards if "[MIGRATED:ORG-2026-0004]" in c["title"])
+    assert migrated["workflow_column"] == "Done"  # migration executed — NOT Founder approval
+    assert migrated["card_id"].startswith("t_")
+
+
+def test_org_queue_holds_absent():
+    """Hermes board has no holds concept (honest absence, FD #106); historical
+    hold records are served by /org-holds from evidence/organization/holds/ (C4)."""
+    _login()
+    body = client.get("/api/org-queue").json()
+    assert body["holds"] == []
 
 
 # ── 3. /org-holds ────────────────────────────────────────────────────────────

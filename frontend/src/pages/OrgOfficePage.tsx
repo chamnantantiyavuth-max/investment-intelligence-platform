@@ -61,10 +61,11 @@ const DESKS: RoleDesk[] = [
   { code: "org-radar-scout", name: "Radar Scout", duty: "Discovery & monitoring", sprite: radarScoutSprite, authorMatch: /Radar Scout|Radar/i },
 ];
 
-const AWAITING_COLUMNS = new Set(["Founder Review", "Blocked"]);
-const INFLIGHT_COLUMNS = new Set([
-  "Inbox", "Triage", "Scoped", "Data Ready", "In Research", "Cross-Review", "Validation",
-]);
+// Hermes-native work-state buckets (C6, 2026-08-13): awaiting = human/review
+// gates (blocked, review, triage); inflight = queued or actively running
+// (todo, scheduled, ready, running). Legacy 11-column names retired.
+const AWAITING_COLUMNS = new Set(["Blocked", "Review", "Triage"]);
+const INFLIGHT_COLUMNS = new Set(["Todo", "Scheduled", "Ready", "Running"]);
 
 function deskOfOwner(owner: string | null | undefined): DeskCode | null {
   if (!owner) return null;
@@ -161,7 +162,7 @@ function DeskDetail({
   reports: ReportMeta[];
   radarCards?: OrgCard[];
 }) {
-  const publishedCards = cards.filter((c) => c.workflow_column === "Published");
+  const publishedCards = cards.filter((c) => c.workflow_column === "Done");
   const publishedReports = reports
     .filter((r) => r.status === "published" && desk.authorMatch.test(r.author))
     .slice(0, 4);
@@ -301,8 +302,8 @@ export default function OrgOfficePage() {
       {/* Org pulse — display derivations from admitted data, never scores */}
       <div className="grid grid-cols-2 border-b border-t border-rule md:grid-cols-6">
         {[
-          { label: "Cards in flight", value: String(inflight), note: "inbox → validation" },
-          { label: "Awaiting you", value: String(awaiting), note: "founder review · blocked" },
+          { label: "Cards in flight", value: String(inflight), note: "todo → running" },
+          { label: "Awaiting you", value: String(awaiting), note: "blocked · review · triage" },
           { label: "Published notes", value: String(publishedReports), note: "library · + companions" },
           { label: "Active holds", value: String(activeHolds), note: "none is silent" },
           { label: "Desks active", value: `${desksActive}/11`, note: "roles holding cards" },

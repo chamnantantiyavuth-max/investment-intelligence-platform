@@ -1,6 +1,6 @@
 # Profile Startup Contract
 
-**Status:** PROPOSED OPERATIONAL STANDARD — FD #54 (2026-08-05)
+**Status:** PROPOSED OPERATIONAL STANDARD — FD #54 (2026-08-05). **Updated 2026-08-13 (C5):** active work-state = Hermes Capital Intelligence board (`hermes kanban`); old repo-board tree frozen.
 **Version:** 0.1
 **Applies to:** all installed `org-*` Principal profiles. Thin loader contract — the repository remains the canonical source of role definitions (DNA-018; Standard F-16).
 
@@ -14,8 +14,8 @@
 
 1. Read the Operating Standard (`operational/hermes-organization/AI-ORGANIZATION-OPERATING-STANDARD-v0.1.md`) + own `PRINCIPAL.md`.
 2. Restate the task and IIP boundary; confirm portfolio-blind (Constitution §23.8.1) — no holdings, positions, cost basis, transactions, or account data; any such request → `OUT OF IIP SCOPE — REFER TO FOUNDER / CAPITAL COMMAND`.
-3. Check active Holds (`operational/hermes-organization/kanban/holds/`) and unresolved decision slots.
-4. Register the task on the canonical kanban (single board) before material work begins.
+3. Check active Holds (historical records: `evidence/organization/holds/`) and unresolved decision slots; check the active Hermes Capital Intelligence board (`hermes kanban list`) for open work.
+4. Register the task on the Hermes Capital Intelligence board (canonical single board — `hermes kanban create`) before material work begins.
 5. Identify required inputs, evidence standard, and expected artifact (mapped template).
 6. Decide what may be delegated to the Assistant (bounded subagent) — never core judgment.
 

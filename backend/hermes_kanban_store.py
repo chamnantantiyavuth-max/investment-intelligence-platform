@@ -41,18 +41,25 @@ def _resolve_kanban_db() -> Path:
 
 KANBAN_DB = _resolve_kanban_db()
 
-# Hermes board status -> UI column label (board reality, NOT legacy 11 columns).
-# Kept minimal and honest: the board's own workflow states.
+# Hermes board status -> UI column label (Hermes-native statuses, direct — NO
+# collapse/replacement state machine). Source of truth = the installed Hermes
+# runtime status vocabulary (hermes_cli/kanban_db.VALID_STATUSES):
+#   triage, todo, scheduled, ready, running, blocked, review, done, archived
+# Correction C6 (2026-08-13): triage/todo/ready/scheduled/review/archived are
+# exposed directly; todo is NOT collapsed into Ready, archived is NOT collapsed
+# into Done, cancelled is NOT used (the runtime has no such status).
 STATUS_TO_COLUMN = {
+    "triage": "Triage",
+    "todo": "Todo",
+    "scheduled": "Scheduled",
     "ready": "Ready",
-    "todo": "Ready",          # scheduled/awaiting parents = still queued
-    "running": "In Progress",
+    "running": "Running",
     "blocked": "Blocked",
+    "review": "Review",
     "done": "Done",
-    "cancelled": "Cancelled",
-    "archived": "Done",
+    "archived": "Archived",
 }
-COLUMNS = ["Ready", "In Progress", "Blocked", "Done", "Cancelled"]
+COLUMNS = ["Triage", "Todo", "Scheduled", "Ready", "Running", "Blocked", "Review", "Done", "Archived"]
 
 # Legacy repo-board column is preserved as a provenance label only (from the
 # frozen migration snapshot), never recreated as a live state machine.
@@ -142,7 +149,11 @@ def _to_card(r: dict) -> dict:
 
 
 def list_holds() -> list[dict]:
-    """No holds concept on the Hermes board — return empty (legacy holds stay in frozen repo board)."""
+    """Hermes board has no holds concept — return empty (honest absence).
+
+    Historical hold records (HOLD-DATA-001 / HOLD-RISK-001, both CLEARED) live in
+    evidence/organization/holds/ and are served by /org-holds (org_store).
+    """
     return []
 
 

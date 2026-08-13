@@ -5,11 +5,14 @@ artifact registry. Never domain state (KANBAN-CONTRACT §1: "card state never
 equals domain state"). Read-only: git remains the single writer and audit
 trail. No schema, no migration, no writes.
 
-Data sources (all committed repo files, verified 2026-08-05):
-  - operational/hermes-organization/kanban/cards/*.yaml   (card schema §3)
-  - operational/hermes-organization/kanban/holds/*.yaml   (hold schema §10)
+Data sources (all committed repo files, verified 2026-08-05; C4 relocation 2026-08-13):
+  - evidence/organization/holds/*.yaml   (hold records — HISTORICAL; both HOLD-* cleared 2026-08-05, relocated from the retired kanban tree per C4)
   - docs/ciw-pilot-msft/**/*.md        (CIW research artifacts — REAL)
   - evidence/organization/pilot/*.md   (org dry-run pilot — simulated)
+
+C4 note (13 Aug 2026): legacy cards are no longer read for live work-state (Hermes board owns
+work-state since Stage 7.5, FD #106). Hold records relocated here from
+operational/hermes-organization/kanban/holds/ (retired kanban tree is Stage-8 pending).
 
 Design notes:
   - Deliberately does NOT touch backend/adapters.py: this is a new read-only
@@ -31,9 +34,10 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-KANBAN_DIR = REPO_ROOT / "operational" / "hermes-organization" / "kanban"
-CARDS_DIR = KANBAN_DIR / "cards"
-HOLDS_DIR = KANBAN_DIR / "holds"
+HOLDS_DIR = REPO_ROOT / "evidence" / "organization" / "holds"  # C4: hold records (historical)
+# C4: legacy card YAMLs remain in the FROZEN retired tree as migration source
+# (read-only history, Stage-8 pending). Not live work-state — Hermes board owns that.
+CARDS_DIR = REPO_ROOT / "operational" / "hermes-organization" / "kanban" / "cards"
 
 # Canonical column order — KANBAN-CONTRACT §2 (single source).
 COLUMNS = [

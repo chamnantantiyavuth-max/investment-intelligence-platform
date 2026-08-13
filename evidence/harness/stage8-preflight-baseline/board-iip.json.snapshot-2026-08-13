@@ -1,0 +1,11 @@
+{
+  "slug": "iip",
+  "name": "Capital Intelligence",
+  "description": "IIP operational work queue; does not replace Bible or phase gates.",
+  "icon": "",
+  "color": "",
+  "default_workdir": null,
+  "project_id": null,
+  "created_at": 1785139369,
+  "archived": false
+}

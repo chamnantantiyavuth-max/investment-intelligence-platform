@@ -1,9 +1,15 @@
 # IIP AI Organization — Kanban Contract
 
-**Status:** PROPOSED OPERATIONAL STANDARD — approved for implementation by FD #54 (2026-08-05)
-**Version:** 0.1
+**Status:** SUPERSEDED for work-state — Stage 7 Production Cutover (FD #106, 2026-08-13)
+**Version:** 0.1 (historical)
 **Authority:** Subordinate to the IIP Constitution + `AI-ORGANIZATION-OPERATING-STANDARD-v0.1.md`.
-**Runtime vehicle (FD #54, F-12):** **repo-based single board** at `operational/hermes-organization/kanban/` (the Hermes kanban toolset is disabled in profile config; enabling it would require a separate config decision). Git history is the audit trail; single-writer discipline applies.
+**Runtime vehicle (FD #54, F-12):** ~~repo-based single board~~ **SUPERSEDED — ONE active work-state contract = the Hermes Capital Intelligence board** (board slug `iip`). The repo board at `operational/hermes-organization/kanban/` is FROZEN migration source (read-only, Stage 8 deletion pending separate Founder authorization). Git history preserves this contract's original meaning.
+
+> ## ⛔ C5 SUPERSESSION BANNER (2026-08-13, FD #106 + correction pass)
+> - ONE active work-state contract = **Hermes Capital Intelligence board** (Hermes-native statuses: triage/todo/scheduled/ready/running/blocked/review/done/archived).
+> - This document is **HISTORY ONLY** — keep it for field semantics (research_question, radar_observation, priority, materiality, domain, principal_owner), the Hold concept, and the 11-column historical record.
+> - Do **NOT** follow any write/commit instruction in this document: cards/digests/holds are no longer repo YAML under `operational/hermes-organization/kanban/`.
+> - Task-idea cards = Hermes board tasks (see `roles/11-radar-scout/PRINCIPAL.md` + cron prompts). Digests = `evidence/radar/digests/`. Hold records (historical) = `evidence/organization/holds/`.
 
 ## 1. One Organization, One Board
 

@@ -40,5 +40,9 @@ Inbox → Triage → Scoped → Data Ready → In Research → Cross-Review → 
 - ONE authoritative organizational work-state source = **Hermes Capital Intelligence board** (`kanban/boards/iip/`, board name "Capital Intelligence")
 - Live cards migrate to Hermes board per Stage 7.3 mapping (see `evidence/harness/S7.3-*`)
 - This board remains FROZEN/read-only pending **Stage 8** (deletion — separate authorization)
-- Historical record preserved: cards 0001-0021, digests, holds (do NOT modify)
+- Historical record preserved: cards 0001-0022 (do NOT modify)
+- C4 (13 Aug 2026): durable non-board history RELOCATED out of this tree —
+  digests → `evidence/radar/digests/`, holds → `evidence/organization/holds/`,
+  card-outcomes.md → `operational/hermes-organization/card-outcomes.md`.
+  Nothing durable depends on this tree surviving Stage 8.
 - Do NOT create new cards here — use Hermes kanban (board-safety hook enforced on all org profiles)

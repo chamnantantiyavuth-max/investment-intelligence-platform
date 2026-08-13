@@ -8,7 +8,7 @@ ONLY — never domain state (KANBAN-CONTRACT §1). No writes; read-only UI.
 
 Endpoints:
   GET /org-queue                — Hermes board columns + tasks
-  GET /org-holds                — hold records (empty on Hermes board; legacy holds frozen)
+  GET /org-holds                — hold records (HISTORICAL — relocated to evidence/organization/holds/ per C4; both HOLD-* cleared; no active holds)
   GET /research-artifacts       — artifact registry (unchanged — repo artifacts)
   GET /research-artifacts/{id}  — single artifact (markdown content)
 

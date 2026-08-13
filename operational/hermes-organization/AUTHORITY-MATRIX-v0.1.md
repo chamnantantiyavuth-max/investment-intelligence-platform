@@ -119,7 +119,7 @@ Conflicts must be reported. They must not be silently reconciled.
 
 - A Hold pauses **org-workflow promotion / canonical publication within the org pipeline**; it never changes canonical domain state, never erases work, never rejects the underlying idea.
 - Only the issuing role clears its Hold. Founder override requires a recorded decision (Constitution §21) with rationale + accepted residual risk.
-- Hold records live in `operational/hermes-organization/kanban/holds/` (scope, trigger, evidence, remediation, owner, review condition, partial-work allowance).
+- Hold records (HISTORICAL — both cleared 2026-08-05) live in `evidence/organization/holds/` (relocated from `operational/hermes-organization/kanban/holds/` per C4, 2026-08-13). Active work-state = Hermes Capital Intelligence board.
 
 ---
 
