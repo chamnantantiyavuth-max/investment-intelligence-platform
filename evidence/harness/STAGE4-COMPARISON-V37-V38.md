@@ -27,7 +27,7 @@
 ## Residual concerns (for v3.8 promotion decision)
 
 - **S4-F2 (new finding):** gateway restart kills in-flight worker; claim held until `claim_expires` (~15 min) before dispatcher reconciles. Operator can force re-dispatch via block/unblock (proven). Not a board-safety issue; a durability-latency note for production cutover planning.
-- **HERMES_DELEGATED_CHILD_CONTEXT=1:** this session is itself a delegate-task child context (kanban mutation blocked unless unset). Harness operators must know this env quirk.
+- **HERMES_DELEGATED_CHILD_CONTEXT=1:** child contexts are refused Kanban mutation by the runtime — a SAFETY BOUNDARY. **CORRECTED (P0, 2026-08-13):** children MUST NOT unset/bypass it; escalate to a principal/dispatcher/authorized worker. Harness operators must NOT treat it as an env quirk to unset (see G3 doctrine).
 - v3.8 candidate tested on ONE engineering pilot only — promotion should follow ≥1 more engineering task (per v3.7.1 §5 rule: evidence from 2–3 projects before further governance change).
 
 ## Recommendation

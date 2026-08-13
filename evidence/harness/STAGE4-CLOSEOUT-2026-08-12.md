@@ -96,7 +96,7 @@ hooks_auto_accept: true
 
 | ID | Severity | Description | Disposition |
 |---|---|---|---|
-| S4-F1 | Info | `HERMES_DELEGATED_CHILD_CONTEXT=1` in this session env blocks kanban mutation unless unset — a session-context quirk for harness operators | Documented; not a defect |
+| S4-F1 | Info | `HERMES_DELEGATED_CHILD_CONTEXT=1` is a SAFETY BOUNDARY: child contexts are refused kanban mutation by the runtime. **CORRECTED (P0, 2026-08-13):** children MUST NOT unset/bypass it — escalate the mutation to a principal/dispatcher/authorized worker. The Stage 4 diagnostic unset was test-only, never a production procedure (see G3 doctrine in STAGE4.1-GOVERNANCE-CLOSURE). | Documented; safety boundary (not a defect) |
 | S4-F2 | Medium (accepted) | Gateway restart kills in-flight worker; task claim held until `claim_expires` (~15 min) before dispatcher reconciles; operator can force re-dispatch via block/unblock (proven) | Operational-latency note for cutover; NOT board-safety related |
 
 ## 9. v3.7.1 vs v3.8 Comparison — see `STAGE4-COMPARISON-V37-V38.md`
