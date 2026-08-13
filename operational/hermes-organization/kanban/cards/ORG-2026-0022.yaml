@@ -1,0 +1,30 @@
+card_id: ORG-2026-0022
+title: "Radar: WTI +10.7% in five sessions on the Hormuz standoff (75.22 on 8/5 → 83.27 on 8/12) while the US administration claims Gulf flows 'recovered to 15M bbl/day' and simultaneously warns of disruptions into 2027 — price vs physical-flows conflict"
+research_question: "WTI (CL=F) has risen ~+10.7% in five sessions (75.22 on 8/5 → 83.27 on 8/12, 82.96 on 8/13) on the Hormuz standoff — the strongest leg since the standoff began — while the same US administration claims Gulf oil flows have 'recovered to 15M barrels a day' (gCaptain, 8/11) and separately warns to 'brace for oil supply disruptions into 2027' (Boston Herald, 8/11); Bloomberg (8/13) argues 'for the oil market, the Strait of Hormuz isn't closed'. Is the oil risk premium pricing a real, persistent supply loss (and at what order of magnitude), or is the move narrative/positioning-driven against largely-normalized physical flows? And does the resolution of that question change the inflation/rate backdrop feeding the gold (ORG-2026-0012) and silver (ORG-2026-0016) reflation stories?"
+decision_user: Founder
+workflow_column: Inbox
+approval_status: null
+monitoring_status: null
+thesis_status: null
+research_state: null
+artifact_state: null
+domain: COMMODITY
+principal_owner: org-commodity-analyst
+assistant_owner: Commodity Research Assistant
+priority: P2
+materiality: M2
+created_at: 2026-08-13
+required_by: triage
+expected_artifact: "commodity note — Hormuz oil risk premium vs physical flows: reconcile US '15M bbl/day recovered' claim against the price move; estimate the implied supply-loss magnitude the market is pricing; interaction with 0012 (gold driver ranking) and 0016 (reflation-beta composition)"
+evidence_standard: "point-in-time (FD #58); figures sourced + dated"
+data_status: NOT ASSESSED
+validation_status: null
+risk_status: null
+audit_status: null
+radar_observation: "WTI (CL=F, Yahoo daily closes): 75.22 (8/5) → 78.18 (8/7) → 82.13 (8/10) → 83.27 (8/12) → 82.96 (8/13) — +10.7% off the 8/5 low in five sessions, +5.5% vs the Monday-digest figure (78.71 @8/10), highest of the standoff; Brent >$82 since 8/7 per the mid-week 8/7 note. Concurrent conflicting claims, all dated: US administration 'Gulf oil flows recover to 15 million barrels a day' (gCaptain, 2026-08-11); 'Brace for oil supply disruptions into 2027, U.S. says' (Boston Herald, 2026-08-11); 'Oil Prices Climb on Stalemate in Strait of Hormuz' (NYT, 2026-08-09); 'For the Oil Market, the Strait of Hormuz Isn't Closed' (Bloomberg, 2026-08-13); Iran seeking 'polluter pays' rule + oil slick at Qeshm (WION, 2026-08-13); Gulf states building Hormuz bypass capacity (NYT/DW, 2026-08-12). Context, to verify not asserted: pre-standoff Hormuz throughput is commonly cited at ~20M bbl/day — a 'recovered 15M bbl/day' claim would still imply a material shortfall if accurate. THE OBSERVATION: an unusual ~11% weekly move (workflow §4 'material commodity supply disruption' + 'unusual volatility' trigger) sitting on top of directly conflicting official-market claims about physical flows — a verifiable price-vs-reality divergence question, distinct from 0012's gold-driver question and 0016's silver-inventory question. Raises, does not answer: whether the market is pricing a persistent supply loss, and what that implies for the inflation/rate narrative."
+radar_source: "https://query1.finance.yahoo.com/v8/finance/chart/CL=F (daily closes, pulled 2026-08-13); https://news.google.com/rss/search?q=Hormuz+strait+oil (gCaptain 2026-08-11 — 'Trump Administration Says Gulf Oil Flows Recover to 15 Million Barrels a Day'; Boston Herald 2026-08-11 — 'Brace for oil supply disruptions into 2027, U.S. says'; NYT 2026-08-09; Bloomberg 2026-08-13 — 'For the Oil Market, the Strait of Hormuz Isn't Closed'; WION 2026-08-13; NYT/DW 2026-08-12; pulled 2026-08-13); https://api.gold-api.com/price/XAU+XAG (2026-08-13 04:40 UTC)"
+open_decision_slots: []
+dependencies: [ORG-2026-0012, ORG-2026-0016]
+blocked_reason: null
+next_action: "awaiting CoS triage"
+last_updated: 2026-08-13
