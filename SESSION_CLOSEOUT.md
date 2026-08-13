@@ -1,3 +1,70 @@
+# Session Closeout — 2026-08-13 (cron review — Harness cutover world reconciled)
+
+**Status:** COMPLETE (review-only, no code) — 13 Aug world reconciled: **Harness Stages 1→7 CUTOVER PASS (FD #98–106, fd_count 123)** · HEAD `02cf21f` (396 commits) · **5 commits UNPUSHED** (origin/main `9967459` — push = Founder decision item 0) · suite **203/206 + 5/5 py314** (3 locked org-workflow tests stale vs FD #106 Stage 7.5 contract) · **FD register backfilled** (main items 114–123 + vault central FD-98..106 — 3 mirrors contiguous through FD-106) · Radar Mid-Week Watch RUNNING on the Hermes board (run 72, 11:26, after overnight worker-crash reclaim) · IC Decision Pack D5 verification PASS (Founder decision A/B/C pending) · market snapshot captured.
+
+## What happened (this review)
+
+1. **Recent sessions reviewed:** `20260812_173534_4700a7` (730 msgs — Harness journey 12–13 Aug: Stage 6.5→6.6→F1/F2→**Stage 7 Production Cutover CUTOVER PASS**; FD #104/#105/#106 registered, fd_count 123; main left at `02cf21f` with 5 unpushed commits + pre-existing dirty tree untouched per hygiene gate) + `20260813_002909_7dd517` + `20260813_021237_cfef16` (small harness validation tests).
+2. **State verify:** HEAD `02cf21f`, 396 commits; **origin/main `9967459` → 5 behind**; main FD register ended at item 113 → **backfilled items 114–123** (FD #98–106, verbatim from `iip-harness-prep/operational/FOUNDERS-DECISIONS.md`); vault central fd-register missing FD-98..106 → **9 rows added** (project register already had them from the harness session).
+3. **Suite re-run:** **203/206 + 5/5 py314** — 3 FAILED `tests/locked/test_org_workflow_api.py` (shape/provenance, card fields, holds join): Stage 7.5 adapter returns `data_source: hermes_kanban_board` + board-reality columns; tests assert old `org_workflow_kanban` + repo-board holds HOLD-DATA-001/HOLD-RISK-001 (now live on the Hermes board). **Minimal fix = update the 3 locked tests to the FD #106 contract** (next interactive session; locked-test change needs the adapter-change justification on record — FD #106).
+4. **Board/cron check (post-cutover):** Hermes Capital Intelligence board = ONE authoritative work-state source; 12 cards migrated 1:1; **radar mid-week watch `t_02a53b7b` RUNNING — run 72 started 11:26, heartbeats live at 11:27–11:28** (overnight runs 67–71 crashed on gateway restarts during the Harness; dispatcher reclaim_deferred + respawned at 11:26; weekly radar `t_535d91be` + cards 0016/0017 blocked/crashed); digests now land on the board, not repo `operational/hermes-organization/kanban/digests/`.
+5. **Env defect flagged:** hermes-agent venv numpy ABI broken (cp314 binaries under the 3.11 interpreter — yfinance import fails in the venv); system python 3.14 has working yfinance 1.5.1 (used for this review's snapshot). `config.yaml.corrupt.20260813-005818.bak` present (harness-window artifact; live config healthy).
+6. **Market snapshot (13 Aug 11:33 SEAST):** equities Wed 12 Aug completed EOD; futures Thu 13 Aug morning LIVE — see PROJECT_STATE footer for the full table.
+7. **State docs updated:** PROJECT_STATE.md (Current state bullet, Build Metrics, Next allowed action items 0–l, Session row, fd_count 123, footer) + SESSION_CLOSEOUT.md (this entry) + FOUNDERS-DECISIONS backfill + vault central backfill. **Committed docs-only; push intentionally NOT performed** (5 harness commits + this docs commit = Founder decision item 0).
+
+## Verification
+
+- Suite **203/206 + 5/5 py314** (3 stale locked tests — finding, not env regression)
+- Commits 396 / HEAD `02cf21f` / origin/main `9967459` (5 behind)
+- FD register contiguous 1..123 in main; vault 3 mirrors FD-98..106 ✅ (central backfilled this review)
+- Library re-derived **34 published / 20 mains / 14 companions** (unchanged; 36 files incl. README + THAI-RESEARCH-EDITORIAL-STANDARD)
+- CIW monitor draft: NO TRIGGER (untracked, 10 Aug tick; MSFT 492.43 13 Aug)
+- git status re-checked after edits (see report)
+
+## Open items (next session — Founder-gated)
+
+- **(0) Push decision** — 5 Harness commits + this docs commit (origin behind; deploy note: Stage 7.5 org-queue adapter fail-closed 503 without the Hermes board on the server)
+- **(a) Suite fix** — 3 locked org-workflow tests → update to FD #106 Stage 7.5 contract
+- **(b) IC Decision Pack D5** — verification PASS (13 Aug 02:28); Founder decision A/B/C (A recommended) — ORG-2026-0004 pilot acknowledgment
+- **(c) Gold watch-item 0012** — Thai report draft pending Founder publish gate (`02cf21f`)
+- **(d) FULL AUDIT** — plan `docs/FULL-AUDIT-PLAN-2026-08-11.md`; delegate **Luna via openrouter** (Sol Medium retired per FD #104/#105)
+- **(e) Stage 8** — old repo-board deletion: independent reconciliation + Founder GO (NOT started)
+- **(f)** IPM Week 2 (~14 Aug) · WIL #4 · radar Mon 17 Aug · cards 0016/0017 research drafts (uncommitted, board tasks crashed→blocked) · hermes venv numpy repair · real IPM repo setup · browser_exec Unicode defect (CDP = working transport)
+
+---
+
+# Session Closeout — 2026-08-12 (cron review — 11 Aug world reconciled)
+
+**Status:** COMPLETE (review-only, no code) — 11 Aug FD #95–97 + WIL #3 + silver-anchor fix + FULL AUDIT PLAN world reconciled into state docs. HEAD `9967459`, 391 commits, fd_count 113, push SYNCED (ls-remote verified). No interrupted/superseded/one-sided closeouts detected this window (11 Aug 16:36 closeout commit `9967459` properly closed the session).
+
+## What happened (this review)
+
+1. **State verify:** git HEAD/push/commit-count re-verified (391 commits, origin/main == HEAD `9967459`); governance sync PASS (SOUL shared/iip differ only in the per-profile splice block, v3.7.1 7/7 both); FD register contiguous 1..113 (items 111–113 = FD #95/#96/#97).
+2. **Suite re-run:** **206/206 + 5/5 py314** via hermes-agent venv interpreter (independent re-verify of the 11 Aug closeout claim).
+3. **Derived-metric re-verify:** published reports = **34 (20 mains + 14 companions)** — state/closeout recorded "33/19"; corrected in PROJECT_STATE Session table (off-by-one; the 8 inflection reports + correction note are all `status: published`).
+4. **Obsidian memory gap FIXED:** CURRENT-STATE.md stopped at the 14:45 FD #95/#96 closeout — the 16:36 FD #97/WIL #3/FULL AUDIT PLAN segment had no MEM note, no session log, no CURRENT-STATE entry. Backfilled: MEM-IIP-069 + session log `2026-08-11d-session-log-fd97-wil3-full-audit-plan.md` + CURRENT-STATE top entry (one-sided memory capture variant of §7c).
+5. **Market snapshot (12 Aug 17:06 SEAST):** equities Tue 11 Aug completed EOD; futures LIVE (see report).
+6. **State docs updated:** PROJECT_STATE.md (Build Metrics + Current state bullet + Next allowed action + Session table row + footer timestamp) + SESSION_CLOSEOUT.md (this entry). **Committed docs-only + pushed** (clean-tree exception: tree had only the untracked CIW draft, not mine).
+
+## Verification
+
+- Suite **206/206** pytest venv + **5/5** py314 — re-verified by this review
+- Commit count / HEAD: 391 / `9967459` (recorded 368/`bb6401b` — **corrected**)
+- Push state: ✅ SYNCED — origin/main == HEAD `9967459`; this review's docs commit pushed after (ls-remote re-verified)
+- FD register: contiguous 1..113 ✅; vault mirrors FD-95/96/97 ✅ in all 3 (central + project + ~/.hermes)
+- DB lineage: am 2026-08-09 (≤7d ✅) / fo 2026-08-03 (≤30d ✅) / ii content-addressed (≤120d ✅); api_reads 858 rows, v5 dominant, last 11 Aug 08:28 UTC
+- Servers down (no LISTEN 8000/5173) — normal for session-started app; state note, not regression
+
+## Open items (next session)
+
+- **FULL AUDIT (delegated)** — plan `docs/FULL-AUDIT-PLAN-2026-08-11.md`; Founder: "ผมจะให้ทำ full audit รอบถัดไป" → **delegate Sol Medium** (FD-HERMES-007), output `evidence/audit-2026-08-XX/AUDIT-FINDINGS.md`
+- Radar mid-week Thu 13 Aug 08:00 (cron auto) · IPM Week 2 (~14 Aug) · radar Mon 17 Aug · WIL #4 (~cadence)
+- Cards 0016/0017 in Research (triage A) — research execution pending; RM-2026-0005..0008 awaiting Founder gate
+- CS Product Discovery validation path (LBMA gold ok / silver 404) → FD #53 thresholds
+- CIW 10 Aug monitor draft (untracked, NO TRIGGER — MSFT $499.99 10 Aug → $503.81 11 Aug EOD)
+
+---
+
 # Session Closeout — 2026-08-11 (FD #95–97 + WIL #3 + audit plan)
 
 **Status:** COMPLETE — FD #95 (FIT-GAP WP1-3) + FD #96 (blog layout) + FD #97 (4-item execution: WP2 live + CS discovery + company_weekly + inflection research ×4) + WIL #3 + silver-anchor live fix + correction-propagation governance lesson + FULL AUDIT PLAN prepared. HEAD `599e0d6`, fd_count 113, suite 206/206 + 5/5 py314, library 33 published/19 mains, push SYNCED.
