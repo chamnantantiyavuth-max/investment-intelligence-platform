@@ -1,0 +1,14 @@
+{
+  "name": "capital-intelligence-office",
+  "label": "Capital Office",
+  "description": "Live read-only projection of the Hermes Capital Intelligence board — 11 organizational desks, Founder attention area, worker/run health. Pure observability; owns no state.",
+  "icon": "Building2",
+  "version": "1.0.0",
+  "tab": {
+    "path": "/capital-office",
+    "position": "after:kanban"
+  },
+  "entry": "dist/index.js",
+  "css": "dist/style.css",
+  "api": "plugin_api.py"
+}
