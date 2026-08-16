@@ -1,40 +1,42 @@
 # Investment Intelligence Platform Constitution
 
-## Version 0.4 — Approved Working Constitution
+## Version 0.5 — QAD Amendment Ratified
 
 ### Status
 
-Approved by the Founder as the working constitutional baseline.
+Approved by the Founder as the working constitutional baseline, as amended by CA-v0.5-QAD-PIVOT (2026-08-16).
 
 This document is not a final product specification or final architecture. It defines the product's mission, authority model, core boundaries, and principles that downstream specifications must respect.
 
 ## 1. Mission
 
-The Investment Intelligence Platform exists to reduce the global investment search space while preserving evidence, uncertainty, disagreement, and decision history.
+The Investment Intelligence Platform specializes in **Quality at Dislocation (QAD)** — identifying high-quality businesses experiencing material market and/or business dislocation and investigating whether the impairment is temporary, structural, or unresolved.
 
-It helps answer:
+It preserves evidence, uncertainty, disagreement, decision history, and dissent throughout.
 
-> What deserves further investigation?
+Its central question is:
+
+> *"Is this a high-quality business whose temporary economic impairment is being priced as permanent — or is the market correctly pricing permanent damage that the evidence has not yet confirmed?"*
 
 It does not autonomously answer:
 
-> What should be bought, sold, or allocated?
+> *"What should be bought, sold, or allocated?"*
 
 ## 2. Product Structure
 
-The primary entry point is the Strategy Control Center, leading to:
+The product is organized as a **QAD Research & Underwriting Institution**. Its logical capabilities include Quality Discovery, Dislocation Detection, Autonomous Selection, Research Orchestration, Analytical Core (Business Quality, Industry, Financial, Management), Impairment Diagnosis, Normalization & Valuation, Structural Challenge, Research Audit, Underwriting Synthesis, Thesis Monitoring, and Knowledge Compounding.
 
-1. Alpha Momentum
-2. Close System
-3. Future strategy modules
-
-A Shared Intelligence Core supports all strategies.
+Legacy strategy authorities (Alpha Momentum, Close System, Fundamental & Opportunity, Institutional Intelligence) **cease to be co-equal investment paths**. Their data, methods, or capabilities may be retained or repurposed as supporting QAD intelligence where separately authorized.
 
 ## 3. Development Direction
 
-Alpha Momentum is the first implementation vertical slice.
+**Quality at Dislocation (QAD)** is the product identity and development direction.
 
-The shared core must remain strategy-independent enough to support Close System later without forcing a rewrite, while avoiding premature abstractions for hypothetical future needs.
+The first implementation vertical is the QAD evaluation infrastructure (M4B) and subsequent production coding (M5+), establishing the full QAD research and underwriting workflow.
+
+The QAD architecture follows an evaluation-first discipline: evaluation infrastructure and fixture corpus are built before production coding, ensuring measurable baseline competence before live use.
+
+Legacy implementation artefacts (Alpha Momentum, Close System screens, Fundamental & Opportunity pipeline) are preserved as frozen historical capabilities — not as co-equal investment paths. Their data, methods, or components may be repurposed as supporting QAD intelligence where separately authorised.
 
 ## 4. Shared Intelligence Core
 
@@ -222,11 +224,14 @@ A Human Override must preserve:
 - reassessment point;
 - eventual outcome.
 
-## 13. Alpha Momentum
+## 13. Alpha Momentum (Superseded — Historical Reference)
 
-Alpha Momentum screens US-listed common stocks and suitable ADRs in V0 while receiving global Theme Intelligence.
+> **Status:** FROZEN — Legacy strategy authority, no longer a co-equal investment path.
+> Retained as historical reference. Capabilities may be repurposed as supporting QAD intelligence where separately authorised.
 
-It separates:
+Alpha Momentum screened US-listed common stocks and suitable ADRs in V0 while receiving global Theme Intelligence.
+
+It separated:
 
 ### Candidate Quality
 
@@ -238,7 +243,7 @@ Lifecycle, breadth, leadership, evidence progression, market confirmation, funda
 
 ### Entry Readiness
 
-Price structure, base quality, breakout proximity, volume behavior, volatility contraction, and extension risk.
+Price structure, base quality, breakout proximity, volume behaviour, volatility contraction, and extension risk.
 
 ### Data Confidence
 
@@ -256,6 +261,8 @@ Within a theme, candidates may be classified as:
 - Former Leader
 - Deteriorating Member
 
+These classification concepts may be adapted for QAD use in identifying candidate dislocation targets.
+
 ## 14. Theme-First Research Queue
 
 The research queue is organized by Theme Card before individual stock ranking.
@@ -264,11 +271,12 @@ Queue capacity is adaptive. It must not fill a quota with weak candidates.
 
 It may return zero high-priority candidates.
 
-## 15. Close System
+## 15. Close System (Superseded — Historical Reference)
 
-Close System is the second strategy world.
+> **Status:** FROZEN — Legacy strategy authority, no longer a co-equal investment path.
+> Retained as historical reference. Risk-assessment concepts may be adapted for QAD underwriting.
 
-Future design must distinguish:
+Future design distinguished:
 
 - Asset Suitability
 - Current Opportunity
@@ -331,11 +339,12 @@ Obsidian and NotebookLM are narrative learning layers for case studies, postmort
 - no premature graph database;
 - no premature distributed architecture.
 
-## 20. V0 Thesis
+## 20. V0 Thesis (Superseded)
 
-V0 proves an end-to-end Alpha Momentum slice using controlled data and predefined themes.
+> **Status:** Historical reference — Alpha Momentum V0 thesis.
+> Replaced by QAD architecture and evaluation-first development direction.
 
-It must demonstrate:
+V0 proved an end-to-end Alpha Momentum slice using controlled data and predefined themes, demonstrating:
 
 - evidence lineage;
 - deterministic features;
@@ -345,6 +354,8 @@ It must demonstrate:
 - human feedback;
 - reproducibility;
 - historical state changes.
+
+The QAD architecture builds on these demonstrated capabilities while reorienting toward dislocation-focused research and systematic evaluation.
 
 ## 21. Amendment Authority
 
@@ -521,3 +532,24 @@ Version 0.5 adds §23.8.1 Blind Portfolio Rule, establishing:
 **Approval:** FD #25 (Nick Intelligence Integration, 22 July 2026)
 
 These amendments do not change the product mission, Theme Intelligence philosophy, Alpha Momentum direction, Close System boundary, or V0 scope. They govern what information AI workflows may receive.
+
+---
+
+## Amendment Record — Version 0.6
+
+**Status:** Founder-approved QAD Pivot.
+
+**Amendment:** CA-v0.6-QAD-PIVOT (2026-08-16)
+
+Version 0.6 reorients the product from a multi-strategy investment intelligence platform to a **Quality at Dislocation (QAD)** specialist:
+
+- **§1 Mission** redefined — QAD identity, central question: "Is this a high-quality business whose temporary economic impairment is being priced as permanent?"
+- **§2 Product Structure** redefined — QAD Research & Underwriting Institution; legacy strategy authorities cease to be co-equal investment paths
+- **§3 Development Direction** redefined — QAD is the development direction; evaluation-first discipline; legacy artefacts frozen
+- **§13 Alpha Momentum** marked as **Superseded — Historical Reference** (FROZEN)
+- **§15 Close System** marked as **Superseded — Historical Reference** (FROZEN)
+- **§20 V0 Thesis** marked as **Superseded** — replaced by QAD architecture
+
+The following sections remain unchanged: §4 Shared Intelligence Core, §5 Theme Intelligence, §6 Two-Tier Autonomy, §7 Weak Signal Inbox, §8 Evidence Doctrine, §9 Evidence Progression, §10 Information Preservation, §11 Falsification, §12 Human Authority, §14 Theme-First Research Queue, §16 Learning Loop, §17 Knowledge Architecture, §18 Initial Non-Scope, §19 Architecture Principles, §21 Amendment Authority, §22 Closing Principle, §23 AI Operating Constitution.
+
+**Approval:** FD #130 (QAD Architecture Design Gate, 2026-08-16)

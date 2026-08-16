@@ -1,6 +1,8 @@
 # Founder's Manifesto
 
-## Investment Intelligence Platform
+## Investment Intelligence Platform — Quality at Dislocation
+
+> **QAD Edition (2026-08-16).** The platform's mission has specialised from broad investment discovery to **Quality at Dislocation (QAD)**. All philosophical commitments below remain in force; they now serve the QAD research and underwriting institution.
 
 This project does not exist to predict markets with false certainty.
 

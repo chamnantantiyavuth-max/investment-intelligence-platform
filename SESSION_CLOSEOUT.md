@@ -1,3 +1,82 @@
+# Session — 2026-08-16 (cron review): 14 Aug world reconciled — FD #111 pushed + gold 0012 published + suite 234/235 (1 stale locked test)
+
+**What this review found (evidence-backed):**
+
+1. **14 Aug world fully reconciled** — FD #111 batch **PUSHED**: pre-push secret/privacy scan `9f956d7` PASS WITH WARNINGS (no secrets/tokens/credentials; local-path warning = pre-existing class; evidence saved) → `3958f3d..9f956d7` on origin. Gold watch-item **ORG-2026-0012 PUBLISHED** (Founder gate A, `475da4e`, main + CRO companion, Thai, cs_product, library 36). **GATEs t_51e3be79 (D5 = A, pilot acknowledged) + t_2342aa1d (0012) CLOSED/completed** — both Founder-gate cards now Done on the Hermes board.
+2. **Suite 234/235 — 1 FAILED locked test:** `test_org_queue_native_status_semantics` asserts `[GATE][ORG-2026-0004]` workflow_column == "Blocked" (C1 semantic repair: Founder gate cannot be auto-satisfied by a worker). But the Founder CLOSED that gate 14 Aug (D5 = A) → board truth = "Done". The locked test is **stale vs the Founder decision** (same family as the C6 test updates) — minimal fix: the gate assertion must accept the Founder-closed state (Done) or pick a still-open gate; **NOT fixed by this review** (test edit = next interactive session, per review discipline).
+3. **Git:** HEAD `3d261f1` (424 commits) — today's **weekly AM pipeline cron run** AM-V0-20260816-150812 (real EOD as-of **2026-08-14**, fresh ≤7d bound ✅). **1 commit AHEAD** of origin (`3d261f1` — the 14 Aug batch IS pushed; push of the cron run = next interactive session / Founder call).
+4. **Freshness table:** AM 2d ✅ / FO 13d (≤30d) ✅ / II 13d (≤120d) ✅ / CS synthetic-labeled (no bound). Backend :8000 + vite :5173 down = normal (session-started apps, no session running); dashboard **:9119 UP** (detached via Startup VBS from the 14 Aug ops-fix — Live Office durable handoff WORKING).
+5. **Governance sync PASS:** shared vs profile SOUL differ only in the per-profile splice block (expected); `project-workflow v3.8` token + all 3 gates + model-routing pointer present in both.
+6. **Vault fd-register mirrors:** central + project register ✅ through FD-111; **~/.hermes mirror was missing FD-111 → BACKFILLED** (3 mirrors now contiguous through FD-111). Obsidian CURRENT-STATE current through FD #111 (14 Aug 12:40) ✅.
+7. **Market snapshot 16 Aug (Fri 14 Aug COMPLETED EOD — all bars valid, weekend):** AAPL 305.93 +0.22% 1d −2.36% 5d / MSFT 495.40 −0.30% (CIW no trigger) / JNJ 260.35 −0.66% / GOOGL 345.90 −0.13% −2.37% 5d / FSLR 225.56 **−9.79% 5d** (Section 232 tariff-pop unwind, watch) / SMCI 39.84 **+27.98% 5d** / NVDA 225.16 −0.06% / SLV 58.48 +1.70% 5d / SPY 776.34 −0.20% / ABBV 249.46 −0.54% / BMY 63.83 −1.27% / LLY 1180.16 −2.39% 1d (pullback) / VRTX 505.75 −2.07% 1d +1.95% 5d (pullback after +8.5% run); futures GC=F 4,437.30 +1.69% 1d +2.23% 5d / SI=F 65.11 +0.36% 1d **+2.80% 5d — still above ~$62 SILVER-CORR-001 anchor, ratio ~68:1** / CL=F 82.40 +1.42% 1d +5.40% 5d (Hormuz premium). No ±10% single-day moves needing news lookup.
+8. **Dirty tree (NOT mine — enumerated, NOT committed):** `D` 3 deleted ChatGPT docs (FOUNDER-DIRECTION-EQUITY-INFLECTION..., IIP-CONSOLIDATED-BIBLE-CIW..., IIP_AI_Native_Research... — 14 Aug session cleanup, uncommitted) + `M` SESSION_CLOSEOUT.md (14 Aug entries, uncommitted) + `??` ChatGPT/Integration 12 Aug 2026/ (5 files), docs/ciw-pilot-msft/monitoring/2026-08-10-monitoring-draft.md, evidence/organization/DISCOVERY-REJECTED-ITEM-AUDIT-2026-08-12.md, evidence/organization/pilot/IC-DECISION-PACK-VERIFICATION-2026-08-13.md, research/commodities/SLV/july-vault-0016/, research/commodities/oil-hormuz-0022/ (ORG-2026-0022 publish-gate drafts: analyst-note/draft-report-thai/CRO/evidence-log), research/companies/GOOGL/.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — register items 1–128 (FD #111 = item 128); 3 vault mirrors contiguous through FD-111 (mirror gap backfilled this review)
+- [x] Session captured? — this entry appended; Obsidian CURRENT-STATE current through FD #111 (14 Aug) + MEM-IIP-073 appended
+- [x] Verify-First? — every claim checked against git log / pytest output / artifact files / DB / SOUL greps / market fetch
+- [x] Verification tags? — suite 234/235 (1 stale locked test, documented); published re-derived 36 / 20 mains + 3 weekly letters
+- [x] Pushed? — NOT this review (no commits made); 1 commit ahead = today's AM cron run, push = next session / Founder call
+- [x] Working tree — dirty by design (14 Aug session work + drafts, enumerated above)
+
+## Recommended next action
+
+**Mon 17 Aug 08:00 Weekly Radar Auto-Scan = Stage-7 FINAL / Stage-8 observation gate (FD #110) + Live Office real-world acceptance** — observe Radar Scout state, CoS handoff, ACTIVE lines, worker/run truth, line fade/hide, Founder Gates. Then: (a) fix the 1 stale locked test (`test_org_queue_native_status_semantics` gate assertion — Founder closed t_51e3be79 14 Aug) in the next interactive session; (b) ORG-2026-0022 publish gate (drafts ready, uncommitted); (c) push `3d261f1`; (d) 0016/0017 crashed-worker research recovery; (e) FULL AUDIT next round (Luna, per FULL-AUDIT-PLAN-2026-08-11).
+
+<!-- 2026-08-16 15:17 UTC+7 -->
+
+---
+
+# Session — 2026-08-14 (ops-fix): Live Office / Capital Office restored on Hermes Dashboard
+
+- **Founder report:** "ตัว virtual office เราหายไปครับ ... หายไปจาก Hermes Dashboard" → diagnosed + fixed + durable handoff.
+- **Root cause:** the dashboard server listening on 9119 was spawned from a session terminal and inherited
+  **profile-scoped `HERMES_HOME=…\profiles\iip`**. `_discover_dashboard_plugins()` scans
+  `get_process_hermes_home()/plugins` — under profile scope that's `profiles/iip/plugins/` (empty), so the
+  machine-level **user plugin `capital-intelligence-office`** was invisible: no Capital Office tab,
+  `/api/plugins/capital-intelligence-office/health` → `{"detail":"Plugin not found"}`, `/api/dashboard/plugins`
+  listed only bundled plugins (kanban, achievements). Plugin files + config were intact all along.
+- **Fix:** killed wrong-env server (PID 39284), relaunched with machine `HERMES_HOME` (same as
+  `dashboard-service/Hermes_Dashboard.cmd`). Verified: plugin API 5/5 (health/desks/founder-attention/
+  activity/workers/handoffs all 200, board "Capital Intelligence", done 65 / blocked 5), `/api/dashboard/plugins`
+  shows `capital-intelligence-office` (user, tab `/capital-office`), JS bundle 33,106 B (Live Office v1.2.0),
+  CLI dist title confirmed.
+- **Durable handoff:** the session-scoped server would die on session close → killed it, launched detached via
+  Startup VBS (`Hermes_Dashboard.vbs` → service cmd with machine env; listener PID 15524, parent = hermes-agent
+  venv python). Dashboard now survives session close; login autostart already covers next boot.
+- **Skill:** `hermes-web-dashboard` patched with new pitfall — profile-scoped HERMES_HOME → user dashboard
+  plugins invisible (staged for approval). NOTE: adding `plugins.enabled` to the profile config does NOT fix it
+  (discovery path is the issue, not the enable gate).
+- **Founder confirmed:** "เรียบร้อยครับ office กลับมาแล้ว" ✅
+- **No repo commits** (ops fix lives outside the repo). PROJECT_STATE.md Session table row added.
+- **Next:** unchanged — weekly radar Mon 17 Aug 08:00 proof → Stage 7 FINAL / Stage 8 gate; ORG-2026-0022
+  publish gate; FD #92 plan; push = Founder call.
+
+# Session — 2026-08-14: Free-Aux PRE-CUTOVER canary + correction review (7 gaps closed)
+
+- Read `ChatGPT/Integration 14 Aug 2026/` pack (FREE-AUX plan + model-routing v2 + canary prompt) →
+  ran PRE-CUTOVER canary (inventory live config, verified 3 free slugs, compression/text/vision
+  canaries, privacy + failure probes) → Rev 1 report.
+- **Founder review: PASS WITH CORRECTIONS** (7 gaps). All closed with live evidence → **Rev 2 report**:
+  - Compression free **FAILED** long-context canary (261K tokens → 3.45%: Stage 7/8, Live Office,
+    FREEZE, PASS WITH CONDITIONS, 17 Aug, Kanban all dropped) → compression stays DeepSeek paid.
+  - ZDR terminology corrected (`zdr:true` explicit; 3/3 verified; data_collection:deny alone = PASS only).
+  - Gemini Auditor verified via agy (subscription path, `gemini-3.6-flash-high`, bounded audit PASSED).
+  - Fallback design confirmed in v0.20.0 source (`auxiliary.<task>.fallback_chain` + main-agent safety
+    net; no global free_only:true per Founder).
+  - Preflight `free_model_preflight.py` delivered + live-tested (BLOCK bad slug exit 2, cost==0, ZDR gate).
+  - Nano rejected for title/tags; vision multi-image (3 screenshots) PASSED.
+- Frozen target routing per Founder (report §9). **Promotion HOLD until 17 Aug Stage-7 FINAL + Stage-8
+  retirement. No production mutation.**
+- Artifacts: `ChatGPT/Integration 14 Aug 2026/PRE-CUTOVER-REPORT-2026-08-14.md` + `free_model_preflight.py`
+  (untracked, not committed). Vault: MEM-IIP-072 + LESSON-006/007 + session log/transcript.
+- Not touched: Stage 8, old-board ACL, board other, Live Office, Kanban authority, IPM, portfolio.
+- Recommended next action: 17 Aug 08:00 Weekly Radar run → Stage 7 FINAL → Stage 8 retirement →
+  then promote free-aux per frozen table (first: profile_describer + web_extract + vision).
+
+---
+
 # Session — 2026-08-13 (night): Live Office v1 FINAL PASS + production freeze (FD #110)
 
 - Phase 3.1 Live Reliability Closure delivered (R1–R3): WS reconnect cursor +

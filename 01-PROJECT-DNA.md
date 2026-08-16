@@ -20,9 +20,11 @@ Do not compress meaningful complexity too early. Preserve uncertainty, disagreem
 
 Search broadly first. Deep research is applied only after the platform has reduced the universe to a small, high-value queue.
 
-## DNA-005 — Shared Intelligence, Bounded Strategies
+## DNA-005 — Shared Intelligence, QAD Specialization
 
-Theme Intelligence, evidence, entity mapping, and data-quality capabilities belong to the shared core. Alpha Momentum and Close System own only their strategy-specific logic.
+Theme Intelligence, evidence, entity mapping, and data-quality capabilities belong to the shared core. **Quality at Dislocation (QAD)** owns the primary research, evaluation, and underwriting logic that the platform specializes in.
+
+Legacy strategy modules (Alpha Momentum, Close System, Fundamental & Opportunity) are frozen historical capabilities — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
 
 ## DNA-006 — Discovery Is Hybrid
 
@@ -74,9 +76,9 @@ Use the simplest architecture that preserves domain boundaries, auditability, re
 
 The platform must be able to return zero high-priority candidates and admit when it lacks a credible explanation.
 
-## DNA-017 — Global Observation, Controlled Screening Universe
+## DNA-017 — Quality-Directed Observation, Dislocation-Driven Universe
 
-Global evidence may form themes. V0 investable screening remains intentionally bounded to US-listed common stocks and suitable ADRs.
+The platform observes globally for dislocation signals. The QAD research universe is defined by dislocation presence and business-quality potential, not by exchange listing. Legacy momentum-screen listing constraints (US-listed common stocks) are frozen historical scope, not QAD boundaries.
 
 ## DNA-018 — Structured Source of Truth, Narrative Learning Layer
 
@@ -90,7 +92,28 @@ A long report is not proof of deep research. Deep research must be justified by 
 
 Company research must not become an isolated paper archive. It must return structured findings to Candidate Intelligence, Theme Intelligence, industry maps, evidence progression, coverage-gap detection, and learning/postmortems. The CIW Research Result contract operationalizes this.
 
+## DNA-021 — Dislocation-First
+
+The platform's primary lens is **Quality at Dislocation**. The central question is: *"Is this a high-quality business whose temporary economic impairment is being priced as permanent — or is the market correctly pricing permanent damage that the evidence has not yet confirmed?"*
+
+Every research workflow, evaluation fixture, and underwriting gate is oriented around answering this question. Temporary impairment is a research conclusion, never a starting assumption.
+
 ---
 
-**Amendment record (Constitution §21):** DNA-019 + DNA-020 added 2026-08-02 — affected FD: FD-CIW-001..008 (CIW spec v0.2, FD-CIW-008); reason: CIW deep-research additions approved by Founder; trade-offs: bounded-research discipline preserved, no new investable universe; downstream impact: CIW specs (`project-definition/company-intelligence-workbench/`) reference DNA-019/020; Founder approval: FD-CIW-008 (batch, 2 Aug 2026); amendment history: v0.1 original DNA-001..018 → v0.2 DNA-019..020 added.
-<!-- 2026-08-02 23:45 UTC+7 -->
+| Version | 0.1 → 0.2 | 2026-08-16 | QAD Pivot — DNA-005 updated (QAD replaces AM/CS as primary strategy); DNA-017 relaxed (QAD universe not bounded by listing); DNA-021 added (Dislocation-First); amendment history below |
+
+---
+
+## Amendment Record — Version 0.2
+
+**Amendment:** CA-v0.6-QAD-PIVOT (2026-08-16)
+
+**Changes:**
+
+- **DNA-005** — Alpha Momentum and Close System references replaced by QAD
+- **DNA-017** — V0 investable screening constraint relaxed for QAD (dislocation-focused, not listing-bound)
+- **DNA-021** — New: Dislocation-First (QAD identity)
+
+**Reason:** Product pivot to Quality at Dislocation.
+
+**Founder approval:** FD #130 (QAD Architecture Design Gate, 2026-08-16)
