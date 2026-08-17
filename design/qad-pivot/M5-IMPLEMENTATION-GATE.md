@@ -43,7 +43,7 @@
 
 ## Gate Process
 
-1. All 9 prerequisites verified against acceptance criteria
+1. All 10 prerequisites (rows 1–10) verified against acceptance criteria
 2. Independent auditor confirms compliance
 3. Founder reviews M4B evaluation evidence + implementation plan
 4. Founder explicitly approves (FD)

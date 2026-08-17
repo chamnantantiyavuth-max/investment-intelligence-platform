@@ -65,12 +65,54 @@
 ## Verification
 
 - Suite **235/235** (full `pytest`, 2 stale locked tests fixed — `test_org_queue_native_status_semantics` gate Done-vs-Blocked; `test_decisions_register_contiguous_and_parsed` date 14→17 Aug)
-- Governance consistency review: **delegated to Luna High** (premium reviewer, kanban task `t_ad945485`) — result lands on board; M1 verdict does not depend on it (bounded consistency check, not a gate)
+- Governance consistency review: **delegated to Luna High (kanban task `t_ad945485`)** — result: **PASS WITH FINDINGS** (5 findings). ⚠ **Routing non-compliance**: task used OpenRouter provider directly instead of the approved PRIMARY subscription route (openai-codex). The result is retained as supplemental evidence; a compliant re-run is required (see M1 Final Integrity Patch).
 - Stale-claims sweep: 0 active multi-strategy / Theme-first / prohibited-autonomous-discovery claims in canonical docs; only historical references preserved
 - HEAD == origin/main after push (see git log)
 
+## Scope Contamination Record (M1 Final Integrity Patch)
+
+The M1 correction commits (`9894264` + `6090f03`) included pre-existing unrelated dirty-tree work because `git add -A` was used on a dirty working tree. The scope contamination is documented below.
+
+### Commit 9894264 (clean)
+| File | Classification |
+|------|---------------|
+| `design/qad-pivot/QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md` | ✅ IN_SCOPE (new) |
+| `design/qad-pivot/QAD-M1-CLOSEOUT.md` | ✅ IN_SCOPE (new) |
+
+### Commit 6090f03 (contaminated)
+| File | Classification | Resolution |
+|------|---------------|------------|
+| 01-PROJECT-DNA.md | ✅ IN_SCOPE | — |
+| 02-PROJECT-CONSTITUTION.md | ✅ IN_SCOPE | — |
+| AGENTS.md | ✅ IN_SCOPE | — |
+| PROJECT_STATE.md | ✅ IN_SCOPE | — |
+| SESSION_CLOSEOUT.md | ✅ IN_SCOPE | — |
+| design/qad-pivot/* (6 files) | ✅ IN_SCOPE | — |
+| operational/EVIDENCE-DOCTRINE.md | ✅ IN_SCOPE | — |
+| operational/FOUNDERS-DECISIONS.md | ✅ IN_SCOPE | — |
+| operational/PRODUCT-VISION.md | ✅ IN_SCOPE | — |
+| operational/SCOPE-AND-NON-SCOPE.md | ✅ IN_SCOPE | — |
+| tests/locked/test_audit_api.py | ✅ IN_SCOPE | — |
+| tests/locked/test_org_workflow_api.py | ✅ IN_SCOPE | — |
+| ChatGPT/FOUNDER-DIRECTION-EQUITY-INFLECTION-DISCOVERY-AUDITED.md | ❌ UNINTENDED_DELETION | **RESTORED** (no explicit deletion authorization; pre-existing staged deletion from 14 Aug session mistakenly committed via `git add -A`) |
+| ChatGPT/IIP-CONSOLIDATED-BIBLE-CIW-INTEGRATION-v0.1-COUNCIL-DRAFT.md | ❌ UNINTENDED_DELETION | **RESTORED** |
+| ChatGPT/IIP_AI_Native_Research_and_Independent_PM_Direction_v0.1.md | ❌ UNINTENDED_DELETION | **RESTORED** |
+| ChatGPT/Integration 12 Aug 2026/* (5 files) | ✅ PRE_EXISTING_VALID_WORK | Preserved (legitimate prior artifacts) |
+| ChatGPT/Integration 16 Aug 2026/HERMES-QAD-INTEGRATION-HANDOFF-v0.3.md | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+| docs/ciw-pilot-msft/monitoring/* | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+| evidence/organization/* (2 files) | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+| research/commodities/SLV/july-vault-0016/* | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+| research/commodities/oil-hormuz-0022/* | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+| research/companies/GOOGL/evidence-log.md | ✅ PRE_EXISTING_VALID_WORK | Preserved |
+
+### Corrective action
+- No Git history rewrite.
+- 3 unintended deletions restored from `3d261f1` (the parent of `e0b2143`).
+- All pre-existing additions preserved (legitimate project artifacts).
+- From this point onward: **scoped migration stages shall use explicit-path staging only; `git add -A` is prohibited on a dirty repository for M2–M4B.**
+
 ## M1 Verdict
 
-> **M1 = PASS.** `e0b2143` kept as valid checkpoint, patched forward with the M1 correction closeout. M2 (Logical Legacy Boundary) may begin after Founder approves the AGENTS.md patch (step 3).
+> **M1 TECHNICAL CLOSEOUT = PASS** (substantive work accepted). **M1 FINAL GOVERNANCE CLOSEOUT = PENDING** (awaiting compliant independent governance review via approved PRIMARY subscription route — openai-codex). After review findings are resolved: **M1 = FINAL PASS**. Only then may M2 start.
 
 <!-- 2026-08-17 17:30 UTC+7 -->

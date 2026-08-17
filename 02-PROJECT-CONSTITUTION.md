@@ -273,7 +273,7 @@ Queue capacity is adaptive. It must not fill a quota with weak candidates.
 
 It may return zero high-priority candidates.
 
-> **Historical reference:** The original Theme-First Research Queue (v0.5) is preserved below as historical record. Theme Intelligence remains a supporting context/discovery capability — not a mandatory gateway.
+> **Historical reference:** The original Theme-First Research Queue (v0.5) is preserved in repository/version history. Theme Intelligence remains a supporting context/discovery capability — not a mandatory gateway.
 
 ## 15. Close System (Superseded — Historical Reference)
 
@@ -324,7 +324,7 @@ Narrative research/knowledge layers support case studies, postmortems, approved 
 - automated allocation;
 - autonomous buy or sell recommendations;
 - autonomous investment endorsement;
-- uncontrolled global universe expansion (bounded researchable universe policy governs; initial pilot target ~5,000–10,000 operating companies, configurable, subject to evaluation);
+- uncontrolled global-universe expansion. Universe scope is governed by a configurable, evidence-tested subordinate policy (see QAD Discovery & Coverage Operating Requirement / M3 QAD-DISCOVERY-AND-SELECTION.md);
 - automatic rule modification;
 - final technology or data-vendor selection;
 - graph-database requirement;
@@ -556,9 +556,11 @@ Version 0.6 reorients the product from a multi-strategy investment intelligence 
 - **§15 Close System** marked as **Superseded — Historical Reference** (FROZEN)
 - **§20 V0 Thesis** marked as **Superseded** — replaced by QAD architecture
 
-The following sections were amended by CA-v0.6-QAD-PIVOT: §4 Shared Intelligence Core, §5 Theme Intelligence, §6 Two-Tier Autonomy, §7 Weak Signal Inbox, §8 Evidence Doctrine, §9 Evidence Progression, §10 Information Preservation, §11 Falsification, §12 Human Authority, §19 Architecture Principles, §21 Amendment Authority, §22 Closing Principle, §23 AI Operating Constitution (unchanged in v0.6).
+The following sections were amended by CA-v0.6-QAD-PIVOT: §1, §2, §3, §13, §15, §20 (as listed above).
 
-The following sections were amended by the M1 correction closeout (CA-v0.6-QAD-PIVOT-M1, 2026-08-17): §14 (Theme-First → QAD Candidate-First, historical preserved), §16 (Learning Loop QAD-compatible), §17 (technology-neutral), §18 (non-scope reconciled with QAD autonomous discovery/research). §15 Close System and §20 V0 Thesis remain Superseded — Historical Reference. §13 Alpha Momentum remains Superseded — Historical Reference.
+The following sections were amended by the M1 correction closeout (CA-v0.6-QAD-PIVOT-M1, 2026-08-17): §5 (Theme = supporting capability), §14 (Theme-First → QAD Candidate-First), §16 (Learning Loop QAD-compatible), §17 (technology-neutral), §18 (non-scope reconciled with QAD autonomous discovery/research), §21 (amendment record completed).
+
+The following sections remain unchanged by v0.6 and the M1 correction closeout: §4, §6, §7, §8, §9, §10, §11, §12, §19, §22, §23.
 
 **Approval:** FD #130 (QAD Architecture Design Gate, 2026-08-16)
 

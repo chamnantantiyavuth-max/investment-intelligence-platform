@@ -1,6 +1,6 @@
 # Revised QAD Migration Master Plan (M0 → M15)
 
-> **Status:** Design artifact — not approved. Subject to M0 required changes.
+> **Status:** Design artifact — M0/M1 phases COMPLETE + RATIFIED (16–17 Aug 2026); M2–M4B remain pre-code design phases; M5+ implementation gated.
 > **Key change from original:** M4 split into M4A (Schemas) + M4B (Evaluation Contract before first code).
 
 ---
@@ -13,15 +13,14 @@
 - Reuse/Retirement Matrix
 - Repository state reconciled with handoff
 
-### QAD-M1 — Constitutional Pivot DRAFT (Documentation Only)
-**Deliverables:**
-- Draft Constitution v0.5 QAD Amendment (§1, §2, §5, §13, §15, §20)
-- Revised 00-FOUNDERS-MANIFESTO.md (QAD specialization paragraph)
-- Revised 01-PROJECT-DNA.md (replace DNA-004, update DNA-005)
-- Draft operational/PRODUCT-VISION.md (QAD version)
-- Draft operational/QAD-SCOPE-AND-NON-SCOPE.md
-- Draft operational/QAD-ROADMAP.md
-- No ratification — present for Founder review only
+### QAD-M1 ✅ (COMPLETE + RATIFIED — 16–17 Aug 2026, FD #130; supersedes the original draft below)
+**Original draft deliverables (16 Aug, executed in commit `e0b2143`):**
+- Constitution **v0.6** QAD Amendment (§1/§2/§3 redefined QAD; §13/§15/§20 SUPERSEDED; ratified CA-v0.6-QAD-PIVOT)
+- Revised 00-FOUNDERS-MANIFESTO.md (QAD Edition)
+- Revised 01-PROJECT-DNA.md (v0.3; DNA-005/017 updated, DNA-021 added)
+- Reconciled operational/PRODUCT-VISION.md + SCOPE-AND-NON-SCOPE.md (QAD)
+
+**M1 correction closeout (17 Aug, FD #130):** Constitution lineage normalized (v0.6/CA-v0.6); §14 Theme-First → QAD Candidate-First; §5/§16/§17/§18/§21 reconciled; DNA lineage restored (v0.2 CIW + v0.3 QAD); Discovery & Coverage Operating Requirement v0.1 FROZEN. **M1 = TECHNICAL PASS; FINAL GOVERNANCE = PENDING independent review → then M1 = FINAL PASS.**
 
 ### QAD-M2 — Logical Legacy Boundary (Documentation Only)
 **Deliverables:**

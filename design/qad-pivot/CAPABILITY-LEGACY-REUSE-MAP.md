@@ -190,7 +190,8 @@ Each existing capability was evaluated against:
 | ✅ REUSE DIRECTLY | 8 | Shared Equity Universe, Deep Research Contract (tpl 16), Blog/Reports, Thai Editorial Standard, Live Office, Audit Infrastructure, Evidence Doctrine, Security/Untrusted-Content |
 | 🔄 ADAPT | 5 | Equity Inflection Scanner, Quality & Asymmetry Discovery, Theme Anomaly Detection, FO Moat/Earnings components, 13F data as evidence input |
 | 🔄 ABSORB (with lineage) | 1 | CIW → QAD Research Protocol |
-| ⏸️ FREEZE | 8 | AM Pipeline, AM Themes, CS Product Radar, FO Pipeline (as strategy), II Pipeline (as strategy), CS Product Discovery, Radar, Discovery modules |
+| 🔄 TRANSITIONAL (non-authoritative complementary, retained pending evidence-based migration decision) | 1 | Hermes Radar (Weekly + Mid-Week) |
+| ⏸️ FREEZE | 7 | AM Pipeline, AM Themes, CS Product Radar, FO Pipeline (as strategy), II Pipeline (as strategy), CS Product Discovery, Discovery modules |
 | ❌ NOT FOR QAD REUSE | 1 | CS Product Discovery → QAD Dislocation mapping rejected |
 | ⏸️ REFRAIN (deferred) | 1 | Hermes AI Workforce (wait for contracts + migration map) |
 

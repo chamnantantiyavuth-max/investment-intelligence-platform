@@ -222,19 +222,28 @@ The system must be evaluated on two separate questions:
 
 | Metric | Method | Target | Notes |
 |--------|--------|--------|-------|
-| Universe Coverage Rate | Eligible count vs actually scanned | >95% (improving) | All registries |
-| Data-Ready Coverage | Companies with sufficient data ≥ usable threshold | >80% | Researchable Universe |
-| Known-Opportunity Recall | Historical QAD-appropriate opportunities detected | >80% | Masked/historical fixtures |
-| Quality Candidate Recall | Companies with quality evidence correctly identified | >70% | Quality Universe |
-| Dislocation Recall | Material dislocations detected | >80% | Cross-sectional |
-| False-Negative / Miss Rate | Stratified rejected-sample audit | <20% | Rejected-Sample Audit |
-| Rejected-Item Surprise Rate | Independent review of rejected/low-rank sample | <10% surprise | Monthly |
-| Time-to-Detection | Cadence between event first observable and signal registered | bounded | Per cadence |
-| Signal→Candidate Precision | Signals that pass candidate assembly | >50% | Signal Registry |
-| Candidate→Research Yield | Candidates that open Full Research | >20% | Candidate Registry |
-| Cost per meaningful candidate | Total discovery cost / meaningful candidates | <budget | Budget Controller |
+| Universe Coverage Rate | Eligible count vs actually scanned | BASELINE_REQUIRED | All registries; threshold PENDING_M4B_CALIBRATION |
+| Data-Ready Coverage | Companies with sufficient data ≥ usable threshold | BASELINE_REQUIRED | Researchable Universe; threshold PENDING_M4B_CALIBRATION |
+| Known-Opportunity Recall | Historical QAD-appropriate opportunities detected | BASELINE_REQUIRED | Masked/historical fixtures; threshold PENDING_M4B_CALIBRATION |
+| Quality Candidate Recall | Companies with quality evidence correctly identified | BASELINE_REQUIRED | Quality Universe; threshold PENDING_M4B_CALIBRATION |
+| Dislocation Recall | Material dislocations detected | BASELINE_REQUIRED | Cross-sectional; threshold PENDING_M4B_CALIBRATION |
+| False-Negative / Miss Rate | Stratified rejected-sample audit | BASELINE_REQUIRED | Rejected-Sample Audit; threshold PENDING_M4B_CALIBRATION |
+| Rejected-Item Surprise Rate | Independent review of rejected/low-rank sample | BASELINE_REQUIRED | Monthly; threshold PENDING_M4B_CALIBRATION |
+| Time-to-Detection | Cadence between event first observable and signal registered | BASELINE_REQUIRED | Per cadence; threshold PENDING_M4B_CALIBRATION |
+| Signal→Candidate Precision | Signals that pass candidate assembly | BASELINE_REQUIRED | Signal Registry; threshold PENDING_M4B_CALIBRATION |
+| Candidate→Research Yield | Candidates that open Full Research | BASELINE_REQUIRED | Candidate Registry; threshold PENDING_M4B_CALIBRATION |
+| Cost per meaningful candidate | Total discovery cost / meaningful candidates | BASELINE_REQUIRED | Budget Controller; threshold PENDING_M4B_CALIBRATION |
 | Source/feed failure detection | Unplanned data stall or feed drop | alert ≤1 cycle | Operations |
-| Decision-Changing Candidate Recall | "Did the system ever see the company that later became a real QAD opportunity — before it was obvious?" | ≤1 miss per evaluation period | **Headline metric** |
+| Decision-Changing Candidate Recall | "Did the system ever see the company that later became a real QAD opportunity — before it was obvious?" | BASELINE_REQUIRED | **Headline metric**; threshold PENDING_M4B_CALIBRATION |
+
+### Hard Invariants (zero-tolerance, do not require calibration)
+
+The following are hard invariants with no PENDING_M4B_CALIBRATION label — they are production acceptance requirements:
+
+- **No silent omission:** every company in the Researchable Universe must have explicit inclusion/exclusion state and reason recorded in the registry.
+- **Sealed-outcome isolation:** evaluation outcomes must remain inaccessible to the agent being evaluated (per Part 3 enforcement).
+- **PIT violation = fail:** any point-in-time violation (look-ahead data, post-as-of information) in a fixture evaluation is an automatic failure.
+- **Provenance integrity:** every candidate, signal, and case transition must record who, when, why, data version, rule version, model version, and evidence — missing or fabricated provenance = fail.
 
 ### Method
 
@@ -242,5 +251,6 @@ The system must be evaluated on two separate questions:
 - Monthly rejected-sample audit (stratified random sample of 50–100 from rejected/low-rank; independent light review)
 - Discovery recall and rejected-item audit results feed the M5 Gate Evidence Package
 - Separate evaluation of type-A (research quality) and type-B (discovery recall) — never conflate
+- **Calibration discipline (M4B):** `Metric → Baseline Measurement → Error Analysis → Threshold Proposal → Founder Approval → Production Acceptance Threshold`. No numeric acceptance target is adopted before an empirical baseline and error/trade-off analysis exists. Hard invariants above are exempt from calibration.
 <!-- 2026-08-16 UTC+7 -->
 <!-- 2026-08-17 17:30 UTC+7 -->
