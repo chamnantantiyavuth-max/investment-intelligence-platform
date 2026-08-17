@@ -1,3 +1,33 @@
+# Session — 2026-08-17 (cron review, 23:57): M2 correction executed by 23:12 session — M2 = FINAL PASS, M3 awaiting Founder; suite 235/235; vault mirror gap FD-95..106 backfilled
+
+**Review window:** 17 Aug 12:10 → 23:57 UTC+7. **What this review found (evidence-backed):**
+
+1. **M2 CORRECTION SESSION (23:12–23:36, "5 blockers ก่อน M3" — STILL OPEN, paused awaiting Founder):** Founder reviewed commit `548a89d` + M2 artifacts on GitHub → **5 blockers before M3** (headline: M2 declared PASS with NO independent consistency review — same class as the M1 pre-gate issue; plus capability/dependency classification problems). The session then executed the correction in-tree: bounded independent consistency review → **PASS_WITH_FINDINGS (2 findings) → both resolved** (F1 MEDIUM: CAP-018 double-counted in REUSE+REFRAIN → single REFRAIN entry; F2 LOW: exit criterion #13 scope claim vs actual diff). Working-tree state (5 files, **+294/−73, documentation-only, UNCOMMITTED**): `QAD-M2-CLOSEOUT.md` now reads **M2 TECHNICAL CLOSEOUT = PASS (548a89d) · M2 FINAL GOVERNANCE = PASS · M3 = READY FOR FOUNDER AUTHORIZATION**; registry (axes separated, child IDs CAP-007A..007D/CAP-010A, CAP-018→ACTIVE, runtime annotations), dependency matrix (Nick-Weekly cron corrected, FROZEN-with-runtime section), reuse map, PROJECT_STATE (Next-allowed-action → M3 ⏳ AWAITING FOUNDER AUTHORIZATION; "STATE AS OF 18 Aug"). **Last message asked Founder for AGENTS.md sync approval (protected file) → session paused there.** This review did NOT touch PROJECT_STATE.md or the QAD-M2 files (active-session ownership).
+2. **Git:** HEAD == origin/main == `548a89d` (433 commits) — push **SYNCED**. Dirty tree = the session's M2-correction batch (5 files above) + this review's docs (SESSION_CLOSEOUT + Obsidian) — NOT committed (review discipline: active session work).
+3. **Suite 235/235 PASS** (re-run this review, hermes-agent venv interpreter, 7.6s) — confirms the 2 stale locked-test fixes (gate Done-vs-Blocked; decisions date 14→17 Aug) land green on committed HEAD; no test files touched by the M2-correction batch.
+4. **Registration gaps CLOSED (from 12:10 review):** FD #130 = FOUNDERS-DECISIONS item 130 ✅ · ADR-130 exists (`.hermes/architecture/ADR-130-QAD-ARCHITECTURE-DESIGN-GATE.md`) ✅ · AppData central vault register contiguous FD-90..112 + FD-130 ✅ · **~/.hermes mirror gap FD-95..106 (12 rows) FOUND + BACKFILLED by this review** (was missing in both section + table formats; rows copied verbatim from AppData central, tagged `[BACKFILLED 2026-08-17]`) → 3 mirrors contiguous through FD-130.
+5. **Cadence:** Weekly Radar Mon 17 Aug 08:00 **MISSED** (gateway down overnight; next nominal Mon 24 Aug 08:00) — **FD #110 Live Office real-world acceptance observation now targets the 24 Aug run**; CIW MSFT monitor (Mon 09:00) also missed → 24 Aug; radar mid-week **Thu 20 Aug 08:00 unaffected**; Nick-Weekly AM pipeline next 22 Aug 09:00 (last run AM-V0-20260816-150812, as-of 14 Aug, fresh ≤7d). Freshness: AM 2d / FO 13d ≤30d / II 13d ≤120d in bound; CS synthetic-labeled.
+6. **Market snapshot 17 Aug 23:57 (Mon US session LIVE — all bars intraday, not EOD):** AAPL 303.71 −0.73% / **MSFT 479.52 −3.21% 1d −5.24% 5d (largest 1d move; no single headline driver in Yahoo news — hyperscaler-vs-market-warning coverage; CIW digest-only watch)** / JNJ 262.92 +0.99% / GOOGL 343.02 −0.83% / FSLR 219.47 −8.30% 5d (tariff-pop unwind continues) / SMCI 38.09 +21.07% 5d / NVDA 226.65 +0.66% / SLV 59.91 +2.45% 1d / SPY 774.53 −0.23% / ABBV 250.18 / BMY 64.45 / LLY 1192.73 / VRTX 515.31 +1.89%; **futures LIVE: GC=F 4,481.70 +2.31% 1d +2.75% 5d / SI=F 66.54 +2.38% 1d — still above ~$62 SILVER-CORR-001 anchor, ratio ~67.4:1 / CL=F 82.83 +0.52% 1d** (Hormuz premium ~flat). No ±10% 1d moves → no mandatory news lookups.
+7. **Governance sync:** unchanged since 16 Aug verification (shared vs profile SOUL gate structure identical) — no SOUL edits in window.
+8. **Obsidian:** CURRENT-STATE was stale at MEM-IIP-074 (12:15) → this review prepends **MEM-IIP-075** (M2-correction world + radar miss + market).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — items 1–130 contiguous (locked test passes); 3 vault mirrors contiguous through FD-130 (this review backfilled ~/.hermes FD-95..106)
+- [x] Session captured? — this entry; Obsidian CURRENT-STATE MEM-IIP-075 prepended; PROJECT_STATE left to the active session (its own uncommitted edits already carry M2 FINAL PASS / M3-awaiting)
+- [x] Verify-First? — every claim checked against git log/ls-remote/pytest/yfinance/register greps
+- [x] Verification tags? — suite 235/235 re-run green; HEAD==origin/main==548a89d; derived counts re-derived
+- [x] Pushed? — NO commits made by this review (active-session dirty tree; commit = session's closeout, push = Founder call)
+- [x] Working tree — dirty by design: 5 M2-correction files (session) + SESSION_CLOSEOUT/Obsidian (this review)
+
+## Recommended next action
+
+**(Session's pending question, one decision):** Founder approves AGENTS.md sync for the M2 correction checkpoint (protected file) → session commits the 5-file batch (+294/−73, docs-only) → M3 = formally AWAITING FOUNDER AUTHORIZATION. Parallel watch: radar mid-week Thu 20 Aug 08:00; Weekly Radar + CIW monitor Mon 24 Aug (FD #110 Live Office acceptance observation); ORG-2026-0022 publish gate still open; 0016/0017 recovery.
+
+<!-- 2026-08-17 23:57 UTC+7 -->
+
+---
+
 # Session — 2026-08-17 (interactive): QAD M1 correction closeout — M1 = PASS + Discovery & Coverage Operating Requirement v0.1 FROZEN (FD #130)
 
 **Status:** COMPLETE — Founder approved the ChatGPT M1 review prompt (Governance Corrections + QAD Discovery/Coverage Operating Requirement) and executed the full M1 correction closeout. Commits `9894264` + `6090f03` — **PUSHED (HEAD == origin/main == 6090f03)**.

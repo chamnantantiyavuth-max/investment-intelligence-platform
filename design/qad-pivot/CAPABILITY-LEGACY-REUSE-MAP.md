@@ -1,5 +1,11 @@
 # Capability-Level Legacy Reuse Map
 
+> ⛔ **SUPERSEDED — HISTORICAL DESIGN PREDECESSOR (16 Aug 2026)**
+> Canonical capability truth after M2 = **`QAD-M2-LEGACY-CAPABILITY-REGISTRY.md`** + **`QAD-M2-DEPENDENCY-MATRIX.md`**.
+> This map was the **M1‑era design predecessor** that informed QAD-M2 capability inventory.
+> It is preserved as lineage and design‑stage reference only — **do not use for M3 planning**.
+> For authoritative current state and disposition, refer to the M2 registry.
+
 > **NOT module-name-based.** Every capability is audited for actual QAD relevance before supersede/reuse/archive decision.
 > **Key principle:** A capability that was part of a "strategy" may still survive as an evidence input or supporting QAD function.
 

@@ -1,8 +1,11 @@
 # QAD-M2 — Legacy Capability Registry
 
-> **Status:** M2 = PASS (2026-08-17)
+> **Status:** M2 TECHNICAL CLOSEOUT = **PASS** (commit `548a89d`, 17 Aug 2026)
+> **M2 FINAL GOVERNANCE = PASS** (validation 18 Aug 2026: deterministic integrity checks all pass)
+> **M3 = READY FOR FOUNDER AUTHORIZATION**
 > **Lifecycle states:** ACTIVE / FROZEN / SUPERSEDED / TRANSITIONAL / VERIFIED_UNUSED / ARCHIVED
 > **Disposition vocabulary:** REUSE / ADAPT / ABSORB / TRANSITIONAL_RETAIN / FREEZE / SUPERSEDE / DO_NOT_REUSE
+> **Corrections applied** (18 Aug 2026): axes separated, child IDs assigned, CAP-018→ACTIVE, runtime annotations added, dispositions normalized to ONE primary_disposition per capability. Validation script `validate-registry.py` confirms 25/25 records deterministic.
 
 ---
 
@@ -14,7 +17,7 @@
 | **source_module** | `discovery/equity_universe.py` |
 | **current_authority** | FD #95, FD #130 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | Quality Universe seed; Security Master / Researchable Universe registry foundation |
 | **reusable_data** | 98 CIK-verified names, ADR flags, PIT identity, SEC company_tickers mapping |
 | **reusable_logic** | CIK verification, entity resolution, membership derivation |
@@ -34,7 +37,7 @@
 | **source_module** | `discovery/equity_inflection/` |
 | **current_authority** | FD #88/#89 |
 | **current_state** | **ACTIVE** (standing scanner) |
-| **QAD_target_disposition** | ADAPT |
+| **primary_disposition** | ADAPT |
 | **QAD_target_capability** | Dislocation Radar input — EPS breakout detection |
 | **reusable_data** | Historical PIT scan results, validation evidence pack |
 | **reusable_logic** | Deterministic EPS breakout + revenue confirmation + Stage Definition v0.1 |
@@ -54,7 +57,7 @@
 | **source_module** | `discovery/quality_asymmetry/` |
 | **current_authority** | FD #95 |
 | **current_state** | **ACTIVE** (shadow/evidence-only) |
-| **QAD_target_disposition** | ADAPT |
+| **primary_disposition** | ADAPT |
 | **QAD_target_capability** | Quality Discovery precursor — 4 archetype lenses (Durable Compounder / 100-Bagger / Mispriced Quality / Asymmetric Value) |
 | **reusable_data** | 62 evidence blocks, archetype classification results |
 | **reusable_logic** | Deterministic engine, no score (threshold PROPOSED FD #53) |
@@ -74,7 +77,9 @@
 | **source_module** | `alpha-momentum-v0/` |
 | **current_authority** | FD #65 (freeze), FD #130 (superseded as strategy) |
 | **current_state** | **FROZEN** |
-| **QAD_target_disposition** | FREEZE (strategy authority) / DO_NOT_REUSE (momentum logic) |
+| **runtime_use** | **CRON EXECUTION** — Nick-Weekly Pipeline Run (AM EOD) weekly cron executes the pipeline. Last run AM-V0-20260816-150812, next 22 Aug 09:00. |
+| **primary_disposition** | FREEZE |
+| **reuse_policy** | DO_NOT_REUSE_MOMENTUM_LOGIC |
 | **QAD_target_capability** | NONE — momentum screening, Stage Analysis, theme ranking not reusable |
 | **reusable_data** | Historical candidate/theme data for evaluation; equity security metadata (symbols, exchanges) |
 | **reusable_logic** | NONE (momentum logic is fundamental/impairment analysis opposite) |
@@ -94,7 +99,7 @@
 | **source_module** | `alpha-momentum-v0/` (Theme Cards, Controlled Theme Set) |
 | **current_authority** | FD #65, FD #130 |
 | **current_state** | **FROZEN** |
-| **QAD_target_disposition** | FREEZE / DO_NOT_REUSE (theme-first philosophy contra QAD) |
+| **primary_disposition** | FREEZE |
 | **QAD_target_capability** | NONE — Theme-first gateway is superseded |
 | **reusable_data** | Theme definitions as historical reference |
 | **reusable_logic** | NONE |
@@ -114,7 +119,7 @@
 | **source_module** | `alpha-momentum-v0/experimental/` (radar.py, anomaly detection, hypothesis engine, weak signal inbox) |
 | **current_authority** | FD #27, FD #130 |
 | **current_state** | **FROZEN** |
-| **QAD_target_disposition** | ADAPT (methodology only, not code) |
+| **primary_disposition** | ADAPT (methodology only, not code) |
 | **QAD_target_capability** | Supporting QAD discovery input — anomaly detection methodology may signal dislocation candidates |
 | **reusable_data** | None (frozen anomaly data is historical) |
 | **reusable_logic** | Anomaly detection methodology (model-agnostic) — import methodology if QAD-M5 needs it |
@@ -134,7 +139,7 @@
 | **source_module** | `fundamental-opportunity-v0/` |
 | **current_authority** | FD #40, FD #65 (freeze as strategy), FD #130 |
 | **current_state** | **FROZEN** (as strategy pipeline) |
-| **QAD_target_disposition** | ADAPT (components) / FREEZE (as strategy) |
+| **primary_disposition** | FREEZE (as strategy) |
 | **QAD_target_capability** | Individual analytical methods may be adapted into QAD Fundamental Analysis (M8) |
 | **reusable_data** | 8-company fundamental data (yfinance), pipeline output |
 | **reusable_logic** | Sub-capabilities below (7a–7d) |
@@ -146,39 +151,43 @@
 | **archival_preconditions** | After QAD-M8 materializes and consumers migrated |
 | **governing_FD/spec** | FD #40, FD #65, FD #130 |
 
-### 7a. Moat Classification (6 types + Width/Depth/Trend)
+### 7a. Moat Classification (6 types + Width/Depth/Trend) — CAP-007A
 
 | Field | Value |
 |-------|-------|
+| **capability_id** | CAP-007A |
 | **current_state** | **FROZEN** (methodology available) |
-| **QAD_target_disposition** | ADAPT |
+| **primary_disposition** | ADAPT |
 | **QAD_target_capability** | QAD-M8 Business Quality will inherit 6-type moat framework (spec §3.4.1) and extend with Moat Mechanism Protocol |
 | **replacement_required** | No — inherit methodology |
 
-### 7b. Earnings Quality (HIGH/MEDIUM/LOW/COSMETIC)
+### 7b. Earnings Quality (HIGH/MEDIUM/LOW/COSMETIC) — CAP-007B
 
 | Field | Value |
 |-------|-------|
+| **capability_id** | CAP-007B |
 | **current_state** | **FROZEN** (methodology available) |
-| **QAD_target_disposition** | ADAPT |
+| **primary_disposition** | ADAPT |
 | **QAD_target_capability** | QAD-M8 Financial Reconstruction will adopt Earnings Quality framework |
 | **replacement_required** | No — adopt methodology |
 
-### 7c. Value Trap Detector (5-question)
+### 7c. Value Trap Detector (5-question) — CAP-007C
 
 | Field | Value |
 |-------|-------|
-| **current_state** | **FROZEN** |
-| **QAD_target_disposition** | SUPERSEDE |
+| **capability_id** | CAP-007C |
+| **current_state** | **SUPERSEDED** |
+| **primary_disposition** | SUPERSEDE |
 | **QAD_target_capability** | Replaced by QAD-M8 Impairment Diagnosis (Temporary/Mostly/Mixed/Structural/Unresolved) |
 | **replacement_required** | Yes — QAD Impairment Diagnosis supersedes |
 
-### 7d. Marx Signals (Profit Rate Trend + Narrative Gap)
+### 7d. Marx Signals (Profit Rate Trend + Narrative Gap) — CAP-007D
 
 | Field | Value |
 |-------|-------|
+| **capability_id** | CAP-007D |
 | **current_state** | **FROZEN** (informational) |
-| **QAD_target_disposition** | FREEZE |
+| **primary_disposition** | FREEZE |
 | **QAD_target_capability** | Not directly needed; keep as informational. If useful, import methodology |
 | **replacement_required** | No — granular impairment diagnosis replaces |
 
@@ -190,7 +199,8 @@
 | **source_module** | `institutional-intelligence-v0/` |
 | **current_authority** | FD #42, FD #65, FD #130 |
 | **current_state** | **FROZEN** (as strategy pipeline) |
-| **QAD_target_disposition** | FREEZE (as strategy) / ADAPT (13F data as evidence input) |
+| **primary_disposition** | FREEZE (as strategy) |
+| **reuse_policy** | ADAPT_DATA_AS_EVIDENCE_INPUT |
 | **QAD_target_capability** | 13F institutional conviction data as evidence input for QAD Business Quality analysis |
 | **reusable_data** | Real 13F holdings data, super-investor watchlist, conviction signals |
 | **reusable_logic** | Data fetching (SEC EDGAR), CUSIP mapping, conviction calculation |
@@ -209,12 +219,13 @@
 | **capability_id** | CAP-009 |
 | **source_module** | `project-definition/company-intelligence-workbench/`, `docs/ciw-pilot-msft/` |
 | **current_authority** | FD-CIW-001..016, FD #130 |
-| **current_state** | **FROZEN** (pilot complete; full implementation deferred) |
-| **QAD_target_disposition** | ABSORB (with lineage) |
+| **current_state** | **FROZEN** (pilot complete; full implementation deferred; **CIW MSFT monitoring runtime still ACTIVE** — see runtime_use below) |
+| **primary_disposition** | ABSORB |
 | **QAD_target_capability** | QAD Full Research Protocol evolves from CIW Research Framework (Modules A–Q). CIW Result Contract + Quality Gates directly reusable. |
 | **reusable_data** | MSFT research-result v1 + v2, monitoring artifacts, CRR records |
 | **reusable_logic** | Research Framework (Modules A–Q), Result Contract, Quality Gates, Source Map methodology |
-| **active_dependencies** | `backend/audit_store.py` (audit center references CIW artifacts), `backend/org_store.py`, `discovery/quality_asymmetry/archetypes.py` (reference), `tests/locked/test_org_workflow_api.py` |
+| **runtime_use** | CIW MSFT Class A monitoring cron (Mon 09:00 UTC+7) = **ACTIVE** — next 24 Aug 2026. Research Framework / Modules A–Q = FROZEN. The monitor validates QAD-readiness without alert fatigue. After QAD monitoring (M12) subsumes it, the cron may be retired. |
+| **active_dependencies** | `backend/audit_store.py` (audit center references CIW artifacts), `backend/org_store.py`, `discovery/quality_asymmetry/archetypes.py` (reference), `tests/locked/test_org_workflow_api.py`; CIW monitor cron (Hermes scheduler) |
 | **downstream_consumers** | Audit center (`/audit`), Org Workflow API (artifact references), Research Artifact Detail |
 | **historical_value** | First full research workflow pilot; lineage for QAD evolution |
 | **replacement_required** | No — absorb into QAD Research Protocol; preserve lineage |
@@ -230,7 +241,7 @@
 | **source_module** | `close_system/` |
 | **current_authority** | FD #39, FD #57, FD #130 |
 | **current_state** | **FROZEN** (synthetic-labeled, read-only API) |
-| **QAD_target_disposition** | FREEZE |
+| **primary_disposition** | FREEZE |
 | **QAD_target_capability** | NONE — commodity macro products, not QAD company-specific equity analysis |
 | **reusable_data** | None (synthetic data only) |
 | **reusable_logic** | NONE |
@@ -249,7 +260,7 @@
 | **capability_id** | CAP-010A |
 | **source_module** | `discovery/cs_product/` |
 | **current_state** | **FROZEN** |
-| **QAD_target_disposition** | FREEZE / DO_NOT_REUSE |
+| **primary_disposition** | DO_NOT_REUSE |
 | **QAD_target_capability** | NONE — commodity-specific macro cycle detection; QAD Dislocation is company-specific impairment diagnosis |
 | **replacement_required** | N/A — QAD Dislocation Radar (M5) is a new design, not evolution |
 
@@ -261,7 +272,7 @@
 | **source_module** | Hermes cron jobs + org-radar-scout Principal profile |
 | **current_authority** | FD #71, FD #78, FD #80, FD #81, FD #82, FD #130 |
 | **current_state** | **TRANSITIONAL** |
-| **QAD_target_disposition** | TRANSITIONAL_RETAIN |
+| **primary_disposition** | TRANSITIONAL_RETAIN |
 | **QAD_target_capability** | External-discovery lane (Lane C) — regulatory context, competitor/supplier/customer commentary, unusual filing context, industry developments, source-specific anomalies |
 | **reusable_data** | Radar Digest archive, Task Idea Card history, outcomes register |
 | **reusable_logic** | Radar scanning methodology (prompts, EDGAR scan, feedback loop) |
@@ -281,7 +292,7 @@
 | **source_module** | `operational/hermes-organization/templates/16-DEEP-RESEARCH-STANDING-CONTRACT.md` |
 | **current_authority** | FD #95, FD #130 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | Foundation for QAD Research Protocol (mandate → evidence → cross-exam → CRO → audit → synthesis → Founder gate) |
 | **reusable_data** | Template 16 contract, RM-2026-0001..0008 workflow record |
 | **reusable_logic** | 11-stage workflow skeleton |
@@ -301,7 +312,7 @@
 | **source_module** | `frontend/src/pages/library/`, `backend/report_store.py`, `reports/` |
 | **current_authority** | FD #62, FD #84–86, FD #96, FD #130 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | QAD report index and publication renderer |
 | **reusable_data** | All published reports (36 published, 24 Thai), library index |
 | **reusable_logic** | Report rendering (react-markdown), library filtering, companion nesting |
@@ -321,7 +332,7 @@
 | **source_module** | `reports/THAI-RESEARCH-EDITORIAL-STANDARD.md` |
 | **current_authority** | FD #94, FD #130 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | QAD publication quality control (10 rules, FACTS LOCKED gate) |
 | **reusable_data** | Standard document |
 | **reusable_logic** | Editorial workflow, Facts Locked verification |
@@ -340,8 +351,9 @@
 | **capability_id** | CAP-015 |
 | **source_module** | Hermes Dashboard plugin `capital-intelligence-office` |
 | **current_authority** | FD #108–110, FD #130 |
-| **current_state** | **FROZEN** (production baseline, No further development) |
-| **QAD_target_disposition** | REUSE (as QAD monitoring dashboard) |
+| **current_state** | **FROZEN** (production baseline; **runtime still operational** — dashboard serves at :9119, Kanban board active, WS live) |
+| **runtime_use** | **OPERATIONAL** — Hermes Dashboard :9119, Kanban board live, WS live events. Founder monitors production. |
+| **primary_disposition** | REUSE (as QAD monitoring dashboard) |
 | **QAD_target_capability** | QAD case monitoring dashboard |
 | **reusable_data** | Kanban board state, Hermes Capital Intelligence board |
 | **reusable_logic** | Dashboard plugin, WS live updates, spatial floor, handoff lines |
@@ -361,7 +373,7 @@
 | **source_module** | `backend/audit_store.py`, `backend/org_store.py`, `evidence/` |
 | **current_authority** | FD #55–56, FD #86, FD #130 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | QAD-M10 Audit inherits this infrastructure |
 | **reusable_data** | Decision Register, Model Registry, Audit Center, org-workflow API |
 | **reusable_logic** | Audit store, org store, evidence directory structure |
@@ -381,7 +393,7 @@
 | **source_module** | `operational/EVIDENCE-DOCTRINE.md`, `project-definition/EVIDENCE-MODEL.md` |
 | **current_authority** | FD #130 (extended M1), Constitution §8 |
 | **current_state** | **ACTIVE** |
-| **QAD_target_disposition** | REUSE |
+| **primary_disposition** | REUSE |
 | **QAD_target_capability** | QAD Evidence & Source Model (M3 spec #4) |
 | **reusable_data** | Evidence doctrine (source authority, discovery provenance, S6, AI synthesis) |
 | **reusable_logic** | Evidence separation, source authority, PIT, provenance rules |
@@ -400,13 +412,14 @@
 | **capability_id** | CAP-018 |
 | **source_module** | `operational/hermes-organization/` (role contracts, ROLE-REGISTRY, profiles) |
 | **current_authority** | FD #54, FD #130 |
-| **current_state** | **FROZEN** (workforce mapping deferred) |
-| **QAD_target_disposition** | REFRAIN (deferred) |
+| **current_state** | **ACTIVE** |
+| **primary_disposition** | TRANSITIONAL_RETAIN |
+| **migration_instruction** | DEFER_QAD_WORKFORCE_REMAP_UNTIL_M3_ROLE_CONTRACTS_AND_WORKFORCE_MIGRATION_MAP |
 | **QAD_target_capability** | Workforce mapping to be determined after Pack A (QAD logical role contracts) exist |
 | **reusable_data** | Role contracts, ROLE-REGISTRY, authority matrix, kanban contracts |
 | **reusable_logic** | Profile structure, delegation patterns, Holds mechanism |
-| **active_dependencies** | Hermes Capital Intelligence board; kanban workflow; cron jobs |
-| **downstream_consumers** | All current org-* profile operations (daily/weekly workflow) |
+| **active_dependencies** | Hermes Capital Intelligence board; kanban workflow; cron jobs; all current org-* profile operations |
+| **downstream_consumers** | All current org-* profile operations (daily/weekly workflow — Radar, CoS, IC Secretary, CRO, Auditor, Data Steward, Analysts) |
 | **historical_value** | First workforce integration |
 | **replacement_required** | Yes — QAD logical role contracts (M3) + Workforce Migration Map |
 | **verification_status** | ✅ Dry-run pilot PASS 8/8 |
@@ -421,7 +434,7 @@
 | **source_module** | `frontend/src/` (legacy pages: AM, FO, CS, II, WeakSignal, Dashboard — preserved as frozen) |
 | **current_authority** | FD #62, FD #65, FD #86, FD #130 |
 | **current_state** | **FROZEN** (read-only, no new development) |
-| **QAD_target_disposition** | FREEZE |
+| **primary_disposition** | FREEZE |
 | **QAD_target_capability** | NONE — legacy platform surfaces are frozen as-is; screening data = report input only |
 | **reusable_data** | None (frozen display only) |
 | **reusable_logic** | None |
@@ -440,11 +453,12 @@
 | **capability_id** | CAP-020 |
 | **source_module** | `backend/adapters.py`, `institutional-intelligence-v0/fetcher.py`, `fundamental-opportunity-v0/source_adapter.py` |
 | **current_authority** | FD #41, FD #42, FD #46, FD #95, FD #130 |
-| **current_state** | **FROZEN** (as standalone adapters) |
-| **QAD_target_disposition** | ADAPT |
+| **current_state** | **FROZEN** (as standalone adapters — no standalone development; **runtime still consumed by ACTIVE consumers** — see runtime_use below) |
+| **primary_disposition** | ADAPT |
 | **QAD_target_capability** | Source data fetching for QAD Discovery (SEC EDGAR, yfinance, 13F) |
 | **reusable_data** | SEC EDGAR CIK mapping, yfinance historical data, 13F filings |
 | **reusable_logic** | EDGAR filing fetch, companyfacts XBRL parsing, CUSIP mapping, yfinance adapter |
+| **runtime_use** | **ACTIVE dependency of** Equity Inflection Scanner (CAP-002), Quality & Asymmetry Discovery (CAP-003); also serves FO (FROZEN), II (FROZEN), AM (FROZEN), CS (FROZEN) — see Dependency Matrix |
 | **active_dependencies** | Many downstream consumers (see individual pipelines) |
 | **downstream_consumers** | FO, II, AM, Equity Inflection, Quality & Asymmetry, CS pipelines |
 | **historical_value** | Source data infrastructure |
@@ -453,17 +467,33 @@
 | **archival_preconditions** | After QAD-M6 Source Intelligence operational |
 | **governing_FD/spec** | FD #41, FD #42, FD #46, FD #95, FD #130; QAD-M6 |
 
-## Summary Matrix
+## Summary: Current Lifecycle State
 
 | Lifecycle State | Count | Capabilities |
-|----------------|-------|--------------|
-| **ACTIVE** | 6 | Shared Equity Universe, Equity Inflection Scanner, Quality & Asymmetry Discovery, Deep Research Contract (tpl 16), Blog/Report Infrastructure, Research Audit Infrastructure, Evidence Doctrine/Model Infrastructure |
-| **FROZEN** | 8 | AM Pipeline, AM Theme Infrastructure, Theme Anomaly/Weak Signal, FO Pipeline (as strategy), II Pipeline (as strategy), CS Product Radar, CS Product Discovery, Frontend Legacy Surfaces |
-| **SUPERSEDED** | 1 | Value Trap Detector (5-question, replaced by QAD Impairment Diagnosis) |
-| **TRANSITIONAL** | 1 | Radar Scout (Weekly + Mid-Week) |
-| **REFRAIN (deferred)** | 1 | Hermes AI Workforce (wait for QAD role contracts + Migration Map) |
-| **ADAPT (methodology)** | 6 | FO Moat Classification, FO Earnings Quality, Marx Signals, SEC EDGAR/Source Adapters, CIW (absorb with lineage), Thai Editorial Standard |
+|----------------|-------|-------------|
+| **ACTIVE** | 9 | Shared Equity Universe (CAP-001), Equity Inflection Scanner (CAP-002), Quality & Asymmetry Discovery (CAP-003), Deep Research Contract (CAP-012), Blog/Report Infrastructure (CAP-013), Thai Editorial Standard (CAP-014), Research Audit Infrastructure (CAP-016), Evidence Doctrine/Model Infrastructure (CAP-017), Hermes AI Workforce (CAP-018) |
+| **FROZEN** | 14 | AM Pipeline (CAP-004), AM Theme Infrastructure (CAP-005), Theme Anomaly/Weak Signal (CAP-006), FO Pipeline (CAP-007 — as strategy), Moat Classification (CAP-007A), Earnings Quality (CAP-007B), Marx Signals (CAP-007D), II Pipeline (CAP-008), CIW (CAP-009 — monitoring ACTIVE), CS Product Radar (CAP-010), CS Product Discovery (CAP-010A), Capital Intelligence Live Office (CAP-015 — runtime operational), Frontend Legacy Surfaces (CAP-019), SEC EDGAR/Source Adapters (CAP-020 — runtime consumed by ACTIVE consumers) |
+| **SUPERSEDED** | 1 | Value Trap Detector — 5-question (CAP-007C), replaced by QAD Impairment Diagnosis |
+| **TRANSITIONAL** | 1 | Radar Scout (CAP-011 — Weekly + Mid-Week) |
 | **VERIFIED_UNUSED** | 0 | (no state change without evidence) |
 | **ARCHIVED** | 0 | (physical archival deferred) |
+| **Total** | **25** | Canonical capability records (child IDs included in their parent's state cohort) |
 
-<!-- 2026-08-17 17:30 UTC+7 -->
+> **Note:** CAP-018 (Hermes AI Workforce) is included in the ACTIVE count because its 10 org-* profiles are still running daily operations. QAD workforce remapping is deferred — see primary_disposition = TRANSITIONAL_RETAIN with migration_instruction.
+
+## Summary: QAD Primary Disposition
+
+| Disposition | Count | Capabilities |
+|-------------|-------|-------------|
+| **REUSE** | 7 | CAP-001, CAP-012, CAP-013, CAP-014, CAP-015, CAP-016, CAP-017 |
+| **ADAPT** | 6 | CAP-002, CAP-003, CAP-006, CAP-007A, CAP-007B, CAP-020 |
+| **ABSORB** | 1 | CAP-009 |
+| **TRANSITIONAL_RETAIN** | 2 | CAP-011, CAP-018 |
+| **FREEZE** | 7 | CAP-004, CAP-005, CAP-007, CAP-007D, CAP-008, CAP-010, CAP-019 |
+| **SUPERSEDE** | 1 | CAP-007C |
+| **DO_NOT_REUSE** | 1 | CAP-010A |
+| **Total** | **25** | Canonical capability records |
+
+> **Derivation:** All counts derive mechanically from `QAD-M2-LEGACY-CAPABILITY-REGISTRY.md` canonical records. Manual drift is eliminated. If registry records change, regenerate this summary.
+
+<!-- 2026-08-18 00:36 UTC+7 -->
