@@ -1,6 +1,6 @@
 # Revised QAD Migration Master Plan (M0 → M15)
 
-> **Status:** Design artifact — M0/M1 phases COMPLETE + RATIFIED (16–17 Aug 2026); M2–M4B remain pre-code design phases; M5+ implementation gated.
+> **Status:** Design artifact — M0/M1 phases COMPLETE + RATIFIED (16–17 Aug 2026); **M1 = FINAL PASS (17 Aug, independent review PASS WITH FINDINGS → all findings resolved)**; M2–M4B remain pre-code design phases; M5+ implementation gated.
 > **Key change from original:** M4 split into M4A (Schemas) + M4B (Evaluation Contract before first code).
 
 ---
@@ -20,7 +20,7 @@
 - Revised 01-PROJECT-DNA.md (v0.3; DNA-005/017 updated, DNA-021 added)
 - Reconciled operational/PRODUCT-VISION.md + SCOPE-AND-NON-SCOPE.md (QAD)
 
-**M1 correction closeout (17 Aug, FD #130):** Constitution lineage normalized (v0.6/CA-v0.6); §14 Theme-First → QAD Candidate-First; §5/§16/§17/§18/§21 reconciled; DNA lineage restored (v0.2 CIW + v0.3 QAD); Discovery & Coverage Operating Requirement v0.1 FROZEN. **M1 = TECHNICAL PASS; FINAL GOVERNANCE = PENDING independent review → then M1 = FINAL PASS.**
+**M1 correction closeout (17 Aug, FD #130):** Constitution lineage normalized (v0.6/CA-v0.6); §14 Theme-First → QAD Candidate-First; §5/§16/§17/§18/§21 reconciled; DNA lineage restored (v0.2 CIW + v0.3 QAD); Discovery & Coverage Operating Requirement v0.1 FROZEN. **M1 = FINAL PASS** (independent governance review PASS WITH FINDINGS, all findings resolved — see QAD-M1-CLOSEOUT.md).
 
 ### QAD-M2 — Logical Legacy Boundary (Documentation Only)
 **Deliverables:**

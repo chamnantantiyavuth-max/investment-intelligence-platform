@@ -1,4 +1,6 @@
-# Founder Direction — QAD Pivot Design Authorization
+# FD Direction — QAD Design Authorization
+
+> **Status:** 🔴 **SUPERSEDED — HISTORICAL DESIGN ARTIFACT.** Authority moved to FD #130 (QAD Architecture Design Gate, approved 16 Aug 2026), Constitution v0.6, ADR-130, and M5-IMPLEMENTATION-GATE.md. This file is preserved for lineage only — do not use as current authority.
 
 > **This is a single Direction FD — NOT an implementation authorization.**
 > FD #130 (proposed — pending Founder review and acceptance)

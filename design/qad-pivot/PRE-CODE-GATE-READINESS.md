@@ -1,7 +1,6 @@
 # PRE-CODE-DESIGN-GATE-READINESS.md
 
-> **Status:** Final assessment after resolution round.
-> **Asks:** Is the QAD design package ready for Founder approval?
+> **Status:** 🔴 **SUPERSEDED — HISTORICAL DESIGN ARTIFACT.** Pre-code gate readiness has been superseded by the M1 correction closeout (FD #130, 17 Aug 2026) and the M5-IMPLEMENTATION-GATE.md. This file is preserved for lineage only — do not use as current authority.
 
 ---
 

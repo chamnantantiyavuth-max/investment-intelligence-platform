@@ -7,6 +7,8 @@
 
 ## Prerequisites
 
+**Authoritative structure:** 10 prerequisite rows below. Each row may contain multiple atomic evidence items (the original "14-item evidence package" language refers to the 14 atomic items enumerated across rows 1–10; the row count is authoritative for the gate process).
+
 | # | Requirement | Status | Artifact |
 |---|-------------|--------|----------|
 | 1 | Canonical QAD specs materialized (9 core + 1 evaluation) | 🔴 PENDING | `project-definition/qad/` |

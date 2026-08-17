@@ -3,7 +3,7 @@
 > **Status:** M1 = **PASS** (2026-08-17)
 > **Checkpoint:** `e0b2143` (QAD M1 Constitutional Pivot, 16 Aug 2026) — **KEPT + PATCHED FORWARD** (no revert)
 > **Review source:** ChatGPT independent review of `e0b2143` (Governance Corrections + QAD Discovery/Coverage Operating Requirement) → verdict: KEEP, PATCH FORWARD, M1 = IN_PROGRESS until closeout passes.
-> **Closeout commit:** (see git log — M1 correction checkpoint)
+> **Closeout commit:** `63587da` (M1 Final Integrity Patch, 17 Aug 2026, pushed; see also `e0b2143` for the original M1 pivot and `6090f03`/`a2711bb` for the M1 correction sequence).
 
 ---
 
@@ -113,6 +113,19 @@ The M1 correction commits (`9894264` + `6090f03`) included pre-existing unrelate
 
 ## M1 Verdict
 
-> **M1 TECHNICAL CLOSEOUT = PASS** (substantive work accepted). **M1 FINAL GOVERNANCE CLOSEOUT = PENDING** (awaiting compliant independent governance review via approved PRIMARY subscription route — openai-codex). After review findings are resolved: **M1 = FINAL PASS**. Only then may M2 start.
+> **M1 = FINAL PASS (17 Aug 2026).** `e0b2143` kept as valid checkpoint, patched forward with the M1 correction closeout + Final Integrity Patch. Independent governance review (compliant route: PRIMARY openai-codex attempted → HTTP 429 → FALLBACK openrouter with `PREMIUM_FALLBACK_USED`, task `t_e3dc7a9e`) returned **PASS WITH FINDINGS (8)** — all findings resolved in this closeout (see Findings Resolution below). M2 (Logical Legacy Boundary) may now start.
+
+### Findings Resolution (review `t_e3dc7a9e`)
+
+| # | Severity | Finding | Resolution |
+|---|----------|---------|-----------|
+| 1 | HIGH | M1 state not synchronized across documents | All mirrors now state **M1 = FINAL PASS** (this closeout, REVISED-QAD-MASTER-PLAN, PROJECT_STATE) |
+| 2 | HIGH | Push/sync claim false at snapshot | `63587da` pushed; HEAD == origin/main verified (see Verification) |
+| 3 | MEDIUM | M5 evidence cardinality 10 vs 14 | Authoritative structure defined: **10 rows / 14 atomic items** in M5-IMPLEMENTATION-GATE.md + ADR-130 synced |
+| 4 | HIGH | Superseded pre-code artifacts active-looking | SUPERSEDED — HISTORICAL banners added to FD-DIRECTION-QAD-DESIGN-AUTHORIZATION.md, PRE-CODE-GATE-READINESS.md, FINAL-CONSISTENCY-SWEEP.md |
+| 5 | MEDIUM | FINAL-CONSISTENCY-SWEEP stale 9-prerequisite | Sweep labeled historical; M5 gate authoritative at 10 rows |
+| 6 | MEDIUM | AGENTS.md stale FD-count (66) | Updated to #1–130 + FD-CIW-001..016 + FD #101-A; register is authoritative |
+| 7 | LOW/MED | Closeout placeholder commit | Recorded exact SHAs: `63587da` + sequence |
+| 8 | LOW/MED | Manifesto "search globally / tens of thousands" broader than bounded-universe policy | Clarified as observability aspiration bounded by configurable universe policy (Constitution §18) |
 
 <!-- 2026-08-17 17:30 UTC+7 -->

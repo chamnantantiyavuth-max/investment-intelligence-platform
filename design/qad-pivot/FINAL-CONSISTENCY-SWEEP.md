@@ -1,4 +1,6 @@
-# Final Consistency Sweep — QAD Design Package
+# Final Consistency Sweep
+
+> **Status:** 🔴 **SUPERSEDED — HISTORICAL SNAPSHOT** (16 Aug 2026 pre-M1-correction). The M5-IMPLEMENTATION-GATE.md now has 10 prerequisite rows (not 9). This sweep is preserved for lineage only — do not use as current evidence without re-verifying against the corrected gate. — QAD Design Package
 
 > **Purpose:** Mechanical cross-document check for drift in authority, gate names, spec count, file count, state names, NotebookLM authority, Selection Engine semantics, and M5 prerequisites.
 

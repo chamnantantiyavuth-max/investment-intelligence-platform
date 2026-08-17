@@ -32,7 +32,7 @@ The platform must learn from outcomes without rewriting history. Successes, fail
 
 This system is built for breadth before depth.
 
-It should search globally, discover weak signals, detect early themes, map relationships, identify leaders and beneficiaries, and reduce tens of thousands of possibilities into a small, reviewable research queue.
+It should search broadly — observing as wide a universe as is operationally justified, discovering weak signals, detecting early themes, mapping relationships, identifying leaders and beneficiaries, and reducing possibilities into a small, reviewable research queue. Universe breadth is bounded by the approved configurable universe policy (Constitution §18): observability is aspired to broadly; universe scope is set by evidence-tested subordinate policy, not by a fixed constitutional number.
 
 It must be allowed to say:
 
