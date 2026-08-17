@@ -1,6 +1,6 @@
 # QAD-M1-CLOSEOUT.md — M1 Correction Closeout
 
-> **Status:** M1 = **PASS** (2026-08-17)
+> **Status:** M1 = **FINAL PASS** (2026-08-17)
 > **Checkpoint:** `e0b2143` (QAD M1 Constitutional Pivot, 16 Aug 2026) — **KEPT + PATCHED FORWARD** (no revert)
 > **Review source:** ChatGPT independent review of `e0b2143` (Governance Corrections + QAD Discovery/Coverage Operating Requirement) → verdict: KEEP, PATCH FORWARD, M1 = IN_PROGRESS until closeout passes.
 > **Closeout commit:** `63587da` (M1 Final Integrity Patch, 17 Aug 2026, pushed; see also `e0b2143` for the original M1 pivot and `6090f03`/`a2711bb` for the M1 correction sequence).
@@ -65,7 +65,10 @@
 ## Verification
 
 - Suite **235/235** (full `pytest`, 2 stale locked tests fixed — `test_org_queue_native_status_semantics` gate Done-vs-Blocked; `test_decisions_register_contiguous_and_parsed` date 14→17 Aug)
-- Governance consistency review: **delegated to Luna High (kanban task `t_ad945485`)** — result: **PASS WITH FINDINGS** (5 findings). ⚠ **Routing non-compliance**: task used OpenRouter provider directly instead of the approved PRIMARY subscription route (openai-codex). The result is retained as supplemental evidence; a compliant re-run is required (see M1 Final Integrity Patch).
+- Governance consistency review: **Three-task sequence**:
+  - **`t_ad945485`** = supplemental/non-compliant (OpenRouter direct, no subscription attempt); **PASS WITH FINDINGS** (5 findings, folded into M1 corrections).
+  - **`t_1530f0fd`** = PRIMARY openai-codex subscription ATTEMPTED → **HTTP 429 usage_limit_reached** (verified, crash logs retained). Task blocked with diagnostics.
+  - **`t_e3dc7a9e`** = **compliant OpenRouter fallback** with `PREMIUM_FALLBACK_USED` provenance recorded; **PASS WITH FINDINGS** (8 findings, all resolved below). Final review in the sequence.
 - Stale-claims sweep: 0 active multi-strategy / Theme-first / prohibited-autonomous-discovery claims in canonical docs; only historical references preserved
 - HEAD == origin/main after push (see git log)
 

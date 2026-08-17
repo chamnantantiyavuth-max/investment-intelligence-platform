@@ -233,7 +233,7 @@ The system must be evaluated on two separate questions:
 | Signal→Candidate Precision | Signals that pass candidate assembly | BASELINE_REQUIRED | Signal Registry; threshold PENDING_M4B_CALIBRATION |
 | Candidate→Research Yield | Candidates that open Full Research | BASELINE_REQUIRED | Candidate Registry; threshold PENDING_M4B_CALIBRATION |
 | Cost per meaningful candidate | Total discovery cost / meaningful candidates | BASELINE_REQUIRED | Budget Controller; threshold PENDING_M4B_CALIBRATION |
-| Source/feed failure detection | Unplanned data stall or feed drop | alert ≤1 cycle | Operations |
+| Source/feed failure detection | Unplanned data stall or feed drop | BASELINE_REQUIRED | Operations; threshold PENDING_M4B_CALIBRATION |
 | Decision-Changing Candidate Recall | "Did the system ever see the company that later became a real QAD opportunity — before it was obvious?" | BASELINE_REQUIRED | **Headline metric**; threshold PENDING_M4B_CALIBRATION |
 
 ### Hard Invariants (zero-tolerance, do not require calibration)

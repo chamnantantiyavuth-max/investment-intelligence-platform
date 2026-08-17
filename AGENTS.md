@@ -119,7 +119,7 @@ Before completion:
 
 ## Current Project Phase
 
-Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. **Phase 11 (CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** — MSFT first slice per docs/CIW-FIRST-SLICE-DESIGN.md v0.3 (Phase 2R PASSED); CRR-2026-0001 approved (Research Gate), Source Map passed; bounded research (Modules A–M) next. Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred. **Real-Data Production Path RELEASED (3 Aug 2026, FD #46–48):** AM/FO/II real-pipeline → API wiring + SQLite lineage + single-user HMAC auth; CS stays synthetic-labeled; Final Council R2 PASS + production audit → READY WITH ACCEPTED RISKS; II follow-up page + server-side pagination. **UI REDESIGN IN PROGRESS (FD #49/#50, 4 Aug 2026):** v2.1 LIGHT EDITORIAL (dark terminal retired; off-white canvas, muted accents); B1–B4 rebuilt (Dashboard/Login/AM Queue/ThemeCard/Screener) + §11 falsification read-only extension (ADAPTER_VERSION v2, +1 locked test); B5–B8 remaining. **Hermes AI WORKFORCE INTEGRATED (FD #54, 5 Aug 2026):** subordinate operating standard at `operational/hermes-organization/` (pack "constitution" renamed/demoted; two-axis Theme governance preserved; NO second constitution) + 10 thin Principal Hermes profiles installed (`org-cos`…`org-auditor`; Assistants = bounded delegated subagents; `iip` remains bootstrap/control) + repo kanban + 13 mapped templates; Holds (DATA/VALIDATION/RISK/GOVERNANCE) org-workflow scope only (Q2); portfolio-blind (Constitution §23.8.1); CIW stays paused; dry-run pilot PASS 8/8; merged to main `0e0370d`.
+Phase 7 Complete: Close System V0 + Q-Conditions + O'Neil/Minervini Rule Pack + React/shadcn Frontend (FD #39). Phase 8 Complete: Fundamental & Opportunity Intelligence V1 — 6 sub-domains, Moat Classification, Earnings Quality, Value Trap Detector (FD #40). Phase 9 Complete: Real Data Integration — yfinance → Fundamental Pipeline (FD #41). Phase 10 Complete: Institutional Intelligence V1 — 13F filings, concentration ratio, conviction signals (FD #42). Phase 10.5 Complete: Real 13F data via SEC EDGAR (FD #42 amended). **Recovery Complete (2 Aug 2026, FD #44):** full project review (Council RETEST) → frontend build restored (262/262 tests, `npm run build` exit 0), synthetic surfaces labeled, direct AM core AC tests added, state docs synced, ADR-001 ratified. **Phase 11 (CIW): Design Path OPENED + Pilot Execution AUTHORIZED (FD-CIW-010/011, 3 Aug 2026)** — MSFT first slice per docs/CIW-FIRST-SLICE-DESIGN.md v0.3 (Phase 2R PASSED); CRR-2026-0001 approved (Research Gate), Source Map passed; bounded research (Modules A–M) next. Full implementation (Cron/Obsidian sync/expanded tree/schema) remains deferred. **Real-Data Production Path RELEASED (3 Aug 2026, FD #46–48):** AM/FO/II real-pipeline → API wiring + SQLite lineage + single-user HMAC auth; CS stays synthetic-labeled; Final Council R2 PASS + production audit → READY WITH ACCEPTED RISKS; II follow-up page + server-side pagination. **UI REDESIGN IN PROGRESS (FD #49/#50, 4 Aug 2026):** v2.1 LIGHT EDITORIAL (dark terminal retired; off-white canvas, muted accents); B1–B4 rebuilt (Dashboard/Login/AM Queue/ThemeCard/Screener) + §11 falsification read-only extension (ADAPTER_VERSION v2, +1 locked test); B5–B8 remaining. **Hermes AI WORKFORCE INTEGRATED (FD #54, 5 Aug 2026):** subordinate operating standard at `operational/hermes-organization/` (pack "constitution" renamed/demoted; two-axis Theme governance preserved; NO second constitution) + 10 thin Principal Hermes profiles installed (`org-cos`…`org-auditor`; Assistants = ... [truncated]
 
 Current approved checkpoints:
 
@@ -167,19 +167,32 @@ Current approved checkpoints:
 - wf-phase-2r-complete (Architecture Review Gate passed; 3 CRITICAL + 5 HIGH findings resolved; F12 closed via FD #26; 23 July 2026)
 - fd-130-qad-pivot-m1-correction (QAD Pivot — Architecture Design Gate CLOSED + APPROVED + M1 Constitutional Pivot COMPLETE + M1 correction closeout, 16–17 Aug 2026: Constitution v0.6 (§1/§2/§3 QAD mission + central question; §13/§15/§20 SUPERSEDED; §14 Theme-First → QAD Candidate-First; §16 Learning Loop QAD-compatible; §17 technology-neutral; §18 reconciled; §21 record completed), DNA v0.3 (lineage restored: v0.2 = DNA-019/020 CIW; DNA-017 Open Quality Universe separated from Dislocation trigger; DNA-021 Dislocation-First), Manifesto QAD Edition, Vision/Scope/Evidence-Doctrine reconciled, QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT v0.1 FROZEN (6 registries, hard filters, 3 discovery lanes, hybrid cadence, Radar Scout retained as non-authoritative Discovery Scout, Discovery & Coverage Evaluation first-class in M4B, Decision-Changing Candidate Recall headline metric, universe policy configurable ~5,000–10,000); M2–M4B remaining; M5 Gate ⏳ PENDING; suite 235/235; FD #130 registered item 130 + ADR-130; 17 Aug 2026)
 
-Phase governance:
+## Historical Phase Governance (pre-QAD)
+
+The following records the pre-QAD multi-strategy governance. These are preserved as project history. The current QAD governance supersedes them.
 
 - All Gates A–D complete. Phase 3 implementation complete.
 - Provisional technology: Python + pandas + Jinja2 (CLI + HTML reports). Not claimed as final stack selection.
 - DR-006 (Canonical Theme-Role Ownership) approved: Shared Core owns canonical Entity–Theme structural roles; Theme-level classification wins over stock-level.
 - DR-004 (Legacy Knowledge Salvage) remains Deferred — separate authorization required.
 - Constitution v0.4 adds §23 AI Operating Constitution: Three-Layer Authority Model (Deterministic / AI / Founder).
-- INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0).
+- INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0). **🔴 SUPERSEDED — QAD is the canonical future identity (Constitution v0.6, FD #130). Legacy AM/CS/FO/II are not co-equal investment paths.**
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
 - Founder Decisions #1–130 (FD #130 = item 130, 17 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
 
-Current-phase restrictions:
+## Current QAD Governance
+
+- **QAD Architecture Design Gate = APPROVED** (FD #130, 16 Aug 2026; 19 frozen architecture decisions; 22 artifacts in `design/qad-pivot/`).
+- **M1 = FINAL PASS** (17 Aug 2026; independent governance review PASS WITH FINDINGS → 8 findings resolved).
+- **M2 = NEXT** (Logical Legacy Boundary — semantic states ACTIVE/FROZEN/SUPERSEDED/VERIFIED_UNUSED/ARCHIVED, capability registry, no physical moves).
+- **M5 Implementation Gate = ⏳ PENDING** — no production code until the 10-row evidence package passes Founder review.
+- Legacy AM/CS/FO/II authorities are **not co-equal investment paths** — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
+- **Theme Intelligence is supporting context/discovery, not a mandatory research gateway.** Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership.
+- **Discovery & Coverage is a first-class QAD subsystem** — every eligible company observable ≠ every company LLM-reasoned; 6 registries, 3 independent discovery lanes, hybrid cadence, persistent provenance.
+- Capital Command / trading / execution remain external.
+
+## Current-phase restrictions (QAD)
 
 - No broker connectivity, execution, or portfolio allocation.
 - No Legacy or quarantine access without separate named authorization.
@@ -239,3 +252,4 @@ START → AGENTS.md → Domain Index → PROJECT_STATE.md → CLOSEOUT → Verif
 
 <!-- 2026-08-11 14:30 UTC+7 (interactive session: AGENTS.md checkpoint fd-79-96 added — radar/jnj week, magazine-restructure-deep, equity-inflection, thai-content, delegation-firewall, chatgpt-fitgap-wp1-3-blog-layout; protected-file approval obtained interactively) -->
 <!-- 2026-08-17 17:30 UTC+7 (interactive session: AGENTS.md checkpoint fd-130-qad-pivot-m1-correction added — QAD M1 correction closeout; protected-file approval obtained interactively) -->
+<!-- 2026-08-17 17:30 UTC+7 (interactive session: AGENTS.md Phase governance restructured — Historical Phase Governance + Current QAD Governance; protected-file approval obtained interactively) -->
