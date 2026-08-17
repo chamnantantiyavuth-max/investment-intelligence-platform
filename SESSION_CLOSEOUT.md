@@ -1,3 +1,30 @@
+# Session — 2026-08-17 (interactive): QAD M1 correction closeout — M1 = PASS + Discovery & Coverage Operating Requirement v0.1 FROZEN (FD #130)
+
+**Status:** COMPLETE — Founder approved the ChatGPT M1 review prompt (Governance Corrections + QAD Discovery/Coverage Operating Requirement) and executed the full M1 correction closeout. Commits `9894264` + `6090f03` — **PUSHED (HEAD == origin/main == 6090f03)**.
+
+## What happened (this session)
+
+1. **Verified every Part A claim against actual files** (Verify-First): Constitution header v0.5/CA-v0.5-QAD-PIVOT ≠ amendment-record v0.6/CA-v0.6-QAD-PIVOT (A1) · §14 Theme-First active (A2) · §16 Learning Loop mandatory Theme step (A3) · PRODUCT-VISION theme-centric + SCOPE listed "Alpha Momentum screening"/"Theme-first research queue"/"production autonomous scanning"/"deep company research for every candidate" (A4) · EVIDENCE-DOCTRINE lacked source authority/provenance/S6 (A5) · DNA header v0.1 + v0.2 CIW record removed (A6) · DNA-017 conflated Quality Universe with dislocation (A7) · §17 + DNA-018 named Obsidian/NotebookLM (A8) · §18 had full-global-screening/autonomous-scanning prohibitions (A9) · v0.6 record lacked §21 fields (A10).
+2. **Part A corrections applied** (10/10): Constitution v0.6/CA-v0.6-QAD-PIVOT normalized; §14 → QAD Candidate-First (historical preserved); §5 Theme = supporting not gateway; §16 QAD-compatible Learning Loop; §17 technology-neutral; §18 reconciled (autonomous QAD discovery/research permitted, bounded universe policy, prohibitions on broker/execution/allocation/autonomous-endorsement/portfolio-aware preserved); §21 v0.6 record completed; DNA v0.3 (lineage v0.1=DNA-001..018 · v0.2=DNA-019/020 CIW 2026-08-02 · v0.3=QAD 2026-08-16; DNA-017 Open Quality Universe ≠ Dislocation trigger; DNA-018 tech-neutral); PRODUCT-VISION + SCOPE-AND-NON-SCOPE reconciled; EVIDENCE-DOCTRINE extended (5 new sections).
+3. **Part B–F — QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md v0.1 FROZEN** (`design/qad-pivot/`): B1 observable≠reasoned doctrine · B2 six registries · B3 hard filters minimal (no quality-threshold hard filters) · B4 three lanes · B5 Quality Discovery features · B6 Dislocation Radar families · B7 data architecture (absence≠no signal) · C1 daily machine-first · C2 weekly cycle (NO_NEW_MATERIAL_QAD_CANDIDATE valid) · C3 monthly coverage + rejected-sample audit · C4 quarterly quality refresh · C5 event-driven (urgency≠standards) · C6 Founder on-demand with entry_route=FOUNDER_DIRECTED · C7 state-triggered research (priority→capacity→budget; no quota-cron, no unlimited selloff cases) · D Radar Scout RETAINED as non-authoritative complementary Discovery Scout (no pre-decided retirement; evidence-based migration after M5/M6; crons untouched) · E Discovery & Coverage Evaluation first-class (13 metrics, Decision-Changing Candidate Recall headline; Type A vs Type B separated) · F universe ~5,000–10,000 configurable, NOT constitutionalized.
+4. **Contract updates**: PACK-C Part 7 (Discovery & Coverage Evaluation) + M5 gate prerequisite row 10 + LEAN spec #2/#10 + master plan M3/M4B + capability map #13 (Radar → TRANSITIONAL).
+5. **Closeout**: suite **235/235** (2 stale locked tests fixed — gate Done-vs-Blocked, decisions date 14→17 Aug); **FD #130 REGISTERED** (FOUNDERS-DECISIONS item 130 + amendment chain) + **ADR-130 created** (`.hermes/architecture/`); **AGENTS.md checkpoint APPROVED by Founder + applied** (protected-file approval obtained interactively); **governance consistency review → Luna High kanban task `t_ad945485`** (lands async on board); QAD-M1-CLOSEOUT.md created; vault fd-register mirrors backfilled (FD-112 + FD-130, central + ~/.hermes); PROJECT_STATE updated (M1 = PASS, suite 235/235, FDs 130, next = M2).
+
+## Closeout checklist
+
+- [x] FDs reconciled? — register items 1–130 (FD #130 = item 130); vault mirrors backfilled FD-112 + FD-130; ADR-130 created
+- [x] Session captured? — this entry; PROJECT_STATE session row added
+- [x] Verify-First? — every Part A claim checked against actual file contents before editing; suite re-run after edits
+- [x] Verification tags? — suite **235/235**; push **SYNCED** (`e0b2143..6090f03` = 2 commits, HEAD == origin/main)
+- [x] Pushed? — YES (both commits)
+- [x] Working tree — clean (pre-existing dirty tree committed with the closeout, per cron-review recommendation)
+
+## Recommended next action
+
+**M2 Logical Legacy Boundary** — after the Luna governance review result (`t_ad945485`) lands on the board: capability-level dependency map (not module-name-based), semantic states ACTIVE/FROZEN/SUPERSEDED/VERIFIED_UNUSED/ARCHIVED, legacy→QAD capability mapping, no physical moves. Then M3 specs (QAD-DISCOVERY-AND-SELECTION.md must materialize the Discovery & Coverage Operating System per the frozen requirement) → M4A schemas → M4B evaluation (incl. PACK-C Part 7 discovery metrics) → M5 Gate Evidence Package (14 items) → Founder GO. Parallel: Weekly Radar Mon 24 Aug 08:00 = FD #110 Live Office real-world acceptance observation (17 Aug run was missed — gateway down).
+
+---
+
 # Session — 2026-08-17 (cron review): 16 Aug world reconciled — QAD Pivot M1 complete + pushed; Weekly Radar 17 Aug MISSED; FD #130 registration gap
 
 **What this review found (evidence-backed):**
