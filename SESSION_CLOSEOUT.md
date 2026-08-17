@@ -1,4 +1,33 @@
+# Session — 2026-08-18 00:36 UTC+7: QAD-M2 FINAL CLOSEOUT — M2 = FINAL PASS
+
+**Status:** COMPLETE — M2 = FINAL PASS ✅. Final commit `26a61042c4f7e3043ba7af3c5860025eafb6f5a9`. HEAD == origin/main.
+
+## Closeout summary
+
+- **M2 = FINAL PASS** — deterministic integrity validation PASS
+- **Canonical records:** 25/25 (20 top-level + 5 child IDs)
+- **Lifecycle:** ACTIVE=9, FROZEN=14, SUPERSEDED=1, TRANSITIONAL=1 (sum=25)
+- **Primary disposition:** REUSE=7, ADAPT=6, ABSORB=1, TRANSITIONAL_RETAIN=2, FREEZE=7, SUPERSEDE=1, DO_NOT_REUSE=1 (sum=25)
+- **FROZEN-with-active-runtime (derived mechanically):** CAP-004, CAP-009, CAP-015, CAP-020
+- **No compound dispositions** — every capability has exactly one `primary_disposition`; `REFRAIN` moved to `migration_instruction`
+- **CAP-007C corrected** → `current_state = SUPERSEDED`
+- **CAP-018 corrected** → `current_state = ACTIVE`, `primary_disposition = TRANSITIONAL_RETAIN` with `migration_instruction`
+- **Runtime audit corrected** — Nick-Weekly cron, CIW monitor, Workforce runtime, FROZEN-with-runtime all documented
+- **Parallel truth eliminated** — old reuse map marked SUPERSEDED
+- **Independent review:** PASS_WITH_FINDINGS (2 findings) → both resolved
+- **AGENTS.md synced** — M2 = FINAL PASS, M3 = AWAITING FOUNDER AUTHORIZATION
+- **Suite:** 235/235 PASS
+- **Zero physical moves, zero cron mutations, zero workforce reconfigurations**
+- **Diff:** documentation + non-production M2 validation tooling (`validate-registry.py`) only
+- **M3 = AWAITING FOUNDER AUTHORIZATION** — not started; no new review round; no M4/M5 work
+
+**Previous entry below marked as:** Historical pre-closeout snapshot — superseded as current state by this 18 Aug final closeout entry.
+
+---
+
 # Session — 2026-08-17 (cron review, 23:57): M2 correction executed by 23:12 session — M2 = FINAL PASS, M3 awaiting Founder; suite 235/235; vault mirror gap FD-95..106 backfilled
+
+> ⏳ **Historical pre-closeout snapshot (17 Aug 23:57)** — superseded as current state by the 18 Aug M2 FINAL CLOSEOUT entry above. Retained for audit lineage.
 
 **Review window:** 17 Aug 12:10 → 23:57 UTC+7. **What this review found (evidence-backed):**
 
