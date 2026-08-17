@@ -208,4 +208,39 @@ Auditor verifies post-hoc: was override properly authorized and logged?
 
 Budget Controller is a policy/service — NOT an agent. No model dependency. Simple deterministic limits with escalation.
 
+---
+
+## Part 7: Discovery & Coverage Evaluation (M1 requirement — per QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md v0.1 Part E)
+
+### Two-Axis Evaluation
+
+The system must be evaluated on two separate questions:
+1. **Type A (Research Quality):** when the system finds a company, does it research it correctly? (covered by existing Parts 1–6)
+2. **Type B (Discovery Recall):** did the system discover the company/opportunity at all? (NEW — this Part)
+
+### Metrics
+
+| Metric | Method | Target | Notes |
+|--------|--------|--------|-------|
+| Universe Coverage Rate | Eligible count vs actually scanned | >95% (improving) | All registries |
+| Data-Ready Coverage | Companies with sufficient data ≥ usable threshold | >80% | Researchable Universe |
+| Known-Opportunity Recall | Historical QAD-appropriate opportunities detected | >80% | Masked/historical fixtures |
+| Quality Candidate Recall | Companies with quality evidence correctly identified | >70% | Quality Universe |
+| Dislocation Recall | Material dislocations detected | >80% | Cross-sectional |
+| False-Negative / Miss Rate | Stratified rejected-sample audit | <20% | Rejected-Sample Audit |
+| Rejected-Item Surprise Rate | Independent review of rejected/low-rank sample | <10% surprise | Monthly |
+| Time-to-Detection | Cadence between event first observable and signal registered | bounded | Per cadence |
+| Signal→Candidate Precision | Signals that pass candidate assembly | >50% | Signal Registry |
+| Candidate→Research Yield | Candidates that open Full Research | >20% | Candidate Registry |
+| Cost per meaningful candidate | Total discovery cost / meaningful candidates | <budget | Budget Controller |
+| Source/feed failure detection | Unplanned data stall or feed drop | alert ≤1 cycle | Operations |
+| Decision-Changing Candidate Recall | "Did the system ever see the company that later became a real QAD opportunity — before it was obvious?" | ≤1 miss per evaluation period | **Headline metric** |
+
+### Method
+
+- Historical/masked/synthetic discovery fixtures (Layer A/B/C patterns, extended for discovery)
+- Monthly rejected-sample audit (stratified random sample of 50–100 from rejected/low-rank; independent light review)
+- Discovery recall and rejected-item audit results feed the M5 Gate Evidence Package
+- Separate evaluation of type-A (research quality) and type-B (discovery recall) — never conflate
 <!-- 2026-08-16 UTC+7 -->
+<!-- 2026-08-17 17:30 UTC+7 -->

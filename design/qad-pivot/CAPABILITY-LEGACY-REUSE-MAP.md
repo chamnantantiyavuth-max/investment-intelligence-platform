@@ -131,13 +131,13 @@ Each existing capability was evaluated against:
 | **QAD function** | Workforce mapping to be determined after Pack A role contracts exist |
 | **Action** | No changes to org-* profiles until QAD logical role contracts pass Founder review + WORKFORCE-MIGRATION-MAP created |
 
-### 13. Hermes Radar (Weekly + Mid-Week)
+| 13 | **Hermes Radar (Weekly + Mid-Week)** |
 | Field | Value |
 |-------|-------|
-| **Status** | ⏸️ **FREEZE as-is** |
-| **QAD function** | NONE — commodity/equity macro scanning |
-| **Why not reuse** | QAD has its own Discovery system (M5). Radar's EDGAR scanning may be absorbed into QAD Source Intelligence (M6) |
-| **Action** | Keep running until QAD-M5/M6 proves its replacement. Then FREEZE |
+| **Status** | 🔄 **TRANSITIONAL — retain as non-authoritative complementary Discovery Scout (M1 correction, 2026-08-17)** |
+| **QAD function** | External-discovery lane (Lane C) — regulatory context, competitor/supplier/customer commentary, unusual filing context, industry developments, source-specific anomalies — signals structured sensors find difficult |
+| **Why not freeze** | QAD Discovery (M5) may not yet reproduce Radar's contextual recall; no pre-decided retirement (Part D) |
+| **Action** | **Keep running during M1–M4B unchanged (authorized crons intact).** M3 defines Radar/Scout as non-authoritative complementary discovery (Signal/Candidate intake only; never classifies Temporary vs Structural, determines Quality, values, writes thesis, approves selection, allocates budget, or recommends trades). After QAD Discovery is operational (M5/M6), run the evidence-based migration decision: **Legacy Radar vs QAD Discovery incremental recall evaluation** — if Radar discovers material candidates QAD misses, absorb/retain the function; freeze only after comparative evidence shows no material incremental value or full reproduction elsewhere. Workforce profile reframe deferred to the Workforce Migration Map |
 
 ### 14. Deep Research Standing Contract (tpl 16)
 | Field | Value |

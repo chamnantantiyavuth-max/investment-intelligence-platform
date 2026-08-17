@@ -1,6 +1,8 @@
 # Project DNA
 
-## Version 0.1
+## Version 0.3
+
+Canonical lineage: **DNA v0.1** = DNA-001..018 · **DNA v0.2** = DNA-019/020 (CIW amendment, 2026-08-02) · **DNA v0.3** = QAD amendment (2026-08-16). The QAD amendment is append-only.
 
 These are the non-technical traits that every future design, workflow, interface, agent, and implementation must preserve.
 
@@ -76,13 +78,17 @@ Use the simplest architecture that preserves domain boundaries, auditability, re
 
 The platform must be able to return zero high-priority candidates and admit when it lacks a credible explanation.
 
-## DNA-017 — Quality-Directed Observation, Dislocation-Driven Universe
+## DNA-017 — Open Quality Discovery / Quality Universe, Dislocation as Investigation Trigger
 
-The platform observes globally for dislocation signals. The QAD research universe is defined by dislocation presence and business-quality potential, not by exchange listing. Legacy momentum-screen listing constraints (US-listed common stocks) are frozen historical scope, not QAD boundaries.
+The platform maintains an **Open Quality Discovery / Quality Universe** as a separate, standing capability: it observes broadly for evidence that business quality may be high, and Quality Universe membership is **not** conditioned on any active dislocation.
+
+**Dislocation is a trigger for QAD investigation — not a membership requirement for the Quality Universe.**
+
+The QAD research universe is defined by business-quality potential and dislocation presence, not by exchange listing. Legacy momentum-screen listing constraints (US-listed common stocks) are frozen historical scope, not QAD boundaries.
 
 ## DNA-018 — Structured Source of Truth, Narrative Learning Layer
 
-The application stores structured evidence, state, lineage, decisions, and outcomes. Obsidian and NotebookLM support narrative learning, case studies, playbooks, and reflection.
+The application stores structured evidence, state, lineage, decisions, and outcomes. Narrative research/knowledge layers support case studies, postmortems, playbooks, and reflection. Current provider products and tools may be named in subordinate operational contracts; the DNA remains technology-neutral.
 
 ## DNA-019 — Deep Research Must Earn Its Cost
 
@@ -100,18 +106,33 @@ Every research workflow, evaluation fixture, and underwriting gate is oriented a
 
 ---
 
-| Version | 0.1 → 0.2 | 2026-08-16 | QAD Pivot — DNA-005 updated (QAD replaces AM/CS as primary strategy); DNA-017 relaxed (QAD universe not bounded by listing); DNA-021 added (Dislocation-First); amendment history below |
+| Version | 0.1 → 0.2 → 0.3 | 2026-08-02 (v0.2) + 2026-08-16 (v0.3) | v0.1 = DNA-001..018; v0.2 = DNA-019/020 (CIW amendment, 2026-08-02); v0.3 = QAD Pivot — DNA-005 updated (QAD replaces AM/CS as primary strategy); DNA-017 corrected (Open Quality Universe separated from Dislocation trigger); DNA-021 added (Dislocation-First); DNA-018 technology-neutral (2026-08-17 M1 correction); amendment history below |
 
 ---
 
 ## Amendment Record — Version 0.2
+
+**Amendment:** DNA-019/020 — CIW amendment (2026-08-02)
+
+**Changes:**
+- **DNA-019** — Deep Research Must Earn Its Cost (added)
+- **DNA-020** — Company Research Must Return Intelligence to the System (added)
+
+**Reason:** Phase 11 CIW (Company Intelligence Workbench) research governance: bounded research requests must justify cost; company research must feed structured system intelligence, not an isolated paper archive.
+
+**Founder approval:** FD-CIW-008 (CIW Spec v0.2 batch approval, 2026-08-02)
+
+---
+
+## Amendment Record — Version 0.3
 
 **Amendment:** CA-v0.6-QAD-PIVOT (2026-08-16)
 
 **Changes:**
 
 - **DNA-005** — Alpha Momentum and Close System references replaced by QAD
-- **DNA-017** — V0 investable screening constraint relaxed for QAD (dislocation-focused, not listing-bound)
+- **DNA-017** — corrected: Open Quality Discovery / Quality Universe separated from Dislocation as investigation trigger (Dislocation is NOT a Quality Universe membership requirement)
+- **DNA-018** — technology-neutral wording (narrative research/knowledge layers; provider products named only in subordinate operational contracts) — M1 correction, 2026-08-17
 - **DNA-021** — New: Dislocation-First (QAD identity)
 
 **Reason:** Product pivot to Quality at Dislocation.

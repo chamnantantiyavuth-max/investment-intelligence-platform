@@ -1,10 +1,10 @@
 # Investment Intelligence Platform Constitution
 
-## Version 0.5 — QAD Amendment Ratified
+## Version 0.6 — QAD Amendment Ratified
 
 ### Status
 
-Approved by the Founder as the working constitutional baseline, as amended by CA-v0.5-QAD-PIVOT (2026-08-16).
+Approved by the Founder as the working constitutional baseline, as amended by CA-v0.6-QAD-PIVOT (2026-08-16).
 
 This document is not a final product specification or final architecture. It defines the product's mission, authority model, core boundaries, and principles that downstream specifications must respect.
 
@@ -106,6 +106,8 @@ Rejected Themes normally remain Not Monitored or Archived. Active Monitoring req
 Archiving does not erase approval history or rejection history.
 
 Every material lifecycle, Approval Status, or Monitoring Status transition must record the prior value, new value, reason, evidence references, actor, timestamp, and relevant rule or workflow version. Rejection, dormancy, archival, reopening, and approval must preserve history. Any transition to Approved requires explicit Founder approval.
+
+> **QAD amending note (2026-08-17):** Theme Intelligence is a supporting context/discovery capability for QAD. It is not a mandatory gateway: Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership. Theme governance history, lifecycle, axes, and tracking remain valid.
 
 ## 6. Two-Tier Autonomy
 
@@ -263,13 +265,15 @@ Within a theme, candidates may be classified as:
 
 These classification concepts may be adapted for QAD use in identifying candidate dislocation targets.
 
-## 14. Theme-First Research Queue
+## 14. QAD Candidate-First Research Queue (Amended — supersedes Theme-First)
 
-The research queue is organized by Theme Card before individual stock ranking.
+The research queue is organized by QAD candidate evidence before individual stock ranking: Quality Discovery → Dislocation Detection → Autonomous Selection → Research.
 
 Queue capacity is adaptive. It must not fill a quota with weak candidates.
 
 It may return zero high-priority candidates.
+
+> **Historical reference:** The original Theme-First Research Queue (v0.5) is preserved below as historical record. Theme Intelligence remains a supporting context/discovery capability — not a mandatory gateway.
 
 ## 15. Close System (Superseded — Historical Reference)
 
@@ -290,20 +294,20 @@ Future design distinguished:
 
 The absence of a stop loss does not eliminate opportunity cost, capital lock-up, correlated driver exposure, structural decay, or recovery-duration risk.
 
-## 16. Learning Loop
+## 16. Learning Loop (Amended — QAD-compatible lifecycle)
 
-Evidence  
-→ Hypothesis  
-→ Theme  
-→ Candidate  
-→ Research  
-→ Human Decision  
-→ Outcome  
-→ Postmortem  
-→ Lesson Draft  
-→ Human Approval  
+Quality/Dislocation observations may create Candidates directly (no mandatory Theme step).
+
+The canonical learning chain is:
+
+Research Finding  
+→ Candidate Lesson  
+→ Validation  
+→ Independent Review  
 → Approved Knowledge  
 → Versioned Rule, Skill, or Playbook Proposal
+
+Theme may feed context but is not a mandatory gateway.
 
 AI-generated lessons do not change official behavior automatically.
 
@@ -311,7 +315,7 @@ AI-generated lessons do not change official behavior automatically.
 
 The application is the structured source of truth for evidence, states, lineage, decisions, overrides, outcomes, lessons, and rule versions.
 
-Obsidian and NotebookLM are narrative learning layers for case studies, postmortems, approved lessons, patterns, anti-patterns, and playbooks.
+Narrative research/knowledge layers support case studies, postmortems, approved lessons, patterns, anti-patterns, and playbooks. Current provider products and tools may be named in subordinate operational contracts; the Constitution remains technology-neutral.
 
 ## 18. Initial Non-Scope
 
@@ -319,12 +323,14 @@ Obsidian and NotebookLM are narrative learning layers for case studies, postmort
 - order execution;
 - automated allocation;
 - autonomous buy or sell recommendations;
-- real-time high-frequency infrastructure;
-- full global equity screening in V0;
+- autonomous investment endorsement;
+- uncontrolled global universe expansion (bounded researchable universe policy governs; initial pilot target ~5,000–10,000 operating companies, configurable, subject to evaluation);
 - automatic rule modification;
 - final technology or data-vendor selection;
 - graph-database requirement;
-- production-scale autonomous global scanning in V0.
+- unauthorized portfolio-aware research.
+
+> **QAD amending note (2026-08-17):** Autonomous research discovery/selection is permitted within approved QAD governance (M5+). Full QAD research is the core workflow for candidates passing gates — not excluded. The "full global equity screening" and "production-scale autonomous global scanning" prohibitions from v0.5 are superseded by the bounded universe policy above. Prohibitions on autonomous investment endorsement, portfolio allocation, and broker execution are preserved.
 
 ## 19. Architecture Principles
 
@@ -550,6 +556,16 @@ Version 0.6 reorients the product from a multi-strategy investment intelligence 
 - **§15 Close System** marked as **Superseded — Historical Reference** (FROZEN)
 - **§20 V0 Thesis** marked as **Superseded** — replaced by QAD architecture
 
-The following sections remain unchanged: §4 Shared Intelligence Core, §5 Theme Intelligence, §6 Two-Tier Autonomy, §7 Weak Signal Inbox, §8 Evidence Doctrine, §9 Evidence Progression, §10 Information Preservation, §11 Falsification, §12 Human Authority, §14 Theme-First Research Queue, §16 Learning Loop, §17 Knowledge Architecture, §18 Initial Non-Scope, §19 Architecture Principles, §21 Amendment Authority, §22 Closing Principle, §23 AI Operating Constitution.
+The following sections were amended by CA-v0.6-QAD-PIVOT: §4 Shared Intelligence Core, §5 Theme Intelligence, §6 Two-Tier Autonomy, §7 Weak Signal Inbox, §8 Evidence Doctrine, §9 Evidence Progression, §10 Information Preservation, §11 Falsification, §12 Human Authority, §19 Architecture Principles, §21 Amendment Authority, §22 Closing Principle, §23 AI Operating Constitution (unchanged in v0.6).
+
+The following sections were amended by the M1 correction closeout (CA-v0.6-QAD-PIVOT-M1, 2026-08-17): §14 (Theme-First → QAD Candidate-First, historical preserved), §16 (Learning Loop QAD-compatible), §17 (technology-neutral), §18 (non-scope reconciled with QAD autonomous discovery/research). §15 Close System and §20 V0 Thesis remain Superseded — Historical Reference. §13 Alpha Momentum remains Superseded — Historical Reference.
 
 **Approval:** FD #130 (QAD Architecture Design Gate, 2026-08-16)
+
+### Amendment Record — v0.6 Completion (Constitution §21 fields, CA-v0.6-QAD-PIVOT)
+
+- **Affected Founder Decision:** FD #130 (QAD Architecture Design Gate — CLOSED + APPROVED, 16 Aug 2026)
+- **Reason:** Product pivot from multi-strategy investment intelligence platform to Quality at Dislocation (QAD) specialist; M1 constitutional pivot executed in commit `e0b2143`; M1 correction closeout reconciles residual Theme-first/multi-strategy claims and registers the QAD discovery/coverage operating requirement
+- **Trade-offs:** Theme Intelligence demoted from mandatory research gateway to supporting context/discovery capability (history preserved); legacy strategy authorities (Alpha Momentum, Close System, Fundamental & Opportunity, Institutional Intelligence) cease to be co-equal investment paths and are frozen as historical reference; global universe ambition bounded to a configurable researchable universe (pilot target ~5,000–10,000) pending evaluation evidence; discovery/coverage treated as first-class QAD subsystem alongside Full Research
+- **Downstream impact:** DNA v0.3 lineage (DNA-019/020 CIW amendment restored; QAD amendment = v0.3); M2 Logical Legacy Boundary; M3 QAD-DISCOVERY-AND-SELECTION.md must materialize the Discovery & Coverage Operating System; M4B evaluation contract extended with Discovery & Coverage Evaluation; Radar Scout retained as non-authoritative complementary discovery capability until evidence-based migration decision; PRODUCT-VISION.md + SCOPE-AND-NON-SCOPE.md reconciled; EVIDENCE-DOCTRINE.md extended (source authority, discovery provenance, S6 semantics); AGENTS.md checkpoint update (protected file, awaiting Founder approval)
+- **Amendment history:** v0.2 (AI Operating Constitution, CA-v0.4) → v0.3 (Theme governance axes, CA-v0.3) → v0.4 (AI Operating Constitution hardening) → v0.5 (Blind Portfolio Rule, CA-v0.5-BLIND-PORTFOLIO-RULE) → v0.6 (QAD Pivot, CA-v0.6-QAD-PIVOT) → v0.6-M1 (QAD Pivot M1 corrections, 2026-08-17)

@@ -25,6 +25,7 @@
 | 7 | QAD role contracts approved | 🔴 PENDING | `contracts/qad/` |
 | 8 | Budget/runaway controls defined and testable | 🔴 PENDING | `evaluation/EVALUATION-CONTRACT.md` |
 | 9 | Founder GO | 🔴 PENDING | FD #1xx |
+| 10 | Discovery recall + rejected-item audit results (Part E — Discovery & Coverage Evaluation, PACK-C Part 7) | 🔴 PENDING | `evaluation/discovery/` |
 
 ---
 

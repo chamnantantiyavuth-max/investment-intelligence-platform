@@ -113,10 +113,10 @@ def test_org_queue_native_status_semantics():
               "Closed", "Published"}
     for c in cards:
         assert c["workflow_column"] not in legacy, f"{c['card_id']}: {c['workflow_column']}"
-    # C1 semantic repair: the Founder decision pack gate is BLOCKED (needs_input),
-    # never Done — a Founder/human gate cannot be satisfied by an autonomous worker
+    # C1 semantic repair: the Founder decision pack gate was resolved by Founder (D5 = A, 14 Aug 2026),
+    # never by an autonomous worker. The gate card is now Done (Founder-closed).
     gate = next(c for c in cards if "[GATE][ORG-2026-0004]" in c["title"])
-    assert gate["workflow_column"] == "Blocked"
+    assert gate["workflow_column"] == "Done"
     assert gate["principal_owner"] == "org-ic-secretary"
     migrated = next(c for c in cards if "[MIGRATED:ORG-2026-0004]" in c["title"])
     assert migrated["workflow_column"] == "Done"  # migration executed — NOT Founder approval

@@ -32,24 +32,8 @@
 - No destructive operations
 
 ### QAD-M3 — QAD Domain Contracts (Documentation Only)
-**Deliverables:** 17 QAD spec documents:
-1. QAD-OPERATING-MODEL.md
-2. QAD-CANDIDATE-SELECTION.md
-3. QAD-FULL-RESEARCH-PROTOCOL.md
-4. QAD-CASE-LIFECYCLE.md
-5. QAD-EVIDENCE-MODEL.md
-6. QAD-MODERN-SCUTTLEBUTT.md
-7. QAD-BUSINESS-QUALITY.md
-8. QAD-INDUSTRY-ECONOMICS.md
-9. QAD-FINANCIAL-RECONSTRUCTION.md
-10. QAD-MANAGEMENT-ANALYSIS.md
-11. QAD-TEMPORARY-VS-STRUCTURAL.md
-12. QAD-NORMALIZED-ECONOMICS.md
-13. QAD-PERMANENT-LOSS.md
-14. QAD-VALUATION.md
-15. QAD-RED-TEAM.md
-16. QAD-PUBLICATION-STANDARD.md
-17. QAD-MONITORING.md
+
+**Deliverables:** 10 canonical QAD specifications (see `design/qad-pivot/LEAN-CANONICAL-SPEC-PLAN.md`; supersedes earlier 17-spec count). Spec #2 `QAD-DISCOVERY-AND-SELECTION.md` is a **complete QAD Discovery & Coverage Operating System** (not merely a ranking/screener) — must materialize the frozen requirements at `design/qad-pivot/QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md` (v0.1, 2026-08-17): 6 registries, hard filters, independent lanes, operating cadences, Radar Scout disposition, universe policy.
 
 **Pack A — Production Role Contracts** (contained within M3)
 **Pack B — NotebookLM Contracts** (Research Request, Result, Discovery Provenance, Source Validation, Notebook↔Registry boundary)
@@ -76,6 +60,7 @@
 - Thesis-killer detection acceptance
 - False-confidence rate baseline
 - Decision-Changing Evidence Recall methodology
+- **Discovery & Coverage Evaluation (Part 7, PACK-C):** Universe Coverage Rate, Data-Ready Coverage, Known-Opportunity Recall, Quality Candidate Recall, Dislocation Recall, False-Negative Rate, Rejected-Item Surprise Rate, Time-to-Detection, Signal→Candidate precision/yield, Candidate→Full-Research yield, cost per meaningful candidate, source/feed failure detection, Decision-Changing Candidate Recall — per QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md v0.1 Part E (M1 correction, 2026-08-17)
 
 ---
 

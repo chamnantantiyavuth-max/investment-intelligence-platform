@@ -57,4 +57,29 @@ Books, industry handbooks, and reference materials are static historical artifac
 ## Contradictions
 
 Contradicting evidence remains visible and is never averaged away merely for presentation simplicity.
+
+## Source Authority
+
+Every source carries an authority class reflecting its provenance, verifiability, and independence from the entity described (e.g., S1–S6 scheme: primary filings → authoritative third parties → reputable secondary → unverified leads). Source authority is assigned from the source's own nature, never from the strength of the claim it supports.
+
+## Source Authority ≠ Discovery Route
+
+A high-authority source reached through a weak discovery route remains a high-authority source; a weak source surfaced through a strong route remains weak. Discovery provenance (how a company or signal entered the funnel) is recorded separately from source authority and never substitutes for it.
+
+## Persistent Discovery Provenance
+
+Every candidate, signal, and case transition records: who, when, why, data version, rule version, model version (where AI is involved), and supporting evidence. Discovery provenance is persistent and append-only — it survives promotion, correction, and archival. Entry routes (e.g., `FOUNDER_DIRECTED`, autonomous discovery, Radar/Scout, external) are recorded and must not be conflated in evaluation metrics.
+
+## Raw / Fact / Claim / Inference / Hypothesis Separation
+
+Raw source records, observed facts, claims, normalized facts, derived metrics, statistical signals, AI extractions, AI classifications, hypotheses, human judgments, decisions, outcomes, and lessons remain distinct epistemic types. A claim is not a fact; an inference is not an observation; a hypothesis is not a conclusion. No type dominates universally.
+
+## AI / External-Research Synthesis Cannot Become Validated Canonical Evidence
+
+Synthesis produced by AI or external research (including NotebookLM-style narrative layers and third-party research) does not become validated canonical evidence without original-source validation. Unverified leads retain S6 / unverified-lead semantics until the underlying original source is retrieved and validated. Data absence must never silently equal "no signal" — absence is a recorded state with its own provenance.
+
+## Detailed Schema
+
+Detailed discovery/evidence schema, source-class definitions, and state machines belong to M3 (QAD domain contracts) and M4A (canonical schemas). This doctrine governs the durable principles above.
 <!-- 2026-08-05 23:43 UTC+7 -->
+<!-- 2026-08-17 17:30 UTC+7 -->
