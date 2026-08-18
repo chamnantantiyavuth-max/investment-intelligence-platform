@@ -1,3 +1,30 @@
+# Session — 2026-08-18 (cron review, 12:20): 18 Aug world reconciled — M2 FINAL CLOSEOUT committed + pushed; weekly-radar root cause CORRECTED (unpinned config-drift guard) + 3 cron pins APPLIED
+
+**Review window:** 18 Aug 00:36 → 12:14 UTC+7. **What this review found (evidence-backed):**
+
+1. **M2 FINAL CLOSEOUT LANDED (00:36–00:49 session, commits `26a6104` + `f4a0cae` — PUSHED):** HEAD == origin/main == `f4a0cae` (435 commits), **tree CLEAN** — the entire prior dirty tree (3 deleted ChatGPT docs, untracked Integration 12/16 Aug, 0016/0017/0022 drafts, CIW monitor draft, 2 evidence files) is now committed. M2 = FINAL PASS (25/25 records, independent review PASS_WITH_FINDINGS resolved, `validate-registry.py` added, AGENTS.md sync applied). **M3 = ⏳ AWAITING FOUNDER AUTHORIZATION** (unchanged — no M3 work started). Suite **235/235 PASS** re-run this review (hermes-agent venv interpreter, 4.0s).
+2. **⚠ WEEKLY RADAR 17 Aug — ROOT CAUSE CORRECTED (record fix):** the radar DID attempt a catch-up run at **17 Aug 11:54:46** (output file `cron/output/8ba233e88015/2026-08-17_11-54-46.md`) but **FAILED**: `RuntimeError: Skipped to prevent unintended spend: global inference config drifted since this job was created (provider 'deepseek' -> 'openrouter'; model 'deepseek-v4-flash' -> 'deepseek/deepseek-v4-flash'), and this job is unpinned.` The 17 Aug reviews recorded "scheduler claimed it but never started" — **corrected: it attempted and was blocked by the unpinned spend-guard** (caused by the 16 Aug FD #112 routing cutover). Same failure hit the **CIW monitor** (8b1cd19aba7d output 11:54:46 = FAILED).
+3. **⚠ 3/5 CRONS WERE UNPINNED → PINNED (fix applied by this review):** weekly radar `8ba233e88015`, mid-week radar `cda817d17236`, CIW monitor `8b1cd19aba7d` all had provider/model = None → **every future run would fail the same guard** (the Thu 20 Aug mid-week run was 2 days away). The 2 healthy jobs (Nick-Weekly `73e611584447`, Learning Loop `1f5f03f9236d`) are pinned and ran fine (Learning Loop ran 18 Aug 00:13). **Fix:** `hermes cron edit <job> --provider openrouter --model deepseek/deepseek-v4-flash` ×3 → verified in jobs.json (all pinned to the FD #111/#112 frozen routing). **Radar cadence RESTORED:** mid-week **Thu 20 Aug 08:00**; weekly radar + CIW monitor **Mon 24 Aug** = the FD #110 Live Office real-world acceptance observation is now viable.
+4. **Cadence:** Learning Loop 18 Aug 00:13 ✅ (pinned); Nick-Weekly next 22 Aug 09:00; gateway currently UP (PID 624, heartbeat 27s). Gateway overnight-supervision item (durable VBS-style supervision) remains open for an interactive session.
+5. **Market snapshot 18 Aug 12:14 (Mon 17 Aug US CLOSED EOD + Tue futures live):** AAPL 305.59 −0.11% / **MSFT 480.35 −3.04% 1d −5.24% 5d (largest 1d; no single headline driver — hyperscaler/market-warning coverage; CIW digest-only watch)** / JNJ 262.37 +0.78% / GOOGL 344.00 −0.55% / FSLR 217.85 −3.42% 1d −8.30% 5d (tariff-pop unwind continues) / SMCI 38.28 −3.92% 1d +21.07% 5d (pullback after run) / NVDA 225.01 −0.07% / SLV 59.57 +1.86% / SPY 772.67 −0.47% / ABBV 250.33 / BMY 64.63 +1.25% / LLY 1183.16 +0.25% / VRTX 515.55 +1.94%; **futures Tue: GC=F 4,448.00 +0.68% 1d +1.48% 5d / SI=F 65.21 −1.37% 1d — still above ~$62 SILVER-CORR-001 anchor, ratio ≈ 68.2:1 / CL=F 85.26 +0.90% 1d +2.48% 5d (Hormuz premium firming again)**. No ±10% 1d moves → no mandatory news lookups.
+6. **Board:** 3 blocked only — t_1ecfaaef (intentional pilot failure test) + t_8411623f/t_d5019196 (ORG-2026-0016/0017 crashed cards; **drafts now COMMITTED** — Thai draft + CRO + evidence for 0016, evidence-log for GOOGL/0017; publish/recovery = Founder call). ORG-2026-0022 chain (t_bef038f6/t_8ca2aac1/t_675a738e) all DONE — drafts committed, **publish gate still open**. Luna governance review `t_ad945485` NOT found on the iip board (loose end — M2's independent review was executed in-session regardless).
+7. **Vault / governance / memory:** fd-register 3 mirrors contiguous through FD-130 ✅ (no new FDs this review — pin fix is maintenance, not an FD). Governance sync PASS (shared vs profile SOUL: project-workflow v3.8 + Verify-First ×2 / Audit Delegation ×2 / Model Routing ×3 identical). Obsidian CURRENT-STATE was stale at MEM-IIP-075 (17 Aug 23:57; the 00:36 M2 FINAL closeout session did not capture to Obsidian) → this review prepends **MEM-IIP-076**.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs; register items 1–130 contiguous; 3 vault mirrors contiguous through FD-130
+- [x] Session captured? — this entry + PROJECT_STATE session row + Obsidian MEM-IIP-076 prepended
+- [x] Verify-First? — radar root cause verified against actual cron output files + jobs.json; suite re-run; ls-remote == HEAD before commit
+- [x] Verification tags? — suite **235/235**; HEAD `f4a0cae` 435 commits; crons pinned verified in jobs.json; market quotes pulled live
+- [x] Pushed? — YES, docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) pushed after commit (clean-tree exception, 12 Aug precedent); origin == HEAD post-push
+- [x] Working tree — clean before + after (docs-only delta committed)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** radar cadence is restored — mid-week scan runs **Thu 20 Aug 08:00**, weekly radar + CIW monitor **Mon 24 Aug 08:00/09:00** (= FD #110 Live Office acceptance observation — verify board task + digest appear). QAD next step unchanged: **M3 Domain Contracts awaiting Founder authorization**. Open Founder gates: **ORG-2026-0022 publish decision** (drafts committed, chain done), **0016/0017 recovery/publish** (drafts committed), and interactive-session items: durable gateway supervision, Luna `t_ad945485` whereabouts, hermes-venv numpy ABI repair.
+
+---
+
 # Session — 2026-08-18 00:36 UTC+7: QAD-M2 FINAL CLOSEOUT — M2 = FINAL PASS
 
 **Status:** COMPLETE — M2 = FINAL PASS ✅. Final commit `26a61042c4f7e3043ba7af3c5860025eafb6f5a9`. HEAD == origin/main.
