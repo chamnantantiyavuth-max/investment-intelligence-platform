@@ -162,7 +162,7 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## B — Source & Evidence (11 schemas)
+## B — Source & Evidence (10 schemas)
 
 ### B-1: SourceRecord
 
@@ -372,7 +372,7 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## C — Research Governance (9 schemas)
+## C — Research Governance (8 schemas)
 
 ### C-1: ResearchCharter
 

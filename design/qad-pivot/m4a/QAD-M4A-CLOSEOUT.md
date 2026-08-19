@@ -23,13 +23,13 @@
 | Family | Schemas | Coverage |
 |--------|---------|----------|
 | A — Identity & Coverage | 6 | SecurityMaster, ResearchableUniverse, Signal, Candidate, QualityUniverse, Case |
-| B — Source & Evidence | 9 | Source, Evidence, Fact, Claim, Inference, Hypothesis, Contradiction, EvidenceGap, AdmissionRecord |
-| C — Research Governance | 6 | ResearchCharter, StageRecord, InvestigatorCharter, Budget, FailureRecord, StopRecord |
-| D — Business/Industry/Mgmt | 6 | QualityAssessment, MoatAssessment, IndustryEconomics, ManagementClaim, CapitalAllocation, ManagementLedger |
+| B — Source & Evidence | 10 | Source, Evidence, Fact, Claim, Inference, Hypothesis, Contradiction, EvidenceGap, AdmissionRecord, SourceVersion |
+| C — Research Governance | 8 | ResearchCharter, StageRecord, InvestigatorCharter, Budget, FailureRecord, StopRecord, HypothesisSet, InvestigationReport |
+| D — Business/Industry/Mgmt | 7 | QualityAssessment, MoatAssessment, IndustryEconomics, ManagementClaim, CapitalAllocation, ManagementLedger, ManagementOutcome |
 | E — Impairment & Recovery | 6 | Dislocation, ImpairmentAssessment, CompetingExplanation, RecoveryModel, ThesisKiller, FlipEvidence |
-| F — Financial & Economic | 7 | FinancialFact, NormalizedFact, CalculationRecord, ScenarioRecord, PermanentLoss, ReverseDCF, ValuationAssessment |
-| G — Challenge/Audit/Pub | 6 | RedTeamChallenge, AuditFinding, AuditReport, UnderwritingVerdict, PublicationRecord, FounderDecision |
-| H — Monitoring & Knowledge | 6 | MonitoringIndicator, Observation, Assessment, CandidateLesson, InstitutionalKnowledge, IndustryPlaybook |
+| F — Financial & Economic | 8 | FinancialFact, NormalizedFact, CalculationRecord, ScenarioRecord, PermanentLoss, ReverseDCF, ValuationAssessment, PriceImpliedExpectation |
+| G — Challenge/Audit/Pub | 7 | RedTeamChallenge, AuditFinding, AuditReport, UnderwritingVerdict, PublicationRecord, FounderDecision, ChallengeResponse |
+| H — Monitoring & Knowledge | 7 | MonitoringIndicator, Observation, Assessment, CandidateLesson, InstitutionalKnowledge, IndustryPlaybook, CrossCaseValidation |
 | I — Reproducibility & Ops | 9 | RunManifest, PITContext, ServiceInvocation, RetryRecord, CaseLock, BudgetUsage, ModelInvocation, ProviderInvocation, EvaluationHarnessRun |
 
 **Total: 68 schemas, 9 families, 9 NEW_M4A_DERIVATION items** (operational telemetry and implementation details — see Traceability for exact list)
