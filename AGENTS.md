@@ -179,7 +179,7 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0). **🔴 SUPERSEDED — QAD is the canonical future identity (Constitution v0.6, FD #130). Legacy AM/CS/FO/II are not co-equal investment paths.**
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1–132 (FD #132 = item 132, 19 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
+- Founder Decisions #1–133 (FD #133 = item 133, 19 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
 
 ## Current QAD Governance
 

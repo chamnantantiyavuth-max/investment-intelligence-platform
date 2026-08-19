@@ -137,7 +137,7 @@ def validate_no_production_code():
     m4b_dir = BASE / "design" / "qad-pivot" / "m4b"
     if m4b_dir.exists():
         py_files = list(m4b_dir.glob("*.py"))
-        allowed = {"validate-m4b-pack.py"}
+        allowed = {"validate-m4b-pack.py", "pit-leakage-proof.py"}
         actual = {f.name for f in py_files}
         disallowed = actual - allowed
         if disallowed:

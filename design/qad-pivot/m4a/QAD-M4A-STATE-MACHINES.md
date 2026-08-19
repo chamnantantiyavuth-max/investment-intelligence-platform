@@ -1,6 +1,6 @@
 # QAD-M4A Canonical State Machines
 
-> **Status:** M4A IN PROGRESS
+> **Status:** M4A FINAL — FROZEN FOR M4B DERIVATION
 > **Authority:** FD #133; M3 Frozen Domain Contracts
 > **Traceability:** Every state machine traces to M3 contract clause — see QAD-M4A-SCHEMA-TRACEABILITY.md
 

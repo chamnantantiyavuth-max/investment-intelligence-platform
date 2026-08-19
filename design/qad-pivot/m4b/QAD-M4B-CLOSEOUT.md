@@ -1,6 +1,6 @@
 # QAD-M4B Closeout — Evaluation Contract + PIT Fixtures + Acceptance Matrix
 
-> **Status:** M4B COMPLETE — AWAITING FOUNDER ACCEPTANCE
+> **Status:** M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE
 > **Authority:** FD #133
 > **Predecessor:** M4A = FROZEN FOR M4B DERIVATION (Freeze Gate PASS)
 > **Execution order:** M4A → Freeze → M4B → Freeze → STOP

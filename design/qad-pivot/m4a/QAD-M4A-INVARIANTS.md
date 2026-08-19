@@ -1,6 +1,6 @@
 # QAD-M4A Critical Invariants
 
-> **Status:** M4A IN PROGRESS
+> **Status:** M4A FINAL — FROZEN FOR M4B DERIVATION
 > **Authority:** FD #133; M3 Frozen Domain Contracts
 > **Purpose:** Machine-checkable rules that must always hold. Every invariant violation must be caught by automated validation.
 

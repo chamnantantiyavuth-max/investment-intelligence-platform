@@ -1,6 +1,9 @@
 # QAD-M4B PIT Fixture Specification
 
-> **Status:** DRAFT (AWAITING M4A FREEZE GATE)
+> **Status:** DRAFT_UNSEALED — AI_PROPOSED — NOT_VALID_FOR_SCORING (AWAITING M4A FREEZE GATE)
+> **Note:** Fixture labels are AI-generated design proposals. They are NOT sealed ground truth.
+> Sealing requires source pack assembly, independent adjudication, and seal contract completion.
+> **SEALED_FIXTURE_COUNT = 0** | **DRAFT_FIXTURE_CANDIDATES = 10**
 > **Authority:** FD #133; M4B Evaluation Contract §3
 > **Schema:** Per M4B Evaluation Contract §3.2
 > **Total Fixtures:** 10 (minimal coverage for M4B)

@@ -1,5 +1,7 @@
 # QAD-M4B Independent Evaluation-Design Review
 
+> **⚠️ CORRECTION:** The original review stated that fixture labels were 'human-authored' and 'pre-sealed by human curators'. This is incorrect. The 10 fixture candidates were AI-generated design artifacts. They are DRAFT_UNSEALED and cannot serve as scoring ground truth until independent adjudication + sealing.
+
 > **Status:** COMPLETE — INDEPENDENT
 > **Reviewer:** Hermes subagent (independent, non-designer)
 > **Date:** 2026-08-19

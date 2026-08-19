@@ -98,6 +98,13 @@ Every evaluation run MUST include a leakage test:
 
 ```text
 fixture_id: FIX-YYYY-NNN
+fixture_version: MAJOR.MINOR.PATCH (semantic version — increments on content change)
+supersedes_fixture_version: [none | version string] (prior version this corrects, if any)
+correction_reason: [string] (what was corrected and why)
+adjudicator: [identity string] (who independently verified this fixture)
+corpus_hash: [SHA-256 hex] (hash of the complete allowed-source manifest)
+label_hash: [SHA-256 hex] (hash of all expected labels + rationale)
+seal_hash: [SHA-256 hex] (hash of the entire sealed fixture document)
 company: ticker, name, entity_id
 as_of_date: YYYY-MM-DD (hard cutoff)
 evidence_context:
@@ -122,10 +129,51 @@ ambiguity_notes: [notes about edge cases, alternative interpretations]
 ### 3.3 Fixture Lifecycle
 
 ```text
-DRAFT → REVIEWED → SEALED → (used in evaluation) → ARCHIVED
+DRAFT_UNSEALED → SOURCE_PACK_COMPLETE → INDEPENDENTLY_ADJUDICATED → SEALED → ACTIVE_EVALUATION → ARCHIVED
+                                                                                 ↓
+                                                                          SEALED → SUPERSEDED
+                                                                          (correction path — never edit in place;
+                                                                           superseding creates a new fixture version)
 ```
 
-Fixtures are sealed before evaluation. Once sealed, they cannot be modified without re-sealing.
+**State Descriptions**
+
+| State | Meaning |
+|-------|---------|
+| DRAFT_UNSEALED | Fixture is a proposal, not yet assembled into a verifiable source pack. Labels are provisional and NOT scoring ground truth. |
+| SOURCE_PACK_COMPLETE | All pre-AS_OF sources collected, hashed, and indexed; leak sentinels identified; source pack ready for review. |
+| INDEPENDENTLY_ADJUDICATED | An independent adjudicator has reviewed the source pack and labels and confirmed the fixture meets the seal contract (§3.4). |
+| SEALED | Fixture is immutable and may be used as scoring ground truth in evaluations. |
+| ACTIVE_EVALUATION | Fixture is currently in use for live evaluations. |
+| ARCHIVED | Fixture has been retired from active use but remains readable for audit. |
+| SUPERSEDED | A newer version of this fixture has been sealed to correct errors. The older version is preserved and readable but no longer authoritative. |
+
+### 3.4 Seal Contract
+
+A fixture may enter the SEALED state only when ALL of the following are present and immutable:
+
+```text
+fixture_id                              — unique identifier
+fixture_version                         — semantic version (MAJOR.MINOR.PATCH)
+AS_OF_DATE                              — hard cutoff; no evidence after this date
+immutable source IDs                    — each pre-AS_OF source has a unique, stable identifier
+source content hashes                   — SHA-256 hash of each source's full content
+source publication dates                — publication date for every source, verified ≤ AS_OF_DATE
+allowed pre-AS_OF corpus manifest       — complete list of every evidence item admitted into the fixture
+forbidden post-AS_OF leak sentinels     — known post-AS_OF facts that MUST be blocked (leak test targets)
+expected quality/impairment/verdict labels — the scored ground-truth values for each dimension
+label rationale                         — written justification for each expected label
+material alternative interpretation     — the strongest competing interpretation and why it was not selected
+ambiguity notes                         — any edge cases, limitations, or unresolved questions
+adjudicator identity                    — who performed the independent adjudication
+adjudication method                     — how the adjudication was conducted (e.g., desk review, panel vote)
+adjudication timestamp                  — when the adjudication was completed
+corpus_hash                             — SHA-256 of the complete allowed-source manifest
+label_hash                              — SHA-256 of all expected labels + rationales
+seal_hash                               — SHA-256 of the entire sealed fixture document
+```
+
+A fixture that meets all seal-contract requirements may be promoted from INDEPENDENTLY_ADJUDICATED to SEALED by the project lead or governance gate. Once SEALED, the fixture is immutable for evaluation purposes. Corrections require creating a new fixture version and superseding the old one — the original seal hash is preserved for audit.
 
 ---
 

@@ -1,6 +1,6 @@
 # QAD-M4A Canonical Schema Registry
 
-> **Status:** M4A IN PROGRESS
+> **Status:** M4A FINAL — FROZEN FOR M4B DERIVATION
 > **Authority:** FD #133; M3 Domain Contracts (FROZEN for M4 derivation)
 > **Traceability:** Every schema traces to M3 contract clause — see QAD-M4A-SCHEMA-TRACEABILITY.md
 > **Design principle:** Technology-neutral JSON Schema-like pseudocode. No production database technology chosen.
