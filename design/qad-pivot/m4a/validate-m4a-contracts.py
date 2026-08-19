@@ -271,14 +271,100 @@ def parse_closeout_schema_count(content: str) -> int:
 
 # ── M3 Role contract parser ──────────────────────────────────────────────────
 
+def parse_service_contracts(content: str) -> dict:
+    """
+    Parse M3 service contracts to extract service_id, inputs, outputs,
+    failure_behavior, PIT_behavior, and forbidden_inference for each S1-S12.
+
+    Returns dict[service_id] = {
+        "service_id": str,
+        "service_name": str,
+        "inputs": str,
+        "outputs": str,
+        "failure_behavior": str,
+        "pit_behavior": str,
+        "forbidden_inference": str,
+    }
+    """
+    services = {}
+    # Match ## S1: ServiceName headers
+    for m in re.finditer(r'^##\s+(S\d+):\s+(.+)$', content, re.MULTILINE):
+        svc_id = m.group(1)
+        svc_name = m.group(2).strip()
+        header_pos = m.end()
+        # Extract fields from the service's table within next ~2000 chars
+        section = content[header_pos:header_pos + 2000]
+        inputs = ""
+        outputs = ""
+        failure_behavior = ""
+        pit_behavior = ""
+        forbidden_inference = ""
+
+        im = re.search(r'\|\s*\*\*inputs\*\*\s*\|\s*(.+?)\s*\|', section)
+        if im: inputs = im.group(1)
+        om = re.search(r'\|\s*\*\*outputs\*\*\s*\|\s*(.+?)\s*\|', section)
+        if om: outputs = om.group(1)
+        fm = re.search(r'\|\s*\*\*failure_behavior\*\*\s*\|\s*(.+?)\s*\|', section)
+        if fm: failure_behavior = fm.group(1)
+        pm = re.search(r'\|\s*\*\*PIT_behavior\*\*\s*\|\s*(.+?)\s*\|', section)
+        if pm: pit_behavior = pm.group(1)
+        fim = re.search(r'\|\s*\*\*forbidden_inference\*\*\s*\|\s*(.+?)\s*\|', section)
+        if fim: forbidden_inference = fim.group(1)
+
+        services[svc_id] = {
+            "service_id": svc_id,
+            "service_name": svc_name,
+            "inputs": inputs,
+            "outputs": outputs,
+            "failure_behavior": failure_behavior,
+            "pit_behavior": pit_behavior,
+            "forbidden_inference": forbidden_inference,
+        }
+    return services
+
+
+def count_raw_fk_references(content: str) -> int:
+    """Count all arrow-form FK references in schema registry content."""
+    return len(re.findall(r'`[^`]+?\s*→\s*\S+\.\S+`', content))
+
+
 def parse_role_outputs(content: str) -> dict:
     """
-    Parse M3 role contracts to extract role→output-schema mappings.
-    Returns dict[role_number] = list of potential schema references.
+    Parse M3 role contracts to extract role number, name, Required Outputs,
+    and Output Schema for each role.
+
+    Returns dict[role_number] = {
+        "role_number": int,
+        "role_name": str,
+        "required_outputs": str,
+        "output_schema": str,
+    }
     """
-    # We rely on the known expected roles for this structured validation.
-    # This function validates that roles produce the expected outputs.
-    pass
+    roles = {}
+    # Match ## Role N: RoleName headers
+    for m in re.finditer(r'^##\s+Role\s+(\d+):\s+(.+)$', content, re.MULTILINE):
+        role_num = int(m.group(1))
+        role_name = m.group(2).strip()
+        header_pos = m.end()
+        # Find Required Outputs and Output Schema from the table rows
+        table_match = re.search(
+            r'\|\s*\*\*Required Outputs\*\*\s*\|\s*(.+?)\s*\|\s*\n'
+            r'.*?\|\s*\*\*Output Schema\*\*\s*\|\s*(.+?)\s*\|',
+            content[header_pos:header_pos + 2000],
+            re.DOTALL
+        )
+        required_outputs = ""
+        output_schema = ""
+        if table_match:
+            required_outputs = table_match.group(1).strip()
+            output_schema = table_match.group(2).strip()
+        roles[role_num] = {
+            "role_number": role_num,
+            "role_name": role_name,
+            "required_outputs": required_outputs,
+            "output_schema": output_schema,
+        }
+    return roles
 
 
 # ── Validation functions ─────────────────────────────────────────────────────
@@ -308,15 +394,17 @@ def validate_unique_ids_and_fields(registry: dict):
           f"No duplicate fields per schema (found: {dup_fields if dup_fields else 'none'})")
 
 
-def validate_foreign_keys(registry: dict):
+def validate_foreign_keys(registry: dict, raw_fk_count: int = None):
     print("\n=== 3. Foreign Key Cross-References ===")
     bad_fks = []
+    parsed_fk_count = 0
     for sid, schema in registry.items():
         for fk in schema["foreign_keys"]:
+            parsed_fk_count += 1
             ts = fk["target_schema"]
             tf = fk["target_field"]
             if ts not in registry:
-                bad_fks.append(f"{sid}.{fk['field']} \u2192 {ts}.{tf} — TARGET SCHEMA {ts} NOT FOUND")
+                bad_fks.append(f"{sid}.{fk['field']} → {ts}.{tf} — TARGET SCHEMA {ts} NOT FOUND")
             elif tf not in registry[ts]["all_fields"]:
                 # Broad match: also check if it appears in IDs/foreign keys row text
                 fk_row = registry[ts]["foreign_keys"]
@@ -330,17 +418,19 @@ def validate_foreign_keys(registry: dict):
                 # exists in the required or optional fields
                 if tf not in [f.replace("[]", "") for f in all_fk_field_names] and \
                    tf not in registry[ts]["all_fields"]:
-                    bad_fks.append(f"{sid}.{fk['field']} \u2192 {ts}.{tf} — FIELD NOT IN {ts}")
+                    bad_fks.append(f"{sid}.{fk['field']} → {ts}.{tf} — FIELD NOT IN {ts}")
 
-    # Additional edge-case FK checks for known patterns
-    # `budget_id → RB-01.budget_id` — RB-01 has budget_id in required_fields
-    # `outcome_id → MO-02.outcome_id` — MO-02 has outcome_id in required_fields
+    # FK completeness tracking
+    if raw_fk_count is not None:
+        check(raw_fk_count == parsed_fk_count,
+              f"RAW_FK_REFERENCE_COUNT ({raw_fk_count}) == PARSED_FK_REFERENCE_COUNT ({parsed_fk_count})")
+    check(parsed_fk_count > 0, f"Foreign keys parsed: {parsed_fk_count}")
 
     check(len(bad_fks) == 0,
           f"No dangling foreign keys (found: {len(bad_fks)})")
     if bad_fks:
         for b in bad_fks:
-            print(f"    \u274c  {b}")
+            print(f"    ❌  {b}")
 
 
 def validate_traceability_ids(registry: dict, traceability_content: str):
@@ -359,7 +449,7 @@ def validate_traceability_ids(registry: dict, traceability_content: str):
           f"No extra IDs in traceability (extra: {extra_in_trace if extra_in_trace else 'none'})")
 
 
-def validate_role_output_mapping(registry: dict):
+def validate_role_output_mapping(registry: dict, m3_roles_content: str = None):
     print("\n=== 5. M3 Role Output Mapping (all 14 roles) ===")
     # Build an owner-to-schemas mapping from the registry
     owner_to_schemas = {}
@@ -369,7 +459,26 @@ def validate_role_output_mapping(registry: dict):
             owner_to_schemas[owner] = set()
         owner_to_schemas[owner].add(sid)
 
+    # Parse actual M3 role contracts if provided
+    parsed_roles = {}
+    if m3_roles_content:
+        parsed_roles = parse_role_outputs(m3_roles_content)
+
+    # Verify each parsed role has required outputs
+    for role_num, role_info in parsed_roles.items():
+        ro = role_info["required_outputs"]
+        os_fields = role_info["output_schema"]
+        has_outputs = bool(ro.strip())
+        has_schema = bool(os_fields.strip())
+        check(has_outputs,
+              f"Role {role_num} ({role_info['role_name']}): Required Outputs field exists and non-empty",
+              severity="fail")
+        check(has_schema,
+              f"Role {role_num} ({role_info['role_name']}): Output Schema field exists and non-empty",
+              severity="fail")
+
     # Check that each role has at least one owned schema
+    roles_with_schemas = 0
     for role_num, role_name in EXPECTED_ROLES.items():
         expected = EXPECTED_ROLE_OUTPUTS.get(role_name, set())
         # Find which schemas match this role (by owner)
@@ -399,35 +508,48 @@ def validate_role_output_mapping(registry: dict):
                 has_role_mention = True
                 break
 
-        check(has_role_mention or len(missing) == 0,
-              f"Role {role_num}: {role_name} referenced in schema owners")
-        if missing:
-            print(f"      \u26a0\ufe0f  Missing expected schemas for {role_name}: {missing}")
-        if extra:
-            print(f"      \u2139\ufe0f  Extra schemas for {role_name}: {extra}")
+        # Missing expected schemas is now a HARD FAILURE
+        if has_role_mention:
+            roles_with_schemas += 1
 
-    # Check at least one schema per role for coverage
-    for role_num, role_name in EXPECTED_ROLES.items():
-        # Check each schema's owner field mentions the role
-        role_found = False
-        for sid, schema in registry.items():
-            owner_lower = schema["owner"].lower()
-            # Check override first
-            if schema["owner"] in ROLE_OWNER_OVERRIDES and \
-               ROLE_OWNER_OVERRIDES[schema["owner"]] == role_name:
-                role_found = True
-                break
-            role_lower = role_name.lower()
-            alias = ROLE_ALIASES.get(role_name, "").lower()
-            if role_lower in owner_lower or (alias and alias in owner_lower):
-                role_found = True
-                break
-        check(role_found, f"Role {role_num} ({role_name}) has at least one owned schema",
-              severity="warn" if not role_found else "fail")
+        if missing:
+            check(False,
+                  f"Role {role_num}: {role_name} — expected schemas {missing} are MISSING (hard failure)")
+        else:
+            check(has_role_mention or len(expected) == 0,
+                  f"Role {role_num}: {role_name} referenced in schema owners")
+
+        if extra:
+            print(f"      ℹ️  Extra schemas for {role_name}: {extra}")
+
+    check(roles_with_schemas >= 14,
+          f"All 14 roles have at least one owned schema (found: {roles_with_schemas})")
 
 
 def validate_service_schema_io(registry: dict, service_content: str):
     print("\n=== 6. S1-S12 Service I/O Map (against M3 Service Contracts) ===")
+
+    # Parse actual M3 service contracts
+    parsed_services = parse_service_contracts(service_content)
+
+    # Verify each service contract has required fields
+    svc_ids_found = set()
+    for svc_id, svc_info in parsed_services.items():
+        svc_ids_found.add(svc_id)
+        has_inputs = bool(svc_info["inputs"].strip())
+        has_outputs = bool(svc_info["outputs"].strip())
+        has_failure = bool(svc_info["failure_behavior"].strip())
+        has_pit = bool(svc_info["pit_behavior"].strip())
+        has_forbidden = bool(svc_info["forbidden_inference"].strip())
+        svc_name = svc_info.get("service_name", svc_id)
+        check(has_inputs, f"Service {svc_id} ({svc_name}): inputs field exists", severity="fail")
+        check(has_outputs, f"Service {svc_id} ({svc_name}): outputs field exists", severity="fail")
+        check(has_failure, f"Service {svc_id} ({svc_name}): failure_behavior exists", severity="fail")
+        check(has_pit, f"Service {svc_id} ({svc_name}): PIT_behavior exists", severity="fail")
+        check(has_forbidden, f"Service {svc_id} ({svc_name}): forbidden_inference exists", severity="fail")
+
+    check(len(svc_ids_found) == 12,
+          f"All 12 services parsed (found: {len(svc_ids_found)})")
     # Check each service-owned schema exists
     for sid, expected_ids in EXPECTED_SERVICE_OUTPUTS.items():
         for esid in expected_ids:
@@ -722,13 +844,25 @@ def main():
     registry = parse_schema_registry(schema_content)
     print(f"  Parsed {len(registry)} schemas")
 
+    # ── Compute raw FK reference count ─────────────────────────────────────
+    raw_fk_count = count_raw_fk_references(schema_content)
+    print(f"  Raw FK references: {raw_fk_count}")
+
+    # ── Parse M3 role contracts ────────────────────────────────────────────
+    m3_roles_content = m3_roles_path.read_text()
+    parsed_roles = parse_role_outputs(m3_roles_content)
+    print(f"  Parsed {len(parsed_roles)} role contracts")
+
+    # ── Parse M3 service contracts ─────────────────────────────────────────
+    m3_services_content = m3_services_path.read_text()
+
     # ── Run validations ────────────────────────────────────────────────────
     validate_schema_count(registry)
     validate_unique_ids_and_fields(registry)
-    validate_foreign_keys(registry)
+    validate_foreign_keys(registry, raw_fk_count=raw_fk_count)
     validate_traceability_ids(registry, traceability_content)
-    validate_role_output_mapping(registry)
-    validate_service_schema_io(registry, m3_services_path.read_text())
+    validate_role_output_mapping(registry, m3_roles_content=m3_roles_content)
+    validate_service_schema_io(registry, m3_services_content)
     validate_forbidden_content(registry, schema_content)
     validate_signal_failure_semantics(schema_content)
     validate_pit_modes(schema_content)

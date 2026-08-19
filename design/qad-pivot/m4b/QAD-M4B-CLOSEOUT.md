@@ -101,8 +101,9 @@ permanent loss, valuation asymmetry, final underwriting, and final Red Team adju
 | REPLAY_EXCEPTION with explicit provenance → ALLOWED | ✅ PASS |
 | Sealed fixture/source hash mutation → INVALIDATE SEAL | ✅ PASS |
 | Unauthorized actor in REPLAY_EXCEPTION → BLOCK | ✅ PASS |
+| Spoofed provenance with 'Founder' text but actor != FOUNDER → BLOCK | ✅ PASS |
 
-**Total: 8/8 passed, exit code 0**
+**Total: 9/9 passed, exit code 0**
 
 ---
 

@@ -207,7 +207,7 @@ def run_all_tests():
         print(f"  ❌ FAIL  TEST 8: got {result} (expected BLOCKED)")
         all_pass = False
 
-    # --- TEST 9: Research Director actor + provenance containing 'Founder' word → BLOCK ---
+    # --- TEST 9: Spoofed provenance with 'Founder' text but actor != FOUNDER → BLOCK ---
     spoofed_replay = ReplayException("Founder-says-go", "RESEARCH_DIRECTOR")
     result = lock_replay.check(evidence=post_evidence, as_of_date=AS_OF,
                                replay_exception=spoofed_replay,

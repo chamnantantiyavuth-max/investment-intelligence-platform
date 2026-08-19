@@ -73,16 +73,26 @@ EVAL_DIMENSIONS = [
 ]
 
 # Required seal-contract mandatory fields per Evaluation Contract §3.4
+# Exact concepts required — not generic tokens
 SEAL_CONTRACT_FIELDS = [
     "fixture_id",
     "fixture_version",
-    "as_of_date",
-    "source",
-    "hash",
-    "publication",
-    "corpus",
-    "adjudicator",
-    "seal",
+    "AS_OF_DATE",
+    "immutable source IDs",
+    "source content hashes",
+    "source publication dates",
+    "allowed pre-AS_OF corpus manifest",
+    "forbidden post-AS_OF leak sentinels",
+    "expected quality/impairment/verdict labels",
+    "label rationale",
+    "material alternative interpretation",
+    "ambiguity notes",
+    "adjudicator identity",
+    "adjudication method",
+    "adjudication timestamp",
+    "corpus_hash",
+    "label_hash",
+    "seal_hash",
 ]
 
 # Exact lifecycle sequence per Evaluation Contract §3.3
@@ -124,12 +134,19 @@ def validate_evaluation_contract():
          "Provisional threshold policy defined")
 
     # Check 1: Evaluation contract status is post-M4A-freeze
-    # Must NOT contain "AWAITING M4A FREEZE GATE" (stale pre-freeze state)
-    has_stale = "AWAITING M4A FREEZE GATE" in content
-    # Must contain a final-phase marker (CLOSEOUT READY / FINAL / FROZEN)
-    has_final = any(marker in content for marker in ["CLOSEOUT READY", "FINAL", "FROZEN"])
-    check(has_final and not has_stale,
-          "Evaluation contract has final status and no stale 'AWAITING M4A FREEZE GATE'")
+    # Parse the explicit first Status header — do not search for FINAL anywhere
+    status_match = re.search(r"^>\s+\*\*Status:\*\*\s+(.+)$", content, re.MULTILINE)
+    if status_match:
+        status_text = status_match.group(1).strip()
+        expected = "M4B CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE"
+        check(status_text == expected,
+              f"Evaluation contract status: '{status_text}' == '{expected}'")
+    else:
+        # Fallback: check for post-freeze markers
+        has_stale = "AWAITING M4A FREEZE GATE" in content
+        has_final = any(marker in content for marker in ["CLOSEOUT READY", "FINAL", "FROZEN"])
+        check(has_final and not has_stale,
+              "Evaluation contract has final status and no stale 'AWAITING M4A FREEZE GATE'")
 
     # Check 2: Lifecycle exact sequence exists
     lifecycle_present = all(phase in content for phase in LIFECYCLE_SEQUENCE)
@@ -217,8 +234,8 @@ def validate_acceptance_matrix():
     check(rows_without_type == 0,
           f"All {rows_with_type} metric rows have explicit type marker "
           f"({rows_without_type} ambiguous)")
-    check(rows_with_type >= 44,
-          f"Expected at least 44 metric rows, found {rows_with_type}")
+    check(rows_with_type == 44,
+          f"Expected exactly 44 metric rows, found {rows_with_type}")
 
     # Check 8: All material thresholds are PROVISIONAL_M4B_THRESHOLD
     # Look for any numeric threshold values that aren't PROVISIONAL
@@ -230,6 +247,11 @@ def validate_acceptance_matrix():
           f"No hidden numeric thresholds found "
           f"({len(numeric_suspects)} numeric % patterns detected: "
           f"{numeric_suspects})")
+
+    # Check 9: For every material metric, Pass Threshold must be PROVISIONAL_M4B_THRESHOLD
+    provis_refs = content.count("PROVISIONAL_M4B_THRESHOLD")
+    check(provis_refs >= 44,
+          f"PROVISIONAL_M4B_THRESHOLD appears {provis_refs} times (expected >= 44)")
 
 
 def validate_no_production_code():
@@ -281,19 +303,30 @@ def validate_pit_proof():
     check(exit_code_ok,
           f"PIT proof subprocess exit code == {result.returncode} (expected 0)")
 
-    # Count passed tests in output
+    # Count passed tests in output — require EXACTLY 9
     pass_matches = re.findall(r"\u2705 PASS\s+TEST\s+(\d+)", result.stdout)
     total_tests = len(pass_matches)
-    check(total_tests >= 8,
-          f"PIT proof has {total_tests} passing tests (expected 8+)")
+    check(total_tests == 9,
+          f"PIT proof has exactly {total_tests} passing tests (expected 9)")
 
-    # Verify all 8 tests by name
+    # Verify all 9 tests by name
     test_names = [
         "TEST 1", "TEST 2", "TEST 3", "TEST 4",
         "TEST 5", "TEST 6", "TEST 7", "TEST 8",
+        "TEST 9",
     ]
     for tn in test_names:
         check(tn in result.stdout, f"{tn} present in PIT proof output")
+
+    # Verify results summary line
+    summary_match = re.search(r"RESULTS:\s+(\d+)/(\d+)\s+passed", result.stdout)
+    if summary_match:
+        passed = int(summary_match.group(1))
+        total = int(summary_match.group(2))
+        check(passed == 9 and total == 9,
+              f"PIT summary: {passed}/{total} passed (expected 9/9)")
+    else:
+        check(False, "PIT results summary line found")
 
     # Log any errors
     if not exit_code_ok:
@@ -309,6 +342,13 @@ def validate_independent_review():
     if path.exists():
         content = path.read_text()
         check("FINAL" in content, "Review file is marked FINAL")
+    # Post-review proof sync
+    sync_path = M4B_DIR / "QAD-M4B-POST-REVIEW-PROOF-SYNC.md"
+    check(sync_path.exists(), "Post-review proof sync file exists")
+    if sync_path.exists():
+        sync_content = sync_path.read_text()
+        check("MECHANICAL POST-REVIEW VERIFICATION" in sync_content,
+              "Post-review sync is marked as mechanical verification, not independent review")
 
 
 def main():

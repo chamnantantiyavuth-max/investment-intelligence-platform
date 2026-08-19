@@ -664,7 +664,8 @@ PIT modes (LIVE_CASE_UPDATE, SEALED_HISTORICAL_EVALUATION, REPLAY_EXCEPTION) are
 | M3-08 Financial Reconstruction | FF-01, NFF-01, CALC-01, SCEN-01, PLA-01, RDCF-01, VA-01, PIE-01 |
 | M3-09 Challenge/Audit/Underwriting | PUB-01, FDR-01, RTC-01, AG-01, AF-01, UV-01, CRESP-01 |
 | M3-10 Monitoring/Knowledge | MI-01, MO-01, MASS-01, CL-01, IKR-01, IPR-01, CCV-01 |
-| M3-ROLES Production Roles (Role 7) | SI-01, IR-01 |
+| M3-ROLES Production Roles (Role 14) | IR-01 |
+| M3-SERVICES / S6 Run Manifest | SI-01 |
 | M3-SERVICES System Services | PITC-01, RR-01, CLK-01, EHR-01 |
 
 ---
