@@ -47,18 +47,20 @@ Comparison: QAD Discovery without Radar vs QAD Discovery + Radar.
 
 ## PIT Fixture Summary
 
-| # | Fixture Type | Coverage |
-|---|-------------|----------|
-| 1 | True Temporary Impairment | Recovery confirms temporary diagnosis |
-| 2 | True Structural Deterioration | Permanent damage confirmed |
-| 3 | Mixed Impairment | Both temporary and structural elements |
-| 4 | False Quality | Apparent quality was illusion |
-| 5 | Balance-Sheet Trap | High quality but leverage creates risk |
-| 6 | Industry / Cycle Shock | Industry-wide dislocation |
-| 7 | Company-Specific Shock | Company-specific event |
-| 8 | Unresolved / Ambiguous Case | Genuinely ambiguous |
-| 9 | Valuation Failure | Price damage >> economic damage |
-| 10 | Narrative Panic | Market overreaction |
+| # | Fixture Type | Status | Sealed? |
+|---|-------------|--------|---------|
+| 1 | True Temporary Impairment | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 2 | True Structural Deterioration | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 3 | Mixed Impairment | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 4 | False Quality | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 5 | Balance-Sheet Trap | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 6 | Industry / Cycle Shock | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 7 | Company-Specific Shock | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 8 | Unresolved / Ambiguous Case | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 9 | Valuation Failure | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+| 10 | Narrative Panic | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
+
+**Draft fixture candidates: 10 | Sealed fixtures: 0** (sealing requires independent adjudication + source pack assembly + seal contract completion)
 
 ---
 
