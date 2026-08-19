@@ -1,7 +1,7 @@
 # QAD Evidence, Source & Canonical Truth Model
 
 > **Contract:** M3-04 (M3 Domain Contract Set)
-> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
+> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION
 > **Authority:** FD #130; EVIDENCE-DOCTRINE.md; Constitution §21 (Record-Keeping); Frozen Architecture (Provenance/Evidence layers); CIW Source Lineage (CAP-009 ABSORB)
 > **Traceability:** EVIDENCE-DOCTRINE (Required Separations, Source Independence, Evidence Progression, Aging, Point-in-Time, Contradictions) · CAP-009 (CIW source lineage) · CAP-017 (REUSE) · CONSTITUTION-§21 · DISCOVERY-REQ-B7 (Data Architecture) · FD #58 (Point-in-Time Rule) · FD #94 (Publication Firewall) · NEW_M3_DERIVATION (L1-L10 hierarchy, canonical layers, knowledge states)
 

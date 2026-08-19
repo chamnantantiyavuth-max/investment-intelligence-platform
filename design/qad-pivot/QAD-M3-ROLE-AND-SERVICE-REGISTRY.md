@@ -1,6 +1,6 @@
 # QAD Logical Organization — Role & Service Registry
 
-> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
+> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION
 > **Authority:** FD #130; Frozen Architecture (Separation of Duties); Constitution §2 (QAD Capabilities)
 > **Traceability:** M3-01 §6 (Separation of Duties) · M3-02 (Discovery & Selection) · M3-03 (Research Protocol) · M3-04 (Evidence) · M3-05 (Scuttlebutt) · M3-06 (Business/Industry/Management) · M3-07 (Impairment/Recovery) · M3-08 (Economic Underwriting) · M3-09 (Challenge/Audit/Publication) · FD #130 · NEW_M3_DERIVATION (classification, compatibility matrices)
 

@@ -1,7 +1,7 @@
 # QAD Full Research Protocol
 
 > **Contract:** M3-03 (M3 Domain Contract Set)
-> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
+> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION
 > **Authority:** FD #130; Constitution §14 (Candidate-First); CIW Protocol (CAP-009 — ABSORB with lineage); FD #95 (WP3 Deep Research Contract); FD #87 (RM-2026-0004 protocol)
 > **Traceability:** CAP-009 (ABSORB) · CIW §3 (Actor/Artifact Map) · CIW §5 (Quality Gates) · CIW Result Contract · FD #87 · FD #95 · EVIDENCE-DOCTRINE · CONSTITUTION-§16 · NEW_M3_DERIVATION (H1–H5 mandate, stage decomposition)
 > **Inherits:** CIW protocol as lineage base; this contract evolves and supersedes the CIW protocol for QAD research.

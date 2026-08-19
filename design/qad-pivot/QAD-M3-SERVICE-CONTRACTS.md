@@ -1,6 +1,6 @@
 # QAD-M3 Service Contracts
 
-> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
+> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION
 > **Authority:** FD #130; Frozen Architecture; M3-01 (QAD Operating Model §7 Reliability)
 > **Traceability:** M3-01 §7 (Reliability Contract) · M3-ROLES §5 (Service Registry) · FD #130 · NEW_M3_DERIVATION (service contract format, failure semantics, PIT modes)
 
