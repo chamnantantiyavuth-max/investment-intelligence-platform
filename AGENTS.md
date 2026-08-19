@@ -179,14 +179,14 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0). **🔴 SUPERSEDED — QAD is the canonical future identity (Constitution v0.6, FD #130). Legacy AM/CS/FO/II are not co-equal investment paths.**
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1–130 (FD #130 = item 130, 17 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
+- Founder Decisions #1–131 (FD #131 = item 131, 19 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
 
 ## Current QAD Governance
 
 - **QAD Architecture Design Gate = APPROVED** (FD #130, 16 Aug 2026; 19 frozen architecture decisions; 22 artifacts in `design/qad-pivot/`).
 - **M1 = FINAL PASS** (17 Aug 2026; independent governance review PASS WITH FINDINGS → 8 findings resolved).
 - **M2 = FINAL PASS** (18 Aug 2026; deterministic integrity validation PASS — 25/25 records, single disposition per capability, runtime audit corrected, FROZEN-with-runtime derived mechanically)
-- **M3 = AWAITING FOUNDER AUTHORIZATION**
+- **M3 = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE**
 - **M5 Implementation Gate = ⏳ PENDING** — no production code until the 10-row evidence package passes Founder review.
 - Legacy AM/CS/FO/II authorities are **not co-equal investment paths** — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
 - **Theme Intelligence is supporting context/discovery, not a mandatory research gateway.** Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership.

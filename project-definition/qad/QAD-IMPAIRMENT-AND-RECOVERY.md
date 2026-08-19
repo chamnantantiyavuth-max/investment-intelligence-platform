@@ -1,7 +1,7 @@
 # QAD Dislocation, Impairment & Recovery Contract
 
 > **Contract:** M3-07 (M3 Domain Contract Set)
-> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
+> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
 > **Authority:** FD #130; Constitution §1 (Central Question — temporary vs permanent); Constitution §3 (QAD Development Direction); FD #43 (Marx-inspired Profit Rate Trend, Narrative vs Reality Gap — Option B); CAP-002 (ADAPT: Equity Inflection as Dislocation input)
 > **Traceability:** CONSTITUTION-§1 (temporary vs permanent) · FD #43 · FD #130 · CAP-002 (ADAPT — Equity Inflection) · CAP-009 (CIW ABSORB — impairment/dislocation concepts) · NEW_M3_DERIVATION (impairment states, recovery model structure, dislocation reconstruction method)
 

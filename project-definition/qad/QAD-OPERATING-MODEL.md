@@ -1,7 +1,7 @@
 # QAD Operating Model
 
 > **Contract:** M3-01 (M3 Domain Contract Set)
-> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
+> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
 > **Authority:** Constitution §1/§2/§3 (QAD mission); Constitution §14 (Candidate-First); FD #130; Frozen Architecture Decisions (ARCHITECTURE-DESIGN-GATE-FINAL.md); FD #131
 > **Traceability:** CONSTITUTION-§1/§2/§3 · FD #130 · FROZEN-ARC-DEC-001..019 · NEW_M3_DERIVATION (operational flow specification)
 

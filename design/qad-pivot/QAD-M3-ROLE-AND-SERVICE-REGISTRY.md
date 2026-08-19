@@ -1,6 +1,6 @@
 # QAD Logical Organization — Role & Service Registry
 
-> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
+> **Status:** M3 REVIEWED — AWAITING FOUNDER CLOSEOUT
 > **Authority:** FD #130; Frozen Architecture (Separation of Duties); Constitution §2 (QAD Capabilities)
 > **Traceability:** M3-01 §6 (Separation of Duties) · M3-02 (Discovery & Selection) · M3-03 (Research Protocol) · M3-04 (Evidence) · M3-05 (Scuttlebutt) · M3-06 (Business/Industry/Management) · M3-07 (Impairment/Recovery) · M3-08 (Economic Underwriting) · M3-09 (Challenge/Audit/Publication) · FD #130 · NEW_M3_DERIVATION (classification, compatibility matrices)
 
@@ -123,10 +123,11 @@ Selection Engine (policy-governed service)
 | S5 | **Raw Source Archive** | I | Source documents (SEC filings, PDFs, web pages) | Immutable source file with content hash, timestamp, source_id | Append-only store | Source unreachable = skip, document gap |
 | S6 | **Run Manifest Service** | I | Research run metadata | Run manifest record (research_run_id, model, cost, PIT, etc.) | Append-only | Run start record created even if run fails (partial manifest) |
 | S7 | **Point-in-Time Lock** | D | Case AS_OF_DATE, evidence timestamps, source timestamps | PIT-validated evidence context for each case | Query-time evaluation | LIVE: flagged/UPDATE tag; **SEALED: HARD BLOCKED**; REPLAY: provenance-recorded exception |
-| S8 | **Case Locking / Idempotency** | D | Case ID, version, request type | Lock/unlock state; deduplication by key | Stateful (case locks) | Duplicate case Open request → return existing case, no second write |
-| S9 | **NotebookLM / Deep Research Interface** | I | Research question, source corpus, prior evidence | Synthesis output, source pointers (NON-CANONICAL) | Stateless | Research failure = documented, not silent blank |
-| S10 | **Publication Renderer** | D | Research verdict, evidence synthesis, Thai editorial template | Rendered publication draft (markdown) | Stateless | Template error = plain output, not failed publication |
-| S11 | **Evaluation Harness** | I | Sealed outcome corpus, PIT snapshots, evaluation policy | Evaluation metrics (Type A + Type B) | Stateless (evaluation run) | Partial evaluation = **EVALUATION_INCOMPLETE** (not partial results; cannot satisfy evaluation gate) |
+| S8 | **Retry / Research Execution Controller** | I | Research stage execution request, retry policy, budget state | Stage execution, retry scheduling, failure disposition | Per-case state | Stage FAILED → max 3 retries; after 3 → stage marked FAILED; case continues with documented failure |
+| S9 | **Case Locking / Idempotency** | D | Case ID, version, request type | Lock/unlock state; deduplication by key | Stateful (case locks) | Duplicate case Open request → return existing case, no second write |
+| S10 | **NotebookLM / Deep Research Interface** | I | Research question, source corpus, prior evidence | Synthesis output, source pointers (NON-CANONICAL) | Stateless | Research failure = documented, not silent blank |
+| S11 | **Publication Renderer** | D | Research verdict, evidence synthesis, Thai editorial template | Rendered publication draft (markdown) | Stateless | Template error = plain output, not failed publication |
+| S12 | **Evaluation Harness** | I | Sealed outcome corpus, PIT snapshots, evaluation policy | Evaluation metrics (Type A + Type B) | Stateless (evaluation run) | Partial evaluation = **EVALUATION_INCOMPLETE** (not partial results; cannot satisfy evaluation gate) |
 
 ---
 
