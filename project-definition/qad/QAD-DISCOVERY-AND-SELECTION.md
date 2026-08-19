@@ -1,7 +1,7 @@
 # QAD Discovery & Autonomous Selection Contract
 
 > **Contract:** M3-02 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; QAD-DISCOVERY-AND-COVERAGE-OPERATING-REQUIREMENT.md v0.1 (FROZEN); Constitution §14 (Candidate-First); ARCHITECTURE-DESIGN-GATE-FINAL.md
 > **Traceability:** DISCOVERY-REQ-B1..B7 · DISCOVERY-REQ-C1..C7 · DISCOVERY-REQ-D · DISCOVERY-REQ-E · FD #130 · CAP-001 (REUSE) · CAP-002 (ADAPT) · CAP-003 (ADAPT) · CAP-011 (TRANSITIONAL_RETAIN) · CIW §5 · CONSTITUTION-§14 · NEW_M3_DERIVATION (selection state machine, policy service)
 > **Supersedes:** Legacy Discovery & Coverage Operating Requirement (v0.1 absorbed as foundation)

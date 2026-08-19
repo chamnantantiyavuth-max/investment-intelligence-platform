@@ -1,7 +1,7 @@
 # QAD-M3 Workforce Migration Map
 
 > **Contract ID:** M3-MIGRATION
-> **Status:** M3 DRAFT (INTERNAL_REVIEW)
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW) (INTERNAL_REVIEW)
 > **M3 Phase:** M3.13
 > **Canonical since:** 2026-08-19
 > **Traceability:** Frozen Architecture (Workforce Migration Map specification) · M2 CAP-018 (Hermes Workforce — ACTIVE / TRANSITIONAL_RETAIN — migration deferred)

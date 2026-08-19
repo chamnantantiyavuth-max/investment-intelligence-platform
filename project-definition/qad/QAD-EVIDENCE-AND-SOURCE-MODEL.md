@@ -1,7 +1,7 @@
 # QAD Evidence, Source & Canonical Truth Model
 
 > **Contract:** M3-04 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; EVIDENCE-DOCTRINE.md; Constitution §21 (Record-Keeping); Frozen Architecture (Provenance/Evidence layers); CIW Source Lineage (CAP-009 ABSORB)
 > **Traceability:** EVIDENCE-DOCTRINE (Required Separations, Source Independence, Evidence Progression, Aging, Point-in-Time, Contradictions) · CAP-009 (CIW source lineage) · CAP-017 (REUSE) · CONSTITUTION-§21 · DISCOVERY-REQ-B7 (Data Architecture) · FD #58 (Point-in-Time Rule) · FD #94 (Publication Firewall) · NEW_M3_DERIVATION (L1-L10 hierarchy, canonical layers, knowledge states)
 
@@ -9,20 +9,20 @@
 
 ## 1. Source Hierarchy (L1–L10)
 
-All evidence in the QAD system is classified by source type. L1–L9 may independently support material conclusions. L10 cannot.
+All evidence in the QAD system is classified by source type. **L1–L9 are admissible source classes. Material evidentiary sufficiency is claim-specific and depends on relevance, directness, source independence, sampling quality, contradiction status, and corroboration. L10 is lead-only and can never be sole support for a material conclusion.**
 
-| Level | Category | Examples | Weight |
-|-------|----------|---------|--------|
-| **L1** | Corporate Primary | 10-K, 10-Q, 8-K, proxy, earnings transcript, investor day, SEC filings, corporate website (official financial data) | Highest |
-| **L2** | Ecosystem Primary | Customer contracts, supplier agreements, competitor cross-references, partnership disclosures | High |
-| **L3** | Regulatory / Government | SEC filings by others, antitrust, FDA, EPA, CFTC, Fed, BLS, Census, EIA, international equivalents | High |
-| **L4** | Industry / Trade | Industry associations, trade publications, independent industry research (LBMA, IEA, EIA, SIA, etc.) | Medium-High |
-| **L5** | Customer Reality | Customer reviews, user data, app store rankings, channel checks, customer surveys (lawful, non-MNPI) | Medium |
-| **L6** | Labor / Organization | Employee reviews (Glassdoor), LinkedIn data, organizational structure, hiring trends, union disclosures | Medium |
-| **L7** | Digital Observable | Patent filings, scientific publications, clinical trials, satellite imagery, web traffic, pricing data | Medium |
-| **L8** | Physical / Channel | Store visits, product inspections, channel checks, distribution observations, trade show intelligence | Medium |
-| **L9** | Expert / Interview | Industry expert interviews, former employee interviews (must be lawful, non-confidential, non-MNPI) | Medium (context-dependent) |
-| **L10** | Lead-Only / Social | Social media, forums (Reddit, X/Twitter, StockTwits), anonymous blogs, unverified rumors, chat boards | **Cannot independently support a material conclusion** |
+| Level | Category | Examples | Typical Evidentiary Role |
+|-------|----------|---------|--------------------------|
+| **L1** | Corporate Primary | 10-K, 10-Q, 8-K, proxy, earnings transcript, investor day, SEC filings, corporate website (official financial data) | Foundational for financial analysis |
+| **L2** | Ecosystem Primary | Customer contracts, supplier agreements, competitor cross-references, partnership disclosures | High-value corroboration |
+| **L3** | Regulatory / Government | SEC filings by others, antitrust, FDA, EPA, CFTC, Fed, BLS, Census, EIA, international equivalents | Authoritative third-party data |
+| **L4** | Industry / Trade | Industry associations, trade publications, independent industry research (LBMA, IEA, EIA, SIA, etc.) | Context and industry baseline |
+| **L5** | Customer Reality | Customer reviews, user data, app store rankings, channel checks, customer surveys (lawful, non-MNPI) | Ground-truth signal; requires aggregation |
+| **L6** | Labor / Organization | Employee reviews (Glassdoor), LinkedIn data, organizational structure, hiring trends, union disclosures | Organizational health signal |
+| **L7** | Digital Observable | Patent filings, scientific publications, clinical trials, satellite imagery, web traffic, pricing data | Quantitative/verifiable signal |
+| **L8** | Physical / Channel | Store visits, product inspections, channel checks, distribution observations, trade show intelligence | Direct observation |
+| **L9** | Expert / Interview | Industry expert interviews, former employee interviews (must be lawful, non-confidential, non-MNPI) | Contextual insight; requires independence verification |
+| **L10** | Lead-Only / Social | Social media, forums (Reddit, X/Twitter, StockTwits), anonymous blogs, unverified rumors, chat boards | **Lead-only. Cannot independently support a material conclusion.** |
 
 ### Source Weighting Rules
 

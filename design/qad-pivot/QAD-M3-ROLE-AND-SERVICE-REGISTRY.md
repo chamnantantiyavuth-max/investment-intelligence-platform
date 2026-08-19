@@ -1,6 +1,6 @@
 # QAD Logical Organization — Role & Service Registry
 
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; Frozen Architecture (Separation of Duties); Constitution §2 (QAD Capabilities)
 > **Traceability:** M3-01 §6 (Separation of Duties) · M3-02 (Discovery & Selection) · M3-03 (Research Protocol) · M3-04 (Evidence) · M3-05 (Scuttlebutt) · M3-06 (Business/Industry/Management) · M3-07 (Impairment/Recovery) · M3-08 (Economic Underwriting) · M3-09 (Challenge/Audit/Publication) · FD #130 · NEW_M3_DERIVATION (classification, compatibility matrices)
 
@@ -76,7 +76,7 @@ Selection Engine (policy-governed service)
 
 | # | Role | Classification | Mission | Inputs | Outputs | Cannot Combine With |
 |----|------|---------------|---------|--------|---------|--------------------|
-| 1 | **Research Director / Case Orchestrator** | J | Orchestrate full research on an approved case. Assign stages, manage evidence gaps, produce Research Charter, ensure quality gates are met. **Research Charter must be co-approved by Evidence Intelligence Lead or Chief Underwriter.** | Candidate from Selection Engine, Evidence Gap Map | Research Charter, case orchestration decisions, stage transitions | Independent Auditor, Structural Red Team, Selection Engine |
+| 1 | **Research Director / Case Orchestrator** | J | Orchestrate full research on an approved case. Assign stages, manage evidence gaps, produce Research Charter, ensure quality gates are met. **Research Charter is validated by Evidence Intelligence Lead (evidence/protocol completeness) and budget-approved by Research Budget Controller. Chief Underwriter does NOT approve Charter.** | Candidate from Selection Engine, Evidence Gap Map | Research Charter, case orchestration decisions, stage transitions | Independent Auditor, Structural Red Team, Selection Engine |
 | 2 | **Evidence Intelligence Lead** | J | Manage source gathering, evidence validation, canonical admission, and evidence graph maintenance for a case. Ensure source/PIT/provenance discipline. | Raw sources, Research Charter, Evidence Gap Map | Canonical Evidence Registry entries, evidence quality assessments | Independent Auditor |
 | 3 | **Core Desk Researcher** | J | Perform deep desk research: read filings, synthesize cross-source evidence, produce analytical notes, identify contradictions. | Primary source foundation, Research Charter | Desk research notes, source extracts, FACT/CLAIM/INFERENCE candidates | Structural Red Team |
 | 4 | **Business & Industry Analyst** | J | Analyze business quality, moat, customer economics, and industry structure. Produce quality assessment. | Canonical Evidence Registry, industry data | Quality Assessment (VERIFIED/PROBABLE/UNRESOLVED/FAILED), Industry Economics Analysis | Structural Red Team, Chief Underwriter |
@@ -116,17 +116,17 @@ Selection Engine (policy-governed service)
 
 | # | Service | Classification | Inputs | Outputs | State | Failure Behavior |
 |---|---------|---------------|--------|---------|-------|-----------------|
-| S1 | **Autonomous Selection Engine** | P | CANDIDATE_REGISTRY entries, selection policy rules | Selection state (AUTO_RESEARCH_NOW/WATCH_PRICE/etc) | Stateless (per-candidate evaluation) | Failed candidate = SKIP, not AUTO_RESEARCH_NOW |
+| S1 | **Autonomous Selection Engine** | P | CANDIDATE_REGISTRY entries, selection policy rules | Selection state (AUTO_RESEARCH_NOW/WATCH_PRICE/etc) | Stateless (per-candidate evaluation) | **SELECTION_ERROR** on system failure (never SKIP) |
 | S2 | **Research Budget Controller** | P | Research Budget policy, case budget request | Budget approval or denial; budget exhaustion → INCOMPLETE | Per-case state | Budget exhausted = INCOMPLETE, not weakened gate |
 | S3 | **Security / Entity Resolution** | D | Raw entity identifiers (ticker, CIK, name, exchange) | Resolved entity identity, SECURITY_MASTER update | Persistent (entity registry) | Unresolvable entity = documented exclusion, not silent omission |
 | S4 | **Canonical Evidence Registry** | I | Evidence objects (FACT/CLAIM/INFERENCE/HYPOTHESIS) with provenance | Validated, curated evidence records | Persistent append-only | Write failure = evidence quarantined; retry on next tick |
 | S5 | **Raw Source Archive** | I | Source documents (SEC filings, PDFs, web pages) | Immutable source file with content hash, timestamp, source_id | Append-only store | Source unreachable = skip, document gap |
 | S6 | **Run Manifest Service** | I | Research run metadata | Run manifest record (research_run_id, model, cost, PIT, etc.) | Append-only | Run start record created even if run fails (partial manifest) |
-| S7 | **Point-in-Time Lock** | D | Case AS_OF_DATE, evidence timestamps, source timestamps | PIT-validated evidence context for each case | Query-time evaluation | Post-AS_OF_DATE evidence flagged but not blocked (tagged as UPDATE/REPLAY) |
+| S7 | **Point-in-Time Lock** | D | Case AS_OF_DATE, evidence timestamps, source timestamps | PIT-validated evidence context for each case | Query-time evaluation | LIVE: flagged/UPDATE tag; **SEALED: HARD BLOCKED**; REPLAY: provenance-recorded exception |
 | S8 | **Case Locking / Idempotency** | D | Case ID, version, request type | Lock/unlock state; deduplication by key | Stateful (case locks) | Duplicate case Open request → return existing case, no second write |
 | S9 | **NotebookLM / Deep Research Interface** | I | Research question, source corpus, prior evidence | Synthesis output, source pointers (NON-CANONICAL) | Stateless | Research failure = documented, not silent blank |
 | S10 | **Publication Renderer** | D | Research verdict, evidence synthesis, Thai editorial template | Rendered publication draft (markdown) | Stateless | Template error = plain output, not failed publication |
-| S11 | **Evaluation Harness** | I | Sealed outcome corpus, PIT snapshots, evaluation policy | Evaluation metrics (Type A + Type B) | Stateless (evaluation run) | Partial evaluation = available metrics only; no imputation |
+| S11 | **Evaluation Harness** | I | Sealed outcome corpus, PIT snapshots, evaluation policy | Evaluation metrics (Type A + Type B) | Stateless (evaluation run) | Partial evaluation = **EVALUATION_INCOMPLETE** (not partial results; cannot satisfy evaluation gate) |
 
 ---
 
@@ -163,19 +163,31 @@ Each logical role may be implemented by a different runtime entity (Hermes profi
 
 The architecture permits one runtime profile to implement multiple compatible low-conflict functions where justified, and prohibits combination where separation of duties matters.
 
-| Minimum Logical Unit | Roles | Conflict Check |
-|---------------------|-------|----------------|
-| Research Lead | Roles 1 + 3 | ✅ Compatible |
-| Evidence Lead | Role 2 + S4/S5 ops | ✅ Compatible |
-| Business-Finance Analyst | Roles 4 + 5 | ✅ Compatible |
-| Impairment-Valuation Analyst | Roles 6 + 7 | ✅ Compatible |
-| Chief Underwriter | Role 8 | **Standalone** |
-| Red Team | Role 9 | **Must be separate from research chain** |
-| Auditor | Role 10 | **Must be separate from research chain** |
-| Thai Editor | Role 11 + S10 ops | ✅ Compatible |
-| Knowledge Steward | Role 12 + monitoring | ✅ Compatible |
-| Discovery Scout | Role 13 + discovery ops | ✅ Compatible |
+### Independence Domains (Minimum)
 
-**Separation-of-Duty Compliance:** Red Team (Role 9) and Auditor (Role 10) must be independent of each other AND independent of the research chain (Roles 1-7 + Role 8). At minimum, 3 fully independent runtime entities: (a) Research Lead + Evidence + Analysts + Underwriting, (b) Red Team, (c) Auditor.
+| Domain | Roles | Authority Boundary |
+|--------|-------|-------------------|
+| **A — Research / Evidence / Compatible Analysts** | Roles 1, 2, 3, 4, 5, 6, 7, 12, 13, 14 | May be combined within A subject to individual separation rules |
+| **B — Chief Underwriter** | Role 8 only | **Must be independent of Domain A** |
+| **C — Structural Red Team** | Role 9 only | **Must be independent of A and B** |
+| **D — Independent Auditor** | Role 10 only | **Must be independent of A, B, and C** |
+| **E — Thai Editor** | Role 11 only | **Must be independent of thesis creation (Roles 1, 8)** |
+
+Selection Engine is a POLICY SERVICE (fully separate from all domains).
+
+**No fewer than 5 independent authority entities** (one per domain A–E). These are authority boundaries, not Hermes profile counts. A single runtime entity may implement multiple roles within Domain A where no individual separation rule is violated. But Domains A, B, C, D, and E must never be collapsed into fewer than 5 independent authority entities.
+
+### Permitted Combinations (within Domain A)
+
+| Entity | Roles | Justification |
+|--------|-------|---------------|
+| Research Desk | Research Director + Core Desk Researcher | Same entity orchestrates AND performs desk research (standard practice) |
+| Business & Finance Desk | Business/Industry Analyst + Financial/Management Analyst | Interrelated analytical domains |
+| Impairment & Valuation Desk | Impairment Specialist + Valuation Specialist | Sequential analytical chain |
+| Evidence Desk | Evidence Intelligence Lead + Evidence Registry (S4/S5) operations | Evidence gathering and management |
+| Edit Desk | Thai Editor + Publication Renderer (S10) operation | Publication chain |
+| Monitor Desk | Thesis/Knowledge Steward + Monitoring operations | Ongoing surveillance |
+| Discovery Desk | Discovery/Dislocation Scout + Discovery operations | Signal detection |
+| Independent Desk | Can implement EITHER Red Team OR Auditor (NOT both for same case) | Independence requires separation from thesis |
 
 <!-- 2026-08-19 14:00 UTC+7 -->

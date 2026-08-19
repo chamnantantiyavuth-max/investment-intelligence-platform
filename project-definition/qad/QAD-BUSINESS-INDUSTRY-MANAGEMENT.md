@@ -1,7 +1,7 @@
 # QAD Business Quality, Industry Economics & Management Contract
 
 > **Contract:** M3-06 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; FD #61 (Qualitative Moat Framework); Constitution §2 (QAD Research capabilities); CAP-009 (CIW — ABSORB: business anatomy, moat analysis); CAP-007A (FO Moat — ADAPT: methodology)
 > **Traceability:** FD #61 · FD #130 · CAP-007A (ADAPT) · CAP-009 (CIW ABSORB) · CONSTITUTION-§2 · EVIDENCE-DOCTRINE · NEW_M3_DERIVATION (quality states, management decision-history ledger, industry economics chain)
 
@@ -54,17 +54,23 @@ Understand the business model at its core:
 - Revenue per customer
 - Unit economics trends
 
-### 2.3 Moat Analysis (6-Area Qualitative Framework per FD #61)
+### 2.3 Moat Analysis (Canonical FD #61 Taxonomy)
 
-| Moat Type | Key Questions |
-|-----------|--------------|
-| **Switching Costs** | How hard/costly is it for customers to leave? Are there data, integration, workflow, or contractual moats? |
-| **Pricing Power** | Can the company raise prices without losing customers? What evidence exists? |
-| **Scale / Efficiency** | Does being larger create a structural cost advantage? Is this advantage widening or narrowing? |
-| **Network Effects** | Does each new user add value for existing users? Are there multi-sided network dynamics? |
-| **Distribution / Access** | Does the company control access to customers, shelf space, or distribution channels? |
-| **Brand / Reputation** | Does brand drive premium pricing, preference, or customer trust? Is the brand durable? |
-| **Regulatory / IP Advantage** | Does regulation, patents, or IP create a protected position? How long will it last? |
+> **Authority:** FD #61, CAP-007A (ADAPT: 6-type Moat Framework)
+> The six canonical moat types are defined per FD #61. See CAP-007A for inherited methodology.
+
+| Moat Type (Canonical) | Description | Evidence / Manifestation / Mechanism Tests |
+|------------------------|-------------|-------------------------------------------|
+| **Share of Mind** | Brand preference, customer trust, repeat purchase, pricing power driven by reputation | → pricing power (can the company raise prices?)<br>→ preference (do customers choose this brand over alternatives?)<br>→ repeat purchase (is retention high?)<br>→ trust (is the brand trusted?) |
+| **Network Effect** | Each new user adds value for existing users; multi-sided network dynamics | → user growth (does each user add value for others?)<br>→ multi-sided dynamics (are there cross-side network effects?)<br>→ competitive moat (is the network hard to replicate?) |
+| **High Switching Cost** | Integration, retraining, migration cost, contractual friction, data lock-in | → integration (is the product embedded in customer workflow?)<br>→ retraining (how costly is it to switch?)<br>→ migration cost (data, infrastructure, process)<br>→ contract friction (termination penalties, multi-year terms) |
+| **Cost Advantage** | Structural cost advantage from scale, process, technology, or location | → scale (does size create cost advantage?)<br>→ efficiency (is the cost structure superior?)<br>→ process (are there proprietary methods?)<br>→ technology (does technology drive cost advantage?) |
+| **Intangible Assets** | Patents, IP, regulatory protection, licenses, trade secrets | → patents (how strong and durable is the IP portfolio?)<br>→ regulatory protection (licenses, approvals, exclusivity)<br>→ trade secrets (are they proprietary and defensible?) |
+| **Efficient Scale** | Market is served by a few players at efficient scale; new entrants are uneconomic | → market structure (is the market naturally oligopolistic?)<br>→ entry economics (can a new entrant earn a return?)<br>→ incumbent advantages (do incumbents have structural cost/access advantages?) |
+
+**Width, Depth, Trend, Durability** remain as moat dimensions (see §2.4).
+
+**Mechanism vs Evidence distinction:** The moat TYPE is the structural source of competitive advantage. The mechanism/evidence tests are how you verify the moat exists and how strong it is. Pricing Power, Distribution/Access, and Regulatory Protection are NOT moat types — they are manifestations or evidence of the underlying moat type. For example, pricing power is evidence of Share of Mind or Switching Costs; distribution access is evidence of Efficient Scale or Cost Advantage; regulatory protection is evidence of Intangible Assets.
 
 ### 2.4 Moat Dimensions
 

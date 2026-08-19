@@ -272,3 +272,5 @@ These decisions are approved constitutional constraints.
 <!-- 2026-08-14 12:31:37 +0700 — captured via scripts/artifact_timestamp.py (system clock at write) -->
 <!-- 2026-08-14 12:17:43 +0700 — captured via scripts/artifact_timestamp.py (system clock at write) -->
 <!-- 2026-08-16 18:00 UTC+7 -->
+
+131. FD #131 — QAD-M3 DESIGN-CONTRACT EXECUTION AUTHORIZATION (19 Aug 2026): Founder authorized M3 execution per ChatGPT prompt (19 Aug 2026). M3 scope: domain contracts (9 canonical specifications), logical organization, role/service contract design, Workforce Migration Map design, traceability, independent design review, closeout. Explicitly NOT authorized: production implementation, workforce mutation, cron mutation, M4A/M4B/M5. M3 technical checkpoint = PASS (commits 5363c38 + 927aa1c). M3 final governance = PENDING CORRECTION. M4A = HOLD. M4B = HOLD. M5 = PENDING. Registered: FOUNDERS-DECISIONS item 131, fd_count 131. 19 August 2026.

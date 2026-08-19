@@ -1,8 +1,8 @@
 # QAD Operating Model
 
 > **Contract:** M3-01 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
-> **Authority:** Constitution §1/§2/§3 (QAD mission); Constitution §14 (Candidate-First); FD #130; Frozen Architecture Decisions (ARCHITECTURE-DESIGN-GATE-FINAL.md)
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
+> **Authority:** Constitution §1/§2/§3 (QAD mission); Constitution §14 (Candidate-First); FD #130; Frozen Architecture Decisions (ARCHITECTURE-DESIGN-GATE-FINAL.md); FD #131
 > **Traceability:** CONSTITUTION-§1/§2/§3 · FD #130 · FROZEN-ARC-DEC-001..019 · NEW_M3_DERIVATION (operational flow specification)
 
 ---
@@ -186,11 +186,14 @@ EVALUATION (Type A: researched incorrectly? Type B: failed to discover?)
 
 | Failure Mode | Fallback | Quality Impact |
 |--------------|----------|----------------|
-| Data source unavailable | Skip, document gap, continue | Gap flagged; no silent completeness |
-| Budget exhausted | Case marked `INCOMPLETE` | Not published as complete research |
-| Retry limit exceeded | Stage marked `FAILED` | Escalation to Research Director |
-| Auditor blocks | Case blocked at `FOUNDER_READY` | Cannot reach Founder without resolution |
-| Model call fails | Retry (3×); fallback to alternate provider | Documented in Run Manifest |
+|| Data source unavailable | Skip, document gap, continue | Gap flagged; no silent completeness. Material source unreachable may force `INCOMPLETE`. |
+|| Budget exhausted | Case marked `INCOMPLETE` | Not published as complete research. Budget exhaustion must NOT weaken quality gates. |
+|| Selection Engine failure | `SELECTION_ERROR` or `EVALUATION_UNAVAILABLE`; candidate remains pending/retryable | Technical failure must NEVER silently produce `SKIP` or `REJECT` (Type-B discovery miss). |
+|| PIT mode violation | SEALED mode hard-blocks post-AS_OF evidence; LIVE mode requires explicit UPDATE tag | No future-information leakage into M4B fixtures. |
+|| Evaluation Harness partial | `EVALUATION_INCOMPLETE` | Cannot satisfy an evaluation gate. Must not produce partial results labeled as complete. |
+|| Retry limit exceeded | Stage marked `FAILED` | Escalation to Research Director |
+|| Auditor blocks | Case blocked at `FOUNDER_READY` | Cannot reach Founder without resolution |
+|| Model call fails | Retry (3×); fallback to alternate provider | Documented in Run Manifest |
 
 ---
 

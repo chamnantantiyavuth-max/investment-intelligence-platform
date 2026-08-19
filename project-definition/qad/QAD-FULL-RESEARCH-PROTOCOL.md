@@ -1,7 +1,7 @@
 # QAD Full Research Protocol
 
 > **Contract:** M3-03 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; Constitution §14 (Candidate-First); CIW Protocol (CAP-009 — ABSORB with lineage); FD #95 (WP3 Deep Research Contract); FD #87 (RM-2026-0004 protocol)
 > **Traceability:** CAP-009 (ABSORB) · CIW §3 (Actor/Artifact Map) · CIW §5 (Quality Gates) · CIW Result Contract · FD #87 · FD #95 · EVIDENCE-DOCTRINE · CONSTITUTION-§16 · NEW_M3_DERIVATION (H1–H5 mandate, stage decomposition)
 > **Inherits:** CIW protocol as lineage base; this contract evolves and supersedes the CIW protocol for QAD research.
@@ -80,7 +80,15 @@ H5 = Problem is real but valuation is already fair/unattractive — impairment m
   - Initial Evidence Gap Map (what is known vs unknown)
 - `case_state = CHARTER_APPROVED`
 
-**Quality Gate:** Charter must contain explicit H1–H5. If any hypothesis is absent, the case cannot proceed. Research Director drafts charter; **Evidence Intelligence Lead or Chief Underwriter (independent of the research chain) must co-approve** the charter before work begins. Research Budget Controller approves budget.
+**Quality Gate:** Charter must contain explicit H1–H5. If any hypothesis is absent, the case cannot proceed.
+
+**Charter approval chain:**
+- **Research Director** drafts/owns the Research Charter
+- **Evidence Intelligence Lead** validates: H1–H5 presence, falsifiability of each hypothesis, evidence scope completeness, source plan appropriateness, material blind spots explicitly listed
+- **Research Budget Controller** authorizes budget under policy
+- **Chief Underwriter does NOT approve Charter** — preserves fresh judgment until underwriting stage
+
+Evidence Lead validation is protocol/evidence completeness, NOT thesis approval.
 
 > **M4A Note:** The Case schema is defined jointly across this contract and QAD-OPERATING-MODEL.md (M3-01). See M3-01 §3 (State Ownership) and M3-01 §8 (Run Manifest) for case_id, version, manifest fields. This contract defines stage states, charter content, and lifecycle transitions. M4A implementers MUST read both contracts.
 

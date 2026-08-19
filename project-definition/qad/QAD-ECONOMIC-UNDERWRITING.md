@@ -1,9 +1,9 @@
 # QAD Financial Reconstruction, Normalized Economics & Economic Underwriting Contract
 
 > **Contract:** M3-08 (M3 Domain Contract Set)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; Constitution §1 (Central Question); Constitution §2 (QAD capabilities — Financial & Management Analysis, Normalization & Valuation); CAP-007A (FO — ADAPT: methodology); CAP-007B (FO Earnings Quality — ADAPT); FD #43 (Marx signals as supplementary inputs)
-> **Traceability:** CONSTITUTION-§1/§2 · FD #43 · FD #130 · CAP-007A (ADAPT: Moat/Earnings quality methodology) · CAP-007B (ADAPT: Value trap methodology) · CAP-009 (CIW ABSORB: deterministic calculations) · NEW_M3_DERIVATION (economic scenarios, permanent loss analysis, reverse DCF mandate, calculation lineage)
+> **Traceability:** CONSTITUTION-§1/§2 · FD #43 · FD #130 · CAP-007A (ADAPT: Moat/Earnings quality methodology) · CAP-007B (ADAPT: Earnings Quality) · CAP-007C (SUPERSEDED — historical lineage only; not revived as QAD methodology) · CAP-009 (CIW ABSORB: deterministic calculations) · NEW_M3_DERIVATION (economic scenarios, permanent loss analysis, reverse DCF mandate, calculation lineage)
 
 ---
 

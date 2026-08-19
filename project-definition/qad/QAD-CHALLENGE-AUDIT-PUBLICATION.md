@@ -1,7 +1,7 @@
 # QAD Challenge, Audit, Underwriting, Publication, Monitoring, Knowledge & Evaluation Contract
 
 > **Contract:** M3-09 (M3 Domain Contract Set — combines M3-09 and M3-10 from lean spec)
-> **Status:** M3 DRAFT
+> **Status:** M3 FINAL DRAFT (CORRECTION COMPLETE — AWAITING INDEPENDENT RE-REVIEW)
 > **Authority:** FD #130; Constitution §23 (AI Operating Constitution); CAP-009 (CIW ABSORB: Cross-Exam, audit); CAP-016 (REUSE: Audit Infrastructure); CAP-014 (REUSE: Thai Editorial Standard); FD #94 (Publication Firewall); FD #96 (Category/Library structure)
 > **Traceability:** CONSTITUTION-§23 · CAP-009 (CIW: Cross-Exam/CRO) · CAP-014 (REUSE: Thai Editorial) · CAP-015 (REUSE: Live Office monitoring) · CAP-016 (REUSE: Audit Infrastructure) · CAP-017 (REUSE: Evidence Doctrine) · FD #94 · FD #96 · EVIDENCE-DOCTRINE · NEW_M3_DERIVATION (Red Team charter, Underwriting verdict states, Monitoring protocol, Evaluation typology)
 
