@@ -1,6 +1,6 @@
 # QAD-M4B Acceptance Matrix
 
-> **Status:** DRAFT (AWAITING M4A FREEZE GATE)
+> **Status:** M4B FINAL DESIGN — AWAITING FOUNDER ACCEPTANCE
 > **Authority:** FD #133; M4B Evaluation Contract §4
 > **Design Principle:** Two separate evaluation questions — Type A (research quality) and Type B (discovery recall)
 > **Threshold Rule:** All material thresholds marked PROVISIONAL_M4B_THRESHOLD pending empirical calibration and Founder ratification per §8

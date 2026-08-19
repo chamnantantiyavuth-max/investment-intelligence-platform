@@ -188,7 +188,7 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - **M2 = FINAL PASS** (18 Aug 2026; deterministic integrity validation PASS — 25/25 records, single disposition per capability, runtime audit corrected, FROZEN-with-runtime derived mechanically)
 - **M3 = FINAL PASS — FOUNDER ACCEPTED** (19 Aug 2026; FD #132; 9 domain contracts, 14 roles, 12 services S1–S12; independent review PASS_WITH_FINDINGS all findings resolved)
 - **M4A = FINAL / FROZEN** (68 schemas, 12 state machines, 15 invariants; semantic validator 183/183; independent review PASS)
-- **M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE** (evaluation contract, 10 PIT fixtures, 44 metrics; PIT leakage 7/7; independent review PASS)
+- **M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE** (evaluation contract, 10 PIT fixtures, 44 metrics; PIT proof = 9/9; independent review PASS)
 - **M5 Implementation Gate = ⏳ PENDING** — no production code until the 10-row evidence package passes Founder review.
 - Legacy AM/CS/FO/II authorities are **not co-equal investment paths** — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
 - **Theme Intelligence is supporting context/discovery, not a mandatory research gateway.** Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership.

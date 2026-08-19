@@ -72,9 +72,7 @@ class PITLock:
 
     def check(self, evidence: Evidence, as_of_date: str,
               sealed_sources: frozenset = None,
-              replay_exception: ReplayException = None,
-              is_replay_exception: bool = False,
-              provenance: str = None) -> Verdict:
+              replay_exception: ReplayException = None) -> Verdict:
         if not self.seal.verify(sealed_sources or self.seal.sources):
             return Verdict.SEAL_INVALIDATED
 
@@ -91,9 +89,9 @@ class PITLock:
             return Verdict.BLOCKED
 
         if self.mode == Mode.REPLAY_EXCEPTION:
-            if is_replay_exception and provenance:
-                # REPLAY_EXCEPTION requires Founder authorization
-                if "Founder" not in provenance:
+            if replay_exception and replay_exception.provenance:
+                # REPLAY_EXCEPTION requires authorized_actor == FOUNDER
+                if replay_exception.authorized_actor != "FOUNDER":
                     return Verdict.BLOCKED
                 return Verdict.ALLOWED
             return Verdict.BLOCKED
@@ -103,7 +101,7 @@ class PITLock:
 
 def run_all_tests():
     pass_count = 0
-    total = 8
+    total = 9
     all_pass = True
 
     print("=" * 70)
@@ -163,7 +161,7 @@ def run_all_tests():
     print("\n─── TEST GROUP 3: REPLAY_EXCEPTION provenance enforcement ────")
     lock_replay = PITLock(mode=Mode.REPLAY_EXCEPTION, seal=seal)
     result = lock_replay.check(evidence=post_evidence, as_of_date=AS_OF,
-                               is_replay_exception=True, provenance=None,
+                               replay_exception=None,
                                sealed_sources=sealed_sources)
     if result == Verdict.BLOCKED:
         print(f"  ✅ PASS  TEST 5: REPLAY_EXCEPTION without provenance → BLOCK")
@@ -172,14 +170,13 @@ def run_all_tests():
         print(f"  ❌ FAIL  TEST 5: got {result}")
         all_pass = False
 
-    # --- TEST 6: REPLAY_EXCEPTION with explicit provenance → ALLOWED ---
-    replay_prov = ReplayException("REPLAY-2026-001-Founder", "Founder")
+    # --- TEST 6: REPLAY_EXCEPTION with FOUNDER actor + valid provenance → ALLOWED ---
+    founder_replay = ReplayException("REPLAY-2026-001", "FOUNDER")
     result = lock_replay.check(evidence=post_evidence, as_of_date=AS_OF,
-                               is_replay_exception=True,
-                               provenance=replay_prov.provenance,
+                               replay_exception=founder_replay,
                                sealed_sources=sealed_sources)
     if result == Verdict.ALLOWED:
-        print(f"  ✅ PASS  TEST 6: REPLAY_EXCEPTION with explicit provenance → ALLOWED")
+        print(f"  ✅ PASS  TEST 6: FOUNDER actor + valid provenance → ALLOWED")
         pass_count += 1
     else:
         print(f"  ❌ FAIL  TEST 6: got {result}")
@@ -197,24 +194,30 @@ def run_all_tests():
         print(f"  ❌ FAIL  TEST 7: got {result}")
         all_pass = False
 
-    # --- TEST 8: REPLAY_EXCEPTION with valid provenance but unauthorized actor → BLOCK ---
+    # --- TEST 8: Research Director actor + valid provenance → BLOCK ---
     print("\n─── TEST GROUP 4: Unauthorized actor enforcement ────────────")
-    invalid_actor = "Research Director"
-    # Create a new replay lock and check with unauthorized provenance
+    non_founder_replay = ReplayException("REPLAY-by-ResearchDirector", "RESEARCH_DIRECTOR")
     result = lock_replay.check(evidence=post_evidence, as_of_date=AS_OF,
-                               is_replay_exception=True,
-                               provenance=f"REPLAY-by-{invalid_actor}",
+                               replay_exception=non_founder_replay,
                                sealed_sources=sealed_sources)
-    # The lock should require Founder authorization — any non-Founder provenance is blocked
-    if "Founder" not in str(invalid_actor):
-        if result == Verdict.BLOCKED:
-            print(f"  ✅ PASS  TEST 8: valid replay provenance but unauthorized actor → BLOCK")
-            pass_count += 1
-        else:
-            print(f"  ❌ FAIL  TEST 8: got {result} (expected BLOCKED)")
-            all_pass = False
+    if result == Verdict.BLOCKED:
+        print(f"  ✅ PASS  TEST 8: Research Director actor + valid provenance → BLOCK")
+        pass_count += 1
     else:
-        print(f"  ⚠️ SKIP  TEST 8: actor was Founder, testing unauthorized path")
+        print(f"  ❌ FAIL  TEST 8: got {result} (expected BLOCKED)")
+        all_pass = False
+
+    # --- TEST 9: Research Director actor + provenance containing 'Founder' word → BLOCK ---
+    spoofed_replay = ReplayException("Founder-says-go", "RESEARCH_DIRECTOR")
+    result = lock_replay.check(evidence=post_evidence, as_of_date=AS_OF,
+                               replay_exception=spoofed_replay,
+                               sealed_sources=sealed_sources)
+    if result == Verdict.BLOCKED:
+        print(f"  ✅ PASS  TEST 9: spoofed provenance with 'Founder' but actor != FOUNDER → BLOCK")
+        pass_count += 1
+    else:
+        print(f"  ❌ FAIL  TEST 9: got {result} (expected BLOCKED)")
+        all_pass = False
 
     # --- RESULTS ---
     print(f"\n{'=' * 70}")

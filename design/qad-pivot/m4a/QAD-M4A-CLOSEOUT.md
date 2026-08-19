@@ -15,7 +15,7 @@
 | State Machines (12 machines) | `QAD-M4A-STATE-MACHINES.md` | ✅ FINAL / FROZEN |
 | Critical Invariants (15 machine-checkable) | `QAD-M4A-INVARIANTS.md` | ✅ FINAL / FROZEN |
 | Schema Traceability (68 schemas, 8 NEW_M4A_DERIVATION) | `QAD-M4A-SCHEMA-TRACEABILITY.md` | ✅ FINAL / FROZEN |
-| Deterministic Validator | `validate-m4a-contracts.py` | ✅ `<actual>` |
+| Deterministic Validator | `validate-m4a-contracts.py` | ✅ 95/95 structural PASS |
 | Final Independent Review | `QAD-M4A-INDEPENDENT-REVIEW-FINAL.md` | ✅ PASS |
 
 ---
@@ -34,7 +34,7 @@
 | H — Monitoring & Knowledge | 7 | MonitoringIndicator, Observation, Assessment, CandidateLesson, InstitutionalKnowledge, IndustryPlaybook, CrossCaseValidation |
 | I — Reproducibility & Ops | 9 | RunManifest, PITContext, ServiceInvocation, RetryRecord, CaseLock, BudgetUsage, ModelInvocation, ProviderInvocation, EvaluationHarnessRun |
 
-**Total: 68 schemas, 9 families, 9 NEW_M4A_DERIVATION items** (operational telemetry and implementation details — see Traceability for exact list)
+**Total: 68 schemas, 9 families, 8 NEW_M4A_DERIVATION items** (operational telemetry and implementation details — see Traceability for exact list)
 
 ---
 

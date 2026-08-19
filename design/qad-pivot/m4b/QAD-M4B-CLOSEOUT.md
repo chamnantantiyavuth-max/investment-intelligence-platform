@@ -1,4 +1,4 @@
-# QAD-M4B Closeout — Evaluation Contract + PIT Fixtures + Acceptance Matrix
+# QAD-M4B Closeout — Evaluation Contract + PIT Fixtures + Acceptance Matrix + Validator + PIT Proof + Final Review
 
 > **Status:** M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE
 > **Authority:** FD #133
@@ -11,16 +11,31 @@
 
 | Artifact | File | Status |
 |----------|------|--------|
-| Evaluation Contract | `QAD-M4B-EVALUATION-CONTRACT.md` | ✅ |
-| PIT Fixture Specification (10 fixture types) | `QAD-M4B-PIT-FIXTURE-SPEC.md` | ✅ |
-| Acceptance Matrix | `QAD-M4B-ACCEPTANCE-MATRIX.md` | ✅ |
-| Validator | `validate-m4b-pack.py` | ✅ 63/63 PASS |
+| Evaluation Contract | `QAD-M4B-EVALUATION-CONTRACT.md` | ✅ CLOSEOUT READY |
+| PIT Fixture Specification (10 fixture types) | `QAD-M4B-PIT-FIXTURE-SPEC.md` | ✅ DRAFT_UNSEALED |
+| Acceptance Matrix | `QAD-M4B-ACCEPTANCE-MATRIX.md` | ✅ FINAL DESIGN |
+| M4B Validator | `validate-m4b-pack.py` | ✅ 87/87 PASS |
+| PIT Leakage Proof | `pit-leakage-proof.py` | ✅ 9/9 PASS |
+| Final Independent Review | `QAD-M4B-INDEPENDENT-REVIEW-FINAL.md` | ✅ PASS |
 
 ---
 
 ## Evaluation Summary
 
-### Type A — Research Quality
+### Metric Count (Mechanically Computed from Acceptance Matrix)
+
+| Section | Metrics | Type |
+|---------|---------|------|
+| §1 Evidence Quality | 6 | A |
+| §2 Analytical Quality | 7 | A |
+| §3 Financial Quality | 5 | A |
+| §4 Process Quality | 6 | A |
+| §5 Discovery Quality | 10 | B |
+| §6 Saturation / EIV | 4 | A |
+| §7 Cost / Model Routing | 6 | A+B |
+| **Total** | **44** | **28 A + 10 B + 6 A+B** |
+
+### Type A — Research Quality (28 metrics)
 
 | Dimension | Metrics | Fixtures |
 |-----------|---------|----------|
@@ -28,8 +43,9 @@
 | Analytical Quality | 7 metrics | All fixture types |
 | Financial Quality | 5 metrics | Temporary, Structural, Mixed, Valuation |
 | Process Quality | 6 metrics | All fixture types |
+| Saturation / EIV | 4 metrics | All fixture types |
 
-### Type B — Discovery Recall
+### Type B — Discovery Recall (10 metrics)
 
 | Dimension | Metrics | Fixtures |
 |-----------|---------|----------|
@@ -38,10 +54,13 @@
 ### Radar Incremental Recall
 
 Comparison: QAD Discovery without Radar vs QAD Discovery + Radar.
+Radar retention deferred to post-M4B per FD #133.
 
-### Cost / Model Evaluation
+### Cost / Model Evaluation (6 shared metrics)
 
-4-tier model (A/B/C/D) with authority restrictions on cheap/free models.
+4-tier model (A/B/C/D) with authority restrictions on cheap/free models for
+quality assessment, moat classification, impairment diagnosis, normalized earnings,
+permanent loss, valuation asymmetry, final underwriting, and final Red Team adjudication.
 
 ---
 
@@ -60,13 +79,47 @@ Comparison: QAD Discovery without Radar vs QAD Discovery + Radar.
 | 9 | Valuation Failure | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
 | 10 | Narrative Panic | DRAFT_UNSEALED — AI_PROPOSED | ❌ |
 
-**Draft fixture candidates: 10 | Sealed fixtures: 0** (sealing requires independent adjudication + source pack assembly + seal contract completion)
+**Draft fixture candidates: 10 | Sealed fixtures: 0**
+
+> Sealing requires: source pack assembly → independent adjudication → seal contract completion.
+> None of the 10 fixtures have passed beyond DRAFT_UNSEALED — AI_PROPOSED.
+> Fixture labels are NOT scoring ground truth.
 
 ---
 
-## Acceptance Matrix
+## PIT Leakage Proof Results
 
-34 evaluation metrics mapped to fixture types, with PROVISIONAL_M4B_THRESHOLD markers for all pass thresholds. All thresholds require Founder ratification before becoming production gates.
+`pit-leakage-proof.py` — Non-production deterministic synthetic tests:
+
+| Test | Result |
+|------|--------|
+| Pre-AS_OF evidence in SEALED mode → ALLOWED | ✅ PASS |
+| Post-AS_OF evidence in SEALED mode → HARD BLOCK | ✅ PASS |
+| Post-AS_OF in LIVE without UPDATE tag → BLOCK | ✅ PASS |
+| Post-AS_OF in LIVE with valid UPDATE provenance → ALLOWED | ✅ PASS |
+| REPLAY_EXCEPTION without provenance → BLOCK | ✅ PASS |
+| REPLAY_EXCEPTION with explicit provenance → ALLOWED | ✅ PASS |
+| Sealed fixture/source hash mutation → INVALIDATE SEAL | ✅ PASS |
+| Unauthorized actor in REPLAY_EXCEPTION → BLOCK | ✅ PASS |
+
+**Total: 8/8 passed, exit code 0**
+
+---
+
+## Validator Results
+
+`validate-m4b-pack.py` (upgraded) — 87 deterministic checks:
+
+| Section | Checks | Result |
+|---------|--------|--------|
+| 1. Evaluation Contract | 11 checks (includes lifecycle sequence, seal contract fields) | ✅ 11/11 |
+| 2. PIT Fixture Spec | 19 checks (includes AI_PROPOSED, DRAFT_UNSEALED, NOT_VALID_FOR_SCORING, counts) | ✅ 19/19 |
+| 3. Acceptance Matrix | 48 checks (includes type separation, threshold scanning, row count) | ✅ 48/48 |
+| 4. No Production Code | 1 check (message fixed: two files permitted) | ✅ 1/1 |
+| 5. M4A Freeze Status | 1 check | ✅ 1/1 |
+| 6. PIT Leakage Proof | 10 checks (subprocess execution, exit code, test count) | ✅ 10/10 |
+| 7. Final Independent Review | 2 checks | ✅ 2/2 |
+| **Total** | **87** | **✅ 87/87 PASS** |
 
 ---
 
@@ -78,6 +131,9 @@ Comparison: QAD Discovery without Radar vs QAD Discovery + Radar.
 - ❌ No production QAD operation
 - ❌ No database/schema migration
 - ❌ No broker/execution/capital allocation
+- ❌ No constitutionalized thresholds (all PROVISIONAL_M4B_THRESHOLD)
+- ❌ No sealed scoring fixtures (0 sealed)
+- ❌ No fictional human-curator adjudication
 
 ---
 
@@ -89,4 +145,4 @@ M4B = COMPLETE — AWAITING FOUNDER ACCEPTANCE
 M5  = PENDING FOUNDER GATE
 ```
 
-<!-- 2026-08-19 17:00 UTC+7 -->
+<!-- 2026-08-19 17:15 UTC+7 -->

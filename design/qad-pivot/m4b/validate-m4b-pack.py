@@ -124,9 +124,12 @@ def validate_evaluation_contract():
          "Provisional threshold policy defined")
 
     # Check 1: Evaluation contract status is post-M4A-freeze
-    status_frozen = "FROZEN" in content or "FREEZE" in content
-    check(status_frozen,
-          "Evaluation contract status references freeze/m4a-complete")
+    # Must NOT contain "AWAITING M4A FREEZE GATE" (stale pre-freeze state)
+    has_stale = "AWAITING M4A FREEZE GATE" in content
+    # Must contain a final-phase marker (CLOSEOUT READY / FINAL / FROZEN)
+    has_final = any(marker in content for marker in ["CLOSEOUT READY", "FINAL", "FROZEN"])
+    check(has_final and not has_stale,
+          "Evaluation contract has final status and no stale 'AWAITING M4A FREEZE GATE'")
 
     # Check 2: Lifecycle exact sequence exists
     lifecycle_present = all(phase in content for phase in LIFECYCLE_SEQUENCE)
