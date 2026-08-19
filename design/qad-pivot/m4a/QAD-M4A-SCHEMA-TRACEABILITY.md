@@ -1,6 +1,6 @@
 # QAD-M4A Schema Traceability Matrix
 
-> **Status:** M4A IN PROGRESS
+> **Status:** M4A FINAL — FROZEN FOR M4B DERIVATION
 > **Authority:** FD #133; M3 Domain Contracts (FROZEN for M4 derivation)
 > **Canonical schemas:** 68 (6+10+8+7+6+8+7+7+9)
 > **Canonical since:** 2026-08-19
@@ -584,7 +584,7 @@
 
 | Schema | Authority | M3 Clause | M4 Derivation |
 |--------|-----------|-----------|--------------|
-| MOD-01 | M3-01 §8 | M3-01 §8 (Run Manifest), M4B (forward reference) | **M3_AUTHORITY** — Per-model invocation tracking. M3 specifies Run Manifest concept; detailed model telemetry (prompt_tokens, completion_tokens, cost, prompt_hash, latency_ms, rate_limited/timeout states) is field-level NEW_M4A_DERIVATION. |
+| MOD-01 | M3-01 §8 (Run Manifest) | M3-01 §8 (Run Manifest), M3-ROLES (Role 12 Knowledge Steward) | **M3_AUTHORITY** — Per-model invocation tracking. M3 specifies Run Manifest concept; detailed model telemetry (prompt_tokens, completion_tokens, cost, prompt_hash, latency_ms, rate_limited/timeout states) is field-level NEW_M4A_DERIVATION. |
 
 **Authority Chain:** M3-01 §8
 
@@ -664,10 +664,8 @@ PIT modes (LIVE_CASE_UPDATE, SEALED_HISTORICAL_EVALUATION, REPLAY_EXCEPTION) are
 | M3-08 Financial Reconstruction | FF-01, NFF-01, CALC-01, SCEN-01, PLA-01, RDCF-01, VA-01, PIE-01 |
 | M3-09 Challenge/Audit/Underwriting | PUB-01, FDR-01, RTC-01, AG-01, AF-01, UV-01, CRESP-01 |
 | M3-10 Monitoring/Knowledge | MI-01, MO-01, MASS-01, CL-01, IKR-01, IPR-01, CCV-01 |
-| M3-LOGICAL Logical Organization | SI-01 |
-| M3-ROLES Production Roles | SI-01, IR-01 |
+| M3-ROLES Production Roles (Role 7) | SI-01, IR-01 |
 | M3-SERVICES System Services | PITC-01, RR-01, CLK-01, EHR-01 |
-| M4B (forward reference) | MOD-01 |
 
 ---
 

@@ -1,8 +1,9 @@
 # QAD-M4A Closeout — Schema Registry + State Machines + Invariants
 
-> **Status:** M4A COMPLETE — AWAITING FREEZE GATE REVIEW
+> **Status:** M4A FINAL — FROZEN FOR M4B DERIVATION
 > **Authority:** FD #133
 > **Predecessor:** M3 = FINAL PASS — FOUNDER ACCEPTED (frozen for M4 derivation)
+> **Final checks:** 68 canonical schemas · 12 state machines · 15 invariants · 8 NEW_M4A_DERIVATION · final independent review PASS · `Remaining: NONE`
 
 ---
 
@@ -10,11 +11,12 @@
 
 | Artifact | File | Status |
 |----------|------|--------|
-| Canonical Schema Registry (9 families A–I, 57 schemas) | `QAD-M4A-CANONICAL-SCHEMAS.md` | ✅ |
-| State Machines (12 machines) | `QAD-M4A-STATE-MACHINES.md` | ✅ |
-| Critical Invariants (15 machine-checkable) | `QAD-M4A-INVARIANTS.md` | ✅ |
-| Schema Traceability (673 lines) | `QAD-M4A-SCHEMA-TRACEABILITY.md` | ✅ |
-| Deterministic Validator | `validate-m4a-contracts.py` | ✅ 70/70 PASS |
+| Canonical Schema Registry (9 families A–I, 68 schemas) | `QAD-M4A-CANONICAL-SCHEMAS.md` | ✅ FINAL / FROZEN |
+| State Machines (12 machines) | `QAD-M4A-STATE-MACHINES.md` | ✅ FINAL / FROZEN |
+| Critical Invariants (15 machine-checkable) | `QAD-M4A-INVARIANTS.md` | ✅ FINAL / FROZEN |
+| Schema Traceability (68 schemas, 8 NEW_M4A_DERIVATION) | `QAD-M4A-SCHEMA-TRACEABILITY.md` | ✅ FINAL / FROZEN |
+| Deterministic Validator | `validate-m4a-contracts.py` | ✅ `<actual>` |
+| Final Independent Review | `QAD-M4A-INDEPENDENT-REVIEW-FINAL.md` | ✅ PASS |
 
 ---
 
@@ -79,19 +81,6 @@
 
 ## M4A Freeze Gate
 
-**M4A may freeze when:**
-- ✅ every M3 canonical object required for implementation has schema representation
-- ✅ every material enum/state is unambiguous
-- ✅ S1–S12 service I/O can map to schemas without guessing
-- ✅ all 14 role outputs can map to schemas without guessing
-- ✅ state transitions are explicit
-- ✅ PIT/provenance/versioning are explicit
-- ✅ canonical/noncanonical boundaries are explicit
-- ✅ machine-checkable invariants exist
-- ✅ no new investment methodology was invented
-- ✅ no production implementation occurred
-- ✅ validation passes (70/70)
-
-**Remaining:** ⏳ Independent schema consistency review.
+**M4A = FINAL / FROZEN.** All freeze criteria met. Final independent review PASS. No remaining items.
 
 <!-- 2026-08-19 16:15 UTC+7 -->

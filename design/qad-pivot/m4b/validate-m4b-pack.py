@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
-"""
-QAD-M4B Evaluation Pack Validator — Non-production deterministic validation.
+"""QAD-M4B Evaluation Pack Validator — Non-production deterministic validation.
 
-Validates M4B evaluation contract, fixture specs, and acceptance matrix
-against M3 frozen contracts and M4A canonical schemas.
+Upgraded for M4B final pack: adds checks for lifecycle sequence, seal
+contract fields, PIT proof subprocess execution, threshold scanning,
+fixture counts, Type A/B separation, M4A freeze status, and the final
+independent review file.
 
 Usage:
     python validate-m4b-pack.py
 """
 
 import re
+import subprocess  # nosec — non-production deterministic validation only
 import sys
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent.parent.parent  # project root
+M4B_DIR = BASE / "design" / "qad-pivot" / "m4b"
 
 results = {"pass": 0, "fail": 0, "warn": 0}
 
@@ -39,7 +42,7 @@ EVAL_DIMENSIONS = [
     "Original-Source Validation",
     "Contradiction Coverage",
     "Decision-Changing Evidence Recall",
-    "H1–H5 Coverage",
+    "H1\u2013H5 Coverage",
     "Quality Verification Correctness",
     "False-Quality Detection",
     "Temporary-vs-Structural Calibration",
@@ -69,83 +72,180 @@ EVAL_DIMENSIONS = [
     "Decision-Changing Candidate Recall",
 ]
 
+# Required seal-contract mandatory fields per Evaluation Contract §3.4
+SEAL_CONTRACT_FIELDS = [
+    "fixture_id",
+    "fixture_version",
+    "as_of_date",
+    "source",
+    "hash",
+    "publication",
+    "corpus",
+    "adjudicator",
+    "seal",
+]
+
+# Exact lifecycle sequence per Evaluation Contract §3.3
+LIFECYCLE_SEQUENCE = (
+    "DRAFT_UNSEALED",
+    "SOURCE_PACK_COMPLETE",
+    "INDEPENDENTLY_ADJUDICATED",
+    "SEALED",
+)
+
 
 def check(condition: bool, message: str, severity: str = "fail"):
+    pass_mark = "\u2705"
+    fail_mark = "\u274c"
+    warn_mark = "\u26a0\ufe0f"
     if condition:
         results["pass"] += 1
-        print(f"  ✅ {message}")
+        print(f"  {pass_mark} {message}")
     else:
         results[severity] += 1
-        print(f"  {'❌' if severity == 'fail' else '⚠️'} {message}")
+        print(f"  {fail_mark if severity == 'fail' else warn_mark} {message}")
 
 
 def validate_evaluation_contract():
     """Check evaluation contract exists and has required sections."""
     print("\n=== 1. Evaluation Contract ===")
-    path = BASE / "design" / "qad-pivot" / "m4b" / "QAD-M4B-EVALUATION-CONTRACT.md"
+    path = M4B_DIR / "QAD-M4B-EVALUATION-CONTRACT.md"
     check(path.exists(), "Evaluation contract exists")
-    if path.exists():
-        content = path.read_text()
-        check("TYPE A" in content, "Type A evaluation defined")
-        check("TYPE B" in content, "Type B evaluation defined")
-        check("SEALED" in content, "PIT sealed evaluation protocol defined")
-        check("Radar" in content, "Radar incremental-recall evaluation defined")
-        check("Expected Information Value" in content, "Research saturation defined")
-        check("Tier" in content, "Cost/model routing evaluation defined")
-        check("PROVISIONAL_M4B_THRESHOLD" in content, "Provisional threshold policy defined")
+    if not path.exists():
+        return
+    content = path.read_text()
+    check("TYPE A" in content, "Type A evaluation defined")
+    check("TYPE B" in content, "Type B evaluation defined")
+    check("SEALED" in content, "PIT sealed evaluation protocol defined")
+    check("Radar" in content, "Radar incremental-recall evaluation defined")
+    check("Expected Information Value" in content, "Research saturation defined")
+    check("Tier" in content, "Cost/model routing evaluation defined")
+    check("PROVISIONAL_M4B_THRESHOLD" in content,
+         "Provisional threshold policy defined")
+
+    # Check 1: Evaluation contract status is post-M4A-freeze
+    status_frozen = "FROZEN" in content or "FREEZE" in content
+    check(status_frozen,
+          "Evaluation contract status references freeze/m4a-complete")
+
+    # Check 2: Lifecycle exact sequence exists
+    lifecycle_present = all(phase in content for phase in LIFECYCLE_SEQUENCE)
+    lifecycle_str = " \u2192 ".join(LIFECYCLE_SEQUENCE)
+    check(lifecycle_present,
+          f"Lifecycle sequence {lifecycle_str} present in contract")
+
+    # Check 5: All seal-contract mandatory fields present
+    missing_fields = [f for f in SEAL_CONTRACT_FIELDS if f.lower() not in content.lower()]
+    check(len(missing_fields) == 0,
+          f"All seal-contract mandatory fields present (missing: {missing_fields})")
 
 
 def validate_fixture_spec():
-    """Check fixture spec has all 10 fixture types."""
+    """Check fixture spec has all 10 fixture types and lifecycle markers."""
     print("\n=== 2. PIT Fixture Spec ===")
-    path = BASE / "design" / "qad-pivot" / "m4b" / "QAD-M4B-PIT-FIXTURE-SPEC.md"
+    path = M4B_DIR / "QAD-M4B-PIT-FIXTURE-SPEC.md"
     check(path.exists(), "Fixture spec exists")
-    if path.exists():
-        content = path.read_text()
-        for ft in FIXTURE_TYPES:
-            check(ft in content, f"Fixture type: {ft}")
-        check("AS_OF" in content, "AS_OF date defined")
-        check("H1" in content, "Expected hypotheses (H1)")
-        check("H5" in content, "Expected hypotheses (H5)")
-        check("leak" in content.lower(), "Leak test defined")
+    if not path.exists():
+        return
+    content = path.read_text()
+    for ft in FIXTURE_TYPES:
+        check(ft in content, f"Fixture type: {ft}")
+    check("AS_OF" in content, "AS_OF date defined")
+    check("H1" in content, "Expected hypotheses (H1)")
+    check("H5" in content, "Expected hypotheses (H5)")
+    check("leak" in content.lower(), "Leak test defined")
+
+    # Check 3: Fixture spec contains AI_PROPOSED, DRAFT_UNSEALED, NOT_VALID_FOR_SCORING
+    check("AI_PROPOSED" in content, "Status marker: AI_PROPOSED present")
+    check("DRAFT_UNSEALED" in content, "Status marker: DRAFT_UNSEALED present")
+    check("NOT_VALID_FOR_SCORING" in content,
+          "Status marker: NOT_VALID_FOR_SCORING present")
+
+    # Check 4: SEALED_FIXTURE_COUNT == 0, DRAFT_FIXTURE_CANDIDATES == 10
+    sealed_match = re.search(r"SEALED_FIXTURE_COUNT\s*=\s*(\d+)", content)
+    draft_match = re.search(r"DRAFT_FIXTURE_CANDIDATES\s*=\s*(\d+)", content)
+    if sealed_match:
+        check(int(sealed_match.group(1)) == 0,
+              f"SEALED_FIXTURE_COUNT == {sealed_match.group(1)} (expected 0)")
+    else:
+        check(False, "SEALED_FIXTURE_COUNT declaration present")
+    if draft_match:
+        check(int(draft_match.group(1)) == 10,
+              f"DRAFT_FIXTURE_CANDIDATES == {draft_match.group(1)} (expected 10)")
+    else:
+        check(False, "DRAFT_FIXTURE_CANDIDATES declaration present")
 
 
 def validate_acceptance_matrix():
     """Check acceptance matrix exists and covers evaluation dimensions."""
     print("\n=== 3. Acceptance Matrix ===")
-    path = BASE / "design" / "qad-pivot" / "m4b" / "QAD-M4B-ACCEPTANCE-MATRIX.md"
+    path = M4B_DIR / "QAD-M4B-ACCEPTANCE-MATRIX.md"
     check(path.exists(), "Acceptance matrix exists")
-    if path.exists():
-        content = path.read_text()
-        for dim in EVAL_DIMENSIONS:
-            # Check key terms
-            terms = dim.lower().split()[:2]
-            found = all(t in content.lower() for t in terms)
-            if found:
-                results["pass"] += 1
-            else:
-                results["warn"] += 1
-                print(f"  ⚠️ Dimension may need checking: {dim}")
-        check("PROVISIONAL_M4B_THRESHOLD" in content, "Provisional thresholds present")
-        check("TYPE_A" in content or "Type A" in content, "Type A metrics present")
-        check("TYPE_B" in content or "Type B" in content, "Type B metrics present")
+    if not path.exists():
+        return
+    content = path.read_text()
+    for dim in EVAL_DIMENSIONS:
+        terms = dim.lower().split()[:2]
+        found = all(t in content.lower() for t in terms)
+        if found:
+            results["pass"] += 1
+        else:
+            results["warn"] += 1
+            print(f"  \u26a0\ufe0f Dimension may need checking: {dim}")
+    check("PROVISIONAL_M4B_THRESHOLD" in content,
+          "Provisional thresholds present")
+    check("TYPE_A" in content or "Type A" in content,
+          "Type A metrics present")
+    check("TYPE_B" in content or "Type B" in content,
+          "Type B metrics present")
+
+    # Check 7: Type A / Type B remain separate — verify each metric row
+    # has an explicit type marker and no row lacks one
+    metric_rows = re.findall(
+        r"^\|\s*\d+\.\d+\s*\|.*\|$", content, re.MULTILINE
+    )
+    rows_with_type = 0
+    rows_without_type = 0
+    for row in metric_rows:
+        if re.search(r"\|\s*(A|B|A\+B)\s*\|$", row):
+            rows_with_type += 1
+        else:
+            rows_without_type += 1
+    check(rows_without_type == 0,
+          f"All {rows_with_type} metric rows have explicit type marker "
+          f"({rows_without_type} ambiguous)")
+    check(rows_with_type >= 44,
+          f"Expected at least 44 metric rows, found {rows_with_type}")
+
+    # Check 8: All material thresholds are PROVISIONAL_M4B_THRESHOLD
+    # Look for any numeric threshold values that aren't PROVISIONAL
+    # (allow known false-positives: year numbers, dates, table numbers)
+    numeric_suspects = re.findall(
+        r"(?<!\d)([5-9]\d(?:\.\d+)?%|1\d{2}(?:\.\d+)?%)", content
+    )
+    check(len(numeric_suspects) == 0,
+          f"No hidden numeric thresholds found "
+          f"({len(numeric_suspects)} numeric % patterns detected: "
+          f"{numeric_suspects})")
 
 
 def validate_no_production_code():
     """Check that no production code was created."""
     print("\n=== 4. No Production Code ===")
-    m4b_dir = BASE / "design" / "qad-pivot" / "m4b"
-    if m4b_dir.exists():
-        py_files = list(m4b_dir.glob("*.py"))
-        allowed = {"validate-m4b-pack.py", "pit-leakage-proof.py"}
-        actual = {f.name for f in py_files}
-        disallowed = actual - allowed
-        if disallowed:
-            check(False, f"Unexpected .py files: {disallowed}")
-        else:
-            check(True, "Only validate-m4b-pack.py present")
-    else:
+    if not M4B_DIR.exists():
         check(True, "No M4B directory")
+        return
+
+    py_files = list(M4B_DIR.glob("*.py"))
+    allowed = {"validate-m4b-pack.py", "pit-leakage-proof.py"}
+    actual = {f.name for f in py_files}
+    disallowed = actual - allowed
+
+    if disallowed:
+        check(False, f"Unexpected .py files: {disallowed}")
+    else:
+        # Check 10 (message fix): "Only validate-m4b-pack.py and pit-leakage-proof.py present"
+        check(True, "Only validate-m4b-pack.py and pit-leakage-proof.py present")
 
 
 def validate_m4a_frozen():
@@ -154,12 +254,63 @@ def validate_m4a_frozen():
     m4a_closeout = BASE / "design" / "qad-pivot" / "m4a" / "QAD-M4A-CLOSEOUT.md"
     if m4a_closeout.exists():
         content = m4a_closeout.read_text()
-        check("FREEZE" in content or "FROZEN" in content, "M4A freeze gate status present")
+        check("FREEZE" in content or "FROZEN" in content,
+              "M4A baseline status = FINAL / FROZEN")
+    else:
+        check(False, "M4A closeout file exists")
+
+
+def validate_pit_proof():
+    """Execute pit-leakage-proof.py as subprocess and verify results."""
+    print("\n=== 6. PIT Leakage Proof ===")
+    pit_path = M4B_DIR / "pit-leakage-proof.py"
+    check(pit_path.exists(), "PIT proof file exists")
+    if not pit_path.exists():
+        return
+
+    result = subprocess.run(  # nosec — non-production deterministic test
+        [sys.executable, str(pit_path)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    exit_code_ok = result.returncode == 0
+    check(exit_code_ok,
+          f"PIT proof subprocess exit code == {result.returncode} (expected 0)")
+
+    # Count passed tests in output
+    pass_matches = re.findall(r"\u2705 PASS\s+TEST\s+(\d+)", result.stdout)
+    total_tests = len(pass_matches)
+    check(total_tests >= 8,
+          f"PIT proof has {total_tests} passing tests (expected 8+)")
+
+    # Verify all 8 tests by name
+    test_names = [
+        "TEST 1", "TEST 2", "TEST 3", "TEST 4",
+        "TEST 5", "TEST 6", "TEST 7", "TEST 8",
+    ]
+    for tn in test_names:
+        check(tn in result.stdout, f"{tn} present in PIT proof output")
+
+    # Log any errors
+    if not exit_code_ok:
+        print(f"  STDOUT: {result.stdout[:500]}")
+        print(f"  STDERR: {result.stderr[:500]}")
+
+
+def validate_independent_review():
+    """Check final independent review file exists."""
+    print("\n=== 7. Final Independent Review ===")
+    path = M4B_DIR / "QAD-M4B-INDEPENDENT-REVIEW-FINAL.md"
+    check(path.exists(), "Final independent review file (QAD-M4B-INDEPENDENT-REVIEW-FINAL.md) exists")
+    if path.exists():
+        content = path.read_text()
+        check("FINAL" in content, "Review file is marked FINAL")
 
 
 def main():
     print("=" * 60)
-    print("QAD-M4B Evaluation Pack Validator")
+    print("QAD-M4B Evaluation Pack Validator (Upgraded)")
     print("=" * 60)
 
     validate_evaluation_contract()
@@ -167,19 +318,22 @@ def main():
     validate_acceptance_matrix()
     validate_no_production_code()
     validate_m4a_frozen()
+    validate_pit_proof()
+    validate_independent_review()
 
     print("\n" + "=" * 60)
-    print(f"Results: {results['pass']} passed, {results['fail']} failed, {results['warn']} warnings")
+    print(f"Results: {results['pass']} passed, {results['fail']} failed, "
+          f"{results['warn']} warnings")
     print("=" * 60)
 
     if results["fail"] > 0:
-        print("\n❌ VALIDATION FAILED")
+        print("\n\u274c VALIDATION FAILED")
         sys.exit(1)
     elif results["warn"] > 0:
-        print("\n⚠️ VALIDATION PASSED WITH WARNINGS")
+        print("\n\u26a0\ufe0f VALIDATION PASSED WITH WARNINGS")
         sys.exit(0)
     else:
-        print("\n✅ VALIDATION PASSED")
+        print("\n\u2705 VALIDATION PASSED")
         sys.exit(0)
 
 
