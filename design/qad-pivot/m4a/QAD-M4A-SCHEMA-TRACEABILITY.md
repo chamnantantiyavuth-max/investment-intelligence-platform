@@ -627,7 +627,7 @@ The following schemas in section I have their overall authority in M3-01 §8 (Ru
 
 | # | Field/Object | Schema | M3 Authority | Rationale |
 |---|-------------|--------|-------------|-----------|
-| 7 | `mode` enum (LIVE_CASE_UPDATE / SEALED_HISTORICAL_EVALUATION / REPLAY_EXCEPTION) | **I-2: PITContext** (PITC-01) | M3-01 §8 (PIT Lock) | M3-SERVICES S7 defines PIT Lock as an INFRASTRUCTURE service with FAIL_OPEN behavior, and M3-01 §8 mandates AS_OF_DATE locking. However, the three specific PIT modes (LIVE, SEALED, REPLAY) are M4A-level operational semantics — M3 only specifies the existence of a lock, not the mode taxonomy. |
+| 7 | `mode` enum (LIVE_CASE_UPDATE / SEALED_HISTORICAL_EVALUATION / REPLAY_EXCEPTION) | **I-2: PITContext** (PITC-01) | M3-SERVICES S7 (PIT Lock) | M3-SERVICES S7 explicitly defines the three PIT modes (LIVE_CASE_UPDATE, SEALED_HISTORICAL_EVALUATION, REPLAY_EXCEPTION) and FAIL_CLOSED behavior. The 3-mode taxonomy is NOT NEW_M4A_DERIVATION — it is frozen in M3. The PITContext schema representation (field-level data model, ID scheme) is NEW_M4A_DERIVATION at the implementation level. |
 
 ### Category 4: Schema IDs and Naming Convention
 

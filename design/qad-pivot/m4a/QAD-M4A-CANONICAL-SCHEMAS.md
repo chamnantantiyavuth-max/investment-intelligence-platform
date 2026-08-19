@@ -96,7 +96,7 @@ canonical_vs_noncanonical_boundary
 | **validation_rules** | Signal is append-only. Never deleted. New signal supersedes old. |
 | **immutability_rules** | Signal content immutable after creation. |
 | **revision_rules** | N/A (append-only). |
-| **failure_semantics** | Detection failure → documented as `NO_SIGNAL` (distinct from zero/normal). |
+| **failure_semantics** | Successful scan with no material signal → `NO_SIGNAL`. Technical/data/detector failure → `DETECTION_ERROR` (candidate retryable; never silent Type-B miss). |
 | **canonical_boundary** | Canonical. |
 
 ### A-4: CandidateRecord
@@ -108,13 +108,13 @@ canonical_vs_noncanonical_boundary
 | **authority_source** | M3-02 §2 (Registry 4: CANDIDATE_REGISTRY), M3-02 §4 (Selection States), M3-02 §5 (Candidate Assembly) |
 | **owner** | Candidate Assembly |
 | **required_fields** | `candidate_id`, `entity_id`, `signal_ids[]`, `selection_state`, `entry_route`, `entry_timestamp`, `evidence_freshness` |
-| **optional_fields** | `quality_flag`, `dislocation_flag`, `priority_score`, `watch_price`, `watch_conditions`, `rejection_reason` |
+| **optional_fields** | `quality_flag`, `dislocation_flag`, `watch_price`, `watch_conditions`, `rejection_reason` |
 | **enums** | `selection_state: AUTO_RESEARCH_NOW / WATCH_PRICE / WATCH_EVIDENCE / DATA_LIMITED_WATCH / REJECT / SELECTION_ERROR` |
 | | `entry_route: QUALITY_FIRST / DISLOCATION_FIRST / EXTERNAL / FOUNDER_DIRECTED` |
 | **IDs / foreign keys** | `candidate_id: UUID v7`, `entity_id → SM-01.entity_id`, `signal_ids[] → SR-01.signal_id` |
 | **PIT fields** | `entry_timestamp`, `last_evaluated` |
 | **provenance fields** | `selector`, `policy_version`, `data_version` |
-| **validation_rules** | Selection Engine failure must produce `SELECTION_ERROR`, never `REJECT` or `SKIP`. Founder-directed = `FOUNDER_DIRECTED` entry_route. |
+| **validation_rules** | Selection Engine failure must produce `SELECTION_ERROR`, never `REJECT` or `SKIP`. Founder-directed = `FOUNDER_DIRECTED` entry_route. Selection Engine must NOT score or rank candidates (M3 S1). |
 | **immutability_rules** | Selection state transitions are append-only. |
 | **revision_rules** | Re-evaluation creates new state version. |
 | **failure_semantics** | Selection Engine failure → `SELECTION_ERROR` (candidate remains pending/retryable). Technical failure never silently produces REJECT/SKIP. |
@@ -131,7 +131,7 @@ canonical_vs_noncanonical_boundary
 | **required_fields** | `entity_id`, `quality_state`, `assessment_date`, `evidence_ids[]` |
 | **optional_fields** | `moat_types[]`, `moat_width`, `moat_depth`, `moat_trend`, `moat_durability` |
 | **enums** | `quality_state: VERIFIED / PROBABLE / UNRESOLVED / FAILED` |
-| **IDs / foreign keys** | `entity_id → SM-01.entity_id`, `evidence_ids[] → ER-01.evidence_id` |
+| **IDs / foreign keys** | `entity_id → SM-01.entity_id`, `evidence_ids[] → EV-01.evidence_id` |
 | **PIT fields** | `assessment_date`, `as_of_date` |
 | **provenance fields** | `assessor`, `rule_version`, `data_version` |
 | **validation_rules** | Quality membership does NOT require dislocation. False-Quality Test must be documented. |
@@ -162,7 +162,7 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## B — Source & Evidence (10 schemas)
+## B — Source & Evidence (11 schemas)
 
 ### B-1: SourceRecord
 
@@ -316,10 +316,11 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Structured record of an unresolved question requiring evidence. |
 | **authority_source** | M3-03 §3 (Stage 4: Evidence Gap Map), M3-05 §3 (Investigation Charter) |
 | **owner** | Research Director (Role 1) |
-| **required_fields** | `gap_id`, `case_id`, `question`, `importance`, `status`, `created_by` |
+| **required_fields** | `gap_id`, `case_id`, `question`, `importance`, `operational_status`, `resolvability_class`, `created_by` |
 | **optional_fields** | `investigator_charter_id`, `resolution_evidence_id`, `resolved_at`, `falsifiable_question` |
-| **enums** | `status: OPEN / IN_PROGRESS / CLOSED / PARTIALLY_CLOSED / DEFERRED / UNRESOLVED` |
-| | `importance: CRITICAL / HIGH / MEDIUM / LOW` |
+| **enums** | `operational_status: OPEN / IN_PROGRESS / PARTIALLY_CLOSED / CLOSED / DEFERRED / UNRESOLVED`
+| | `importance: CRITICAL / HIGH / MEDIUM / LOW`
+| | `resolvability_class: RESOLVABLE_WITH_EXISTING_SOURCES / RESOLVABLE_WITH_SCUTTLEBUTT / CURRENTLY_UNRESOLVABLE` |
 | **IDs / foreign keys** | `gap_id: UUID v7`, `case_id → CASE-01.case_id` |
 | **PIT fields** | `created_at`, `resolved_at` |
 | **provenance fields** | `created_by`, `resolver` |
@@ -349,9 +350,29 @@ canonical_vs_noncanonical_boundary
 | **failure_semantics** | Validation fails → evidence quarantined. |
 | **canonical_boundary** | Canonical (audit layer). |
 
+### B-10: SourceVersion
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | SRCV-01 |
+| **purpose** | Versioned record of source document changes/re-retrievals. |
+| **authority_source** | M3-04 §2 (Layer 1: Raw Source Archive), M3-04 §5 (Source Archive retention) |
+| **owner** | Evidence Intelligence Lead (Role 2) |
+| **required_fields** | `version_id`, `source_id`, `version_number`, `retrieval_date`, `content_hash` |
+| **optional_fields** | `previous_version_id`, `change_reason`, `file_size`, `format` |
+| **enums** | `change_reason: INITIAL_RETRIEVAL / RE_RETRIEVAL / CORRECTION / REMOVAL_TOMBSTONE` |
+| **IDs / foreign keys** | `version_id: UUID v7`, `source_id → SRC-01.source_id` |
+| **PIT fields** | `retrieval_date` |
+| **provenance fields** | `retriever`, `retrieval_method` |
+| **validation_rules** | Re-retrieval creates new version. Tombstone records removal reason and authorizer. |
+| **immutability_rules** | Version record immutable. |
+| **revision_rules** | N/A (append-only versions). |
+| **failure_semantics** | Source cannot be re-retrieved → previous version retained with note. |
+| **canonical_boundary** | Canonical. |
+
 ---
 
-## C — Research Governance (7 schemas)
+## C — Research Governance (9 schemas)
 
 ### C-1: ResearchCharter
 
@@ -456,6 +477,47 @@ canonical_vs_noncanonical_boundary
 | **failure_semantics** | N/A (this IS the failure record). |
 | **canonical_boundary** | Canonical. |
 
+### C-7: HypothesisSet
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | HS-01 |
+| **purpose** | Complete set of H1–H5 competing hypotheses for a case. |
+| **authority_source** | M3-03 §2 (H1–H5 mandatory), M3-03 §3 (Stage 2: Research Charter) |
+| **owner** | Research Director (Role 1) |
+| **required_fields** | `hypothesis_set_id`, `case_id`, `hypothesis_ids[]`, `charter_id` |
+| **optional_fields** | `dominant_hypothesis`, `shift_history[]` |
+| **enums** | N/A |
+| **IDs / foreign keys** | `hypothesis_set_id: UUID v7`, `case_id → CASE-01.case_id`, `hypothesis_ids[] → HYP-01.hypothesis_id` |
+| **PIT fields** | `created_at`, `last_shift_at` |
+| **provenance fields** | `creator` |
+| **validation_rules** | Must contain exactly H1–H5. If any hypothesis absent, research cannot proceed. |
+| **immutability_rules** | Set immutable after Charter approval. Hypothesis shifts recorded in shift_history. |
+| **revision_rules** | New evidence → new hypothesis set version. |
+| **failure_semantics** | Incomplete set → Charter cannot be approved. |
+| **canonical_boundary** | Canonical. |
+
+### C-8: InvestigationReport
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | IR-01 |
+| **purpose** | Output of Role 14 (Elastic Investigator) — scuttlebutt investigation report. |
+| **authority_source** | M3-03 Stage 6 (Scuttlebutt), M3-05 §4 (Investigation Protocol), M3-ROLES Role 14 |
+| **owner** | Elastic Investigator (Role 14) |
+| **required_fields** | `investigation_id`, `investigator_charter_id`, `evidence_gap_id`, `falsifiable_question`, `findings[]`, `disposition`, `investigator` |
+| **optional_fields** | `sources[]`, `sampling_limitations`, `proposed_evidence_ids[]`, `stop_rule_triggered`, `completed_at` |
+| **enums** | `disposition: ANSWERED / NOT_ANSWERED / PARTIALLY_ANSWERED` |
+| | `stop_rule: EVIDENCE_SUFFICIENT / BUDGET_EXHAUSTED / COUNTER_EVIDENCE_FOUND / TIME_EXPIRED` |
+| **IDs / foreign keys** | `investigation_id: UUID v7`, `investigator_charter_id → IC-01.investigator_charter_id`, `evidence_gap_id → EG-01.gap_id` |
+| **PIT fields** | `started_at`, `completed_at` |
+| **provenance fields** | `investigator`, `charter_version` |
+| **validation_rules** | Investigation must have approved charter before start. All sources must be lawful/public/non-MNPI. |
+| **immutability_rules** | Report immutable after submission. |
+| **revision_rules** | N/A (new investigation for new evidence). |
+| **failure_semantics** | Budget exhausted → `INCOMPLETE_BUDGET` disposition. |
+| **canonical_boundary** | Canonical. Proposed evidence noncanonical until admitted. |
+
 ### C-6: ResearchStopRecord
 
 | Field | Value |
@@ -478,7 +540,7 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## D — Business / Industry / Management (6 schemas)
+## D — Business / Industry / Management (7 schemas)
 
 ### D-1: QualityAssessment
 
@@ -601,6 +663,28 @@ canonical_vs_noncanonical_boundary
 | **immutability_rules** | Assessment immutable. |
 | **revision_rules** | New evidence → new version. |
 | **failure_semantics** | Insufficient data → UNPROVEN management quality. |
+| **canonical_boundary** | Canonical. |
+
+---
+
+### D-7: ManagementOutcome
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | MO-02 |
+| **purpose** | Measured outcome of a management decision or claim. |
+| **authority_source** | M3-06 §4.1 (Management Claim Ledger), M3-06 §4.4 (Promise vs Outcome) |
+| **owner** | Financial & Management Analyst (Role 5) |
+| **required_fields** | `outcome_id`, `case_id`, `management_claim_id`, `measured_outcome`, `outcome_date`, `variance` |
+| **optional_fields** | `variance_explanation`, `evidence_ids[]`, `is_resolved` |
+| **enums** | `variance_type: MET / EXCEEDED / MISSED / UNCLEAR / PENDING` |
+| **IDs / foreign keys** | `outcome_id: UUID v7`, `case_id → CASE-01.case_id`, `management_claim_id → MC-01.claim_id` |
+| **PIT fields** | `outcome_date`, `assessment_date` |
+| **provenance fields** | `assessor`, `evidence_ids[]` |
+| **validation_rules** | Every material forward-looking statement must have tracked outcome. Variance explained or flagged. |
+| **immutability_rules** | Outcome record immutable. |
+| **revision_rules** | New data → new version. |
+| **failure_semantics** | Outcome cannot be determined → variance = UNCLEAR. |
 | **canonical_boundary** | Canonical. |
 
 ---
@@ -731,7 +815,7 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## F — Financial & Economic Underwriting (7 schemas)
+## F — Financial & Economic Underwriting (8 schemas)
 
 ### F-1: FinancialFact
 
@@ -797,7 +881,7 @@ canonical_vs_noncanonical_boundary
 
 | Field | Value |
 |-------|-------|
-| **schema_id** | SR-02 |
+| **schema_id** | SCEN-01 |
 | **purpose** | Economic scenario assumption set. |
 | **authority_source** | M3-08 §3 (Economic Scenarios) |
 | **owner** | Valuation & Expectations Specialist (Role 7) |
@@ -873,7 +957,29 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## G — Challenge / Underwriting / Publication (6 schemas)
+### F-8: PriceImpliedExpectation
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | PIE-01 |
+| **purpose** | What the current market price implies about future expectations. |
+| **authority_source** | M3-08 §5.2 (Price-Implied Expectations) |
+| **owner** | Valuation & Expectations Specialist (Role 7) |
+| **required_fields** | `expectation_id`, `case_id`, `current_price`, `implied_growth_rate`, `implied_terminal_value`, `recovery_rate_implied`, `scenario_comparison{}` |
+| **optional_fields** | `years_of_no_recovery_priced_in`, `implied_terminal_multiple`, `sensitivity_range{}` |
+| **enums** | N/A |
+| **IDs / foreign keys** | `expectation_id: UUID v7`, `case_id → CASE-01.case_id` |
+| **PIT fields** | `analysis_date`, `price_as_of` |
+| **provenance fields** | `analyst`, `method_version` |
+| **validation_rules** | Must compare implied expectations to at least 3 scenario assumptions. |
+| **immutability_rules** | Record immutable. |
+| **revision_rules** | Price change → new version. |
+| **failure_semantics** | Cannot calculate → documented. |
+| **canonical_boundary** | Canonical. |
+
+---
+
+## G — Challenge / Underwriting / Publication (7 schemas)
 
 ### G-1: RedTeamChallenge
 
@@ -999,7 +1105,29 @@ canonical_vs_noncanonical_boundary
 
 ---
 
-## H — Monitoring & Knowledge (6 schemas)
+### G-7: ChallengeResponse
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | CRESP-01 |
+| **purpose** | Chief Underwriter's response to Red Team challenge findings. |
+| **authority_source** | M3-09 §2.4 (Red Team no veto; findings preserved), M3-09 §4 (Underwriter synthesis) |
+| **owner** | Chief Underwriter (Role 8) |
+| **required_fields** | `response_id`, `challenge_id`, `case_id`, `responses[]`, `adopted_findings[]`, `rejected_findings[]`, `underwriter` |
+| **optional_fields** | `rejection_evidence[]`, `notes` |
+| **enums** | N/A |
+| **IDs / foreign keys** | `response_id: UUID v7`, `challenge_id → RTC-01.challenge_id`, `case_id → CASE-01.case_id` |
+| **PIT fields** | `response_date` |
+| **provenance fields** | `underwriter` |
+| **validation_rules** | Red Team findings cannot be suppressed. Rejected findings must include evidence basis. |
+| **immutability_rules** | Response immutable. |
+| **revision_rules** | N/A. |
+| **failure_semantics** | N/A. |
+| **canonical_boundary** | Canonical. |
+
+---
+
+## H — Monitoring & Knowledge (7 schemas)
 
 ### H-1: MonitoringIndicator
 
@@ -1116,6 +1244,28 @@ canonical_vs_noncanonical_boundary
 | **immutability_rules** | Playbook immutable. |
 | **revision_rules** | New industry knowledge → new version. |
 | **failure_semantics** | Insufficient cases → not yet created. |
+| **canonical_boundary** | Canonical. |
+
+---
+
+### H-7: CrossCaseValidation
+
+| Field | Value |
+|-------|-------|
+| **schema_id** | CCV-01 |
+| **purpose** | Record of cross-case validation for a candidate lesson. |
+| **authority_source** | M3-09 §7 (Knowledge Compounding), M3-09 §7.1 (Cross-Case Validation) |
+| **owner** | Thesis / Knowledge Steward (Role 12) |
+| **required_fields** | `validation_id`, `lesson_id`, `validating_case_ids[]`, `pattern_consistent`, `validator`, `validation_date` |
+| **optional_fields** | `inconsistent_case_ids[]`, `notes`, `industry_playbook_id` |
+| **enums** | `validation_result: CONFIRMED / PARTIALLY_CONFIRMED / INCONCLUSIVE / REJECTED` |
+| **IDs / foreign keys** | `validation_id: UUID v7`, `lesson_id → CL-01.lesson_id`, `validating_case_ids[] → CASE-01.case_id` |
+| **PIT fields** | `validation_date` |
+| **provenance fields** | `validator`, `method` |
+| **validation_rules** | Requires 3+ independent cases for cross-case validation. Single case cannot validate. |
+| **immutability_rules** | Validation record immutable. |
+| **revision_rules** | New case → new validation version. |
+| **failure_semantics** | REJECTED → lesson remains at CANDIDATE_LESSON status. |
 | **canonical_boundary** | Canonical. |
 
 ---

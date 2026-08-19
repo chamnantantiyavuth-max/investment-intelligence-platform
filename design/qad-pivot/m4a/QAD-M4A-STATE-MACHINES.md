@@ -352,25 +352,43 @@ FOUNDER_REJECTS → (thesis rejected)
 
 ---
 
-## SM-10: Monitoring State Machine
+### SM-10: Monitoring State Machine
 
 **Authority:** M3-09 §6.3 (Monitoring States)
 
 ```text
-ACTIVE
-    → Thesis indicators tracked
+PENDING
+    → Evidence triggers first assessment
+    → precondition: case in MONITORING state, indicators defined
     → authorized: Knowledge Steward (Role 12)
-    → RECOVERY_CONFIRMING / ON_TRACK / UNCERTAIN / WEAKENING / BROKEN
+    → ACTIVE
 
-RECOVERY_CONFIRMING → indicators tracking as expected
-ON_TRACK → mixed signals but overall direction holds
-UNCERTAIN → evidence ambiguous
-WEAKENING → evidence points away from thesis
-BROKEN → thesis no longer supported
-    → side effects: Founder notified
+ACTIVE (evidence-triggered transitions)
+
+    FROM ACTIVE
+    EVENT = new thesis-specific evidence admitted
+    PRECONDITION = evidence in Canonical Evidence Registry
+    ACTOR = Thesis / Knowledge Steward (Role 12)
+    TO = evidence-supported monitoring state below
+
+    → RECOVERY_CONFIRMING — indicators tracking as expected
+      side effects: no escalation
+
+    → ON_TRACK — mixed signals but overall direction holds
+      side effects: no escalation
+
+    → UNCERTAIN — evidence ambiguous
+      side effects: documented uncertainty
+
+    → WEAKENING — evidence points away from thesis
+      side effects: notify Research Director
+
+    → BROKEN — thesis no longer supported by evidence
+      side effects: NOTIFY FOUNDER
+      precondition: evidence must show thesis is no longer valid
 ```
 
-**ILLEGAL:** BROKEN → RECOVERY_CONFIRMING without evidence. Monitoring without thesis-specific indicators.
+**ILLEGAL:** BROKEN → RECOVERY_CONFIRMING without new evidence. Monitoring without thesis-specific indicators. No numerical thresholds invented.
 
 ---
 
@@ -408,28 +426,47 @@ APPROVED_KNOWLEDGE
 
 ---
 
-## SM-12: PIT Context State Machine
+### SM-12: PIT Context State Machine
 
-**Authority:** M3-SERVICES S7 (PIT Lock)
+**Authority:** M3-SERVICES S7 (PIT Lock), QAD-M4A-SERVICE-CONTRACTS.md S7
+
+**Note:** LIVE / SEALED / REPLAY are **context-creation modes**. A PITContext is immutable after creation. Switching mode requires creation of a new PITContext; it is not an in-place state transition.
 
 ```text
+CONTEXT_REQUESTED
+    → PIT Lock service receives query with mode specification
+    → precondition: case_id, as_of_date, mode specified
+    → authorized: calling service/researcher
+    → CONTEXT_CREATED (with mode applied)
+
 LIVE_CASE_UPDATE
     → post-AS_OF evidence ALLOWED only as explicitly tagged UPDATE
     → authorized: Research Director
     → side effects: evidence tagged with UPDATE provenance
+    → PIT service failure: FAIL CLOSED (no PIT-unchecked access)
 
 SEALED_HISTORICAL_EVALUATION
     → post-AS_OF evidence HARD BLOCKED
     → authorized: Evaluation Harness (S12)
     → side effects: any post-AS_OF query returns error
     → used for: M4B evaluation, historical benchmarks
+    → PIT service failure: FAIL CLOSED
 
 REPLAY_EXCEPTION
-    → explicit, provenance-recorded exception
+    → explicit, provenance-recorded exception to SEALED mode
     → authorized: Founder only
     → side effects: exception provenance recorded
+    → PIT service failure: FAIL CLOSED
 ```
 
-**ILLEGAL:** SEALED mode bypassed. REPLAY without Founder authorization.
+**Illegal transitions (dynamic):**
+- LIVE ↔ SEALED (modes are context-creation, not runtime switches)
+- SEALED → REPLAY without Founder authorization
+- Any PIT-unchecked query (fail closed on service failure)
+
+**Legal new-context creation:**
+- A new PITContext may be created with a different mode for the same case
+- Previous context is immutable; new context is independent
+- Both contexts may coexist for different analytical purposes
 
 <!-- 2026-08-19 15:30 UTC+7 -->

@@ -32,7 +32,7 @@
 | H — Monitoring & Knowledge | 6 | MonitoringIndicator, Observation, Assessment, CandidateLesson, InstitutionalKnowledge, IndustryPlaybook |
 | I — Reproducibility & Ops | 9 | RunManifest, PITContext, ServiceInvocation, RetryRecord, CaseLock, BudgetUsage, ModelInvocation, ProviderInvocation, EvaluationHarnessRun |
 
-**Total: 61 schemas, 9 families, 0 NEW_M4A_DERIVATION items** (all schemas trace to M3 clauses)
+**Total: 68 schemas, 9 families, 9 NEW_M4A_DERIVATION items** (operational telemetry and implementation details — see Traceability for exact list)
 
 ---
 
