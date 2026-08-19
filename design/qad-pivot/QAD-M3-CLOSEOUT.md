@@ -1,15 +1,15 @@
 # QAD-M3 Closeout Package
 
-> **Status:** **M3 = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE** (19 Aug 2026)
+> **Status:** **M3 = FINAL PASS — FOUNDER ACCEPTED** (19 Aug 2026, FD #132)
 > **Previous milestones:** M1 = FINAL PASS · M2 = FINAL PASS
-> **M4A = HOLD · M4B = HOLD · M5 = PENDING**
+> **M4A = AWAITING FOUNDER AUTHORIZATION · M4B = AWAITING FOUNDER AUTHORIZATION · M5 = PENDING FOUNDER GATE**
 
 ---
 
 ## 1. M3 Status
 
 ```
-QAD-M3 = CLOSEOUT READY
+QAD-M3 = FINAL PASS — FOUNDER ACCEPTED
 Domain Contracts                ✅ 9/9 (project-definition/qad/)
 Logical Organization            ✅ materialized in Role Registry + Role Contracts + Service Contracts
 Role Contracts                  ✅ 14 roles (18-field template) in QAD-M3-PRODUCTION-ROLE-CONTRACTS.md
@@ -120,9 +120,9 @@ All 16 steps completed (M3.0–M3.16). See prior closeout version for detailed s
 ## 8. Next
 
 ```
-M4A = HOLD
-M4B = HOLD
-M5  = PENDING
+M4A = AWAITING FOUNDER AUTHORIZATION
+M4B = AWAITING FOUNDER AUTHORIZATION
+M5  = PENDING FOUNDER GATE
 ```
 
 <!-- 2026-08-19 13:50 UTC+7 -->

@@ -1,7 +1,7 @@
 # QAD-M3 Traceability Matrix
 
 > **Contract ID:** M3-TRACE
-> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION (INTERNAL_REVIEW)
+> **Status:** M3 FINAL — FROZEN FOR M4 DERIVATION
 > **M3 Phase:** M3.14
 > **Canonical since:** 2026-08-19
 > **Purpose:** Comprehensive cross-reference table tracing every M3 contract clause to its authoritative source.
