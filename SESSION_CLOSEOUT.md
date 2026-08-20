@@ -696,3 +696,93 @@
 
 <!-- 2026-08-11 00:20 UTC+7 -->
 
+
+
+---
+
+# Session Closeout — 19 Aug 2026 (QAD M3 + M4A + M4B design-contract marathon)
+
+## Overview
+Two interactive sessions (~9h total): (1) 11:18–16:58 M3 full materialization → M4A/M4B; (2) 17:49–18:21 M4 proof-closure patch (Founder-flagged 5 narrow proof-integrity defects). All design-contract work, zero production code.
+
+## What was accomplished
+
+### M3 — Domain Contracts + Logical Organization (FINAL PASS, FOUNDER ACCEPTED)
+- 9 domain contracts (`project-definition/qad/`): QAD-OPERATING-MODEL, DISCOVERY-AND-SELECTION, FULL-RESEARCH-PROTOCOL, EVIDENCE-AND-SOURCE-MODEL, MODERN-SCUTTLEBUTT-PROTOCOL, BUSINESS-INDUSTRY-MANAGEMENT, IMPAIRMENT-AND-RECOVERY, ECONOMIC-UNDERWRITING, CHALLENGE-AUDIT-PUBLICATION
+- 14 logical role contracts (18-field mandatory template) + 12 service contracts S1–S12 + 5 independence domains (A–E)
+- Workforce Migration Map (design-only, NOT executed) + Traceability Matrix
+- Independent review PASS_WITH_FINDINGS → all findings resolved
+- FD #131 (execution authorization) + FD #132 (Founder acceptance, commit `a0a6118`)
+
+### M4A — Canonical Schemas (FINAL / FROZEN)
+- 68 schemas across 9 families (A–I), 12 state machines, 15 machine-checkable critical invariants
+- Structural validator 95/95 → hardened to **173/173** (role contracts 14/14, service contracts 12/12, FK completeness 87==87, no dead pass)
+- Schema traceability rebuilt from the 68-schema registry; independent FREEZE-GATE review PASS
+
+### M4B — Evaluation Laboratory (CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE)
+- Evaluation Contract (Type A research-quality vs Type B discovery-recall) + 44-metric acceptance matrix
+- 10 DRAFT_UNSEALED AI_PROPOSED PIT fixture specifications (0 sealed — truthful)
+- Fixture lifecycle DRAFT_UNSEALED → SOURCE_PACK_COMPLETE → INDEPENDENTLY_ADJUDICATED → SEALED; seal contract 20 mandatory fields
+- PIT leakage proof **9/9** (structural ReplayAuthorization, explicit actor equality, spoofed-provenance test); M4B validator hardened to **92/92**
+- Independent evaluation-design review PASS (truthful: AI-generated, 0 sealed)
+
+### Key corrections applied (proof-closure patch, HEAD `d169eb7`)
+- M4B closeout PIT 9/9 vs 8/8 self-contradiction reconciled (executable now 9 tests, spoofed-Founder-provenance BLOCK proven)
+- M4A traceability role cross-reference fixed; validator upgraded from keyword-presence to structural parsing
+- Moat taxonomy restored to FD #61 canonical 6 types; CAP-007 lineage corrected (A=Moat, B=Earnings Quality, C=SUPERSEDED)
+- Chief Underwriter separated from research chain; Research Charter: CU removed, Evidence Lead validates + Budget Controller approves
+- Evidence tiers L1–L9 = admissible classes, not automatic sufficiency
+- Failure semantics: SELECTION_ERROR (never SKIP), PIT 3 modes, EVALUATION_INCOMPLETE; DETECTION_ERROR separated from NO_SIGNAL
+- priority_score removed from CandidateRecord; ER-01→EV-01 dangling FK fixed; SR-02→SCEN-01 namespace fix
+- PIT authorization: ReplayAuthorization with *** NO substring matching
+
+### Governance
+- FD #131 (M3 execution authorization) + FD #132 (M3 final closeout acceptance) + FD #133 (M4A+M4B design authorization) — register items 131–133
+- AGENTS.md Current QAD Governance rows updated (M3/M4A/M4B/M5) — committed by session; **checkpoint entry fd-131-133 NOT yet added (protected file — pending Founder approval)**
+- PROJECT_STATE.md Current state updated (M4A=FROZEN, M4B=CLOSEOUT READY); Build Metrics/Session table synced by 20 Aug cron review
+
+### Test results
+- Full pytest **235/235 PASS** (hermes-agent venv interpreter, 3.3s — re-verified by 20 Aug review)
+- M4A structural validator 173/173 · M4B validator 92/92 · PIT proof 9/9
+
+### Files created/modified
+- 9 domain contracts in `project-definition/qad/` + 15+ design artifacts in `design/qad-pivot/` (m4a/, m4b/) + 4 validation scripts + 3 FD entries
+- Commits `b5778e8`…`d169eb7` (13 commits, +11,629 lines); HEAD `d169eb7` PUSHED (origin/main synced, 452 commits)
+
+## Next
+- **M4B Founder acceptance** (Founder reviews M4B closeout → accept) → M5 Gate Review (14-item evidence package) → production QAD implementation (separate authorization)
+- Weekly radar Mon 24 Aug 08:00 = FD #110 Live Office real-world acceptance observation
+
+<!-- 2026-08-19 18:21 UTC+7 -->
+
+---
+
+# Session Closeout — 20 Aug 2026 (cron review)
+
+## Overview
+Governed scheduled review (IIP Daily Learning Loop cron). 19 Aug world reconciled; suite re-run; market snapshot; state docs synced; vault mirrors backfilled.
+
+## Findings
+- **F1 (fixed this review):** 19 Aug session REWROTE `SESSION_CLOSEOUT.md` in the working tree (75+/698−, replacing the 11 Aug–18 Aug log with a single entry) without committing. Restored the committed history + appended the 19 Aug entry above (append-only discipline restored).
+- **F2 (open):** Radar Mid-Week Watch (Thu 20 Aug 08:00, `cda817d17236`) — NO output file / board task / digest. Job enabled + pinned (18 Aug fix verified in jobs.json) but no evidence of execution; scheduler unavailable at 08:00 (this review is the first cron activity today at 11:15). Next evidence point: Mon 24 Aug 08:00 weekly radar + 09:00 CIW = FD #110 Live Office acceptance observation. Recurrence → durable gateway supervision.
+- **F3 (fixed this review):** vault fd-register mirrors (central AppData + ~/.hermes) ended at FD-130 → FD-131/132/133 backfilled (FOUNDERS-DECISIONS already had items 131–133).
+- **F4 (fixed this review):** Obsidian CURRENT-STATE stale (last MEM-IIP-076, 18 Aug) → MEM-IIP-077 added.
+- **F5 (open):** AGENTS.md checkpoint entry fd-131-133 missing (protected file — interactive session + Founder approval).
+- **F6 (open):** stray `dashboard_overall` PNG (2561×1263, 192 KB, repo root, untracked, 19 Aug 14:47) — flag for cleanup, not deleted (no approval).
+
+## Verification
+- Suite **235/235** (hermes-agent venv, 3.34s) — window `f4a0cae..d169eb7` touched `tests/locked/test_audit_api.py` (+2/−2) → re-run warranted, green
+- HEAD `d169eb7` == origin/main (452 commits); push SYNCED; docs-only commit added by this review (push verified)
+- Derived: 36 published reports (`grep -l "^status: published" reports/*.md`); AM artifact AM-V0-20260816-150812 (as-of 2026-08-14, 6d ≤ 7d fresh); FO 3 Aug (17d ≤ 30d); II 9 Aug (11d ≤ 120d); CS synthetic-labeled
+- Governance sync: AGENTS.md M3/M4A/M4B/M5 rows present; checkpoint entry pending (F5)
+
+## Market snapshot (20 Aug 11:10 UTC+7; equities = Wed 19 Aug COMPLETED EOD, futures = live Thu)
+AAPL 316.83 +2.19% / MSFT 484.31 +0.56% (−1.65% 5d, CIW no trigger) / JNJ 273.41 +0.85% / GOOGL 344.72 +0.15% / FSLR 222.40 +1.09% / SMCI 36.58 −2.22% / NVDA 217.56 −0.99% / SLV 60.01 **+4.47% 1d** / SPY 769.06 +0.21% / ABBV 265.97 +2.72% (+6.92% 5d) / BMY 67.61 +2.36% (+6.14% 5d) / LLY 1280.34 +4.46% (+5.07% 5d) / VRTX 552.06 +4.52% (+5.01% 5d) — inflection quartet strong post-publication. Futures: GC=F 4,553.00 +1.42% 1d (+4.34% 5d) / SI=F 67.25 +2.30% 1d (+3.66% 5d, **above ~$62 SILVER-CORR-001 anchor, ratio ~67.6:1**) / CL=F 84.51 −1.54% 1d (+4.01% 5d). No ±10% 1d moves → no news-driver lookup needed.
+
+## State artifacts updated
+PROJECT_STATE.md (Build Metrics / Session table / Next allowed action) · SESSION_CLOSEOUT.md (restore + append) · vault fd-register ×2 mirrors (FD-131..133) · Obsidian CURRENT-STATE (MEM-IIP-077). Committed docs-only (`<sha>`), PUSHED + verified. `dashboard_overall` left untracked (F6).
+
+## Recommended next action
+**M4B Founder acceptance** (review M4B closeout → accept → M5 Gate) — then Mon 24 Aug 08:00 weekly radar = FD #110 Live Office acceptance observation. Alternatives: (a) interactive session adds AGENTS.md checkpoint fd-131-133 (protected file); (b) investigate recurring radar cron misses (durable gateway supervision, dashboard-VBS pattern 14 Aug).
+
+<!-- 2026-08-20 11:35 UTC+7 -->
