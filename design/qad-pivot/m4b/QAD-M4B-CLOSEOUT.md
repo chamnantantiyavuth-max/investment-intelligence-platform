@@ -1,9 +1,9 @@
 # QAD-M4B Closeout — Evaluation Contract + PIT Fixtures + Acceptance Matrix + Validator + PIT Proof + Final Review
 
-> **Status:** M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE
-> **Authority:** FD #133
+> **Status:** M4B = FINAL / FROZEN — FOUNDER ACCEPTED
+> **Authority:** FD #133, FD #134
 > **Predecessor:** M4A = FROZEN FOR M4B DERIVATION (Freeze Gate PASS)
-> **Execution order:** M4A → Freeze → M4B → Freeze → STOP
+> **Execution order:** M4A → Freeze → M4B → Freeze → STOP — **COMPLETE**
 
 ---
 
@@ -11,12 +11,13 @@
 
 | Artifact | File | Status |
 |----------|------|--------|
-| Evaluation Contract | `QAD-M4B-EVALUATION-CONTRACT.md` | ✅ CLOSEOUT READY |
-| PIT Fixture Specification (10 fixture types) | `QAD-M4B-PIT-FIXTURE-SPEC.md` | ✅ DRAFT_UNSEALED |
-| Acceptance Matrix | `QAD-M4B-ACCEPTANCE-MATRIX.md` | ✅ FINAL DESIGN |
-| M4B Validator | `validate-m4b-pack.py` | ✅ 87/87 PASS |
+| Evaluation Contract | `QAD-M4B-EVALUATION-CONTRACT.md` | ✅ FINAL / FROZEN |
+| PIT Fixture Specification (10 fixture types) | `QAD-M4B-PIT-FIXTURE-SPEC.md` | ✅ DRAFT_UNSEALED (fixture state — unchanged by freeze) |
+| Acceptance Matrix | `QAD-M4B-ACCEPTANCE-MATRIX.md` | ✅ FINAL / FROZEN |
+| M4B Validator | `validate-m4b-pack.py` | ✅ 92/92 PASS |
 | PIT Leakage Proof | `pit-leakage-proof.py` | ✅ 9/9 PASS |
 | Final Independent Review | `QAD-M4B-INDEPENDENT-REVIEW-FINAL.md` | ✅ PASS |
+| Post-Review Proof Sync | `QAD-M4B-POST-REVIEW-PROOF-SYNC.md` | ✅ MECHANICAL VERIFICATION |
 
 ---
 
@@ -142,8 +143,8 @@ permanent loss, valuation asymmetry, final underwriting, and final Red Team adju
 
 ```text
 M4A = FROZEN FOR M4B DERIVATION
-M4B = COMPLETE — AWAITING FOUNDER ACCEPTANCE
-M5  = PENDING FOUNDER GATE
+M4B = FINAL / FROZEN — FOUNDER ACCEPTED
+M5  = GATE REVIEW AUTHORIZED — IMPLEMENTATION NOT AUTHORIZED
 ```
 
-<!-- 2026-08-19 17:15 UTC+7 -->
+<!-- 2026-08-21 15:00 UTC+7 (M4B freeze update — FINAL / FROZEN — FOUNDER ACCEPTED; M5 Gate Review authorized) -->

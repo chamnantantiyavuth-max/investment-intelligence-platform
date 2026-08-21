@@ -138,7 +138,7 @@ def validate_evaluation_contract():
     status_match = re.search(r"^>\s+\*\*Status:\*\*\s+(.+)$", content, re.MULTILINE)
     if status_match:
         status_text = status_match.group(1).strip()
-        expected = "M4B CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE"
+        expected = "M4B FINAL / FROZEN — FOUNDER ACCEPTED"
         check(status_text == expected,
               f"Evaluation contract status: '{status_text}' == '{expected}'")
     else:
@@ -245,12 +245,29 @@ def validate_acceptance_matrix():
           f"({len(numeric_suspects)} numeric % patterns detected: "
           f"{numeric_suspects})")
 
-    # Check 9: For every material metric, Pass Threshold must be PROVISIONAL_M4B_THRESHOLD
-    # Count per-metric threshold occurrences (46 total = 44 metric rows + 2 in preamble/notes)
-    provis_refs = content.count("PROVISIONAL_M4B_THRESHOLD")
-    check(provis_refs >= 44,
-          f"PROVISIONAL_M4B_THRESHOLD appears {provis_refs} times (expected >= 44, "
-          f"ensuring every metric row uses provisional placeholder)")
+    # Check 9: Per-row Pass Threshold column verification
+    # Parse every metric row into columns and verify column 4 (Pass Threshold)
+    metric_rows = re.findall(
+        r"^\|\s*\d+\.\d+\s*\|.*\|$", content, re.MULTILINE
+    )
+    rows_with_provis = 0
+    rows_without_provis = 0
+    for row in metric_rows:
+        cols = [c.strip() for c in row.split("|")]
+        # cols[0] = empty (before first |), cols[1] = #, cols[2] = Metric,
+        # cols[3] = Definition, cols[4] = Pass Threshold, cols[5] = Fixtures,
+        # cols[6] = Method, cols[7] = Type, cols[8] = empty (after last |)
+        if len(cols) >= 7:
+            threshold_cell = cols[4] if len(cols) > 4 else ""
+            if "PROVISIONAL_M4B_THRESHOLD" in threshold_cell:
+                rows_with_provis += 1
+            else:
+                rows_without_provis += 1
+    check(rows_without_provis == 0,
+          f"All {rows_with_provis} metric rows have PROVISIONAL_M4B_THRESHOLD "
+          f"in Pass Threshold cell ({rows_without_provis} non-provisional)")
+    check(rows_with_provis == 44,
+          f"Exactly 44 metric rows with provisional threshold (found {rows_with_provis})")
 
 
 def validate_no_production_code():

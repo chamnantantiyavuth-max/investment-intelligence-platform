@@ -1,7 +1,7 @@
 # QAD-M4B Evaluation Contract
 
-> **Status:** M4B CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE
-> **Authority:** FD #133; M3 Frozen Domain Contracts; M3-09 §8 (Evaluation)
+> **Status:** M4B FINAL / FROZEN — FOUNDER ACCEPTED
+> **Authority:** FD #133, FD #134; M3 Frozen Domain Contracts; M3-09 §8 (Evaluation)
 > **Execution rule:** M4B begins only after M4A Freeze Gate passes.
 > **Design principle:** Two separate evaluation questions — Type A (research quality) and Type B (discovery recall).
 

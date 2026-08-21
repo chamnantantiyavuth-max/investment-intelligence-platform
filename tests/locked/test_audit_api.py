@@ -69,7 +69,7 @@ def test_decisions_register_contiguous_and_parsed():
         assert isinstance(d["preview"], str) and d["preview"].strip()
     # Latest decisions carry a dated stamp (FD #132, 19 Aug 2026)
     latest = decisions[-1]
-    assert latest["date"] == "19 Aug 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "21 Aug 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():
