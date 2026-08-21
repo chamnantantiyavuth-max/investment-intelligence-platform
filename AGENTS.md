@@ -187,8 +187,8 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - **M1 = FINAL PASS** (17 Aug 2026; independent governance review PASS WITH FINDINGS → 8 findings resolved).
 - **M2 = FINAL PASS** (18 Aug 2026; deterministic integrity validation PASS — 25/25 records, single disposition per capability, runtime audit corrected, FROZEN-with-runtime derived mechanically)
 - **M3 = FINAL PASS — FOUNDER ACCEPTED** (19 Aug 2026; FD #132; 9 domain contracts, 14 roles, 12 services S1–S12; independent review PASS_WITH_FINDINGS all findings resolved)
-- **M4A = FINAL / FROZEN** (68 schemas, 12 state machines, 15 invariants; semantic validator 183/183; independent review PASS)
-- **M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE** (evaluation contract, 10 PIT fixtures, 44 metrics; PIT proof = 9/9; independent review PASS)
+- **M4A = FINAL / FROZEN** (68 schemas, 12 state machines, 15 invariants; structural validator 173/173 PASS; independent review PASS)
+- **M4B = CLOSEOUT READY — AWAITING FOUNDER ACCEPTANCE** (10 DRAFT_UNSEALED AI_PROPOSED fixture candidates, 0 sealed fixtures, 44 metrics; PIT proof = 9/9 PASS, M4B validator 92/92 PASS; independent review substantive verdict = PASS)
 - **M5 Implementation Gate = ⏳ PENDING** — no production code until the 10-row evidence package passes Founder review.
 - Legacy AM/CS/FO/II authorities are **not co-equal investment paths** — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
 - **Theme Intelligence is supporting context/discovery, not a mandatory research gateway.** Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership.
@@ -256,3 +256,4 @@ START → AGENTS.md → Domain Index → PROJECT_STATE.md → CLOSEOUT → Verif
 <!-- 2026-08-11 14:30 UTC+7 (interactive session: AGENTS.md checkpoint fd-79-96 added — radar/jnj week, magazine-restructure-deep, equity-inflection, thai-content, delegation-firewall, chatgpt-fitgap-wp1-3-blog-layout; protected-file approval obtained interactively) -->
 <!-- 2026-08-17 17:30 UTC+7 (interactive session: AGENTS.md checkpoint fd-130-qad-pivot-m1-correction added — QAD M1 correction closeout; protected-file approval obtained interactively) -->
 <!-- 2026-08-17 17:30 UTC+7 (interactive session: AGENTS.md Phase governance restructured — Historical Phase Governance + Current QAD Governance; protected-file approval obtained interactively) -->
+<!-- 2026-08-21 23:15 UTC+7 (M4 proof-closure state sync — M4A structural 173/173, M4B fixture truth + 92/92, PIT 9/9; mechanical facts-only update; Founder-approved) -->
