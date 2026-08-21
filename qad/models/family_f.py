@@ -37,6 +37,11 @@ class NormalizedFinancialFactAdjustment_type(str, Enum):
     EXTRAORDINARY = "EXTRAORDINARY"
     OTHER = "OTHER"
 
+class NormalizedFinancialFactIs_permanent(str, Enum):
+    PERMANENT = "PERMANENT"
+    TEMPORARY = "TEMPORARY"
+    UNCERTAIN = "UNCERTAIN"
+
 class PermanentLossAssessmentRisk_level(str, Enum):
     NONE = "NONE"
     LOW = "LOW"
@@ -53,32 +58,28 @@ class ScenarioRecordScenario_type(str, Enum):
 
 
 class CalculationRecord(BaseModel):
-    """CALC-01: CalculationRecord.
-    Frozen M4A canonical schema. Family F.
-    """
+    """CALC-01: CalculationRecord. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CALC-01", frozen=True)
-    calculated_by: str
-    calculation_id: str
-    case_id: str
-    formula: str
-    inputs: list[str]
-    result: str
+    calculated_by: str = Field(frozen=True)
+    calculation_id: str = Field(frozen=True)
+    case_id: str = Field(frozen=True)
+    formula: str = Field(frozen=True)
+    inputs: list[str] = Field(frozen=True)
+    result: str = Field(frozen=True)
     timestamp: str = Field(frozen=True)
-    as_of: Optional[str] = Field(default=None)
-    error_margin: Optional[str] = Field(default=None)
-    formula_version: Optional[str] = Field(default=None)
-    input_fact_ids: Optional[list[str]] = Field(default=None)
-    notes: Optional[str] = Field(default=None)
+    as_of: Optional[str] = Field(default=None, frozen=True)
+    error_margin: Optional[str] = Field(default=None, frozen=True)
+    formula_version: Optional[str] = Field(default=None, frozen=True)
+    input_fact_ids: Optional[list[str]] = Field(default=None, frozen=True)
+    notes: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class FinancialFact(BaseModel):
-    """FF-01: FinancialFact.
-    Frozen M4A canonical schema. Family F.
-    """
+    """FF-01: FinancialFact. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="FF-01", frozen=True)
@@ -90,7 +91,7 @@ class FinancialFact(BaseModel):
     source_id: str
     unit: str
     value: str
-    as_of: Optional[str] = Field(default=None)
+    as_of: Optional[str] = Field(default=None, frozen=True)
     currency: Optional[str] = Field(default=None)
     extractor: Optional[str] = Field(default=None)
     footnote: Optional[str] = Field(default=None)
@@ -104,9 +105,7 @@ class FinancialFact(BaseModel):
 
 
 class NormalizedFinancialFact(BaseModel):
-    """NFF-01: NormalizedFinancialFact.
-    Frozen M4A canonical schema. Family F.
-    """
+    """NFF-01: NormalizedFinancialFact. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="NFF-01", frozen=True)
@@ -117,8 +116,8 @@ class NormalizedFinancialFact(BaseModel):
     financial_fact_id: str
     normalized_fact_id: str
     adjustment_amount: Optional[float] = Field(default=None)
-    adjustment_date: Optional[str] = Field(default=None)
-    is_permanent: Optional[str] = Field(default=None)
+    adjustment_date: Optional[str] = Field(default=None, frozen=True)
+    is_permanent: Optional[NormalizedFinancialFactIs_permanent] = Field(default=None)
     methodology: Optional[str] = Field(default=None)
     source_id: Optional[str] = Field(default=None)
 
@@ -126,34 +125,30 @@ class NormalizedFinancialFact(BaseModel):
 
 
 class PriceImpliedExpectation(BaseModel):
-    """PIE-01: PriceImpliedExpectation.
-    Frozen M4A canonical schema. Family F.
-    """
+    """PIE-01: PriceImpliedExpectation. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="PIE-01", frozen=True)
-    case_id: str
-    current_price: str
-    expectation_id: str
-    implied_growth_rate: str
-    implied_terminal_value: str
-    recovery_rate_implied: str
-    scenario_comparison: dict
-    analysis_date: Optional[str] = Field(default=None)
-    analyst: Optional[str] = Field(default=None)
-    implied_terminal_multiple: Optional[str] = Field(default=None)
-    method_version: Optional[str] = Field(default=None)
-    price_as_of: Optional[str] = Field(default=None)
-    sensitivity_range: Optional[dict] = Field(default=None)
-    years_of_no_recovery_priced_in: Optional[str] = Field(default=None)
+    case_id: str = Field(frozen=True)
+    current_price: str = Field(frozen=True)
+    expectation_id: str = Field(frozen=True)
+    implied_growth_rate: str = Field(frozen=True)
+    implied_terminal_value: str = Field(frozen=True)
+    recovery_rate_implied: str = Field(frozen=True)
+    scenario_comparison: dict = Field(frozen=True)
+    analysis_date: Optional[str] = Field(default=None, frozen=True)
+    analyst: Optional[str] = Field(default=None, frozen=True)
+    implied_terminal_multiple: Optional[str] = Field(default=None, frozen=True)
+    method_version: Optional[str] = Field(default=None, frozen=True)
+    price_as_of: Optional[str] = Field(default=None, frozen=True)
+    sensitivity_range: Optional[dict] = Field(default=None, frozen=True)
+    years_of_no_recovery_priced_in: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class PermanentLossAssessment(BaseModel):
-    """PLA-01: PermanentLossAssessment.
-    Frozen M4A canonical schema. Family F.
-    """
+    """PLA-01: PermanentLossAssessment. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="PLA-01", frozen=True)
@@ -165,7 +160,7 @@ class PermanentLossAssessment(BaseModel):
     covenant_risk: str
     dilution_risk: str
     refinancing_risk: str
-    assessment_date: Optional[str] = Field(default=None)
+    assessment_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None)
     evidence_ids: Optional[list[str]] = Field(default=None)
     permanent_loss_range: Optional[dict] = Field(default=None)
@@ -175,55 +170,49 @@ class PermanentLossAssessment(BaseModel):
 
 
 class ReverseDCFRecord(BaseModel):
-    """RDCF-01: ReverseDCFRecord.
-    Frozen M4A canonical schema. Family F.
-    """
+    """RDCF-01: ReverseDCFRecord. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RDCF-01", frozen=True)
-    analyst: str
-    case_id: str
-    current_price: str
-    implied_growth_rate: str
-    implied_terminal_value: str
-    r_dcf_id: str
-    scenario_comparison: dict
-    analysis_date: Optional[str] = Field(default=None)
-    method_version: Optional[str] = Field(default=None)
-    price_as_of: Optional[str] = Field(default=None)
-    recovery_rate_implied: Optional[str] = Field(default=None)
-    sensitivity_range: Optional[dict] = Field(default=None)
-    years_of_no_recovery_priced_in: Optional[str] = Field(default=None)
+    analyst: str = Field(frozen=True)
+    case_id: str = Field(frozen=True)
+    current_price: str = Field(frozen=True)
+    implied_growth_rate: str = Field(frozen=True)
+    implied_terminal_value: str = Field(frozen=True)
+    r_dcf_id: str = Field(frozen=True)
+    scenario_comparison: dict = Field(frozen=True)
+    analysis_date: Optional[str] = Field(default=None, frozen=True)
+    method_version: Optional[str] = Field(default=None, frozen=True)
+    price_as_of: Optional[str] = Field(default=None, frozen=True)
+    recovery_rate_implied: Optional[str] = Field(default=None, frozen=True)
+    sensitivity_range: Optional[dict] = Field(default=None, frozen=True)
+    years_of_no_recovery_priced_in: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class ScenarioRecord(BaseModel):
-    """SCEN-01: ScenarioRecord.
-    Frozen M4A canonical schema. Family F.
-    """
+    """SCEN-01: ScenarioRecord. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="SCEN-01", frozen=True)
-    assumptions: dict
-    case_id: str
-    creator: str
-    intrinsic_value_estimate: str
-    scenario_id: str
-    scenario_type: ScenarioRecordScenario_type
-    as_of: Optional[str] = Field(default=None)
-    created_at: Optional[str] = Field(default=None)
-    evidence_ids: Optional[list[str]] = Field(default=None)
-    probability_weight: Optional[str] = Field(default=None)
-    sensitivity_analysis: Optional[dict] = Field(default=None)
+    assumptions: dict = Field(frozen=True)
+    case_id: str = Field(frozen=True)
+    creator: str = Field(frozen=True)
+    intrinsic_value_estimate: str = Field(frozen=True)
+    scenario_id: str = Field(frozen=True)
+    scenario_type: ScenarioRecordScenario_type = Field(frozen=True)
+    as_of: Optional[str] = Field(default=None, frozen=True)
+    created_at: Optional[str] = Field(default=None, frozen=True)
+    evidence_ids: Optional[list[str]] = Field(default=None, frozen=True)
+    probability_weight: Optional[str] = Field(default=None, frozen=True)
+    sensitivity_analysis: Optional[dict] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class ValuationAssessment(BaseModel):
-    """VA-01: ValuationAssessment.
-    Frozen M4A canonical schema. Family F.
-    """
+    """VA-01: ValuationAssessment. Frozen M4A canonical schema. Family F. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="VA-01", frozen=True)
@@ -236,10 +225,10 @@ class ValuationAssessment(BaseModel):
     r_dcf_id: str
     scenario_values: dict
     valuation_id: str
-    assessment_date: Optional[str] = Field(default=None)
+    assessment_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None)
     evidence_ids: Optional[list[str]] = Field(default=None)
-    price_as_of: Optional[str] = Field(default=None)
+    price_as_of: Optional[str] = Field(default=None, frozen=True)
     thesis_killers_financial: Optional[list[str]] = Field(default=None)
     valuation_range: Optional[dict] = Field(default=None)
 

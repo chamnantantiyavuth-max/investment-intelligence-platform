@@ -19,6 +19,11 @@ class AuditFindingCheck_name(str, Enum):
     SELF_REVIEW_SEPARATION = "SELF_REVIEW_SEPARATION"
     PUBLICATION_GATES = "PUBLICATION_GATES"
 
+class AuditFindingPass_fail(str, Enum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
 class AuditGateOutcome(str, Enum):
     PASS = "PASS"
     PASS_WITH_FINDINGS = "PASS_WITH_FINDINGS"
@@ -37,6 +42,12 @@ class PublicationRecordPublication_state(str, Enum):
     FOUNDER_DISAGREES = "FOUNDER_DISAGREES"
     FOUNDER_REJECTS = "FOUNDER_REJECTS"
 
+class PublicationRecordCategory(str, Enum):
+    STOCK_FROM_ANOMALY = "STOCK_FROM_ANOMALY"
+    STOCK_FROM_REQUEST = "STOCK_FROM_REQUEST"
+    CLOSE_SYSTEM_PRODUCT = "CLOSE_SYSTEM_PRODUCT"
+    WEEKLY_INTELLIGENCE = "WEEKLY_INTELLIGENCE"
+
 class RedTeamChallengeOutcome(str, Enum):
     ACCEPTED = "ACCEPTED"
     PARTIALLY_ACCEPTED = "PARTIALLY_ACCEPTED"
@@ -53,9 +64,7 @@ class UnderwritingVerdictVerdict(str, Enum):
 
 
 class AuditFinding(BaseModel):
-    """AF-01: AuditFinding.
-    Frozen M4A canonical schema. Family G.
-    """
+    """AF-01: AuditFinding. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="AF-01", frozen=True)
@@ -63,12 +72,12 @@ class AuditFinding(BaseModel):
     check_name: AuditFindingCheck_name
     evidence: str
     finding_id: str
-    pass_fail: str
+    pass_fail: AuditFindingPass_fail
     required_correction: str
     auditor: Optional[str] = Field(default=None)
-    check_timestamp: Optional[str] = Field(default=None)
+    check_timestamp: Optional[str] = Field(default=None, frozen=True)
     resolution_timestamp: Optional[str] = Field(default=None)
-    resolved: Optional[str] = Field(default=None)
+    resolved: Optional[bool] = Field(default=None)
     resolver: Optional[str] = Field(default=None)
     severity: Optional[str] = Field(default=None)
 
@@ -76,9 +85,7 @@ class AuditFinding(BaseModel):
 
 
 class AuditGate(BaseModel):
-    """AG-01: AuditGate (AuditReport).
-    Frozen M4A canonical schema. Family G.
-    """
+    """AG-01: AuditGate (AuditReport). Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="AG-01", frozen=True)
@@ -96,9 +103,7 @@ class AuditGate(BaseModel):
 
 
 class ChallengeResponse(BaseModel):
-    """CRESP-01: ChallengeResponse.
-    Frozen M4A canonical schema. Family G.
-    """
+    """CRESP-01: ChallengeResponse. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CRESP-01", frozen=True)
@@ -111,16 +116,14 @@ class ChallengeResponse(BaseModel):
     underwriter: str
     notes: Optional[str] = Field(default=None)
     rejection_evidence: Optional[list[str]] = Field(default=None)
-    response_date: Optional[str] = Field(default=None)
+    response_date: Optional[str] = Field(default=None, frozen=True)
 
     # FK: challenge_id -> RTC-01.challenge_id
     # FK: case_id -> CASE-01.case_id
 
 
 class FounderDecisionReference(BaseModel):
-    """FDR-01: FounderDecisionReference.
-    Frozen M4A canonical schema. Family G.
-    """
+    """FDR-01: FounderDecisionReference. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="FDR-01", frozen=True)
@@ -138,14 +141,12 @@ class FounderDecisionReference(BaseModel):
 
 
 class PublicationRecord(BaseModel):
-    """PUB-01: PublicationRecord.
-    Frozen M4A canonical schema. Family G.
-    """
+    """PUB-01: PublicationRecord. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="PUB-01", frozen=True)
     case_id: str
-    category: str
+    category: PublicationRecordCategory
     editor: str
     publication_id: str
     publication_state: PublicationRecordPublication_state
@@ -164,9 +165,7 @@ class PublicationRecord(BaseModel):
 
 
 class RedTeamChallenge(BaseModel):
-    """RTC-01: RedTeamChallenge.
-    Frozen M4A canonical schema. Family G.
-    """
+    """RTC-01: RedTeamChallenge. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RTC-01", frozen=True)
@@ -177,7 +176,7 @@ class RedTeamChallenge(BaseModel):
     outcome: RedTeamChallengeOutcome
     risk_assessment: str
     strongest_opposing_case: str
-    challenge_date: Optional[str] = Field(default=None)
+    challenge_date: Optional[str] = Field(default=None, frozen=True)
     hidden_risks: Optional[list[str]] = Field(default=None)
     management_challenge: Optional[str] = Field(default=None)
     market_correctness_case: Optional[str] = Field(default=None)
@@ -191,9 +190,7 @@ class RedTeamChallenge(BaseModel):
 
 
 class UnderwritingVerdict(BaseModel):
-    """UV-01: UnderwritingVerdict.
-    Frozen M4A canonical schema. Family G.
-    """
+    """UV-01: UnderwritingVerdict. Frozen M4A canonical schema. Family G. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="UV-01", frozen=True)
@@ -210,7 +207,7 @@ class UnderwritingVerdict(BaseModel):
     audit_report_id: Optional[str] = Field(default=None)
     dissent_notes: Optional[str] = Field(default=None)
     red_team_challenge_id: Optional[str] = Field(default=None)
-    verdict_date: Optional[str] = Field(default=None)
+    verdict_date: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
     # FK: red_team_challenge_id -> RTC-01.challenge_id

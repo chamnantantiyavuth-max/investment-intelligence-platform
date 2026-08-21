@@ -36,6 +36,12 @@ class CandidateRecordSelection_state(str, Enum):
     REJECT = "REJECT"
     SELECTION_ERROR = "SELECTION_ERROR"
 
+class CandidateRecordEntry_route(str, Enum):
+    QUALITY_FIRST = "QUALITY_FIRST"
+    DISLOCATION_FIRST = "DISLOCATION_FIRST"
+    EXTERNAL = "EXTERNAL"
+    FOUNDER_DIRECTED = "FOUNDER_DIRECTED"
+
 class QualityUniverseRecordQuality_state(str, Enum):
     VERIFIED = "VERIFIED"
     PROBABLE = "PROBABLE"
@@ -48,6 +54,14 @@ class ResearchableUniverseRecordInclusion_state(str, Enum):
     PENDING_REVIEW = "PENDING_REVIEW"
     DATA_LIMITED = "DATA_LIMITED"
 
+class ResearchableUniverseRecordExclusion_category(str, Enum):
+    NON_OPERATING = "NON_OPERATING"
+    SHELL = "SHELL"
+    DUPLICATE = "DUPLICATE"
+    UNRESOLVED_IDENTITY = "UNRESOLVED_IDENTITY"
+    NO_FINANCIAL_HISTORY = "NO_FINANCIAL_HISTORY"
+    OTHER_APPROVED = "OTHER_APPROVED"
+
 class SecurityMasterSecurity_type(str, Enum):
     COMMON_EQUITY = "COMMON_EQUITY"
     ADR = "ADR"
@@ -57,17 +71,43 @@ class SecurityMasterSecurity_type(str, Enum):
     FUND = "FUND"
     OTHER = "OTHER"
 
+class SecurityMasterStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    DELISTED = "DELISTED"
+    MERGED = "MERGED"
+    ACQUIRED = "ACQUIRED"
+    SPINOFF = "SPINOFF"
+    UNKNOWN = "UNKNOWN"
+
 class SignalRecordSignal_type(str, Enum):
     QUALITY = "QUALITY"
     DISLOCATION = "DISLOCATION"
     EXTERNAL = "EXTERNAL"
     FOUNDER_DIRECTED = "FOUNDER_DIRECTED"
 
+class SignalRecordSignal_family(str, Enum):
+    PRICE_DISLOCATION = "PRICE_DISLOCATION"
+    MULTIPLE_COMPRESSION = "MULTIPLE_COMPRESSION"
+    EARNINGS_REVISION = "EARNINGS_REVISION"
+    REVENUE_DETERIORATION = "REVENUE_DETERIORATION"
+    MARGIN_ANOMALY = "MARGIN_ANOMALY"
+    WORKING_CAPITAL = "WORKING_CAPITAL"
+    GOVERNANCE = "GOVERNANCE"
+    REGULATORY = "REGULATORY"
+    INDUSTRY_SHOCK = "INDUSTRY_SHOCK"
+    COMPETITOR_DIVERGENCE = "COMPETITOR_DIVERGENCE"
+    NARRATIVE_GAP = "NARRATIVE_GAP"
+    EXTERNAL = "EXTERNAL"
+
+class SignalRecordEntry_route(str, Enum):
+    QUALITY_FIRST = "QUALITY_FIRST"
+    DISLOCATION_FIRST = "DISLOCATION_FIRST"
+    EXTERNAL = "EXTERNAL"
+    FOUNDER_DIRECTED = "FOUNDER_DIRECTED"
+
 
 class CaseRecord(BaseModel):
-    """CASE-01: CaseRecord.
-    Frozen M4A canonical schema. Family A.
-    """
+    """CASE-01: CaseRecord. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CASE-01", frozen=True)
@@ -75,7 +115,7 @@ class CaseRecord(BaseModel):
     candidate_id: str
     case_id: str
     case_state: CaseRecordCase_state
-    entity_id: str = Field(frozen=True)
+    entity_id: str
     opened_at: str = Field(frozen=True)
     research_director: str
     budget_id: Optional[str] = Field(default=None)
@@ -91,24 +131,22 @@ class CaseRecord(BaseModel):
 
 
 class CandidateRecord(BaseModel):
-    """CR-01: CandidateRecord.
-    Frozen M4A canonical schema. Family A.
-    """
+    """CR-01: CandidateRecord. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CR-01", frozen=True)
     candidate_id: str
-    entity_id: str = Field(frozen=True)
-    entry_route: str
+    entity_id: str
+    entry_route: CandidateRecordEntry_route
     entry_timestamp: str = Field(frozen=True)
     evidence_freshness: str
     selection_state: CandidateRecordSelection_state
     signal_ids: list[str]
     data_version: Optional[str] = Field(default=None)
-    dislocation_flag: Optional[str] = Field(default=None)
-    last_evaluated: Optional[str] = Field(default=None)
+    dislocation_flag: Optional[bool] = Field(default=None)
+    last_evaluated: Optional[str] = Field(default=None, frozen=True)
     policy_version: Optional[str] = Field(default=None)
-    quality_flag: Optional[str] = Field(default=None)
+    quality_flag: Optional[bool] = Field(default=None)
     rejection_reason: Optional[str] = Field(default=None)
     selector: Optional[str] = Field(default=None)
     watch_conditions: Optional[str] = Field(default=None)
@@ -119,9 +157,7 @@ class CandidateRecord(BaseModel):
 
 
 class QualityUniverseRecord(BaseModel):
-    """QU-01: QualityUniverseRecord.
-    Frozen M4A canonical schema. Family A.
-    """
+    """QU-01: QualityUniverseRecord. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="QU-01", frozen=True)
@@ -129,7 +165,7 @@ class QualityUniverseRecord(BaseModel):
     entity_id: str = Field(frozen=True)
     evidence_ids: list[str]
     quality_state: QualityUniverseRecordQuality_state
-    as_of_date: Optional[str] = Field(default=None)
+    as_of_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None)
     data_version: Optional[str] = Field(default=None)
     moat_depth: Optional[str] = Field(default=None)
@@ -144,22 +180,20 @@ class QualityUniverseRecord(BaseModel):
 
 
 class ResearchableUniverseRecord(BaseModel):
-    """RU-01: ResearchableUniverseRecord.
-    Frozen M4A canonical schema. Family A.
-    """
+    """RU-01: ResearchableUniverseRecord. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RU-01", frozen=True)
     as_of_date: str = Field(frozen=True)
-    entity_id: str = Field(frozen=True)
+    entity_id: str
     inclusion_reason: str
     inclusion_state: ResearchableUniverseRecordInclusion_state
     data_version: Optional[str] = Field(default=None)
-    dislocation_flag: Optional[str] = Field(default=None)
-    exclusion_category: Optional[str] = Field(default=None)
+    dislocation_flag: Optional[bool] = Field(default=None)
+    exclusion_category: Optional[ResearchableUniverseRecordExclusion_category] = Field(default=None)
     exclusion_detail: Optional[str] = Field(default=None)
     last_reviewed: Optional[str] = Field(default=None, frozen=True)
-    quality_flag: Optional[str] = Field(default=None)
+    quality_flag: Optional[bool] = Field(default=None)
     reviewer: Optional[str] = Field(default=None)
     rule_version: Optional[str] = Field(default=None)
 
@@ -167,9 +201,7 @@ class ResearchableUniverseRecord(BaseModel):
 
 
 class SecurityMaster(BaseModel):
-    """SM-01: SecurityMaster.
-    Frozen M4A canonical schema. Family A.
-    """
+    """SM-01: SecurityMaster. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="SM-01", frozen=True)
@@ -179,13 +211,13 @@ class SecurityMaster(BaseModel):
     name: str
     primary_ticker: str
     security_type: SecurityMasterSecurity_type
-    status: str
-    adr_flag: Optional[str] = Field(default=None)
-    as_of_date: Optional[str] = Field(default=None)
+    status: SecurityMasterStatus
+    adr_flag: Optional[bool] = Field(default=None)
+    as_of_date: Optional[str] = Field(default=None, frozen=True)
     corporate_actions: Optional[list[str]] = Field(default=None)
     data_version: Optional[str] = Field(default=None)
     dual_listings: Optional[list[str]] = Field(default=None)
-    effective_date: Optional[str] = Field(default=None)
+    effective_date: Optional[str] = Field(default=None, frozen=True)
     industry: Optional[str] = Field(default=None)
     isin: Optional[str] = Field(default=None)
     resolver: Optional[str] = Field(default=None)
@@ -193,32 +225,30 @@ class SecurityMaster(BaseModel):
     sector: Optional[str] = Field(default=None)
     sedol: Optional[str] = Field(default=None)
     source: Optional[str] = Field(default=None)
-    termination_date: Optional[str] = Field(default=None)
+    termination_date: Optional[str] = Field(default=None, frozen=True)
     ticker_history: Optional[list[str]] = Field(default=None)
 
 
 class SignalRecord(BaseModel):
-    """SR-01: SignalRecord.
-    Frozen M4A canonical schema. Family A.
-    """
+    """SR-01: SignalRecord. Frozen M4A canonical schema. Family A. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="SR-01", frozen=True)
     detection_timestamp: str = Field(frozen=True)
     entity_id: str = Field(frozen=True)
-    entry_route: str
-    signal_family: str
-    signal_id: str
-    signal_type: SignalRecordSignal_type
-    as_of_date: Optional[str] = Field(default=None)
-    data_version: Optional[str] = Field(default=None)
-    detector: Optional[str] = Field(default=None)
-    model_version: Optional[str] = Field(default=None)
-    rule_version: Optional[str] = Field(default=None)
-    signal_description: Optional[str] = Field(default=None)
-    signal_evidence: Optional[str] = Field(default=None)
-    signal_threshold: Optional[str] = Field(default=None)
-    signal_value: Optional[str] = Field(default=None)
-    source: Optional[str] = Field(default=None)
+    entry_route: SignalRecordEntry_route = Field(frozen=True)
+    signal_family: SignalRecordSignal_family = Field(frozen=True)
+    signal_id: str = Field(frozen=True)
+    signal_type: SignalRecordSignal_type = Field(frozen=True)
+    as_of_date: Optional[str] = Field(default=None, frozen=True)
+    data_version: Optional[str] = Field(default=None, frozen=True)
+    detector: Optional[str] = Field(default=None, frozen=True)
+    model_version: Optional[str] = Field(default=None, frozen=True)
+    rule_version: Optional[str] = Field(default=None, frozen=True)
+    signal_description: Optional[str] = Field(default=None, frozen=True)
+    signal_evidence: Optional[str] = Field(default=None, frozen=True)
+    signal_threshold: Optional[str] = Field(default=None, frozen=True)
+    signal_value: Optional[str] = Field(default=None, frozen=True)
+    source: Optional[str] = Field(default=None, frozen=True)
 
     # FK: entity_id -> SM-01.entity_id

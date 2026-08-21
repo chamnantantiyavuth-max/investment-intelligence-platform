@@ -1,35 +1,27 @@
-"""M5.1 — Provenance and PIT metadata mixins for frozen QAD schemas.
+"""DEPRECATED — NOT USED BY M5.1 GENERATED MODELS.
 
-Every runtime schema inherits these to ensure complete provenance tracking
-and Point-in-Time enforcement metadata per M4A contract.
+M5.1 generated models do NOT inherit from these mixins.
+PIT and provenance fields are compiled directly into each schema model
+from the frozen M4A contract. See qad/models/ for the generated models.
+
+This file is retained for reference only and will be removed when
+all consumers are migrated to the generated models.
 """
+from __future__ import annotations
 
 from datetime import datetime
 from typing import Optional
 
 
 class ProvenanceMixin:
-    """Provenance metadata — every canonical schema must carry these.
-
-    Frozen per M4A provenance fields contract. Individual schemas may add
-    additional provenance fields beyond this base set.
-    """
-
-    source: str  # origin (e.g. "sec-edgar", "yfinance", "manual-entry")
-    retrieval_timestamp: datetime  # when retrieved/created
-    data_version: str  # source version identifier
-
-    class Config:
-        extra = "forbid"
+    """DEPRECATED — Not used by M5.1 generated models.
+    Provenance fields are now compiled per-schema from frozen M4A."""
+    source: str
+    retrieval_timestamp: datetime
+    data_version: str
 
 
 class PITMixin:
-    """Point-in-Time metadata — every schema with PIT enforcement.
-
-    Frozen per M4A PIT fields contract.
-    """
-
-    as_of_date: str  # ISO date string; PIT boundary this record is valid within
-
-    class Config:
-        extra = "forbid"
+    """DEPRECATED — Not used by M5.1 generated models.
+    PIT fields are now compiled per-schema from frozen M4A."""
+    as_of_date: str

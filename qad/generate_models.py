@@ -2,7 +2,6 @@
 """M5.1 — Canonical Schema Code Generator (Contract Compiler).
 Reads QAD-M4A-CANONICAL-SCHEMAS.md and generates Pydantic v2 models.
 EVERYTHING derives from the ONE parsed representation of frozen M4A.
-No hand-written FK registry, no hand-written canonical boundary lists.
 """
 import hashlib
 import json
@@ -30,32 +29,19 @@ FAMILY_TITLES = OrderedDict([
 ])
 
 SCALAR_PATTERNS = {
-    "duration_ms": "int",
-    "tokens_used": "int",
-    "retry_count": "int",
-    "max_retries": "int",
-    "cost_usd": "float",
-    "market_price": "float",
-    "implied_growth": "float",
-    "metric_value": "float",
-    "valuation_range_low": "float",
-    "valuation_range_high": "float",
-    "budget_allocated": "float",
-    "budget_consumed": "float",
-    "calc_result": "float",
-    "loss_estimate": "float",
-    "saturation_threshold": "float",
-    "oom_ratio": "float",
-    "adjustment_amount": "float",
-    "fair_value": "float",
-    "target_price": "float",
+    "duration_ms": "int", "tokens_used": "int", "retry_count": "int", "max_retries": "int",
+    "cost_usd": "float", "market_price": "float", "implied_growth": "float",
+    "metric_value": "float", "valuation_range_low": "float", "valuation_range_high": "float",
+    "budget_allocated": "float", "budget_consumed": "float", "calc_result": "float",
+    "loss_estimate": "float", "saturation_threshold": "float", "oom_ratio": "float",
+    "adjustment_amount": "float", "fair_value": "float", "target_price": "float",
+    "adr_flag": "bool", "quality_flag": "bool", "dislocation_flag": "bool",
+    "is_resolved": "bool", "resolved": "bool",
 }
 
 
 def parse_field_shape(field_name: str) -> tuple[str, str]:
-    """Parse field name into (clean_name, container_type).
-    container_type: 'list', 'dict', or '' for scalar.
-    """
+    """Parse field name into (clean_name, container_type). 'list', 'dict', or ''."""
     if field_name.endswith("[]"):
         return field_name[:-2], "list"
     dict_match = re.match(r'^(\w+)\{(.+)\}$', field_name)
@@ -66,42 +52,26 @@ def parse_field_shape(field_name: str) -> tuple[str, str]:
     return field_name, ""
 
 
-def infer_field_type(fname: str, container: str, is_required: bool) -> str:
-    """Infer Python type annotation from M4A field properties."""
-    base = SCALAR_PATTERNS.get(fname, "str")
-    if container == "list":
-        py_type = f"list[{base}]"
-    elif container == "dict":
-        py_type = "dict"
-    else:
-        py_type = base
-    if not is_required:
-        py_type = f"Optional[{py_type}]"
-    return py_type
-
-
 def parse_enum_rows(block: str) -> list[dict]:
-    """Parse enums from a schema block."""
+    """Parse enums from a schema block, including continuation rows."""
     enums = []
-    # Find the first enum row
-    m = re.search(r'\| \*\*enums\*\* \| (.+?) \|', block)
+    m = re.search(r'\|\s*\*\*enums\*\*\s*\|\s*(.+?)\s*\|', block)
     if not m:
         return enums
     first = m.group(1).strip()
     if first:
-        m2 = re.match(r'`(\w+):\s*(.+)`', first)
+        m2 = re.match(r'`(\w+):\s*(.+?)`', first)
         if m2:
             enums.append({"field": m2.group(1), "values": [v.strip() for v in m2.group(2).split("/")]})
-
     rest = block[m.end():]
     for line in rest.split('\n'):
-        line = line.strip()
-        if not line:
+        stripped = line.strip()
+        if not stripped:
             continue
-        if not line.startswith('| | '):
+        if not stripped.startswith('| | '):
             break
-        content = line.strip('|').strip()
-        m3 = re.match(r'`(\w+):\s*(.+)`', content)
+        content = stripped.strip('| ').strip()
+        m3 = re.match(r'`(\w+):\s*(.+?)`', content)
         if m3:
             enums.append({"field": m3.group(1), "values": [v.strip() for v in m3.group(2).split("/")]})
     return enums
@@ -110,10 +80,7 @@ def parse_enum_rows(block: str) -> list[dict]:
 def parse_fk_rows(block: str) -> list[dict]:
     """Parse IDs / foreign keys from a schema block."""
     fks = []
-    fk_row = re.search(
-        r'\| \*\*IDs\s*/\s*foreign\s*keys\*\* \| (.+?) \|',
-        block, re.MULTILINE | re.DOTALL
-    )
+    fk_row = re.search(r'\| \*\*IDs\s*/\s*foreign\s*keys\*\* \| (.+?) \|', block, re.MULTILINE | re.DOTALL)
     if not fk_row:
         return fks
     raw = fk_row.group(1)
@@ -121,16 +88,33 @@ def parse_fk_rows(block: str) -> list[dict]:
         raw_field = m.group(1).strip()
         cardinality = "list" if "[]" in raw_field else "single"
         clean_field = raw_field.split("[")[0].split("{")[0].strip()
-        fks.append({
-            "field": clean_field, "target": m.group(2),
-            "target_field": m.group(3), "cardinality": cardinality,
-        })
+        fks.append({"field": clean_field, "target": m.group(2),
+                    "target_field": m.group(3), "cardinality": cardinality})
     return fks
 
 
 def get_field(block: str, label: str) -> str:
     m = re.search(rf'\| \*\*{re.escape(label)}\*\* \| (.+?) \|', block, re.MULTILINE | re.DOTALL)
     return m.group(1).strip() if m else ""
+
+
+def classify_immutability(imm_rules: str, field_name: str, schema_id: str) -> tuple[str, str]:
+    """Classify immutability into (policy, detail)."""
+    rules_lower = imm_rules.lower()
+    # Record-level rules
+    if "record immutable" in rules_lower or "content immutable" in rules_lower:
+        if field_name in ("content", "context", "evidence_id", "fact_id", "claim_id", "inference_id"):
+            return ("FIELD_IMMUTABLE", "field content immutable per contract")
+        return ("RECORD_IMMUTABLE", "record immutable per contract")
+    if "append-only" in rules_lower and "state" in rules_lower:
+        return ("APPEND_ONLY_STATE", "state transitions are append-only")
+    if "append-only" in rules_lower:
+        if field_name in ("entity_id", "schema_id", "pit_context_id", "case_id"):
+            return ("FIELD_IMMUTABLE", "identity field immutable")
+        return ("APPEND_ONLY", "schema append-only")
+    if field_name in ("entity_id", "schema_id"):
+        return ("FIELD_IMMUTABLE", "identity field immutable")
+    return ("MUTABLE", "no immutability constraint")
 
 
 def parse_schema_block(block: str, family: str) -> dict | None:
@@ -147,17 +131,13 @@ def parse_schema_block(block: str, family: str) -> dict | None:
 
     required = set()
     optional = set()
-    all_fields_raw = []
-
     if required_raw:
         for f in re.findall(r'`([^`]+)`', required_raw):
-            all_fields_raw.append(f)
             clean, _ = parse_field_shape(f)
             if clean:
                 required.add(clean)
     if optional_raw:
         for f in re.findall(r'`([^`]+)`', optional_raw):
-            all_fields_raw.append(f)
             clean, _ = parse_field_shape(f)
             if clean:
                 optional.add(clean)
@@ -175,33 +155,49 @@ def parse_schema_block(block: str, family: str) -> dict | None:
     if prov_raw:
         prov_fields = {f.strip() for f in re.findall(r'`([^`]+)`', prov_raw)}
 
+    # PIT/provenance-only fields: add to expected surface
+    all_pit_prov = pit_fields | prov_fields
+    for pf in all_pit_prov:
+        pf_clean, _ = parse_field_shape(pf)
+        if pf_clean and pf_clean not in required and pf_clean not in optional:
+            optional.add(pf_clean)
+
+    # Rebuild all_fields_raw from the complete surface (required + optional + PIT + provenance)
+    all_fields_raw = []
+    raw_fields_seen = set()
+    # Re-parse from original to get raw names with []/{}
+    if required_raw:
+        for f in re.findall(r'`([^`]+)`', required_raw):
+            clean, _ = parse_field_shape(f)
+            if clean and clean not in raw_fields_seen:
+                all_fields_raw.append(f)
+                raw_fields_seen.add(clean)
+    if optional_raw:
+        for f in re.findall(r'`([^`]+)`', optional_raw):
+            clean, _ = parse_field_shape(f)
+            if clean and clean not in raw_fields_seen:
+                all_fields_raw.append(f)
+                raw_fields_seen.add(clean)
+    # Add PIT/provenance-only fields with clean names
+    for pf in sorted(all_pit_prov):
+        pf_clean, _ = parse_field_shape(pf)
+        if pf_clean and pf_clean not in raw_fields_seen:
+            all_fields_raw.append(pf_clean)
+            raw_fields_seen.add(pf_clean)
+
     cb = get_field(block, "canonical_boundary")
-    # Schema is canonical unless the boundary explicitly classifies it as non-canonical
-    # Many schemas say "Canonical (Layer 2). NotebookLM/DR output is NONCANONICAL..."
-    # which means the schema itself IS canonical, just with non-canonical aspects
     is_canonical = cb.lower().startswith("canonical") or (
-    "canonical" in cb.lower() and "noncanonical" not in cb.lower()
-    )
-    # Override for PublicationRecord which is genuinely mixed
+        "canonical" in cb.lower() and "noncanonical" not in cb.lower())
     if schema_id == "PUB-01":
-        is_canonical = True  # Canonical for record; non-canonical for investment truth
+        is_canonical = True
 
     immutability = get_field(block, "immutability_rules")
 
-    for pf in pit_fields:
-        pf_clean, _ = parse_field_shape(pf)
-        if pf_clean and pf_clean not in required and pf_clean not in optional:
-            optional.add(pf_clean)
-    for pf in prov_fields:
-        pf_clean, _ = parse_field_shape(pf)
-        if pf_clean and pf_clean not in required and pf_clean not in optional:
-            optional.add(pf_clean)
-
-    # Build field descriptors
-    field_descs = {}
+    # Build field descriptors — NOW PIT/provenance fields are included
+    field_descs = OrderedDict()
     for raw_field in all_fields_raw:
         clean_name, container = parse_field_shape(raw_field)
-        if not clean_name:
+        if not clean_name or clean_name in field_descs:
             continue
         is_req = clean_name in required
         enum_values = None
@@ -209,17 +205,18 @@ def parse_schema_block(block: str, family: str) -> dict | None:
             if e["field"] == clean_name:
                 enum_values = e["values"]
                 break
-        is_immutable = (
-            clean_name in pit_fields or
-            clean_name in ("entity_id", "schema_id") or
-            ("immutable" in immutability.lower() and clean_name in ("content", "evidence_id", "fact_id"))
-        )
+        imm_policy, imm_detail = classify_immutability(immutability, clean_name, schema_id)
+        # PIT fields are frozen (point-in-time immutability)
+        if clean_name in pit_fields:
+            imm_policy = "FIELD_IMMUTABLE"
+        is_immutable = imm_policy in ("FIELD_IMMUTABLE", "RECORD_IMMUTABLE")
         field_descs[clean_name] = {
             "raw_name": raw_field, "container": container,
             "required": is_req, "enum_values": enum_values,
             "is_pit": clean_name in pit_fields,
             "is_provenance": clean_name in prov_fields,
             "immutable": is_immutable,
+            "immutable_policy": imm_policy,
         }
 
     return {
@@ -235,7 +232,6 @@ def parse_schema_block(block: str, family: str) -> dict | None:
 
 
 def parse_all_schemas(content: str) -> dict[str, dict]:
-    """Parse all schemas from M4A markdown. Returns dict[schema_id] = descriptor."""
     schemas = OrderedDict()
     sections = re.split(r'\n(?=## [A-I] [—\-])', content)
     for section in sections:
@@ -253,7 +249,6 @@ def parse_all_schemas(content: str) -> dict[str, dict]:
 
 
 def get_class_name(schema_id: str, name: str) -> str:
-    """Derive Python class name from schema."""
     overrides = {
         "RR-01": "RetryRecord", "RRM-01": "RunManifestRecord",
         "RSR-01": "ResearchStageRecord", "RSR-02": "ResearchStopRecord",
@@ -269,7 +264,6 @@ def get_class_name(schema_id: str, name: str) -> str:
 
 
 def emit_field(lines, fname, fd, schema, all_enums):
-    """Emit a single field with proper type annotation."""
     enum_values = fd.get("enum_values")
     container = fd.get("container", "")
     is_required = fd.get("required", False)
@@ -285,16 +279,13 @@ def emit_field(lines, fname, fd, schema, all_enums):
             py_type = "dict"
         else:
             py_type = base
-
     if not is_required and not py_type.startswith("Optional"):
         py_type = f"Optional[{py_type}]"
-
     field_args = []
     if not is_required:
         field_args.append("default=None")
     if is_immutable:
         field_args.append("frozen=True")
-
     field_str = f'    {fname}: {py_type}'
     if field_args:
         field_str += f' = Field({", ".join(field_args)})'
@@ -302,10 +293,8 @@ def emit_field(lines, fname, fd, schema, all_enums):
 
 
 def generate_enum_class(enum_name: str, values: list[str]) -> str:
-    """Generate a Python enum class."""
     lines = [f'\nclass {enum_name}(str, Enum):']
     for val in values:
-        # Sanitize: remove non-alphanumeric chars except underscore
         py_name = re.sub(r'[^a-zA-Z0-9_]', '', val.upper().replace(" ", "_").replace("-", "_").replace("/", "_"))
         if not py_name or py_name[0].isdigit():
             py_name = f"V_{py_name}"
@@ -314,7 +303,6 @@ def generate_enum_class(enum_name: str, values: list[str]) -> str:
 
 
 def generate_family_models(family: str, schemas: list[dict], all_schemas: dict) -> str:
-    """Generate Pydantic model code for one family."""
     fam_title = FAMILY_TITLES.get(family, "Unknown")
     lines = [
         f'"""Family {family} — {fam_title}',
@@ -327,52 +315,41 @@ def generate_family_models(family: str, schemas: list[dict], all_schemas: dict) 
         'from pydantic import BaseModel, Field',
         '',
     ]
-    # Collect enums
     all_enums = OrderedDict()
     for s in schemas:
         for e in s["enums"]:
             enum_name = f'{get_class_name(s["schema_id"], s["name"])}{e["field"].capitalize()}'
             if enum_name not in all_enums:
                 all_enums[enum_name] = e["values"]
-
     for enum_name, values in all_enums.items():
         lines.append(generate_enum_class(enum_name, values))
-
-    # Generate models
     for s in schemas:
         class_name = get_class_name(s["schema_id"], s["name"])
         fds = s["field_descriptors"]
         lines.append('')
         lines.append('')
         lines.append(f'class {class_name}(BaseModel):')
-        lines.append(f'    """{s["schema_id"]}: {s["name"]}.')
-        lines.append(f'    Frozen M4A canonical schema. Family {family}.')
-        lines.append(f'    """')
+        lines.append(f'    """{s["schema_id"]}: {s["name"]}. Frozen M4A canonical schema. Family {family}. """')
         lines.append(f'    model_config = {{"extra": "forbid"}}')
         lines.append('')
         lines.append(f'    schema_id: str = Field(default="{s["schema_id"]}", frozen=True)')
-
         for fname in sorted(s["required"]):
             if fname == "schema_id":
                 continue
             fd = fds.get(fname, {})
             emit_field(lines, fname, fd, s, all_enums)
-
         for fname in sorted(s["optional"]):
             fd = fds.get(fname, {})
             emit_field(lines, fname, fd, s, all_enums)
-
         if s["fks"]:
             lines.append('')
             for fk in s["fks"]:
                 card = "[]" if fk["cardinality"] == "list" else ""
                 lines.append(f'    # FK: {fk["field"]}{card} -> {fk["target"]}.{fk["target_field"]}')
-
     return '\n'.join(lines)
 
 
 def generate_contract_descriptor(schemas: dict[str, dict]) -> str:
-    """Generate machine-readable contract descriptor JSON for testing."""
     contracts = []
     for sid in sorted(schemas.keys()):
         s = schemas[sid]
@@ -384,32 +361,25 @@ def generate_contract_descriptor(schemas: dict[str, dict]) -> str:
                 "container": fd["container"], "required": fd["required"],
                 "enum_values": fd["enum_values"],
                 "is_pit": fd["is_pit"], "is_provenance": fd["is_provenance"],
-                "immutable": fd["immutable"],
+                "immutable": fd["immutable"], "immutable_policy": fd["immutable_policy"],
             })
         contracts.append({
             "schema_id": s["schema_id"], "name": s["name"], "family": s["family"],
-            "required_fields": sorted(s["required"]),
-            "optional_fields": sorted(s["optional"]),
+            "required_fields": sorted(s["required"]), "optional_fields": sorted(s["optional"]),
             "fields": fields,
             "enums": [{"field": e["field"], "values": e["values"]} for e in s["enums"]],
             "fks": [{"field": fk["field"], "target": fk["target"],
                      "target_field": fk["target_field"], "cardinality": fk["cardinality"]}
                     for fk in s["fks"]],
-            "pit_fields": sorted(s["pit_fields"]),
-                        "provenance_fields": sorted(s["provenance_fields"]),
-                        "is_canonical": s["is_canonical"],
-                        "canonical_boundary": s.get("canonical_boundary", ""),
-                    })
+            "pit_fields": sorted(s["pit_fields"]), "provenance_fields": sorted(s["provenance_fields"]),
+            "is_canonical": s["is_canonical"], "canonical_boundary": s["canonical_boundary"],
+            "immutability_rules": s["immutability_rules"],
+        })
     return json.dumps({"schemas": contracts, "count": len(contracts)}, indent=2)
 
 
 def generate_fk_registry(schemas: dict[str, dict]) -> str:
-    """Generate FK registry Python code from parsed contracts."""
-    lines = [
-        '"""FK Registry (auto-generated from M4A parser)."""',
-        '',
-        'FK_REGISTRY: dict[str, list[dict]] = {',
-    ]
+    lines = ['"""FK Registry (auto-generated from M4A parser)."""', '', 'FK_REGISTRY: dict[str, list[dict]] = {']
     for sid in sorted(schemas.keys()):
         s = schemas[sid]
         if not s["fks"]:
@@ -421,22 +391,16 @@ def generate_fk_registry(schemas: dict[str, dict]) -> str:
                          f'"cardinality": "{fk["cardinality"]}"}},')
         lines.append('    ],')
     lines.append('}')
-    lines.append('')
     fk_count = sum(len(s["fks"]) for s in schemas.values())
     lines.append(f'# Total FK references: {fk_count}')
     return '\n'.join(lines)
 
 
 def generate_canonical_boundary(schemas: dict[str, dict]) -> str:
-    """Generate canonical boundary code from parsed contracts."""
     canonical = [sid for sid, s in schemas.items() if s["is_canonical"]]
     non_canonical = [sid for sid, s in schemas.items() if not s["is_canonical"]]
-    lines = [
-        '"""Canonical Boundary (auto-generated from M4A parser)."""',
-        '',
-        '# Canonical schemas',
-        f'CANONICAL_SCHEMAS = {{',
-    ]
+    lines = ['"""Canonical Boundary (auto-generated from M4A parser)."""', '', '# Canonical schemas',
+             'CANONICAL_SCHEMAS = {']
     for sid in sorted(canonical):
         lines.append(f'    "{sid}",')
     lines.append('}')
@@ -446,19 +410,35 @@ def generate_canonical_boundary(schemas: dict[str, dict]) -> str:
     for sid in sorted(non_canonical):
         lines.append(f'    "{sid}",')
     lines.append('}')
+    # Also add family index
+    lines.append('')
+    lines.append('# Family index (infrastructure = Family I)')
+    lines.append('SCHEMA_FAMILIES = {')
+    for sid in sorted(schemas.keys()):
+        lines.append(f'    "{sid}": "{schemas[sid]["family"]}",')
+    lines.append('}')
+    lines.append('')
+    lines.append('# Canonical boundary text (preserved exactly from M4A)')
+    lines.append('CANONICAL_BOUNDARY_TEXT = {')
+    for sid in sorted(schemas.keys()):
+        cb = schemas[sid]["canonical_boundary"]
+        # Escape for Python string
+        cb_escaped = cb.replace('"', '\\"')
+        lines.append(f'    "{sid}": "{cb_escaped}",')
+    lines.append('}')
     return '\n'.join(lines)
 
 
 def main():
     content = SCHEMAS_MD.read_text()
+    source_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
+    generator_version = "M5.1-20260821"
     schemas = parse_all_schemas(content)
-    print(f"Parsed {len(schemas)} schemas from M4A canonical registry")
+    print(f"Parsed {len(schemas)} schemas from M4A canonical registry (hash: {source_hash[:16]})")
 
-    # Group by family
     by_family = OrderedDict()
     for sid, s in schemas.items():
-        fam = s["family"]
-        by_family.setdefault(fam, []).append(s)
+        by_family.setdefault(s["family"], []).append(s)
     for fam in by_family:
         by_family[fam].sort(key=lambda x: x["schema_id"])
 
@@ -468,7 +448,7 @@ def main():
         (OUTPUT / f"family_{fam.lower()}.py").write_text(code)
         print(f"  Family {fam} — {len(by_family[fam])} schemas")
 
-    # Generate __init__.py
+    # Generate __init__.py WITH SCHEMA_REGISTRY
     init_lines = [
         '"""QAD Runtime Schema Models — all 68 frozen M4A canonical schemas."""',
         'from __future__ import annotations', '',
@@ -487,21 +467,35 @@ def main():
     for cn in sorted(set(all_models)):
         init_lines.append(f'    "{cn}",')
     init_lines.append(']')
+    init_lines.append('')
+    init_lines.append('')
+    init_lines.append('# Schema registry: maps schema_id to model class (auto-generated)')
+    init_lines.append('SCHEMA_REGISTRY: dict[str, type] = {')
+    for sid in sorted(schemas.keys()):
+        cn = get_class_name(schemas[sid]["schema_id"], schemas[sid]["name"])
+        init_lines.append(f'    "{sid}": {cn},')
+    init_lines.append('}')
+    init_lines.append('')
+    init_lines.append(f'# Build identity: spec_source = QAD-M4A-CANONICAL-SCHEMAS.md')
+    init_lines.append(f'# spec_source_sha256 = {source_hash}')
+    init_lines.append(f'# generator_version = {generator_version}')
+    init_lines.append(f'# total_schemas = {len(schemas)}')
     (OUTPUT / "__init__.py").write_text('\n'.join(init_lines))
 
     # Generate contract artifacts
     (CONTRACT_DIR / "fk_registry.py").write_text(generate_fk_registry(schemas))
     (CONTRACT_DIR / "canonical_boundary.py").write_text(generate_canonical_boundary(schemas))
-    (CONTRACT_DIR / "contract_descriptor.json").write_text(generate_contract_descriptor(schemas))
 
-    # Source hash
-    source_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
+    descriptor = generate_contract_descriptor(schemas)
+    (CONTRACT_DIR / "contract_descriptor.json").write_text(descriptor)
+
     fk_count = sum(len(s["fks"]) for s in schemas.values())
     canonical = sum(1 for s in schemas.values() if s["is_canonical"])
-    non_canonical = sum(1 for s in schemas.values() if not s["is_canonical"])
-    print(f"\n  Source hash: {source_hash}")
+    enum_count = sum(len(s["enums"]) for s in schemas.values())
+    print(f"\n  Source hash: {source_hash[:16]}")
     print(f"  FK references: {fk_count}")
-    print(f"  Canonical: {canonical}, Non-canonical: {non_canonical}")
+    print(f"  Canonical: {canonical}, Non-canonical: {len(schemas) - canonical}")
+    print(f"  Enum fields: {enum_count}")
     print("Done.")
 
 

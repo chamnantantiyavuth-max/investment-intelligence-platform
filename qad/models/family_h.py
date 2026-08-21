@@ -35,52 +35,46 @@ class MonitoringIndicatorIndicator_type(str, Enum):
 
 
 class CrossCaseValidation(BaseModel):
-    """CCV-01: CrossCaseValidation.
-    Frozen M4A canonical schema. Family H.
-    """
+    """CCV-01: CrossCaseValidation. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CCV-01", frozen=True)
-    lesson_id: str
-    pattern_consistent: str
-    validating_case_ids: list[str]
+    lesson_id: str = Field(frozen=True)
+    pattern_consistent: str = Field(frozen=True)
+    validating_case_ids: list[str] = Field(frozen=True)
     validation_date: str = Field(frozen=True)
-    validation_id: str
-    validator: str
-    inconsistent_case_ids: Optional[list[str]] = Field(default=None)
-    industry_playbook_id: Optional[str] = Field(default=None)
-    method: Optional[str] = Field(default=None)
-    notes: Optional[str] = Field(default=None)
+    validation_id: str = Field(frozen=True)
+    validator: str = Field(frozen=True)
+    inconsistent_case_ids: Optional[list[str]] = Field(default=None, frozen=True)
+    industry_playbook_id: Optional[str] = Field(default=None, frozen=True)
+    method: Optional[str] = Field(default=None, frozen=True)
+    notes: Optional[str] = Field(default=None, frozen=True)
 
     # FK: lesson_id -> CL-01.lesson_id
     # FK: validating_case_ids[] -> CASE-01.case_id
 
 
 class CandidateLesson(BaseModel):
-    """CL-01: CandidateLesson.
-    Frozen M4A canonical schema. Family H.
-    """
+    """CL-01: CandidateLesson. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CL-01", frozen=True)
-    lesson_id: str
-    pattern: str
-    proposer: str
-    source_case_ids: list[str]
-    validation_status: CandidateLessonValidation_status
-    cross_validation_ids: Optional[list[str]] = Field(default=None)
-    industry_playbook_id: Optional[str] = Field(default=None)
-    proposed_date: Optional[str] = Field(default=None)
+    lesson_id: str = Field(frozen=True)
+    pattern: str = Field(frozen=True)
+    proposer: str = Field(frozen=True)
+    source_case_ids: list[str] = Field(frozen=True)
+    validation_status: CandidateLessonValidation_status = Field(frozen=True)
+    cross_validation_ids: Optional[list[str]] = Field(default=None, frozen=True)
+    industry_playbook_id: Optional[str] = Field(default=None, frozen=True)
+    proposed_date: Optional[str] = Field(default=None, frozen=True)
     review_date: Optional[str] = Field(default=None, frozen=True)
-    reviewer: Optional[str] = Field(default=None)
+    reviewer: Optional[str] = Field(default=None, frozen=True)
 
     # FK: source_case_ids[] -> CASE-01.case_id
 
 
 class InstitutionalKnowledgeRecord(BaseModel):
-    """IKR-01: InstitutionalKnowledgeRecord.
-    Frozen M4A canonical schema. Family H.
-    """
+    """IKR-01: InstitutionalKnowledgeRecord. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="IKR-01", frozen=True)
@@ -98,9 +92,7 @@ class InstitutionalKnowledgeRecord(BaseModel):
 
 
 class IndustryPlaybookRecord(BaseModel):
-    """IPR-01: IndustryPlaybookRecord.
-    Frozen M4A canonical schema. Family H.
-    """
+    """IPR-01: IndustryPlaybookRecord. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="IPR-01", frozen=True)
@@ -114,7 +106,7 @@ class IndustryPlaybookRecord(BaseModel):
     capital_cycle_patterns: Optional[str] = Field(default=None)
     competitive_dynamics: Optional[str] = Field(default=None)
     creator: Optional[str] = Field(default=None)
-    last_updated: Optional[str] = Field(default=None)
+    last_updated: Optional[str] = Field(default=None, frozen=True)
     supply_chain_structure: Optional[str] = Field(default=None)
     what_to_measure: Optional[str] = Field(default=None)
 
@@ -122,9 +114,7 @@ class IndustryPlaybookRecord(BaseModel):
 
 
 class MonitoringAssessment(BaseModel):
-    """MASS-01: MonitoringAssessment.
-    Frozen M4A canonical schema. Family H.
-    """
+    """MASS-01: MonitoringAssessment. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="MASS-01", frozen=True)
@@ -143,9 +133,7 @@ class MonitoringAssessment(BaseModel):
 
 
 class MonitoringIndicator(BaseModel):
-    """MI-01: MonitoringIndicator.
-    Frozen M4A canonical schema. Family H.
-    """
+    """MI-01: MonitoringIndicator. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="MI-01", frozen=True)
@@ -157,7 +145,7 @@ class MonitoringIndicator(BaseModel):
     indicator_name: str
     indicator_type: MonitoringIndicatorIndicator_type
     owner: str
-    as_of: Optional[str] = Field(default=None)
+    as_of: Optional[str] = Field(default=None, frozen=True)
     definition_source: Optional[str] = Field(default=None)
     last_observed: Optional[str] = Field(default=None, frozen=True)
     notes: Optional[str] = Field(default=None)
@@ -168,9 +156,7 @@ class MonitoringIndicator(BaseModel):
 
 
 class MonitoringObservation(BaseModel):
-    """MO-01: MonitoringObservation.
-    Frozen M4A canonical schema. Family H.
-    """
+    """MO-01: MonitoringObservation. Frozen M4A canonical schema. Family H. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="MO-01", frozen=True)
@@ -179,7 +165,7 @@ class MonitoringObservation(BaseModel):
     observation_id: str
     observed_value: str
     observer: str
-    evidence_id: Optional[str] = Field(default=None, frozen=True)
+    evidence_id: Optional[str] = Field(default=None)
     notes: Optional[str] = Field(default=None)
     trigger_event: Optional[str] = Field(default=None)
 

@@ -1,11 +1,11 @@
 """M5.1 — Schema Registry.
-Auto-generated from M4A parser output. See qad/contract/ for source.
+Thin convenience layer over generated SCHEMA_REGISTRY and contract artifacts.
 """
 from __future__ import annotations
 
 from qad.models import SCHEMA_REGISTRY
 from qad.contract.fk_registry import FK_REGISTRY
-from qad.contract.canonical_boundary import CANONICAL_SCHEMAS, NON_CANONICAL_SCHEMAS
+from qad.contract.canonical_boundary import CANONICAL_SCHEMAS, NON_CANONICAL_SCHEMAS, SCHEMA_FAMILIES, CANONICAL_BOUNDARY_TEXT
 
 
 def resolve_fk(schema_id: str, field_name: str) -> str | None:
@@ -23,5 +23,18 @@ def is_canonical(schema_id: str) -> bool:
 
 
 def is_infrastructure(schema_id: str) -> bool:
-    """Return True if the schema is infrastructure (non-canonical operational metadata)."""
-    return schema_id in NON_CANONICAL_SCHEMAS
+    """Return True if this is an infrastructure schema (Family I - Reproducibility & Operations).
+    Infrastructure schemas are CANONICAL records in the operational domain.
+    This is a FAMILY/function classification, not a deposit-of-truth classification.
+    """
+    return SCHEMA_FAMILIES.get(schema_id, "") == "I"
+
+
+def get_family(schema_id: str) -> str:
+    """Return the family letter (A-I) for a schema."""
+    return SCHEMA_FAMILIES.get(schema_id, "")
+
+
+def get_canonical_boundary(schema_id: str) -> str:
+    """Return the exact canonical_boundary text from frozen M4A."""
+    return CANONICAL_BOUNDARY_TEXT.get(schema_id, "")

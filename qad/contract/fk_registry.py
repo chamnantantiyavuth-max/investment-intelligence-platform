@@ -219,5 +219,4 @@ FK_REGISTRY: dict[str, list[dict]] = {
         {"field": "permanent_loss_id", "target": "PLA-01", "target_field": "assessment_id", "cardinality": "single"},
     ],
 }
-
 # Total FK references: 87

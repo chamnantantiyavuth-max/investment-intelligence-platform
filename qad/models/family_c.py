@@ -21,10 +21,21 @@ class InvestigatorCharterInvestigator_type(str, Enum):
     GEOGRAPHIC = "GEOGRAPHIC"
     INDUSTRY_SPECIALIST = "INDUSTRY_SPECIALIST"
 
+class InvestigatorCharterExpected_information_value(str, Enum):
+    PLAUSIBLE_HIGH = "PLAUSIBLE_HIGH"
+    PLAUSIBLE_MEDIUM = "PLAUSIBLE_MEDIUM"
+    PLAUSIBLE_LOW = "PLAUSIBLE_LOW"
+
 class InvestigationReportDisposition(str, Enum):
     ANSWERED = "ANSWERED"
     NOT_ANSWERED = "NOT_ANSWERED"
     PARTIALLY_ANSWERED = "PARTIALLY_ANSWERED"
+
+class InvestigationReportStop_rule(str, Enum):
+    EVIDENCE_SUFFICIENT = "EVIDENCE_SUFFICIENT"
+    BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"
+    COUNTER_EVIDENCE_FOUND = "COUNTER_EVIDENCE_FOUND"
+    TIME_EXPIRED = "TIME_EXPIRED"
 
 class ResearchBudgetRecordBudget_state(str, Enum):
     APPROVED = "APPROVED"
@@ -49,6 +60,12 @@ class ResearchFailureRecordFailure_type(str, Enum):
     SELECTION_ERROR = "SELECTION_ERROR"
     EVALUATION_INCOMPLETE = "EVALUATION_INCOMPLETE"
 
+class ResearchFailureRecordResolution(str, Enum):
+    RESOLVED = "RESOLVED"
+    ESCALATED = "ESCALATED"
+    UNRESOLVED = "UNRESOLVED"
+    WORKAROUND = "WORKAROUND"
+
 class ResearchStageRecordStage_name(str, Enum):
     CASE_OPEN = "CASE_OPEN"
     CHARTER = "CHARTER"
@@ -69,6 +86,14 @@ class ResearchStageRecordStage_name(str, Enum):
     MONITORING = "MONITORING"
     KNOWLEDGE = "KNOWLEDGE"
 
+class ResearchStageRecordStage_state(str, Enum):
+    NOT_STARTED = "NOT_STARTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETE = "COMPLETE"
+    FAILED = "FAILED"
+    INCOMPLETE = "INCOMPLETE"
+    SKIPPED = "SKIPPED"
+
 class ResearchStopRecordStop_reason(str, Enum):
     HYPOTHESIS_FALSIFIED = "HYPOTHESIS_FALSIFIED"
     BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"
@@ -79,9 +104,7 @@ class ResearchStopRecordStop_reason(str, Enum):
 
 
 class HypothesisSet(BaseModel):
-    """HS-01: HypothesisSet.
-    Frozen M4A canonical schema. Family C.
-    """
+    """HS-01: HypothesisSet. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="HS-01", frozen=True)
@@ -89,10 +112,10 @@ class HypothesisSet(BaseModel):
     charter_id: str
     hypothesis_ids: list[str]
     hypothesis_set_id: str
-    created_at: Optional[str] = Field(default=None)
+    created_at: Optional[str] = Field(default=None, frozen=True)
     creator: Optional[str] = Field(default=None)
     dominant_hypothesis: Optional[str] = Field(default=None)
-    last_shift_at: Optional[str] = Field(default=None)
+    last_shift_at: Optional[str] = Field(default=None, frozen=True)
     shift_history: Optional[list[str]] = Field(default=None)
 
     # FK: case_id -> CASE-01.case_id
@@ -100,9 +123,7 @@ class HypothesisSet(BaseModel):
 
 
 class InvestigatorCharter(BaseModel):
-    """IC-01: InvestigatorCharter.
-    Frozen M4A canonical schema. Family C.
-    """
+    """IC-01: InvestigatorCharter. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="IC-01", frozen=True)
@@ -115,9 +136,9 @@ class InvestigatorCharter(BaseModel):
     stop_rule: str
     authorizing_role: Optional[str] = Field(default=None)
     budget_controller: Optional[str] = Field(default=None)
-    completed_at: Optional[str] = Field(default=None)
-    created_at: Optional[str] = Field(default=None)
-    expected_information_value: Optional[str] = Field(default=None)
+    completed_at: Optional[str] = Field(default=None, frozen=True)
+    created_at: Optional[str] = Field(default=None, frozen=True)
+    expected_information_value: Optional[InvestigatorCharterExpected_information_value] = Field(default=None)
     geography: Optional[str] = Field(default=None)
     independence_check: Optional[str] = Field(default=None)
     output_evidence_ids: Optional[list[str]] = Field(default=None)
@@ -129,9 +150,7 @@ class InvestigatorCharter(BaseModel):
 
 
 class InvestigationReport(BaseModel):
-    """IR-01: InvestigationReport.
-    Frozen M4A canonical schema. Family C.
-    """
+    """IR-01: InvestigationReport. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="IR-01", frozen=True)
@@ -147,7 +166,7 @@ class InvestigationReport(BaseModel):
     proposed_evidence_ids: Optional[list[str]] = Field(default=None)
     sampling_limitations: Optional[str] = Field(default=None)
     sources: Optional[list[str]] = Field(default=None)
-    started_at: Optional[str] = Field(default=None)
+    started_at: Optional[str] = Field(default=None, frozen=True)
     stop_rule_triggered: Optional[str] = Field(default=None)
 
     # FK: investigator_charter_id -> IC-01.investigator_charter_id
@@ -155,21 +174,19 @@ class InvestigationReport(BaseModel):
 
 
 class ResearchBudgetRecord(BaseModel):
-    """RB-01: ResearchBudgetRecord.
-    Frozen M4A canonical schema. Family C.
-    """
+    """RB-01: ResearchBudgetRecord. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RB-01", frozen=True)
     allocated_amount: str
     approved_by: str
     budget_id: str
-    case_id: str
+    case_id: str = Field(frozen=True)
     policy_version: str
-    approved_at: Optional[str] = Field(default=None)
+    approved_at: Optional[str] = Field(default=None, frozen=True)
     budget_exhausted: Optional[str] = Field(default=None)
     cumulative_spend: Optional[str] = Field(default=None)
-    last_updated: Optional[str] = Field(default=None)
+    last_updated: Optional[str] = Field(default=None, frozen=True)
     remaining_budget: Optional[str] = Field(default=None)
     spend_breakdown: Optional[list[str]] = Field(default=None)
 
@@ -177,9 +194,7 @@ class ResearchBudgetRecord(BaseModel):
 
 
 class ResearchCharter(BaseModel):
-    """RC-01: ResearchCharter.
-    Frozen M4A canonical schema. Family C.
-    """
+    """RC-01: ResearchCharter. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RC-01", frozen=True)
@@ -191,10 +206,10 @@ class ResearchCharter(BaseModel):
     evidence_scope: str
     hypothesis_ids: list[str]
     key_questions: list[str]
-    approved_at: Optional[str] = Field(default=None)
+    approved_at: Optional[str] = Field(default=None, frozen=True)
     budget_approved: Optional[str] = Field(default=None)
     budget_controller: Optional[str] = Field(default=None)
-    created_at: Optional[str] = Field(default=None)
+    created_at: Optional[str] = Field(default=None, frozen=True)
     evidence_lead: Optional[str] = Field(default=None)
     material_blind_spots: Optional[list[str]] = Field(default=None)
     source_plan: Optional[str] = Field(default=None)
@@ -205,34 +220,30 @@ class ResearchCharter(BaseModel):
 
 
 class ResearchFailureRecord(BaseModel):
-    """RFR-01: ResearchFailureRecord.
-    Frozen M4A canonical schema. Family C.
-    """
+    """RFR-01: ResearchFailureRecord. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RFR-01", frozen=True)
-    case_id: str
-    failure_id: str
-    failure_reason: str
-    failure_type: ResearchFailureRecordFailure_type
-    resolution: str
-    retry_count: int
-    stage_name: str
-    error_details: Optional[str] = Field(default=None)
-    escalated_to: Optional[str] = Field(default=None)
-    escalation_target: Optional[str] = Field(default=None)
-    failure_timestamp: Optional[str] = Field(default=None)
-    recorder: Optional[str] = Field(default=None)
-    recovery_action: Optional[str] = Field(default=None)
-    resolution_timestamp: Optional[str] = Field(default=None)
+    case_id: str = Field(frozen=True)
+    failure_id: str = Field(frozen=True)
+    failure_reason: str = Field(frozen=True)
+    failure_type: ResearchFailureRecordFailure_type = Field(frozen=True)
+    resolution: ResearchFailureRecordResolution = Field(frozen=True)
+    retry_count: int = Field(frozen=True)
+    stage_name: str = Field(frozen=True)
+    error_details: Optional[str] = Field(default=None, frozen=True)
+    escalated_to: Optional[str] = Field(default=None, frozen=True)
+    escalation_target: Optional[str] = Field(default=None, frozen=True)
+    failure_timestamp: Optional[str] = Field(default=None, frozen=True)
+    recorder: Optional[str] = Field(default=None, frozen=True)
+    recovery_action: Optional[str] = Field(default=None, frozen=True)
+    resolution_timestamp: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class ResearchStageRecord(BaseModel):
-    """RSR-01: ResearchStageRecord.
-    Frozen M4A canonical schema. Family C.
-    """
+    """RSR-01: ResearchStageRecord. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RSR-01", frozen=True)
@@ -240,7 +251,7 @@ class ResearchStageRecord(BaseModel):
     responsible_role: str
     stage_id: str
     stage_name: ResearchStageRecordStage_name
-    stage_state: str
+    stage_state: ResearchStageRecordStage_state
     started_at: str = Field(frozen=True)
     checkpoint_ref: Optional[str] = Field(default=None)
     completed_at: Optional[str] = Field(default=None, frozen=True)
@@ -254,20 +265,18 @@ class ResearchStageRecord(BaseModel):
 
 
 class ResearchStopRecord(BaseModel):
-    """RSR-02: ResearchStopRecord.
-    Frozen M4A canonical schema. Family C.
-    """
+    """RSR-02: ResearchStopRecord. Frozen M4A canonical schema. Family C. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RSR-02", frozen=True)
-    authorized_by: str
-    case_id: str
-    stage_name: str
-    stop_id: str
-    stop_reason: ResearchStopRecordStop_reason
-    alternative_path: Optional[str] = Field(default=None)
-    evidence_trigger: Optional[str] = Field(default=None)
-    resume_condition: Optional[str] = Field(default=None)
-    stop_timestamp: Optional[str] = Field(default=None)
+    authorized_by: str = Field(frozen=True)
+    case_id: str = Field(frozen=True)
+    stage_name: str = Field(frozen=True)
+    stop_id: str = Field(frozen=True)
+    stop_reason: ResearchStopRecordStop_reason = Field(frozen=True)
+    alternative_path: Optional[str] = Field(default=None, frozen=True)
+    evidence_trigger: Optional[str] = Field(default=None, frozen=True)
+    resume_condition: Optional[str] = Field(default=None, frozen=True)
+    stop_timestamp: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id

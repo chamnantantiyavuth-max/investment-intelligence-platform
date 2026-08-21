@@ -28,6 +28,12 @@ class EvaluationHarnessRunEvaluation_type(str, Enum):
     CALIBRATION = "CALIBRATION"
     COST_EVAL = "COST_EVAL"
 
+class EvaluationHarnessRunStatus(str, Enum):
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETE = "COMPLETE"
+    EVALUATION_INCOMPLETE = "EVALUATION_INCOMPLETE"
+    FAILED = "FAILED"
+
 class ModelInvocationStatus(str, Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
@@ -58,96 +64,86 @@ class ServiceInvocationStatus(str, Enum):
 
 
 class BudgetUsage(BaseModel):
-    """BU-01: BudgetUsage.
-    Frozen M4A canonical schema. Family I.
-    """
+    """BU-01: BudgetUsage. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="BU-01", frozen=True)
-    amount_consumed: str
-    budget_id: str
-    case_id: str
-    resource_type: BudgetUsageResource_type
-    usage_id: str
+    amount_consumed: str = Field(frozen=True)
+    budget_id: str = Field(frozen=True)
+    case_id: str = Field(frozen=True)
+    resource_type: BudgetUsageResource_type = Field(frozen=True)
+    usage_id: str = Field(frozen=True)
     usage_timestamp: str = Field(frozen=True)
-    cost: Optional[str] = Field(default=None)
-    model: Optional[str] = Field(default=None)
-    provider: Optional[str] = Field(default=None)
-    tokens: Optional[str] = Field(default=None)
+    cost: Optional[str] = Field(default=None, frozen=True)
+    model: Optional[str] = Field(default=None, frozen=True)
+    provider: Optional[str] = Field(default=None, frozen=True)
+    tokens: Optional[str] = Field(default=None, frozen=True)
 
     # FK: budget_id -> RB-01.budget_id
 
 
 class CaseLock(BaseModel):
-    """CLK-01: CaseLock.
-    Frozen M4A canonical schema. Family I.
-    """
+    """CLK-01: CaseLock. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="CLK-01", frozen=True)
-    case_id: str
-    case_version: str
-    lock_id: str
-    lock_state: CaseLockLock_state
+    case_id: str = Field(frozen=True)
+    case_version: str = Field(frozen=True)
+    lock_id: str = Field(frozen=True)
+    lock_state: CaseLockLock_state = Field(frozen=True)
     locked_at: str = Field(frozen=True)
-    locked_by: str
-    lock_reason: Optional[str] = Field(default=None)
+    locked_by: str = Field(frozen=True)
+    lock_reason: Optional[str] = Field(default=None, frozen=True)
     unlocked_at: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class EvaluationHarnessRun(BaseModel):
-    """EHR-01: EvaluationHarnessRun.
-    Frozen M4A canonical schema. Family I.
-    """
+    """EHR-01: EvaluationHarnessRun. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="EHR-01", frozen=True)
-    corpus_version: str
-    eval_run_id: str
-    evaluation_type: EvaluationHarnessRunEvaluation_type
+    corpus_version: str = Field(frozen=True)
+    eval_run_id: str = Field(frozen=True)
+    evaluation_type: EvaluationHarnessRunEvaluation_type = Field(frozen=True)
     pit_snapshot: str = Field(frozen=True)
-    policy_version: str
+    policy_version: str = Field(frozen=True)
     started_at: str = Field(frozen=True)
-    status: str
+    status: EvaluationHarnessRunStatus = Field(frozen=True)
     completed_at: Optional[str] = Field(default=None, frozen=True)
-    cost: Optional[str] = Field(default=None)
-    failures: Optional[list[str]] = Field(default=None)
-    fixture_results: Optional[list[str]] = Field(default=None)
-    metrics: Optional[dict] = Field(default=None)
-    token_usage: Optional[str] = Field(default=None)
+    cost: Optional[str] = Field(default=None, frozen=True)
+    failures: Optional[list[str]] = Field(default=None, frozen=True)
+    fixture_results: Optional[list[str]] = Field(default=None, frozen=True)
+    metrics: Optional[dict] = Field(default=None, frozen=True)
+    token_usage: Optional[str] = Field(default=None, frozen=True)
 
 
 class ModelInvocation(BaseModel):
-    """MOD-01: ModelInvocation.
-    Frozen M4A canonical schema. Family I.
-    """
+    """MOD-01: ModelInvocation. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="MOD-01", frozen=True)
-    case_id: str
-    completion_tokens: str
-    cost: str
+    case_id: str = Field(frozen=True)
+    completion_tokens: str = Field(frozen=True)
+    cost: str = Field(frozen=True)
     invoked_at: str = Field(frozen=True)
-    model: str
-    model_invocation_id: str
-    prompt_tokens: str
-    provider: str
-    status: ModelInvocationStatus
-    error: Optional[str] = Field(default=None)
-    latency_ms: Optional[str] = Field(default=None)
-    prompt_hash: Optional[str] = Field(default=None)
-    response_hash: Optional[str] = Field(default=None)
-    retry_count: Optional[int] = Field(default=None)
+    model: str = Field(frozen=True)
+    model_invocation_id: str = Field(frozen=True)
+    prompt_tokens: str = Field(frozen=True)
+    provider: str = Field(frozen=True)
+    status: ModelInvocationStatus = Field(frozen=True)
+    error: Optional[str] = Field(default=None, frozen=True)
+    latency_ms: Optional[str] = Field(default=None, frozen=True)
+    prompt_hash: Optional[str] = Field(default=None, frozen=True)
+    response_hash: Optional[str] = Field(default=None, frozen=True)
+    retry_count: Optional[int] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
 
 class PITContext(BaseModel):
-    """PITC-01: PITContext.
-    Frozen M4A canonical schema. Family I.
-    """
+    """PITC-01: PITContext. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="PITC-01", frozen=True)
@@ -156,7 +152,7 @@ class PITContext(BaseModel):
     created_by: str
     mode: PITContextMode
     pit_context_id: str
-    created_at: Optional[str] = Field(default=None)
+    created_at: Optional[str] = Field(default=None, frozen=True)
     evidence_count_post: Optional[str] = Field(default=None)
     evidence_count_pre: Optional[str] = Field(default=None)
     exception_reason: Optional[str] = Field(default=None)
@@ -165,50 +161,44 @@ class PITContext(BaseModel):
 
 
 class ProviderInvocation(BaseModel):
-    """PROV-01: ProviderInvocation.
-    Frozen M4A canonical schema. Family I.
-    """
+    """PROV-01: ProviderInvocation. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="PROV-01", frozen=True)
-    case_id: str
-    cost: str
+    case_id: str = Field(frozen=True)
+    cost: str = Field(frozen=True)
     invoked_at: str = Field(frozen=True)
-    provider: str
-    provider_invocation_id: str
-    service: str
-    status: ProviderInvocationStatus
-    error: Optional[str] = Field(default=None)
-    fallback_used: Optional[str] = Field(default=None)
-    model_invocation_ids: Optional[list[str]] = Field(default=None)
+    provider: str = Field(frozen=True)
+    provider_invocation_id: str = Field(frozen=True)
+    service: str = Field(frozen=True)
+    status: ProviderInvocationStatus = Field(frozen=True)
+    error: Optional[str] = Field(default=None, frozen=True)
+    fallback_used: Optional[str] = Field(default=None, frozen=True)
+    model_invocation_ids: Optional[list[str]] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
     # FK: model_invocation_ids[] -> MOD-01.model_invocation_id
 
 
 class RetryRecord(BaseModel):
-    """RR-01: RetryRecord.
-    Frozen M4A canonical schema. Family I.
-    """
+    """RR-01: RetryRecord. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RR-01", frozen=True)
-    attempt_number: str
+    attempt_number: str = Field(frozen=True)
     attempted_at: str = Field(frozen=True)
-    error: str
-    invocation_id: str
-    retry_id: str
-    status: RetryRecordStatus
-    escalated_to: Optional[str] = Field(default=None)
-    resolution: Optional[str] = Field(default=None)
+    error: str = Field(frozen=True)
+    invocation_id: str = Field(frozen=True)
+    retry_id: str = Field(frozen=True)
+    status: RetryRecordStatus = Field(frozen=True)
+    escalated_to: Optional[str] = Field(default=None, frozen=True)
+    resolution: Optional[str] = Field(default=None, frozen=True)
 
     # FK: invocation_id -> SI-01.invocation_id
 
 
 class RunManifestRecord(BaseModel):
-    """RRM-01: ResearchRunManifest.
-    Frozen M4A canonical schema. Family I.
-    """
+    """RRM-01: ResearchRunManifest. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="RRM-01", frozen=True)
@@ -238,23 +228,21 @@ class RunManifestRecord(BaseModel):
 
 
 class ServiceInvocation(BaseModel):
-    """SI-01: ServiceInvocation.
-    Frozen M4A canonical schema. Family I.
-    """
+    """SI-01: ServiceInvocation. Frozen M4A canonical schema. Family I. """
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="SI-01", frozen=True)
-    case_id: str
-    invocation_id: str
+    case_id: str = Field(frozen=True)
+    invocation_id: str = Field(frozen=True)
     invoked_at: str = Field(frozen=True)
-    request_type: str
-    service_id: str
-    status: ServiceInvocationStatus
-    completed_at: Optional[str] = Field(default=None)
-    duration_ms: Optional[int] = Field(default=None)
-    error: Optional[str] = Field(default=None)
-    input_summary: Optional[str] = Field(default=None)
-    output_summary: Optional[str] = Field(default=None)
-    retry_count: Optional[int] = Field(default=None)
+    request_type: str = Field(frozen=True)
+    service_id: str = Field(frozen=True)
+    status: ServiceInvocationStatus = Field(frozen=True)
+    completed_at: Optional[str] = Field(default=None, frozen=True)
+    duration_ms: Optional[int] = Field(default=None, frozen=True)
+    error: Optional[str] = Field(default=None, frozen=True)
+    input_summary: Optional[str] = Field(default=None, frozen=True)
+    output_summary: Optional[str] = Field(default=None, frozen=True)
+    retry_count: Optional[int] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
