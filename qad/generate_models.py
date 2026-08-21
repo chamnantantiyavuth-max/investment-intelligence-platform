@@ -1,306 +1,482 @@
 #!/usr/bin/env python3
-"""M5.1 — Canonical Schema Code Generator.
+"""M5.1 — Canonical Schema Code Generator (Contract Compiler).
 Reads QAD-M4A-CANONICAL-SCHEMAS.md and generates Pydantic v2 models.
-Groups schemas by canonical family sections (## headers).
-Non-production deterministic generation — frozen inputs produce frozen outputs.
+EVERYTHING derives from the ONE parsed representation of frozen M4A.
+No hand-written FK registry, no hand-written canonical boundary lists.
 """
+import hashlib
+import json
 import re
 from pathlib import Path
+from collections import OrderedDict
 
 BASE = Path(__file__).resolve().parent
 SCHEMAS_MD = BASE.parent / "design" / "qad-pivot" / "m4a" / "QAD-M4A-CANONICAL-SCHEMAS.md"
 OUTPUT = BASE / "models"
 OUTPUT.mkdir(parents=True, exist_ok=True)
+CONTRACT_DIR = BASE / "contract"
+CONTRACT_DIR.mkdir(parents=True, exist_ok=True)
 
-FAMILY_TITLES = {
-    "A": "Identity & Coverage",
-    "B": "Evidence & Sources",
-    "C": "Research Case & Execution",
-    "D": "Business & Industry Quality",
-    "E": "Dislocation & Impairment",
-    "F": "Financial & Valuation",
-    "G": "Challenge, Audit & Governance",
-    "H": "Monitoring & Knowledge",
-    "I": "System & Infrastructure",
-}
+FAMILY_TITLES = OrderedDict([
+    ("A", "Identity & Coverage"),
+    ("B", "Source & Evidence"),
+    ("C", "Research Governance"),
+    ("D", "Business / Industry / Management"),
+    ("E", "Impairment & Recovery"),
+    ("F", "Financial & Economic Underwriting"),
+    ("G", "Challenge / Underwriting / Publication"),
+    ("H", "Monitoring & Knowledge"),
+    ("I", "Reproducibility & Operations"),
+])
 
-TYPE_MAP = {
-    "entity_id": "str", "primary_ticker": "str", "cik": "str", "name": "str",
-    "exchange": "str", "security_type": "str", "status": "str",
-    "isin": "Optional[str]", "sedol": "Optional[str]", "adr_flag": "Optional[bool]",
-    "dual_listings": "Optional[list[str]]", "ticker_history": "Optional[list[str]]",
-    "corporate_actions": "Optional[list[str]]", "sector": "Optional[str]", "industry": "Optional[str]",
-    "inclusion_state": "str", "inclusion_reason": "str", "as_of_date": "str",
-    "exclusion_category": "Optional[str]", "exclusion_detail": "Optional[str]",
-    "quality_flag": "Optional[bool]", "dislocation_flag": "Optional[bool]", "last_reviewed": "Optional[str]",
-    "signal_id": "str", "signal_type": "str", "source_signal": "str", "signal_date": "str",
-    "summary": "str", "evidence_ids": "Optional[list[str]]",
-    "confidence": "Optional[str]", "resolution_state": "Optional[str]",
-    "candidate_id": "str", "candidate_type": "str", "origin_signal_id": "str",
-    "decision_rationale": "str", "review_state": "str",
-    "case_id": "str", "research_charter_id": "str", "case_status": "str",
-    "source_id": "str", "source_type": "str", "retrieval_method": "str",
-    "source_url": "str", "content_hash": "str", "publication_date": "str", "access_date": "str",
-    "source_version": "Optional[str]",
-    "evidence_id": "str", "claim_id": "str", "fact_id": "str",
-    "evidence_type": "str", "evidence_status": "str", "evidence_text": "str",
-    "extracted_by": "str", "verification_status": "str",
-    "inference_id": "str", "inference_type": "str", "inference_text": "str",
-    "premise_ids": "Optional[list[str]]",
-    "hypothesis_id": "str", "hypothesis_text": "str", "hypothesis_type": "str", "test_status": "str",
-    "contradiction_id": "str", "contradiction_type": "str", "contradiction_summary": "str",
-    "contradiction_evidence": "Optional[list[str]]",
-    "gap_id": "str", "gap_type": "str", "gap_description": "str", "impact": "str",
-    "filled_by": "Optional[str]",
-    "admission_id": "str", "admission_decision": "str", "admission_rationale": "str",
-    "reviewer": "str", "reviewer_role": "str",
-    "version_id": "str", "parent_source_id": "str", "change_summary": "str",
-    "charter_id": "str", "charter_type": "str", "scope_definition": "str", "start_date": "str",
-    "stage_id": "str", "stage_type": "str", "stage_status": "str",
-    "started_at": "str", "completed_at": "Optional[str]",
-    "investigator_id": "str", "investigator_type": "str",
-    "budget_id": "str", "budget_allocated": "float", "budget_consumed": "float", "budget_unit": "str",
-    "failure_id": "str", "failure_stage": "str", "failure_mode": "str", "failure_detail": "str",
-    "hypothesis_set_id": "str", "hypotheses": "dict",
-    "report_id": "str", "report_summary": "str", "key_findings": "str",
-    "stop_id": "str", "stop_reason": "str", "saturation_threshold": "Optional[float]",
-    "quality_id": "str", "quality_dimension": "str", "quality_score": "str", "quality_rationale": "str",
-    "moat_id": "str", "moat_type": "str", "moat_width": "str", "moat_trend": "str",
-    "moat_evidence": "Optional[list[str]]", "moat_depth": "Optional[str]", "moat_durability": "Optional[str]",
-    "industry_id": "str", "industry_attractiveness": "str", "industry_dynamics": "str",
-    "management_claim_id": "str", "management_statement": "str", "claim_context": "str",
-    "outcome_status": "Optional[str]",
-    "event_id": "str", "event_type": "str", "event_date": "str", "event_detail": "str",
-    "decision_id": "str", "decision_type": "str",
-    "outcome_id": "str", "outcome_measurement": "str",
-    "dislocation_id": "str", "dislocation_type": "str", "dislocation_severity": "str",
-    "impairment_id": "str", "impairment_type": "str", "impairment_severity": "str",
-    "explanation_id": "str", "explanation_text": "str", "explanation_type": "str",
-    "recovery_id": "str", "recovery_mechanism": "str", "recovery_timeframe": "str",
-    "thesis_killer_id": "str", "thesis_killer_evidence": "Optional[list[str]]",
-    "flip_evidence_id": "str", "flip_type": "str",
-    "financial_fact_id": "str", "fiscal_period": "str", "metric_name": "str",
-    "metric_value": "float", "currency": "str",
-    "normalized_id": "str", "adjustment_rationale": "str",
-    "calc_id": "str", "calc_type": "str", "calc_result": "float", "calc_inputs": "dict",
-    "scenario_id": "str", "scenario_name": "str", "scenario_assumptions": "dict",
-    "permanent_loss_id": "str", "loss_type": "str", "loss_estimate": "Optional[float]",
-    "dcf_id": "str", "implied_expectations": "dict",
-    "valuation_id": "str", "valuation_method": "str",
-    "valuation_range_low": "float", "valuation_range_high": "float",
-    "pie_id": "str", "pie_type": "str", "market_price": "float", "implied_growth": "float",
-    "challenge_id": "str", "challenge_type": "str", "challenge_finding": "str",
-    "challenge_severity": "str", "challenge_status": "str",
-    "finding_id": "str", "finding_type": "str", "finding_detail": "str",
-    "audit_id": "str", "audit_scope": "str", "audit_verdict": "str",
-    "audit_trail": "Optional[list[str]]",
-    "underwriting_id": "str", "underwriter": "str", "underwriting_decision": "str",
-    "condition": "Optional[list[str]]",
-    "publication_id": "str", "article_slug": "str", "publish_timestamp": "str", "editor": "str",
-    "founder_decision_id": "str", "founder_reference": "str",
-    "response_id": "str", "response_summary": "str", "response_status": "str",
-    "indicator_id": "str", "indicator_type": "str",
-    "observation_id": "str", "observation_value": "str",
-    "assessment_id": "str", "assessment_verdict": "str",
-    "lesson_id": "str", "lesson_type": "str",
-    "knowledge_id": "str", "knowledge_domain": "str",
-    "playbook_id": "str", "playbook_industry": "str", "playbook_insight": "str",
-    "cross_case_id": "str", "comparison_summary": "str",
-    "manifest_id": "str", "run_id": "str", "execution_mode": "str", "run_status": "str",
-    "pit_context_id": "str", "mode_pit": "str", "as_of_bound": "str", "seal_hash": "Optional[str]",
-    "invocation_id": "str", "service_id": "str", "invocation_status": "str",
-    "duration_ms": "Optional[int]", "input_summary": "str", "output_summary": "str",
-    "retry_id": "str", "retry_count": "int", "max_retries": "int", "last_error": "Optional[str]",
-    "lock_id": "str", "locked_by": "str", "lock_acquired": "str", "lock_expiry": "Optional[str]",
-    "budget_usage_id": "str", "tokens_used": "int", "cost_usd": "float",
-    "model_id": "str", "model_tier": "str", "provider_id": "str",
-    "eh_run_id": "str", "evaluation_type": "str", "fixture_ids": "Optional[list[str]]",
-    "margins_normal": "Optional[str]", "roic_industry": "Optional[str]",
-    "capital_entry_barriers": "Optional[str]", "future_capacity_pipeline": "Optional[str]",
-    "porter_forces": "Optional[dict]",
-    "mechanism_evidence": "Optional[dict]",
-    "false_quality_concerns": "Optional[list[str]]",
-    "margins_operating": "Optional[str]",
-    "revenue_growth_rate": "Optional[str]",
-    "fcf_margin": "Optional[str]",
-    "debt_structure": "Optional[str]",
-    "capex_profile": "Optional[str]",
-    "management_quality": "Optional[str]",
-    "governance_concerns": "Optional[str]",
-    "related_parties": "Optional[str]",
-    "risk_factors": "Optional[list[str]]",
-    "key_assumptions": "Optional[dict]",
-    "value_drivers": "Optional[list[str]]",
-    "margin_of_safety": "Optional[str]",
-    "verdict": "str",
-    "verdict_rationale": "str",
-    "label": "str",
-    "detection_method": "str",
-    "entry_type": "str",
-    "target_price": "Optional[float]",
-    "position_rationale": "str",
-    "monitoring_triggers": "Optional[list[str]]",
-    "adjustment_type": "str",
+SCALAR_PATTERNS = {
+    "duration_ms": "int",
+    "tokens_used": "int",
+    "retry_count": "int",
+    "max_retries": "int",
+    "cost_usd": "float",
+    "market_price": "float",
+    "implied_growth": "float",
+    "metric_value": "float",
+    "valuation_range_low": "float",
+    "valuation_range_high": "float",
+    "budget_allocated": "float",
+    "budget_consumed": "float",
+    "calc_result": "float",
+    "loss_estimate": "float",
+    "saturation_threshold": "float",
+    "oom_ratio": "float",
     "adjustment_amount": "float",
     "fair_value": "float",
-    "sensitivity_analysis": "Optional[dict]",
-    "testing_status": "str",
-    "h1_text": "str",
-    "h2_text": "str",
-    "h3_text": "str",
-    "h4_text": "str",
-    "h5_text": "str",
-    "priority": "Optional[str]",
-    "query": "str",
-    "result": "str",
-    "resolution": "str",
-    "primary_ticker": "str",
-    "founder_verdict": "str",
-    "founder_notes": "Optional[str]",
-    "conclusion": "str",
-    "supporting_evidence": "Optional[list[str]]",
-    "counter_evidence": "Optional[list[str]]",
-    "oom_ratio": "Optional[float]",
-    "valuation_implication": "Optional[str]",
-    "evidence": "dict",
-    "diagnosis": "str",
-    "signals": "Optional[list[str]]",
+    "target_price": "float",
 }
 
 
-def clean_field_name(field: str) -> str:
-    """Strip {type: evidence} notation and [] from field names."""
-    return re.sub(r"\{.*?\}", "", field).split("[")[0].strip().rstrip("[]{}")
+def parse_field_shape(field_name: str) -> tuple[str, str]:
+    """Parse field name into (clean_name, container_type).
+    container_type: 'list', 'dict', or '' for scalar.
+    """
+    if field_name.endswith("[]"):
+        return field_name[:-2], "list"
+    dict_match = re.match(r'^(\w+)\{(.+)\}$', field_name)
+    if dict_match:
+        return dict_match.group(1), "dict"
+    if field_name.endswith("{}"):
+        return field_name[:-2], "dict"
+    return field_name, ""
 
 
-def get_class_name(schema_id: str, name: str) -> str:
-    """Derive a unique Python class name from the schema, stripping parenthetical aliases."""
-    name = re.sub(r'\s*\(.*?\)\s*', '', name).strip()
-    overrides = {
-            "RR-01": "RetryRecord",
-            "RRM-01": "RunManifestRecord",
-            "RSR-01": "ResearchStageRecord",
-            "RSR-02": "ResearchStopRecord",
-            "MO-01": "MonitoringObservation",
-            "MO-02": "ManagementOutcome",
-            "CL-01": "CandidateLesson",
-            "CLK-01": "CaseLock",
-            "RC-01": "ResearchCharter",
-            "IC-01": "InvestigatorCharter",
-            "EG-01": "EvidenceGap",
+def infer_field_type(fname: str, container: str, is_required: bool) -> str:
+    """Infer Python type annotation from M4A field properties."""
+    base = SCALAR_PATTERNS.get(fname, "str")
+    if container == "list":
+        py_type = f"list[{base}]"
+    elif container == "dict":
+        py_type = "dict"
+    else:
+        py_type = base
+    if not is_required:
+        py_type = f"Optional[{py_type}]"
+    return py_type
+
+
+def parse_enum_rows(block: str) -> list[dict]:
+    """Parse enums from a schema block."""
+    enums = []
+    # Find the first enum row
+    m = re.search(r'\| \*\*enums\*\* \| (.+?) \|', block)
+    if not m:
+        return enums
+    first = m.group(1).strip()
+    if first:
+        m2 = re.match(r'`(\w+):\s*(.+)`', first)
+        if m2:
+            enums.append({"field": m2.group(1), "values": [v.strip() for v in m2.group(2).split("/")]})
+
+    rest = block[m.end():]
+    for line in rest.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        if not line.startswith('| | '):
+            break
+        content = line.strip('|').strip()
+        m3 = re.match(r'`(\w+):\s*(.+)`', content)
+        if m3:
+            enums.append({"field": m3.group(1), "values": [v.strip() for v in m3.group(2).split("/")]})
+    return enums
+
+
+def parse_fk_rows(block: str) -> list[dict]:
+    """Parse IDs / foreign keys from a schema block."""
+    fks = []
+    fk_row = re.search(
+        r'\| \*\*IDs\s*/\s*foreign\s*keys\*\* \| (.+?) \|',
+        block, re.MULTILINE | re.DOTALL
+    )
+    if not fk_row:
+        return fks
+    raw = fk_row.group(1)
+    for m in re.finditer(r'`([^`]+?)\s*→\s*(\S+)\.([^`\s]+)`', raw):
+        raw_field = m.group(1).strip()
+        cardinality = "list" if "[]" in raw_field else "single"
+        clean_field = raw_field.split("[")[0].split("{")[0].strip()
+        fks.append({
+            "field": clean_field, "target": m.group(2),
+            "target_field": m.group(3), "cardinality": cardinality,
+        })
+    return fks
+
+
+def get_field(block: str, label: str) -> str:
+    m = re.search(rf'\| \*\*{re.escape(label)}\*\* \| (.+?) \|', block, re.MULTILINE | re.DOTALL)
+    return m.group(1).strip() if m else ""
+
+
+def parse_schema_block(block: str, family: str) -> dict | None:
+    """Parse one schema block into a structured descriptor."""
+    m_id = re.search(r'\| \*\*schema_id\*\* \| (\S+) \|', block)
+    if not m_id:
+        return None
+    schema_id = m_id.group(1)
+    m_name = re.search(r'^### \S[^:]*:\s*(.+?)(?:\n|$)', block, re.MULTILINE)
+    name = m_name.group(1).strip() if m_name else schema_id
+
+    required_raw = get_field(block, "required_fields")
+    optional_raw = get_field(block, "optional_fields")
+
+    required = set()
+    optional = set()
+    all_fields_raw = []
+
+    if required_raw:
+        for f in re.findall(r'`([^`]+)`', required_raw):
+            all_fields_raw.append(f)
+            clean, _ = parse_field_shape(f)
+            if clean:
+                required.add(clean)
+    if optional_raw:
+        for f in re.findall(r'`([^`]+)`', optional_raw):
+            all_fields_raw.append(f)
+            clean, _ = parse_field_shape(f)
+            if clean:
+                optional.add(clean)
+
+    enums = parse_enum_rows(block)
+    fks = parse_fk_rows(block)
+
+    pit_raw = get_field(block, "PIT fields")
+    pit_fields = set()
+    if pit_raw:
+        pit_fields = {f.strip() for f in re.findall(r'`([^`]+)`', pit_raw)}
+
+    prov_raw = get_field(block, "provenance fields")
+    prov_fields = set()
+    if prov_raw:
+        prov_fields = {f.strip() for f in re.findall(r'`([^`]+)`', prov_raw)}
+
+    cb = get_field(block, "canonical_boundary")
+    # Schema is canonical unless the boundary explicitly classifies it as non-canonical
+    # Many schemas say "Canonical (Layer 2). NotebookLM/DR output is NONCANONICAL..."
+    # which means the schema itself IS canonical, just with non-canonical aspects
+    is_canonical = cb.lower().startswith("canonical") or (
+    "canonical" in cb.lower() and "noncanonical" not in cb.lower()
+    )
+    # Override for PublicationRecord which is genuinely mixed
+    if schema_id == "PUB-01":
+        is_canonical = True  # Canonical for record; non-canonical for investment truth
+
+    immutability = get_field(block, "immutability_rules")
+
+    for pf in pit_fields:
+        pf_clean, _ = parse_field_shape(pf)
+        if pf_clean and pf_clean not in required and pf_clean not in optional:
+            optional.add(pf_clean)
+    for pf in prov_fields:
+        pf_clean, _ = parse_field_shape(pf)
+        if pf_clean and pf_clean not in required and pf_clean not in optional:
+            optional.add(pf_clean)
+
+    # Build field descriptors
+    field_descs = {}
+    for raw_field in all_fields_raw:
+        clean_name, container = parse_field_shape(raw_field)
+        if not clean_name:
+            continue
+        is_req = clean_name in required
+        enum_values = None
+        for e in enums:
+            if e["field"] == clean_name:
+                enum_values = e["values"]
+                break
+        is_immutable = (
+            clean_name in pit_fields or
+            clean_name in ("entity_id", "schema_id") or
+            ("immutable" in immutability.lower() and clean_name in ("content", "evidence_id", "fact_id"))
+        )
+        field_descs[clean_name] = {
+            "raw_name": raw_field, "container": container,
+            "required": is_req, "enum_values": enum_values,
+            "is_pit": clean_name in pit_fields,
+            "is_provenance": clean_name in prov_fields,
+            "immutable": is_immutable,
         }
-    if schema_id in overrides:
-        return overrides[schema_id]
-    return name.replace(" ", "")
+
+    return {
+        "schema_id": schema_id, "name": name, "family": family,
+        "required": required, "optional": optional,
+        "field_descriptors": field_descs, "enums": enums, "fks": fks,
+        "pit_fields": pit_fields, "provenance_fields": prov_fields,
+        "is_canonical": is_canonical,
+        "validation_rules": get_field(block, "validation_rules"),
+        "immutability_rules": immutability,
+        "canonical_boundary": cb,
+    }
 
 
-def parse_content(content: str) -> dict:
-    """Split content by family section then parse each schema."""
-    families = {}
-    sections = re.split(r'\n(?=##\s+[A-I]\s+[—\-])', content)
+def parse_all_schemas(content: str) -> dict[str, dict]:
+    """Parse all schemas from M4A markdown. Returns dict[schema_id] = descriptor."""
+    schemas = OrderedDict()
+    sections = re.split(r'\n(?=## [A-I] [—\-])', content)
     for section in sections:
         if not section.strip():
             continue
-        m_fam = re.search(r'^## ([A-I])\s+[—\-]\s+(.+)$', section, re.MULTILINE)
+        m_fam = re.search(r'^## ([A-I])', section, re.MULTILINE)
         if not m_fam:
             continue
-        fam_letter = m_fam.group(1)
-        families[fam_letter] = []
-        schema_blocks = re.split(r'\n(?=###\s+\S)', section)
-        for block in schema_blocks:
-            if not block.strip():
-                continue
-            m_id = re.search(r'\|\s*\*\*schema_id\*\*\s*\|\s*(\S+)\s*\|', block)
-            if not m_id:
-                continue
-            sid = m_id.group(1)
-            m_name = re.search(r'###\s+\S[^:]*:\s*(.+?)(?:\n|$)', block)
-            name = m_name.group(1).strip() if m_name else sid
-            req = set()
-            m_req = re.search(r'\|\s*\*\*required_fields\*\*\s*\|\s*(.+?)\s*\|', block)
-            if m_req:
-                req = {clean_field_name(f) for f in re.findall(r'`([^`]+)`', m_req.group(1))}
-            opt = set()
-            m_opt = re.search(r'\|\s*\*\*optional_fields\*\*\s*\|\s*(.+?)\s*\|', block)
-            if m_opt:
-                opt = {clean_field_name(f) for f in re.findall(r'`([^`]+)`', m_opt.group(1))}
-            pit = set()
-            m_pit = re.search(r'\|\s*\*\*PIT fields\*\*\s*\|\s*(.+?)\s*\|', block)
-            if m_pit:
-                pit = {f.strip() for f in re.findall(r'`([^`]+)`', m_pit.group(1))}
-            fks = []
-            fk_row = re.search(r'\|\s*\*\*IDs\s*/\s*foreign\s*keys\*\*\s*\|\s*(.+?)\s*\|', block)
-            if fk_row:
-                fk_matches = re.findall(r'`([^`]+?)\s*→\s*(\S+)\.([^`\s]+)`', fk_row.group(1))
-                for field, tgt, tf in fk_matches:
-                    fks.append({"field": field.strip().rstrip("[]"), "target": tgt, "target_field": tf})
-            families[fam_letter].append({
-                "schema_id": sid, "name": name, "required": req, "optional": opt,
-                "pit": pit, "fks": fks,
-            })
-    return families
+        family = m_fam.group(1)
+        for block in re.split(r'\n(?=### \S)', section):
+            desc = parse_schema_block(block, family)
+            if desc:
+                schemas[desc["schema_id"]] = desc
+    return schemas
 
 
-def generate_family_models(fam_letter: str, schemas: list) -> str:
-    fam_title = FAMILY_TITLES.get(fam_letter, "Unknown")
+def get_class_name(schema_id: str, name: str) -> str:
+    """Derive Python class name from schema."""
+    overrides = {
+        "RR-01": "RetryRecord", "RRM-01": "RunManifestRecord",
+        "RSR-01": "ResearchStageRecord", "RSR-02": "ResearchStopRecord",
+        "MO-01": "MonitoringObservation", "MO-02": "ManagementOutcome",
+        "CL-01": "CandidateLesson", "CLK-01": "CaseLock",
+        "RC-01": "ResearchCharter", "IC-01": "InvestigatorCharter",
+        "EG-01": "EvidenceGap",
+    }
+    if schema_id in overrides:
+        return overrides[schema_id]
+    name = re.sub(r'\s*\(.*?\)\s*', '', name).strip()
+    return name.replace(" ", "")
+
+
+def emit_field(lines, fname, fd, schema, all_enums):
+    """Emit a single field with proper type annotation."""
+    enum_values = fd.get("enum_values")
+    container = fd.get("container", "")
+    is_required = fd.get("required", False)
+    is_immutable = fd.get("immutable", False)
+
+    if enum_values:
+        py_type = f'{get_class_name(schema["schema_id"], schema["name"])}{fname.capitalize()}'
+    else:
+        base = SCALAR_PATTERNS.get(fname, "str")
+        if container == "list":
+            py_type = f"list[{base}]"
+        elif container == "dict":
+            py_type = "dict"
+        else:
+            py_type = base
+
+    if not is_required and not py_type.startswith("Optional"):
+        py_type = f"Optional[{py_type}]"
+
+    field_args = []
+    if not is_required:
+        field_args.append("default=None")
+    if is_immutable:
+        field_args.append("frozen=True")
+
+    field_str = f'    {fname}: {py_type}'
+    if field_args:
+        field_str += f' = Field({", ".join(field_args)})'
+    lines.append(field_str)
+
+
+def generate_enum_class(enum_name: str, values: list[str]) -> str:
+    """Generate a Python enum class."""
+    lines = [f'\nclass {enum_name}(str, Enum):']
+    for val in values:
+        # Sanitize: remove non-alphanumeric chars except underscore
+        py_name = re.sub(r'[^a-zA-Z0-9_]', '', val.upper().replace(" ", "_").replace("-", "_").replace("/", "_"))
+        if not py_name or py_name[0].isdigit():
+            py_name = f"V_{py_name}"
+        lines.append(f'    {py_name} = "{val}"')
+    return '\n'.join(lines)
+
+
+def generate_family_models(family: str, schemas: list[dict], all_schemas: dict) -> str:
+    """Generate Pydantic model code for one family."""
+    fam_title = FAMILY_TITLES.get(family, "Unknown")
     lines = [
-        f'"""Family {fam_letter} — {fam_title}',
+        f'"""Family {family} — {fam_title}',
         'Runtime Pydantic models generated from QAD-M4A-CANONICAL-SCHEMAS.md.',
         'Do not edit manually — regenerate via qad/generate_models.py',
         '"""',
         'from __future__ import annotations',
-        'from datetime import datetime',
+        'from enum import Enum',
         'from typing import Optional',
         'from pydantic import BaseModel, Field',
-        'from qad.provenance import ProvenanceMixin, PITMixin',
         '',
     ]
-    for s in sorted(schemas, key=lambda x: x["schema_id"]):
+    # Collect enums
+    all_enums = OrderedDict()
+    for s in schemas:
+        for e in s["enums"]:
+            enum_name = f'{get_class_name(s["schema_id"], s["name"])}{e["field"].capitalize()}'
+            if enum_name not in all_enums:
+                all_enums[enum_name] = e["values"]
+
+    for enum_name, values in all_enums.items():
+        lines.append(generate_enum_class(enum_name, values))
+
+    # Generate models
+    for s in schemas:
         class_name = get_class_name(s["schema_id"], s["name"])
-        all_fields = s["required"] | s["optional"]
-        lines.append(f'')
-        lines.append(f'class {class_name}(ProvenanceMixin, PITMixin, BaseModel):')
-        lines.append(f'    """{s["schema_id"]}: {s["name"]}. Frozen M4A canonical schema."""')
+        fds = s["field_descriptors"]
+        lines.append('')
+        lines.append('')
+        lines.append(f'class {class_name}(BaseModel):')
+        lines.append(f'    """{s["schema_id"]}: {s["name"]}.')
+        lines.append(f'    Frozen M4A canonical schema. Family {family}.')
+        lines.append(f'    """')
+        lines.append(f'    model_config = {{"extra": "forbid"}}')
+        lines.append('')
         lines.append(f'    schema_id: str = Field(default="{s["schema_id"]}", frozen=True)')
-        for fname in sorted(all_fields):
-            fn = fname.replace("[]", "").replace("{}", "")
-            py_type = TYPE_MAP.get(fn, "str")
-            is_required = fname in s["required"]
-            is_immutable = fname in s.get("pit", set()) or fname in ["entity_id"]
-            if not is_required:
-                if not py_type.startswith("Optional"):
-                    py_type = f"Optional[{py_type}]"
-            field_args = []
-            if not is_required:
-                field_args.append("default=None")
-            if is_immutable:
-                field_args.append("frozen=True")
-            field_str = f"    {fn}: {py_type}"
-            if field_args:
-                field_str += f" = Field({', '.join(field_args)})"
-            lines.append(field_str)
+
+        for fname in sorted(s["required"]):
+            if fname == "schema_id":
+                continue
+            fd = fds.get(fname, {})
+            emit_field(lines, fname, fd, s, all_enums)
+
+        for fname in sorted(s["optional"]):
+            fd = fds.get(fname, {})
+            emit_field(lines, fname, fd, s, all_enums)
+
         if s["fks"]:
             lines.append('')
             for fk in s["fks"]:
-                fk_f = fk["field"].rstrip("[]")
-                lines.append(f'    # FK: {fk_f} -> {fk["target"]}.{fk["target_field"]}')
+                card = "[]" if fk["cardinality"] == "list" else ""
+                lines.append(f'    # FK: {fk["field"]}{card} -> {fk["target"]}.{fk["target_field"]}')
+
+    return '\n'.join(lines)
+
+
+def generate_contract_descriptor(schemas: dict[str, dict]) -> str:
+    """Generate machine-readable contract descriptor JSON for testing."""
+    contracts = []
+    for sid in sorted(schemas.keys()):
+        s = schemas[sid]
+        fields = []
+        for fname in sorted(s["field_descriptors"].keys()):
+            fd = s["field_descriptors"][fname]
+            fields.append({
+                "name": fname, "raw_name": fd["raw_name"],
+                "container": fd["container"], "required": fd["required"],
+                "enum_values": fd["enum_values"],
+                "is_pit": fd["is_pit"], "is_provenance": fd["is_provenance"],
+                "immutable": fd["immutable"],
+            })
+        contracts.append({
+            "schema_id": s["schema_id"], "name": s["name"], "family": s["family"],
+            "required_fields": sorted(s["required"]),
+            "optional_fields": sorted(s["optional"]),
+            "fields": fields,
+            "enums": [{"field": e["field"], "values": e["values"]} for e in s["enums"]],
+            "fks": [{"field": fk["field"], "target": fk["target"],
+                     "target_field": fk["target_field"], "cardinality": fk["cardinality"]}
+                    for fk in s["fks"]],
+            "pit_fields": sorted(s["pit_fields"]),
+                        "provenance_fields": sorted(s["provenance_fields"]),
+                        "is_canonical": s["is_canonical"],
+                        "canonical_boundary": s.get("canonical_boundary", ""),
+                    })
+    return json.dumps({"schemas": contracts, "count": len(contracts)}, indent=2)
+
+
+def generate_fk_registry(schemas: dict[str, dict]) -> str:
+    """Generate FK registry Python code from parsed contracts."""
+    lines = [
+        '"""FK Registry (auto-generated from M4A parser)."""',
+        '',
+        'FK_REGISTRY: dict[str, list[dict]] = {',
+    ]
+    for sid in sorted(schemas.keys()):
+        s = schemas[sid]
+        if not s["fks"]:
+            continue
+        lines.append(f'    "{sid}": [')
+        for fk in s["fks"]:
+            lines.append(f'        {{"field": "{fk["field"]}", "target": "{fk["target"]}", '
+                         f'"target_field": "{fk["target_field"]}", '
+                         f'"cardinality": "{fk["cardinality"]}"}},')
+        lines.append('    ],')
+    lines.append('}')
+    lines.append('')
+    fk_count = sum(len(s["fks"]) for s in schemas.values())
+    lines.append(f'# Total FK references: {fk_count}')
+    return '\n'.join(lines)
+
+
+def generate_canonical_boundary(schemas: dict[str, dict]) -> str:
+    """Generate canonical boundary code from parsed contracts."""
+    canonical = [sid for sid, s in schemas.items() if s["is_canonical"]]
+    non_canonical = [sid for sid, s in schemas.items() if not s["is_canonical"]]
+    lines = [
+        '"""Canonical Boundary (auto-generated from M4A parser)."""',
+        '',
+        '# Canonical schemas',
+        f'CANONICAL_SCHEMAS = {{',
+    ]
+    for sid in sorted(canonical):
+        lines.append(f'    "{sid}",')
+    lines.append('}')
+    lines.append('')
+    lines.append('# Non-canonical schemas')
+    lines.append('NON_CANONICAL_SCHEMAS = {')
+    for sid in sorted(non_canonical):
+        lines.append(f'    "{sid}",')
+    lines.append('}')
     return '\n'.join(lines)
 
 
 def main():
     content = SCHEMAS_MD.read_text()
-    families = parse_content(content)
-    print(f"Generating {sum(len(v) for v in families.values())} schemas across {len(families)} families:")
-    for fam in sorted(families.keys()):
-        code = generate_family_models(fam, families[fam])
+    schemas = parse_all_schemas(content)
+    print(f"Parsed {len(schemas)} schemas from M4A canonical registry")
+
+    # Group by family
+    by_family = OrderedDict()
+    for sid, s in schemas.items():
+        fam = s["family"]
+        by_family.setdefault(fam, []).append(s)
+    for fam in by_family:
+        by_family[fam].sort(key=lambda x: x["schema_id"])
+
+    # Generate model files
+    for fam in sorted(by_family.keys()):
+        code = generate_family_models(fam, by_family[fam], schemas)
         (OUTPUT / f"family_{fam.lower()}.py").write_text(code)
-        print(f"  Family {fam} — {len(families[fam])} schemas")
+        print(f"  Family {fam} — {len(by_family[fam])} schemas")
+
+    # Generate __init__.py
+    init_lines = [
+        '"""QAD Runtime Schema Models — all 68 frozen M4A canonical schemas."""',
+        'from __future__ import annotations', '',
+    ]
     all_models = []
-    init_lines = ['"""QAD Runtime Schema Models — all 68 frozen M4A canonical schemas."""',
-                  'from __future__ import annotations', '']
-    for fam in sorted(families.keys()):
+    for fam in sorted(by_family.keys()):
         init_lines.append(f'from qad.models.family_{fam.lower()} import (')
-        for s in sorted(families[fam], key=lambda x: x["schema_id"]):
+        for s in by_family[fam]:
             cn = get_class_name(s["schema_id"], s["name"])
             init_lines.append(f'    {cn},')
             all_models.append(cn)
@@ -308,11 +484,24 @@ def main():
         init_lines.append('')
     init_lines.append('')
     init_lines.append('__all__ = [')
-    for cn in sorted(all_models):
+    for cn in sorted(set(all_models)):
         init_lines.append(f'    "{cn}",')
     init_lines.append(']')
     (OUTPUT / "__init__.py").write_text('\n'.join(init_lines))
-    print(f"\nGenerated __init__.py ({len(all_models)} models)")
+
+    # Generate contract artifacts
+    (CONTRACT_DIR / "fk_registry.py").write_text(generate_fk_registry(schemas))
+    (CONTRACT_DIR / "canonical_boundary.py").write_text(generate_canonical_boundary(schemas))
+    (CONTRACT_DIR / "contract_descriptor.json").write_text(generate_contract_descriptor(schemas))
+
+    # Source hash
+    source_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()[:16]
+    fk_count = sum(len(s["fks"]) for s in schemas.values())
+    canonical = sum(1 for s in schemas.values() if s["is_canonical"])
+    non_canonical = sum(1 for s in schemas.values() if not s["is_canonical"])
+    print(f"\n  Source hash: {source_hash}")
+    print(f"  FK references: {fk_count}")
+    print(f"  Canonical: {canonical}, Non-canonical: {non_canonical}")
     print("Done.")
 
 
