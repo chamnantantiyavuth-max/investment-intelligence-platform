@@ -786,3 +786,34 @@ PROJECT_STATE.md (Build Metrics / Session table / Next allowed action) · SESSIO
 **M4B Founder acceptance** (review M4B closeout → accept → M5 Gate) — then Mon 24 Aug 08:00 weekly radar = FD #110 Live Office acceptance observation. Alternatives: (a) interactive session adds AGENTS.md checkpoint fd-131-133 (protected file); (b) investigate recurring radar cron misses (durable gateway supervision, dashboard-VBS pattern 14 Aug).
 
 <!-- 2026-08-20 11:35 UTC+7 -->
+
+# Session Closeout — 21 Aug 2026 (cron review)
+
+## Overview
+Governed scheduled review (IIP Daily Learning Loop cron). 20 Aug world reconciled (mid-week radar late+incomplete run, INT-G2.1 harness marathon, Hermes Desktop build); suite re-run; market snapshot; state docs synced; push verified.
+
+## Findings
+- **F2 (refined, still open):** Radar Mid-Week Watch (Thu 20 Aug, `cda817d17236`) — the "NO EVIDENCE" verdict at 11:15 was followed by the run actually STARTING at 11:20:00 and running ~27 min of real scanning (13F-HR season, EDGAR delta 8/14–8/19), then TERMINATING with **ZERO deliverables** (no `evidence/radar/digests/2026-08-20-radar-midweek.md`, no `[DISC]` run task, no cards, no commit). Death point: NVDA 8-K 8/17 primary-doc lookup failed on a wrong URL (404). Root-cause class = late-start + mid-scan death; now 2 consecutive radar-cron failing evidence points (17 Aug weekly miss, 20 Aug mid-week incomplete) → durable gateway supervision (dashboard-VBS pattern) recommended. Next evidence point: **Mon 24 Aug 08:00 weekly + 09:00 CIW = FD #110 Live Office acceptance observation**.
+- **F-new (resolved this review):** **NVDA 8-K 8/17 = material filing never captured by radar** — NVIDIA + SB Energy Corp multi-year partnership, PORTS Technology Campus (Pike County, OH) large-scale AI data-center campus; NVIDIA secured land/power/shell; **affiliate of OpenAI Group PBC = tenant**; NVIDIA entered **Residual Value Guaranties** (Items 1.01/2.03/7.01 + press-release exhibit `sbeoainvidia-portsrelease.htm`). Resolved from the primary doc (accession 0001045810-26-000069, `nvda-20260817.htm`). Recommend next weekly radar files a card, or Founder tasks it.
+- **F-new (open):** Harness repo (`iip-harness-prep`, `harness/stage2-prep`) working tree has **uncommitted `scripts/board-safety-hook.sh`** (C2 frozen-legacy-board write guard, dated 13 Aug — the 20 Aug session's commits covered only the 2 new council-sandbox scripts). Cross-repo commit → next interactive session.
+- **F5 (open):** AGENTS.md checkpoint fd-131-133 missing (protected file — interactive session + Founder approval).
+- **F6 (open):** stray `dashboard_overall` PNG (repo root, untracked) — cleanup flag, not deleted.
+- **F7 (open):** META Form 4 cluster (12× Form 4 + 3× 144, 8/18) + AMZN 424B3 (8/18) + JNJ/MSFT Form 4s flagged by the dead radar run — unresolved, verify at Mon 24 Aug scan (routine-compression likely for META, but unverified).
+
+## Verification
+- Suite **235/235** (hermes-agent venv interpreter, 6.52s) — re-run warranted by routine cadence, green
+- HEAD `b4eda1d` == origin/main (453 commits); push SYNCED; docs-only commit added by this review (push verified after)
+- Governance sync PASS: shared SOUL gates present (Verify-First ×2 / Audit Delegation ×2 / PROJECT_STATE single-source ×2 / Model Routing ×3); profile v3.8 aligned
+- Derived: 36 published reports (unchanged); AM artifact AM-V0-20260816-150812 (as-of 14 Aug, 7d = at the ≤7d fresh bound; next Nick-Weekly run Sat 22 Aug 09:00); FO 3 Aug; II 9 Aug; CS synthetic-labeled
+- Cron jobs.json: all 5 jobs enabled + pinned (weekly radar/mid-week/CIW pinned to frozen routing since 18 Aug)
+
+## Market snapshot (21 Aug 11:10 UTC+7; equities = Thu 20 Aug COMPLETED EOD, futures/metals = live Fri)
+Broad risk-off Thu: SPY 762.60 (−0.84%) · ^GSPC 7,641.16 (−0.87%) · VIX 16.01 (+7.52%) · ^TNX 4.70 (+0.92%). AAPL 311.30 (−1.75%) · MSFT 481.15 (−0.65%, CIW no trigger, Q1-FY27 ~Oct) · JNJ 267.37 (−2.21%) · GOOGL 340.67 (−1.17%) · FSLR 214.06 (−3.75%) · SMCI 36.50 (−0.22%) · NVDA 216.85 (−0.33%) · inflection quartet pullback but +5d: ABBV 261.83 (−1.56%, +4.39% 5d) / BMY 65.47 (−3.17%, +1.27%) / LLY 1,244.40 (−2.81%, +2.93%) / VRTX 540.26 (−2.14%, +4.61%). Metals CONTINUE strong (feeds radar 0012/0016 series): **GC=F 4,593.70 (+1.71% 1d, +4.87% 5d)** · **SI=F 69.00 (+1.42% 1d, +6.17% 5d)** — silver ~11% above the ~$62 SILVER-CORR-001 anchor, gold/silver ratio ~66.6:1 (compression continues) · SLV 61.66 (+2.75% 1d). Oil CL=F 86.40 (−1.63% 1d, +4.85% 5d) — Hormuz premium holds (ORG-2026-0022). DXY 98.75 (−0.16%, ~2-month low area). No ±10% 1d moves → no news-driver lookup needed.
+
+## State artifacts updated
+PROJECT_STATE.md (Build Metrics 235/235 + push state → `b4eda1d`; Next allowed action 21 Aug update; cadence item 2 refined F2 evidence) · SESSION_CLOSEOUT.md (this entry, append-only). No new FDs (max #133) → no vault fd-register backfill needed. Committed docs-only, PUSHED + verified.
+
+## Recommended next action
+**M4B Founder acceptance** (review M4B closeout → accept → M5 Gate) — unchanged top item. **Then Mon 24 Aug 08:00 weekly radar = FD #110 Live Office acceptance observation** (also the recovery evidence point for the radar-cron fragility: verify board `[DISC]` run task + digest appear; NVDA 8-K 8/17 should yield a card). Alternatives: (a) interactive session: AGENTS.md checkpoint fd-131-133 + harness repo uncommitted board-safety-hook.sh + ORG-2026-0022 publish gate + 0016/0017 blocked-task recovery; (b) durable gateway supervision (dashboard-VBS pattern) given 2 consecutive radar-cron failures.
+
+<!-- 2026-08-21 11:40 UTC+7 -->
