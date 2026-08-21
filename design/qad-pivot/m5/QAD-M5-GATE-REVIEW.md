@@ -1,7 +1,7 @@
 # QAD-M5 Gate Review — Readiness Assessment
 
-> **Status:** GATE REVIEW — NOT AN IMPLEMENTATION AUTHORIZATION
-> **Authority:** FD #134
+> **Status:** GATE REVIEW — COMPLETE (Founder decision recorded in FD #135)
+> **Authority:** FD #134 (gate review), FD #135 (Founder-selected fixture policy)
 > **Baseline:** `9aab3cdea2bcd8116bb66badc5b86c5add2ef7d9` (21 Aug 2026)
 > **Gate purpose:** Determine whether the frozen M1–M4 specification package is sufficiently complete, internally consistent, testable, and operationally bounded to justify beginning production implementation.
 >
@@ -26,7 +26,7 @@
 
 ---
 
-## Decision Required: Sealed Historical Fixtures
+## Founder Decision — Sealed Historical Fixtures
 
 The M4B evaluation architecture defines a 4-stage sealing lifecycle:
 
@@ -36,15 +36,30 @@ DRAFT_UNSEALED → SOURCE_PACK_COMPLETE → INDEPENDENTLY_ADJUDICATED → SEALED
 
 Currently all 10 fixture candidates are at `DRAFT_UNSEALED` stage. **Zero fixtures are sealed.**
 
-> The M5 Gate Review must decide when a bounded set of sealed historical fixtures must exist:
+**Founder decision (FD #135):** `POST_IMPLEMENTATION_PRE_PRODUCTION` — selected as a **binding policy**, not merely a recommendation.
 
-| Option | Meaning | Risk |
-|--------|---------|------|
-| **PRE_IMPLEMENTATION_REQUIRED** | Seal ≥1 fixture before any production code | Delays implementation; no empirical feedback from partial system |
-| **PRE_PRODUCTION_REQUIRED** | Seal a bounded benchmark set before go-live | Protects production scoring integrity; ensures evaluation contract is exercised against real sealed data |
-| **POST_IMPLEMENTATION_PRE_PRODUCTION** | Seal during implementation, complete before production release | Most practical — allows iterative system development and fixture sealing in parallel |
+The meaning:
 
-**Recommendation:** `POST_IMPLEMENTATION_PRE_PRODUCTION` — sealing can proceed in parallel with M5 implementation but must complete before any production evaluation score is treated as authoritative.
+```
+fixture sealing may proceed in parallel with implementation
+BUT
+sealed historical benchmark corpus is mandatory before Production Release
+AND
+no DRAFT_UNSEALED label may be used as authoritative scoring truth
+```
+
+This is a **parallel critical path**:
+
+```
+Implementation ────────────────┐
+                                ├→ PRE-PRODUCTION GATE
+Fixture sealing ───────────────┘
+```
+
+If code completes but fixtures are not sealed → Production Release blocked.
+If fixtures sealed but runtime PIT/retry/security not proven → Production Release blocked.
+
+The eventual corpus must satisfy M4B coverage and seal-contract requirements.
 
 ---
 
@@ -69,24 +84,26 @@ G10 ✅ PASS                  (sealed-fixture timeline decision required)
 
 All 10 gates pass (7 unconditionally; 3 with conditions that are normal implementation scope). No architecture-level redesign is required.
 
-### Binding Conditions (must be satisfied before production release)
+### Binding Conditions (must be satisfied before production release) — 5 items
 
-1. **PIT enforcement layer** — production implementation must pass the same 9 PIT leakage proof tests.
+1. **PIT runtime enforcement** — production implementation must pass the same 9 PIT leakage proof tests.
 2. **Service failure/retry/idempotency** — production implementation of S8 Retry semantics.
-3. **Sealed fixture corpus** — bounded benchmark set sealed before production go-live (see recommendation above).
-4. **Cost baseline calibration** — empirical cost data must confirm or adjust the PROVISIONAL_M4B_THRESHOLD placeholder before any cost metric gates production.
-5. **Final stack selection** — ADR-001 remains the current working direction; final stack declaration required before production deployment.
+3. **Sealed historical benchmark corpus** — bounded set sealed before production go-live per POST_IMPLEMENTATION_PRE_PRODUCTION policy (FD #135).
+4. **Empirical cost calibration** — actual cost data must confirm or adjust the PROVISIONAL_M4B_THRESHOLD placeholder before any cost metric gates production.
+5. **Final production stack declaration** — ADR-001 remains the current working direction; final stack declaration required before production deployment.
 
 ---
 
 ## Next
 
 ```text
-M5 IMPLEMENTATION = NOT AUTHORIZED (requires separate Founder decision)
-M5 GATE REVIEW    = COMPLETE (this document)
+M5 GATE REVIEW    = COMPLETE (FD #134/#135)
+M5 IMPLEMENTATION = AUTHORIZED (FD #135)
 
-Next Founder decision:
-  M5 Implementation Authorization (Y/N) with sealed-fixture timeline decision
+Production Release = NOT AUTHORIZED
+Live Autonomous QAD = NOT AUTHORIZED
+Workforce Cutover = NOT AUTHORIZED
+Cron Cutover = NOT AUTHORIZED
 ```
 
-<!-- 2026-08-21 15:10 UTC+7 -->
+<!-- 2026-08-21 -->

@@ -116,12 +116,12 @@ permanent loss, valuation asymmetry, final underwriting, and final Red Team adju
 |---------|--------|--------|
 | 1. Evaluation Contract | 11 checks (includes lifecycle sequence, seal contract fields) | ✅ 11/11 |
 | 2. PIT Fixture Spec | 19 checks (includes AI_PROPOSED, DRAFT_UNSEALED, NOT_VALID_FOR_SCORING, counts) | ✅ 19/19 |
-| 3. Acceptance Matrix | 48 checks (includes type separation, threshold scanning, row count) | ✅ 48/48 |
+| 3. Acceptance Matrix | 48 checks (includes type separation, per-row threshold cell validation, row count) | ✅ 48/48 |
 | 4. No Production Code | 1 check (message fixed: two files permitted) | ✅ 1/1 |
 | 5. M4A Freeze Status | 1 check | ✅ 1/1 |
-| 6. PIT Leakage Proof | 10 checks (subprocess execution, exit code, test count) | ✅ 10/10 |
-| 7. Final Independent Review | 2 checks | ✅ 2/2 |
-| **Total** | **87** | **✅ 87/87 PASS** |
+| 6. PIT Leakage Proof | 12 checks (subprocess execution, exit code, 9 tests by name, summary line) | ✅ 12/12 |
+| 7. Final Independent Review | 4 checks (file existence ×2, FINAL marker, post-review sync marker) | ✅ 4/4 |
+| **Total** | **93** | **✅ 93/93 PASS** |
 
 ---
 
@@ -147,4 +147,4 @@ M4B = FINAL / FROZEN — FOUNDER ACCEPTED
 M5  = GATE REVIEW AUTHORIZED — IMPLEMENTATION NOT AUTHORIZED
 ```
 
-<!-- 2026-08-21 15:00 UTC+7 (M4B freeze update — FINAL / FROZEN — FOUNDER ACCEPTED; M5 Gate Review authorized) -->
+<!-- 2026-08-21 (M4B freeze update — FINAL / FROZEN — FOUNDER ACCEPTED; M5 Gate Review authorized) -->
