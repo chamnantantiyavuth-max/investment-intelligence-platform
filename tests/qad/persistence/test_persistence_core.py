@@ -685,9 +685,8 @@ class TestValidForeignKey:
         ch = blank_store.store(ev)
         assert isinstance(ch, str) and len(ch) == 64
 
-        # _resolve_id returns source_id "SRC-VALID" for EV-01, so we must
-        # use that when calling load().
-        loaded_ev = blank_store.load("EV-01", ev.source_id)
+        # _stored_id resolves the correct primary key (evidence_id for EV-01)
+        loaded_ev = blank_store.load("EV-01", _stored_id(ev))
         assert loaded_ev.source_id == "SRC-VALID"
 
     def test_evidence_registry_valid_fk(self, blank_store):
@@ -714,7 +713,7 @@ class TestValidForeignKey:
             source_tier="L2",
         )
         store.store(ev)
-        loaded = store.load("EV-01", ev.source_id)
+        loaded = store.load("EV-01", _stored_id(ev))
         assert loaded.content == "Evidence round-trip."
         assert loaded.evidence_type == EvidenceRecordEvidence_type.INFERENCE
 
@@ -748,7 +747,7 @@ class TestSameBatchFK:
         )
         blank_store.store_batch([src, ev])
         # _resolve_id returns source_id for EV-01
-        loaded_ev = blank_store.load("EV-01", ev.source_id)
+        loaded_ev = blank_store.load("EV-01", _stored_id(ev))
         assert loaded_ev.source_id == "SRC-BATCH"
 
     def test_batch_fk_with_collection(self, seeded_store):
@@ -852,7 +851,7 @@ class TestCollectionFK:
             contradicts_ids=[ev1.evidence_id, ev2.evidence_id],
         )
         seeded_store.store(ev3)
-        loaded = seeded_store.load("EV-01", ev3.source_id)
+        loaded = seeded_store.load("EV-01", _stored_id(ev3))
         assert sorted(loaded.contradicts_ids) == sorted([ev1.evidence_id, ev2.evidence_id])
 
     def test_collection_fk_missing_one_fails(self, seeded_store):
@@ -1121,8 +1120,8 @@ class TestTransactionRollback:
         assert exc.value.phase == "validate"
 
         assert not blank_store.contains("SRC-01", "SRC-RB")
-        assert not blank_store.contains("EV-01", ev_good.source_id)
-        assert not blank_store.contains("EV-01", ev_bad.source_id)
+        assert not blank_store.contains("EV-01", _stored_id(ev_good))
+        assert not blank_store.contains("EV-01", _stored_id(ev_bad))
 
     def test_transaction_error_metadata(self, blank_store):
         ev = EvidenceRecord(

@@ -49,6 +49,7 @@ from qad.persistence.fk_enforcer import validate_fks
 from qad.persistence.immutability import check_immutability
 from qad.persistence.interfaces import CanonicalHash, RecordID, SchemaID
 from qad.persistence.serialization import compute_canonical_hash
+# _schema_identity_field imported lazily inside _record_id to avoid circular import
 from qad.validator import validate_schema_instance
 
 # ---------------------------------------------------------------------------
@@ -298,11 +299,24 @@ class Transaction:
 def _record_id(instance: BaseModel) -> str:
     """Best-effort extraction of the record's primary identity.
 
-    Looks for common ID field names used across M4A schemas.
+    Uses the same schema-specific identity-field resolution as
+    ``qad.persistence.reference._resolve_id`` so that store/load keys
+    are consistent regardless of which module resolves the ID.
+
+    (Lazy-imports ``_schema_identity_field`` from
+    ``qad.persistence.reference`` to avoid a circular import.)
     """
+    schema_id: str = getattr(instance, "schema_id", "")
+    # Lazy import to avoid circular dependency
+    from qad.persistence.reference import _schema_identity_field
+    identity_field = _schema_identity_field(schema_id)
+    if identity_field:
+        val = getattr(instance, identity_field, None)
+        if val is not None:
+            return str(val)
     candidates = (
-        "case_id", "source_id", "evidence_id", "finding_id",
-        "financial_fact_id", "manifest_id", "context_id",
+        "source_id", "evidence_id", "finding_id",
+        "financial_fact_id", "manifest_id", "pit_context_id",
         "entity_id", "signal_id", "candidate_id", "claim_id",
         "usage_id", "audit_id", "budget_id", "lock_id",
         "indicator_id", "hypothesis_id", "lesson_id",
@@ -310,6 +324,8 @@ def _record_id(instance: BaseModel) -> str:
         "assessment_id", "gap_id", "knowledge_id",
         "r_dcf_id", "invocation_id", "eval_run_id",
         "model_invocation_id", "impairment_id",
+        "case_id", "provider_invocation_id",
+        "expectation_id", "valuation_id",
     )
     for name in candidates:
         val = getattr(instance, name, None)
