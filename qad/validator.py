@@ -176,13 +176,16 @@ def validate_contract(schema_id: str, model_class: type) -> list[str]:
         if bool(desc["is_canonical"]) != runtime_canonical:
             violations.append(f"{schema_id}: canonical boundary mismatch "
                               f"(descriptor={desc['is_canonical']}, runtime={runtime_canonical})")
-    # Exact canonical boundary text match
+    # Exact canonical boundary text match — must exist and match
     from qad.contract.canonical_boundary import CANONICAL_BOUNDARY_TEXT
-    cb_text = CANONICAL_BOUNDARY_TEXT.get(schema_id, "")
-    desc_cb = desc.get("canonical_boundary", "")
-    if cb_text and cb_text != desc_cb:
-        violations.append(f"{schema_id}: canonical boundary text mismatch "
-                          f"(runtime={cb_text!r}, descriptor={desc_cb!r})")
+    if schema_id not in CANONICAL_BOUNDARY_TEXT:
+        violations.append(f"{schema_id}: missing canonical boundary mapping in CANONICAL_BOUNDARY_TEXT")
+    else:
+        cb_text = CANONICAL_BOUNDARY_TEXT[schema_id]
+        desc_cb = desc.get("canonical_boundary", "")
+        if cb_text != desc_cb:
+            violations.append(f"{schema_id}: canonical boundary text mismatch "
+                              f"(runtime={cb_text!r}, descriptor={desc_cb!r})")
 
     # Family must exist and match
     actual_family = SCHEMA_FAMILIES.get(schema_id, "")

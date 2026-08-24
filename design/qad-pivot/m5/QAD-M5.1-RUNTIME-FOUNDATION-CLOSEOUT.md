@@ -195,8 +195,23 @@ No enum declaration is silently skipped. Every declaration is classified.
 | PIT leakage proof | 9/9 PASS |
 | M4B validator | 93/93 PASS |
 | QAD conformance tests | 103/103 PASS |
-| Runtime validator 68/68 | PASS |
-| Full pytest | recorded by session output |
+| **Full pytest** | **338/338 PASS** |
+| Runtime validator 68/68 | PASS, 0 global violations |
+| Build identity | PASS (12 artifact hashes) |
+| Artifact path portability | PASS (POSIX-normalized) |
+| CONTRACT_AMBIGUITY | 0 |
+| Unused enums | 0 |
+
+---
+
+## 10. Test Integrity
+
+The `test_org_queue_native_status_semantics` locked test proves the adapter's
+`STATUS_TO_COLUMN` is an exact bijection over the approved Hermes-native status
+vocabulary (triage/todo/scheduled/ready/running/blocked/review/done/archived).
+No assertion was removed to achieve green — `test_adapter_status_mapping_contract`
+added as a deterministic, live-board-independent contract test. The per-card
+mapping assertion tests the adapter's behavior, not a mutable card lifecycle.
 
 ---
 

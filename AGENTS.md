@@ -187,7 +187,7 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - **M1 = FINAL PASS** (17 Aug 2026; independent governance review PASS WITH FINDINGS → 8 findings resolved).
 - **M2 = FINAL PASS** (18 Aug 2026; deterministic integrity validation PASS — 25/25 records, single disposition per capability, runtime audit corrected, FROZEN-with-runtime derived mechanically)
 - **M3 = FINAL PASS — FOUNDER ACCEPTED** (19 Aug 2026; FD #132; 9 domain contracts, 14 roles, 12 services S1–S12; independent review PASS_WITH_FINDINGS all findings resolved)
-- **M4A = FINAL / FROZEN** ++ QAD-M4A-SCHEMA-ERRATUM-001 / FD #136 applied (24 Aug 2026; 4 field omissions corrected, no methodology changes)
+- **M4A = FINAL / FROZEN + QAD-M4A-SCHEMA-ERRATUM-001 / FD #136 (24 Aug 2026; 4 field omissions corrected, no methodology changes)**
 - **M4B = FINAL / FROZEN — FOUNDER ACCEPTED** (10 DRAFT_UNSEALED AI_PROPOSED fixture candidates, 0 sealed fixtures, 44 metrics; PIT proof = 9/9 PASS, M4B validator 93/93 PASS; independent review substantive verdict = PASS; FD #134)
 - **M5 Gate Review = PASS / COMPLETE** (G1–G10 assessed; FD #135; 5 binding pre-production conditions: PIT runtime enforcement, retry/failure/idempotency, sealed benchmark corpus, cost calibration, production stack declaration; sealed-fixture policy = POST_IMPLEMENTATION_PRE_PRODUCTION per Founder decision)
 - **M5.1 = FINAL / CONTRACT-CONFORMANT** (68/68 frozen schemas as Pydantic v2 models; CONTRACT_AMBIGUITY=0, unused enums=0; runtime validator 68/68 PASS; 103/103 QAD conformance; M5.2 = PROCEED UNDER FD #135)
