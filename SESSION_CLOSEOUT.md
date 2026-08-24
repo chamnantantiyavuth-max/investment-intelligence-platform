@@ -817,3 +817,35 @@ PROJECT_STATE.md (Build Metrics 235/235 + push state → `b4eda1d`; Next allowed
 **M4B Founder acceptance** (review M4B closeout → accept → M5 Gate) — unchanged top item. **Then Mon 24 Aug 08:00 weekly radar = FD #110 Live Office acceptance observation** (also the recovery evidence point for the radar-cron fragility: verify board `[DISC]` run task + digest appear; NVDA 8-K 8/17 should yield a card). Alternatives: (a) interactive session: AGENTS.md checkpoint fd-131-133 + harness repo uncommitted board-safety-hook.sh + ORG-2026-0022 publish gate + 0016/0017 blocked-task recovery; (b) durable gateway supervision (dashboard-VBS pattern) given 2 consecutive radar-cron failures.
 
 <!-- 2026-08-21 11:40 UTC+7 -->
+
+## Session — 24 Aug 2026 (cron review)
+
+- **21–24 Aug world reconciled.** HEAD `074ed54` (462 commits), push SYNCED (origin == HEAD — the weekly AM-pipeline cron pushed its own run).
+- **QAD M5.1 = FINAL:** 21 Aug interactive session (M4B reconciliation 11:31 → M5 Phase 0 → Gate Review → **FD #134** M4B FINAL/FROZEN FOUNDER ACCEPTED → **FD #135** M5 IMPLEMENTATION AUTHORIZED → **M5.1 Runtime Foundation FINAL** at `2563614` — 68/68 frozen M4A schemas as Pydantic v2 models, contract compiler + independent oracle `tests/qad/independent_oracle.py`, type-binding policy + closeout). Suite **333/333** re-verified this review (9.9s). **M5.2 (Canonical Persistence Boundaries) = authorized next step under FD #135 — no new permission needed.**
+- **⚠ F2-family: Weekly Radar 24 Aug = MISSED — 3rd consecutive radar-cadence failure.** Cron daemon down at 08:00 (came up ~11:10 when the Nick-Weekly catch-up fired); weekly radar `8ba233e88015` shows `next_run_at` advanced 24 Aug→31 Aug with NO fire attempt (last_run still 17 Aug error), no output file, no board `[DISC]` run task, no digest → **FD #110 Live Office real-world acceptance observation LOST for the 3rd time** (17 Aug unpinned-guard fail, 20 Aug mid-week mid-scan death, 24 Aug daemon-down skip). CIW monitor `8b1cd19aba7d` (Mon 09:00) also skipped to 31 Aug. Job config now == global routing (openrouter/deepseek/deepseek-v4-flash) so the spend-guard is NOT the blocker — **gateway availability at 08:00 is**. Durable gateway supervision (dashboard-VBS pattern) = decision item for next interactive session.
+- **✅ AM pipeline FRESH:** Nick-Weekly run AM-V0-20260824-111142 (24 Aug 11:10 catch-up; as-of Fri 21 Aug EOD — ≤7d bound ✅). **First risk-off week since full coverage:** 1/9 up, median −6.5%; Q-Conditions 10 Qualified / 0 signals — **0 false exits under stress**; FSLR P/E artifact RESOLVED upstream (implied EPS 16.22 = true TTM EPS → real P/E ≈13.2); SMCI implied EPS 1.90→3.26 earnings-refresh candidate; AVGO 2nd consecutive down week; INTC −12.1% biggest decliner. SRL `operational/self-reflection-logs/2026-08-24-run-AM-V0-20260824-111142.md`.
+- **FD #134/#135 vault mirrors BACKFILLED** (central AppData + ~/.hermes fd-register — missing since 21 Aug; FOUNDERS-DECISIONS items 134/135 present).
+- **Obsidian:** CURRENT-STATE → MEM-IIP-078 prepended.
+- **Open (unchanged):** F5 AGENTS.md checkpoint fd-134-135 (protected file — interactive + Founder); F6 stray `dashboard_overall` PNG (repo root, untracked); ORG-2026-0022 publish gate (Founder); 0016/0017 blocked board tasks (drafts committed); harness repo uncommitted `board-safety-hook.sh`; Harness INT-G2.1 in progress (delegate_task host-file-tools finding — G2.4 fix pending).
+
+## Findings
+- **F-new (open, decision item):** Weekly Radar + CIW monitor missed 24 Aug — radar cadence now 3 consecutive failures (17 Aug / 20 Aug / 24 Aug) → FD #110 Live Office acceptance observation unfilled. Root cause shifted from config-drift guard (fixed) to **gateway/cron daemon not alive at scheduled time**. Options for Founder: (a) durable gateway supervision (dashboard-VBS pattern, 14 Aug) so the daemon is up 24/7; (b) accept radar cadence as best-effort when machine is off; (c) manual on-demand radar. Next evidence point: Mon 31 Aug 08:00.
+- **F7 (open):** META Form 4 cluster (12× + 3× 144, 8/18) + AMZN 424B3 + JNJ/MSFT Form 4s still unverified (radar died before filing cards; META likely routine-compression) — carry to 31 Aug scan.
+- **F5 (open):** AGENTS.md checkpoint fd-134-135 (protected file).
+- **F6 (open):** stray `dashboard_overall` PNG — cleanup flag, not deleted.
+
+## Verification
+- Suite **333/333** (hermes-agent venv interpreter, 9.9s) — M5.1 contract suite included; today's commit is SRL-doc-only (no test files touched)
+- HEAD `074ed54` == origin/main (462 commits); push SYNCED; this review's docs-only sync committed + pushed (ls-remote verified after)
+- Derived: AM artifact as-of 21 Aug EOD (fresh ≤7d ✅); published reports 36 (unchanged); FO/II bounds unchanged (FO 3 Aug / II 9 Aug — no re-run from a review)
+
+## Market snapshot (24 Aug 11:20 UTC+7; equities = Fri 21 Aug COMPLETED EOD — matches AM pipeline as-of; futures/metals = Mon live Sunday-evening session)
+Equities (21 Aug EOD): AAPL 309.35 −0.63% 1d +1.12% 5d · MSFT 483.24 +0.43% −2.45% 5d (CIW no trigger; monitor missed today) · JNJ 270.24 +1.07% +3.80% 5d · GOOGL 344.82 +1.22% −0.31% 5d · FSLR 214.28 +0.10% −5.00% 5d (tariff-pop unwind; P/E artifact resolved) · SMCI 37.24 +2.03% −6.53% 5d (earnings-refresh candidate) · NVDA 214.72 −0.98% −4.64% 5d · SLV 62.72 +1.72% **+7.25% 5d** · SPY 765.72 +0.41% −1.37% 5d · **inflection quartet strong:** ABBV 264.96 +1.20% +6.21% 5d / BMY 67.01 +2.35% +4.98% / LLY 1255.40 +0.88% +6.38% / VRTX 548.05 +1.44% +8.36% · INTC 90.07 −2.24% **−12.13% 5d** (biggest decliner) · CRWD 191.95 +0.85% −11.52% 5d · MDT 93.35 +1.14% +2.28% 5d · AVGO 368.45 +1.21% −6.24% 5d (2nd down week). Futures LIVE Mon: **GC=F 4,689.40 +1.41% 1d +6.15% 5d** (record push — gold vs real yields watch area 0008 continues) · **SI=F 68.86 −0.87% 1d +4.14% 5d** (~11% above ~$62 SILVER-CORR-001 anchor; gold/silver ratio ~68.1:1) · CL=F 85.67 −1.60% 1d +1.38% 5d (Hormuz premium stable). No ±10% 1d equity moves → no news-driver lookups needed.
+
+## State artifacts updated
+PROJECT_STATE.md (Build Metrics 333/333 + push state `074ed54` + FDs #1–135; Next allowed action 24 Aug update incl. radar 3rd-miss evidence; Session table row; fd_count row) · SESSION_CLOSEOUT.md (this entry) · vault fd-register FD-134/135 backfilled (central AppData + ~/.hermes mirrors) · Obsidian CURRENT-STATE → MEM-IIP-078. Committed docs-only, PUSHED + verified.
+
+## Recommended next action
+**M5.2 — Canonical Persistence Boundaries** (authorized under FD #135 — no new permission needed; frozen M1–M4 remain the governing spec; base = M5.1 `2563614`). Alternatives: (a) interactive session — AGENTS.md checkpoint fd-134-135 + ORG-2026-0022 publish gate + 0016/0017 recovery + harness board-safety-hook.sh commit; (b) **durable gateway supervision (dashboard-VBS pattern)** — 3 consecutive radar-cron failures (17 Aug guard / 20 Aug mid-scan death / 24 Aug daemon-down skip) mean the FD #110 Live Office acceptance observation keeps getting lost; next evidence point Mon 31 Aug 08:00.
+
+<!-- 2026-08-24 11:30 UTC+7 -->
