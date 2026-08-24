@@ -90,7 +90,7 @@ class DislocationRecord(BaseModel):
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="DR-01", frozen=True)
-    broken_variables: list[str] = Field(frozen=True)
+    broken_variables: list[DislocationRecordBroken_variable] = Field(frozen=True)
     case_id: str = Field(frozen=True)
     cause_classification: DislocationRecordCause_classification = Field(frozen=True)
     dislocation_id: str = Field(frozen=True)

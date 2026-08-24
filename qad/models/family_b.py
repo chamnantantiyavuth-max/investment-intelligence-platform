@@ -121,7 +121,7 @@ class ClaimRecord(BaseModel):
     schema_id: str = Field(default="CLM-01", frozen=True)
     claim_date: str = Field(frozen=True)
     claim_id: str = Field(frozen=True)
-    claimant: str = Field(frozen=True)
+    claimant: ClaimRecordClaimant_type = Field(frozen=True)
     evidence_id: str = Field(frozen=True)
     statement: str = Field(frozen=True)
     extractor: Optional[str] = Field(default=None, frozen=True)
@@ -252,11 +252,11 @@ class HypothesisRecord(BaseModel):
     falsification_criteria: str
     hypothesis_id: str
     hypothesis_label: HypothesisRecordHypothesis_label
-    initial_plausibility: str
+    initial_plausibility: HypothesisRecordPlausibility
     originator: str
     statement: str
     created_at: Optional[str] = Field(default=None, frozen=True)
-    current_plausibility: Optional[str] = Field(default=None)
+    current_plausibility: Optional[HypothesisRecordPlausibility] = Field(default=None)
     evidence_against: Optional[list[str]] = Field(default=None)
     evidence_for: Optional[list[str]] = Field(default=None)
     last_updated: Optional[str] = Field(default=None, frozen=True)

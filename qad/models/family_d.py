@@ -130,7 +130,7 @@ class MoatAssessment(BaseModel):
     moat_depth: MoatAssessmentMoat_depth
     moat_durability: MoatAssessmentMoat_durability
     moat_trend: MoatAssessmentMoat_trend
-    moat_types: list[str]
+    moat_types: list[MoatAssessmentMoat_type]
     moat_width: MoatAssessmentMoat_width
     assessment_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None)
@@ -193,7 +193,7 @@ class ManagementOutcome(BaseModel):
     measured_outcome: str = Field(frozen=True)
     outcome_date: str = Field(frozen=True)
     outcome_id: str = Field(frozen=True)
-    variance: str = Field(frozen=True)
+    variance: ManagementOutcomeVariance_type = Field(frozen=True)
     assessment_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None, frozen=True)
     evidence_ids: Optional[list[str]] = Field(default=None, frozen=True)

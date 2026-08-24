@@ -167,7 +167,7 @@ class InvestigationReport(BaseModel):
     sampling_limitations: Optional[str] = Field(default=None)
     sources: Optional[list[str]] = Field(default=None)
     started_at: Optional[str] = Field(default=None, frozen=True)
-    stop_rule_triggered: Optional[str] = Field(default=None)
+    stop_rule_triggered: Optional[InvestigationReportStop_rule] = Field(default=None)
 
     # FK: investigator_charter_id -> IC-01.investigator_charter_id
     # FK: evidence_gap_id -> EG-01.gap_id

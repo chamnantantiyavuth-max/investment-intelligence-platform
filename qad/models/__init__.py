@@ -241,7 +241,14 @@ SCHEMA_REGISTRY: dict[str, type] = {
     "VA-01": ValuationAssessment,
 }
 
-# Build identity: spec_source = QAD-M4A-CANONICAL-SCHEMAS.md
-# spec_source_sha256 = d4b27d82e72fa856c334709abbcc808eb14c3a7d2c4b710b29ffdb847b2a49ba
-# generator_version = M5.1-20260821
-# total_schemas = 68
+
+# Machine-readable build identity (auto-generated)
+SCHEMA_BUILD_IDENTITY: dict[str, object] = {
+    "spec_source": "QAD-M4A-CANONICAL-SCHEMAS.md",
+    "spec_source_sha256": "d4b27d82e72fa856c334709abbcc808eb14c3a7d2c4b710b29ffdb847b2a49ba",
+    "m4a_contract_version": "M4A-FROZEN-20260821",
+    "generator_version": "M5.1-20260824",
+    "total_schemas": 68,
+    "total_models": 68,
+    # generated_artifact_hashes populated post-generation via regeneration test
+}

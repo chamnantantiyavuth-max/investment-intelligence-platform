@@ -68,16 +68,16 @@ class BudgetUsage(BaseModel):
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="BU-01", frozen=True)
-    amount_consumed: str = Field(frozen=True)
+    amount_consumed: float = Field(frozen=True)
     budget_id: str = Field(frozen=True)
     case_id: str = Field(frozen=True)
     resource_type: BudgetUsageResource_type = Field(frozen=True)
     usage_id: str = Field(frozen=True)
     usage_timestamp: str = Field(frozen=True)
-    cost: Optional[str] = Field(default=None, frozen=True)
+    cost: Optional[float] = Field(default=None, frozen=True)
     model: Optional[str] = Field(default=None, frozen=True)
     provider: Optional[str] = Field(default=None, frozen=True)
-    tokens: Optional[str] = Field(default=None, frozen=True)
+    tokens: Optional[int] = Field(default=None, frozen=True)
 
     # FK: budget_id -> RB-01.budget_id
 
@@ -112,7 +112,7 @@ class EvaluationHarnessRun(BaseModel):
     started_at: str = Field(frozen=True)
     status: EvaluationHarnessRunStatus = Field(frozen=True)
     completed_at: Optional[str] = Field(default=None, frozen=True)
-    cost: Optional[str] = Field(default=None, frozen=True)
+    cost: Optional[float] = Field(default=None, frozen=True)
     failures: Optional[list[str]] = Field(default=None, frozen=True)
     fixture_results: Optional[list[str]] = Field(default=None, frozen=True)
     metrics: Optional[dict] = Field(default=None, frozen=True)
@@ -125,12 +125,12 @@ class ModelInvocation(BaseModel):
 
     schema_id: str = Field(default="MOD-01", frozen=True)
     case_id: str = Field(frozen=True)
-    completion_tokens: str = Field(frozen=True)
-    cost: str = Field(frozen=True)
+    completion_tokens: int = Field(frozen=True)
+    cost: float = Field(frozen=True)
     invoked_at: str = Field(frozen=True)
     model: str = Field(frozen=True)
     model_invocation_id: str = Field(frozen=True)
-    prompt_tokens: str = Field(frozen=True)
+    prompt_tokens: int = Field(frozen=True)
     provider: str = Field(frozen=True)
     status: ModelInvocationStatus = Field(frozen=True)
     error: Optional[str] = Field(default=None, frozen=True)
@@ -148,14 +148,14 @@ class PITContext(BaseModel):
 
     schema_id: str = Field(default="PITC-01", frozen=True)
     as_of_date: str = Field(frozen=True)
-    case_id: str
-    created_by: str
-    mode: PITContextMode
-    pit_context_id: str
+    case_id: str = Field(frozen=True)
+    created_by: str = Field(frozen=True)
+    mode: PITContextMode = Field(frozen=True)
+    pit_context_id: str = Field(frozen=True)
     created_at: Optional[str] = Field(default=None, frozen=True)
-    evidence_count_post: Optional[str] = Field(default=None)
-    evidence_count_pre: Optional[str] = Field(default=None)
-    exception_reason: Optional[str] = Field(default=None)
+    evidence_count_post: Optional[str] = Field(default=None, frozen=True)
+    evidence_count_pre: Optional[str] = Field(default=None, frozen=True)
+    exception_reason: Optional[str] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
 
@@ -166,7 +166,7 @@ class ProviderInvocation(BaseModel):
 
     schema_id: str = Field(default="PROV-01", frozen=True)
     case_id: str = Field(frozen=True)
-    cost: str = Field(frozen=True)
+    cost: float = Field(frozen=True)
     invoked_at: str = Field(frozen=True)
     provider: str = Field(frozen=True)
     provider_invocation_id: str = Field(frozen=True)

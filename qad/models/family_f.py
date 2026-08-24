@@ -86,7 +86,7 @@ class FinancialFact(BaseModel):
     case_id: str
     financial_fact_id: str
     fiscal_year: str = Field(frozen=True)
-    metric_name: str
+    metric_name: FinancialFactMetric_family
     period: str = Field(frozen=True)
     source_id: str
     unit: str
@@ -130,11 +130,11 @@ class PriceImpliedExpectation(BaseModel):
 
     schema_id: str = Field(default="PIE-01", frozen=True)
     case_id: str = Field(frozen=True)
-    current_price: str = Field(frozen=True)
+    current_price: float = Field(frozen=True)
     expectation_id: str = Field(frozen=True)
-    implied_growth_rate: str = Field(frozen=True)
-    implied_terminal_value: str = Field(frozen=True)
-    recovery_rate_implied: str = Field(frozen=True)
+    implied_growth_rate: float = Field(frozen=True)
+    implied_terminal_value: float = Field(frozen=True)
+    recovery_rate_implied: float = Field(frozen=True)
     scenario_comparison: dict = Field(frozen=True)
     analysis_date: Optional[str] = Field(default=None, frozen=True)
     analyst: Optional[str] = Field(default=None, frozen=True)
@@ -153,18 +153,18 @@ class PermanentLossAssessment(BaseModel):
 
     schema_id: str = Field(default="PLA-01", frozen=True)
     assessment_id: str
-    asset_impairment_risk: str
-    balance_sheet_runway: str
+    asset_impairment_risk: PermanentLossAssessmentRisk_level
+    balance_sheet_runway: PermanentLossAssessmentRisk_level
     case_id: str
-    competitive_damage: str
-    covenant_risk: str
-    dilution_risk: str
-    refinancing_risk: str
+    competitive_damage: PermanentLossAssessmentRisk_level
+    covenant_risk: PermanentLossAssessmentRisk_level
+    dilution_risk: PermanentLossAssessmentRisk_level
+    refinancing_risk: PermanentLossAssessmentRisk_level
     assessment_date: Optional[str] = Field(default=None, frozen=True)
     assessor: Optional[str] = Field(default=None)
     evidence_ids: Optional[list[str]] = Field(default=None)
     permanent_loss_range: Optional[dict] = Field(default=None)
-    recovery_capital_needed: Optional[str] = Field(default=None)
+    recovery_capital_needed: Optional[float] = Field(default=None)
 
     # FK: case_id -> CASE-01.case_id
 
@@ -176,15 +176,15 @@ class ReverseDCFRecord(BaseModel):
     schema_id: str = Field(default="RDCF-01", frozen=True)
     analyst: str = Field(frozen=True)
     case_id: str = Field(frozen=True)
-    current_price: str = Field(frozen=True)
-    implied_growth_rate: str = Field(frozen=True)
-    implied_terminal_value: str = Field(frozen=True)
+    current_price: float = Field(frozen=True)
+    implied_growth_rate: float = Field(frozen=True)
+    implied_terminal_value: float = Field(frozen=True)
     r_dcf_id: str = Field(frozen=True)
     scenario_comparison: dict = Field(frozen=True)
     analysis_date: Optional[str] = Field(default=None, frozen=True)
     method_version: Optional[str] = Field(default=None, frozen=True)
     price_as_of: Optional[str] = Field(default=None, frozen=True)
-    recovery_rate_implied: Optional[str] = Field(default=None, frozen=True)
+    recovery_rate_implied: Optional[float] = Field(default=None, frozen=True)
     sensitivity_range: Optional[dict] = Field(default=None, frozen=True)
     years_of_no_recovery_priced_in: Optional[str] = Field(default=None, frozen=True)
 
@@ -199,13 +199,13 @@ class ScenarioRecord(BaseModel):
     assumptions: dict = Field(frozen=True)
     case_id: str = Field(frozen=True)
     creator: str = Field(frozen=True)
-    intrinsic_value_estimate: str = Field(frozen=True)
+    intrinsic_value_estimate: float = Field(frozen=True)
     scenario_id: str = Field(frozen=True)
     scenario_type: ScenarioRecordScenario_type = Field(frozen=True)
     as_of: Optional[str] = Field(default=None, frozen=True)
     created_at: Optional[str] = Field(default=None, frozen=True)
     evidence_ids: Optional[list[str]] = Field(default=None, frozen=True)
-    probability_weight: Optional[str] = Field(default=None, frozen=True)
+    probability_weight: Optional[float] = Field(default=None, frozen=True)
     sensitivity_analysis: Optional[dict] = Field(default=None, frozen=True)
 
     # FK: case_id -> CASE-01.case_id
@@ -216,12 +216,12 @@ class ValuationAssessment(BaseModel):
     model_config = {"extra": "forbid"}
 
     schema_id: str = Field(default="VA-01", frozen=True)
-    asymmetry_estimate: str
+    asymmetry_estimate: float
     case_id: str
-    damage_gap: str
-    economic_damage: str
+    damage_gap: float
+    economic_damage: float
     permanent_loss_id: str
-    price_damage: str
+    price_damage: float
     r_dcf_id: str
     scenario_values: dict
     valuation_id: str
