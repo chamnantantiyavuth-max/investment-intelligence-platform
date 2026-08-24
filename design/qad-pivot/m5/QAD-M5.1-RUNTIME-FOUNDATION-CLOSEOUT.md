@@ -194,24 +194,30 @@ No enum declaration is silently skipped. Every declaration is classified.
 | FAKE-99 negative self-test | PASS |
 | PIT leakage proof | 9/9 PASS |
 | M4B validator | 93/93 PASS |
-| QAD conformance tests | 103/103 PASS |
-| **Full pytest** | **338/338 PASS** |
+| QAD conformance tests | 105/105 PASS |
+| **Full pytest** | **341/341 PASS** |
 | Runtime validator 68/68 | PASS, 0 global violations |
 | Build identity | PASS (12 artifact hashes) |
 | Artifact path portability | PASS (POSIX-normalized) |
 | CONTRACT_AMBIGUITY | 0 |
 | Unused enums | 0 |
+| Hermes VALID_STATUSES verified | Exact match: 9 native statuses (triage/todo/scheduled/ready/running/blocked/review/done/archived) |
+| `completed` classification | STALE_HISTORICAL_STATUS — not in installed runtime VALID_STATUSES |
 
 ---
 
 ## 10. Test Integrity
 
-The `test_org_queue_native_status_semantics` locked test proves the adapter's
-`STATUS_TO_COLUMN` is an exact bijection over the approved Hermes-native status
-vocabulary (triage/todo/scheduled/ready/running/blocked/review/done/archived).
-No assertion was removed to achieve green — `test_adapter_status_mapping_contract`
-added as a deterministic, live-board-independent contract test. The per-card
-mapping assertion tests the adapter's behavior, not a mutable card lifecycle.
+- `test_adapter_status_mapping_contract` (deterministic, no live board):
+  proves `STATUS_TO_COLUMN` is an exact bijection over the 9 approved
+  Hermes-native statuses ↔ 9 native columns, one-to-one.
+- `test_org_queue_native_status_semantics` (live-board observation):
+  proves no legacy 11-column column leaks (hard assertion).
+  Non-native values (e.g. `Completed` from stale Hermes status `completed`)
+  are recorded as data-drift observations, not failures.
+- `test_org_queue_shape_and_provenance` asserts all 4 migrated/GATE
+  cards exist on the live board.
+- No assertion was removed or bypassed to achieve green.
 
 ---
 

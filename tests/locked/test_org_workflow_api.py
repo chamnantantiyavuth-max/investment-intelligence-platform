@@ -92,6 +92,10 @@ def test_org_queue_shape_and_provenance():
     titles = [c["title"] for c in body["cards"]]
     # Migrated legacy live cards present as [MIGRATED:ORG-####] tasks
     assert any("[MIGRATED:ORG-2026-0004]" in t for t in titles)
+    assert any("[MIGRATED:ORG-2026-0012]" in t for t in titles)
+    # C1 repair: human-gate [GATE] tasks exist
+    assert any("[GATE][ORG-2026-0004]" in t for t in titles)
+    assert any("[GATE][ORG-2026-0012]" in t for t in titles)
 
 
 def test_adapter_status_mapping_contract():
