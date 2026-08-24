@@ -573,49 +573,37 @@ def test_runtime_import_self_consistency():
     assert len(SCHEMA_FAMILIES) == 68
 
 
-def test_canonical_boundary_missing_mapping_fails():
+def test_canonical_boundary_missing_mapping_fails(monkeypatch):
     """Missing CANONICAL_BOUNDARY_TEXT entry → validate_contract FAILS."""
+    import qad.contract.canonical_boundary as cb_mod
     from qad.validator import validate_contract
-    from qad.contract.canonical_boundary import CANONICAL_BOUNDARY_TEXT
-    # Pick a schema that definitely exists
-    test_sid = "CASE-01"
-    cls = SCHEMA_REGISTRY[test_sid]
-    # Simulate a missing mapping by checking a non-existent schema id
-    # The validator should fail for a schema whose CANONICAL_BOUNDARY_TEXT entry
-    # is absent. We can test by calling validate_contract on a real schema
-    # (it should pass), then verify our logic would catch a missing one.
-    violations = validate_contract(test_sid, cls)
-    assert "missing canonical boundary mapping" not in str(violations), \
-        f"CASE-01 should have a boundary mapping, got {violations}"
-    # Now prove that a non-existent schema would trigger the missing mapping check
-    from qad.validator import validate_all_contracts
-    all_results = validate_all_contracts()
-    # No global violations about missing boundary text
-    gl = all_results.get("_GLOBAL_", [])
-    assert not any("canonical boundary" in g for g in gl), \
-        f"Unexpected global canonical boundary violation: {gl}"
+
+    sid = "CASE-01"
+    cls = SCHEMA_REGISTRY[sid]
+
+    assert sid in cb_mod.CANONICAL_BOUNDARY_TEXT, "Precondition: CASE-01 must have a mapping"
+
+    # Remove the mapping via monkeypatch
+    monkeypatch.delitem(cb_mod.CANONICAL_BOUNDARY_TEXT, sid, raising=True)
+
+    violations = validate_contract(sid, cls)
+    assert any("missing canonical boundary mapping" in v for v in violations), \
+        f"Validator should detect missing boundary mapping, got {violations}"
 
 
-def test_canonical_boundary_text_mismatch_fails():
-    """Wrong CANONICAL_BOUNDARY_TEXT text → validator detects mismatch.
-    Use monkeypatch to simulate a text mismatch on a known schema.
-    """
+def test_canonical_boundary_text_mismatch_fails(monkeypatch):
+    """Wrong CANONICAL_BOUNDARY_TEXT text → validator detects mismatch."""
+    import qad.contract.canonical_boundary as cb_mod
     from qad.validator import validate_contract
-    from qad.contract.canonical_boundary import CANONICAL_BOUNDARY_TEXT
-    # Pick a schema with a known canonical boundary
-    test_sid = "CASE-01"
-    cls = SCHEMA_REGISTRY[test_sid]
-    original_text = CANONICAL_BOUNDARY_TEXT.get(test_sid, "")
+
+    sid = "CASE-01"
+    cls = SCHEMA_REGISTRY[sid]
+    original_text = cb_mod.CANONICAL_BOUNDARY_TEXT.get(sid, "")
     assert original_text, "CASE-01 should have a canonical boundary text"
 
-    # Simulate a wrong text by temporarily modifying the generated module
-    import qad.contract.canonical_boundary as cb_mod
-    import typing
-    if test_sid in cb_mod.CANONICAL_BOUNDARY_TEXT:
-        cb_mod.CANONICAL_BOUNDARY_TEXT[test_sid] = "INVENTED_WRONG_TEXT"
-        violations = validate_contract(test_sid, cls)
-        cb_mod.CANONICAL_BOUNDARY_TEXT[test_sid] = original_text  # restore
-        assert any("canonical boundary text mismatch" in v for v in violations), \
-            f"Should detect wrong boundary text, got {violations}"
-    else:
-        pytest.fail(f"CASE-01 not in CANONICAL_BOUNDARY_TEXT")
+    # Corrupt the text via monkeypatch (automatic cleanup after test)
+    monkeypatch.setitem(cb_mod.CANONICAL_BOUNDARY_TEXT, sid, "INVENTED_WRONG_TEXT")
+
+    violations = validate_contract(sid, cls)
+    assert any("canonical boundary text mismatch" in v for v in violations), \
+        f"Validator should detect wrong boundary text, got {violations}"

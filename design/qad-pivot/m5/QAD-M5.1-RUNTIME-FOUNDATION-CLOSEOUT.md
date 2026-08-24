@@ -221,7 +221,7 @@ No enum declaration is silently skipped. Every declaration is classified.
 
 ---
 
-## 10. Artifacts Produced
+## 11. Artifacts Produced
 
 | Artifact | Path |
 |---|---|
@@ -241,7 +241,7 @@ No enum declaration is silently skipped. Every declaration is classified.
 
 ---
 
-## 11. Legal / Governance
+## 12. Legal / Governance
 
 - **M4A = FINAL / FROZEN** + QAD-M4A-SCHEMA-ERRATUM-001 applied per FD #136
 - **M4B = FINAL / FROZEN — FOUNDER ACCEPTED** (FD #134)
@@ -253,7 +253,7 @@ FD #136 registered: item 136, fd_count 136. 24 August 2026.
 
 ---
 
-## 12. Gates
+## 13. Gates
 
 ```
 M5.1 = FINAL / CONTRACT-CONFORMANT
