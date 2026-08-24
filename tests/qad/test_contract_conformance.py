@@ -465,14 +465,20 @@ def test_no_manual_patch_dependency():
 
 
 def test_schema_build_identity():
-    """Generated models must carry machine-readable build identity."""
+    """Generated models must carry machine-readable build identity with artifact hashes."""
     from qad.models import SCHEMA_BUILD_IDENTITY
     assert isinstance(SCHEMA_BUILD_IDENTITY, dict), "SCHEMA_BUILD_IDENTITY must be a dict"
     assert "spec_source" in SCHEMA_BUILD_IDENTITY
     assert "spec_source_sha256" in SCHEMA_BUILD_IDENTITY
     assert "generator_version" in SCHEMA_BUILD_IDENTITY
     assert "total_schemas" in SCHEMA_BUILD_IDENTITY
+    assert "generated_artifact_hashes" in SCHEMA_BUILD_IDENTITY
     assert SCHEMA_BUILD_IDENTITY["total_schemas"] == 68
+    # Artifact hashes must be non-empty and exclude __init__.py
+    hashes = SCHEMA_BUILD_IDENTITY.get("generated_artifact_hashes", {})
+    assert len(hashes) >= 10, f"Expected >=10 artifact hashes, got {len(hashes)}"
+    for rel in hashes:
+        assert "models/__init__" not in rel, f"__init__.py should not self-hash: {rel}"
     # spec_source_sha256 must be deterministic
     actual = hashlib.sha256(
         (BASE / "design" / "qad-pivot" / "m4a" / "QAD-M4A-CANONICAL-SCHEMAS.md").read_bytes()
@@ -486,16 +492,18 @@ def test_schema_build_identity():
 
 
 def test_runtime_validator_all_contracts_pass():
-    """M5.1 runtime validator: 68/68 contracts must pass."""
+    """M5.1 runtime validator: 68/68 contracts must pass with ZERO global violations."""
     from qad.validator import validate_all_contracts
     results = validate_all_contracts()
+    # Per-schema must be clean
     per_schema_failures = {sid: v for sid, v in results.items() if v and sid != "_GLOBAL_"}
     assert len(per_schema_failures) == 0, f"Contract validation failures: {per_schema_failures}"
+    # Global must be clean (no unused enums, no build identity failures)
     global_failures = results.get("_GLOBAL_", [])
-    assert len(global_failures) == 4, \
-        f"Expected 4 CONTRACT_AMBIGUITY enums, got {len(global_failures)}: {global_failures}"
-    print(f"  Validator: {len(SCHEMA_REGISTRY)}/68 per-schema contracts PASS; "
-          f"{len(global_failures)} documented CONTRACT_AMBIGUITY enums")
+    assert len(global_failures) == 0, \
+        f"Global violations found: {global_failures}"
+    # Verify hard count
+    assert len(SCHEMA_REGISTRY) == 68, f"SCHEMA_REGISTRY count: {len(SCHEMA_REGISTRY)}"
 
 
 def test_build_identity_validates():

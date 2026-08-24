@@ -1225,6 +1225,7 @@
         "validating_case_ids",
         "validation_date",
         "validation_id",
+        "validation_result",
         "validator"
       ],
       "optional_fields": [
@@ -1334,6 +1335,22 @@
           "immutable_policy": "RECORD_IMMUTABLE"
         },
         {
+          "name": "validation_result",
+          "raw_name": "validation_result",
+          "container": "",
+          "required": true,
+          "enum_values": [
+            "CONFIRMED",
+            "PARTIALLY_CONFIRMED",
+            "INCONCLUSIVE",
+            "REJECTED"
+          ],
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": true,
+          "immutable_policy": "RECORD_IMMUTABLE"
+        },
+        {
           "name": "validator",
           "raw_name": "validator",
           "container": "",
@@ -1359,8 +1376,10 @@
       "enum_classifications": [
         {
           "field": "validation_result",
-          "classification": "CONTRACT_AMBIGUITY",
-          "bound_fields": []
+          "classification": "FIELD_ENUM",
+          "bound_fields": [
+            "validation_result"
+          ]
         }
       ],
       "fks": [
@@ -2948,6 +2967,7 @@
       "family": "B",
       "required_fields": [
         "admission_id",
+        "admission_method",
         "admission_timestamp",
         "admitting_role",
         "evidence_id",
@@ -2968,6 +2988,23 @@
           "container": "",
           "required": true,
           "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": true,
+          "immutable_policy": "RECORD_IMMUTABLE"
+        },
+        {
+          "name": "admission_method",
+          "raw_name": "admission_method",
+          "container": "",
+          "required": true,
+          "enum_values": [
+            "DIRECT_SOURCE",
+            "AI_EXTRACTION",
+            "AI_SYNTHESIS",
+            "HUMAN_ANALYSIS",
+            "SCUTTLEBUTT"
+          ],
           "is_pit": false,
           "is_provenance": false,
           "immutable": true,
@@ -3099,8 +3136,10 @@
       "enum_classifications": [
         {
           "field": "admission_method",
-          "classification": "CONTRACT_AMBIGUITY",
-          "bound_fields": []
+          "classification": "FIELD_ENUM",
+          "bound_fields": [
+            "admission_method"
+          ]
         }
       ],
       "fks": [
@@ -9836,6 +9875,7 @@
         "allocated_amount",
         "approved_by",
         "budget_id",
+        "budget_state",
         "case_id",
         "policy_version"
       ],
@@ -9898,6 +9938,22 @@
           "container": "",
           "required": true,
           "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": false,
+          "immutable_policy": "APPEND_ONLY"
+        },
+        {
+          "name": "budget_state",
+          "raw_name": "budget_state",
+          "container": "",
+          "required": true,
+          "enum_values": [
+            "APPROVED",
+            "ACTIVE",
+            "EXHAUSTED",
+            "CLOSED"
+          ],
           "is_pit": false,
           "is_provenance": false,
           "immutable": false,
@@ -9984,8 +10040,10 @@
       "enum_classifications": [
         {
           "field": "budget_state",
-          "classification": "CONTRACT_AMBIGUITY",
-          "bound_fields": []
+          "classification": "FIELD_ENUM",
+          "bound_fields": [
+            "budget_state"
+          ]
         }
       ],
       "fks": [
@@ -10016,6 +10074,7 @@
         "budget_estimate",
         "case_id",
         "charter_id",
+        "charter_state",
         "director",
         "evidence_lead_validation",
         "evidence_scope",
@@ -10094,6 +10153,23 @@
           "container": "",
           "required": true,
           "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": false,
+          "immutable_policy": "MUTABLE"
+        },
+        {
+          "name": "charter_state",
+          "raw_name": "charter_state",
+          "container": "",
+          "required": true,
+          "enum_values": [
+            "DRAFT",
+            "VALIDATED",
+            "BUDGET_APPROVED",
+            "ACTIVE",
+            "COMPLETED"
+          ],
           "is_pit": false,
           "is_provenance": false,
           "immutable": false,
@@ -10225,8 +10301,10 @@
       "enum_classifications": [
         {
           "field": "charter_state",
-          "classification": "CONTRACT_AMBIGUITY",
-          "bound_fields": []
+          "classification": "FIELD_ENUM",
+          "bound_fields": [
+            "charter_state"
+          ]
         }
       ],
       "fks": [

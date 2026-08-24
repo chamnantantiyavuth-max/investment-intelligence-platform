@@ -44,6 +44,7 @@ class CrossCaseValidation(BaseModel):
     validating_case_ids: list[str] = Field(frozen=True)
     validation_date: str = Field(frozen=True)
     validation_id: str = Field(frozen=True)
+    validation_result: CrossCaseValidationValidation_result = Field(frozen=True)
     validator: str = Field(frozen=True)
     inconsistent_case_ids: Optional[list[str]] = Field(default=None, frozen=True)
     industry_playbook_id: Optional[str] = Field(default=None, frozen=True)

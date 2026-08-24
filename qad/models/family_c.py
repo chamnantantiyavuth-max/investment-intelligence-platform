@@ -181,6 +181,7 @@ class ResearchBudgetRecord(BaseModel):
     allocated_amount: str
     approved_by: str
     budget_id: str
+    budget_state: ResearchBudgetRecordBudget_state
     case_id: str = Field(frozen=True)
     policy_version: str
     approved_at: Optional[str] = Field(default=None, frozen=True)
@@ -201,6 +202,7 @@ class ResearchCharter(BaseModel):
     budget_estimate: str
     case_id: str
     charter_id: str
+    charter_state: ResearchCharterCharter_state
     director: str
     evidence_lead_validation: str
     evidence_scope: str

@@ -159,6 +159,7 @@ class EvidenceAdmissionRecord(BaseModel):
 
     schema_id: str = Field(default="EAR-01", frozen=True)
     admission_id: str = Field(frozen=True)
+    admission_method: EvidenceAdmissionRecordAdmission_method = Field(frozen=True)
     admission_timestamp: str = Field(frozen=True)
     admitting_role: str = Field(frozen=True)
     evidence_id: str = Field(frozen=True)

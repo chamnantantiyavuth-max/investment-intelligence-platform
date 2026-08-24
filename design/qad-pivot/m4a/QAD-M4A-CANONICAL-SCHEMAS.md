@@ -338,7 +338,7 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Audit trail for every evidence admission to canonical registry. |
 | **authority_source** | M3-04 §2 (Layer 2), M3-09 §3 (Audit Checklist) |
 | **owner** | Evidence Intelligence Lead (Role 2) |
-| **required_fields** | `admission_id`, `evidence_id`, `admitting_role`, `admission_timestamp`, `validation_method`, `source_tier_check` |
+| **required_fields** | `admission_id`, `evidence_id`, `admitting_role`, `admission_timestamp`, `admission_method`, `validation_method`, `source_tier_check` |
 | **optional_fields** | `validation_notes`, `original_source_verified`, `pit_verified`, `contradiction_check` |
 | **enums** | `admission_method: DIRECT_SOURCE / AI_EXTRACTION / AI_SYNTHESIS / HUMAN_ANALYSIS / SCUTTLEBUTT` |
 | **IDs / foreign keys** | `admission_id: UUID v7`, `evidence_id → EV-01.evidence_id` |
@@ -382,7 +382,7 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Binding research contract for a case. |
 | **authority_source** | M3-03 §3 (Stage 2: Research Charter), M3-09 §4 (Research Charter governance) |
 | **owner** | Research Director (Role 1) |
-| **required_fields** | `charter_id`, `case_id`, `hypothesis_ids[]`, `key_questions[]`, `evidence_scope`, `budget_estimate`, `director`, `evidence_lead_validation` |
+| **required_fields** | `charter_id`, `case_id`, `hypothesis_ids[]`, `key_questions[]`, `evidence_scope`, `budget_estimate`, `charter_state`, `director`, `evidence_lead_validation` |
 | **optional_fields** | `timeline`, `budget_approved`, `budget_controller`, `source_plan`, `material_blind_spots[]` |
 | **enums** | `charter_state: DRAFT / VALIDATED / BUDGET_APPROVED / ACTIVE / COMPLETED` |
 | **IDs / foreign keys** | `charter_id: UUID v7`, `case_id → CASE-01.case_id`, `hypothesis_ids[] → HYP-01.hypothesis_id` |
@@ -444,7 +444,7 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Per-case budget allocation and spend tracking. |
 | **authority_source** | M3-01 §9 (Budget Discipline), M3-03 §3 (Stage 2) |
 | **owner** | Research Budget Controller (S2) |
-| **required_fields** | `budget_id`, `case_id`, `allocated_amount`, `approved_by`, `policy_version` |
+| **required_fields** | `budget_id`, `case_id`, `allocated_amount`, `approved_by`, `budget_state`, `policy_version` |
 | **optional_fields** | `cumulative_spend`, `remaining_budget`, `spend_breakdown[]`, `budget_exhausted` |
 | **enums** | `budget_state: APPROVED / ACTIVE / EXHAUSTED / CLOSED` |
 | **IDs / foreign keys** | `budget_id: UUID v7`, `case_id → CASE-01.case_id` |
@@ -1256,7 +1256,7 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Record of cross-case validation for a candidate lesson. |
 | **authority_source** | M3-09 §7 (Knowledge Compounding), M3-09 §7.1 (Cross-Case Validation) |
 | **owner** | Thesis / Knowledge Steward (Role 12) |
-| **required_fields** | `validation_id`, `lesson_id`, `validating_case_ids[]`, `pattern_consistent`, `validator`, `validation_date` |
+| **required_fields** | `validation_id`, `lesson_id`, `validating_case_ids[]`, `pattern_consistent`, `validation_result`, `validator`, `validation_date` |
 | **optional_fields** | `inconsistent_case_ids[]`, `notes`, `industry_playbook_id` |
 | **enums** | `validation_result: CONFIRMED / PARTIALLY_CONFIRMED / INCONCLUSIVE / REJECTED` |
 | **IDs / foreign keys** | `validation_id: UUID v7`, `lesson_id → CL-01.lesson_id`, `validating_case_ids[] → CASE-01.case_id` |

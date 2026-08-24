@@ -615,13 +615,34 @@ def main():
 
     all_schema_ids = set(schemas.keys())
 
-    # Generate model files
+    # Generate model files and contract artifacts FIRST
     for fam in sorted(by_family.keys()):
         code = generate_family_models(fam, by_family[fam], all_schema_ids)
         (OUTPUT / f"family_{fam.lower()}.py").write_text(code)
         print(f"  Family {fam} — {len(by_family[fam])} schemas")
 
-    # Generate __init__.py WITH SCHEMA_REGISTRY + SCHEMA_BUILD_IDENTITY
+    # Generate contract artifacts (must happen before __init__.py so hashes are current)
+    (CONTRACT_DIR / "fk_registry.py").write_text(generate_fk_registry(schemas))
+    (CONTRACT_DIR / "canonical_boundary.py").write_text(generate_canonical_boundary(schemas))
+    descriptor = generate_contract_descriptor(schemas)
+    (CONTRACT_DIR / "contract_descriptor.json").write_text(descriptor)
+
+    # Now compute artifact hashes for ALL non-self-referential outputs
+    # Exclusion rule: models/__init__.py is excluded because it contains the
+    # manifest including these hashes (self-referential). All other generated
+    # files are hashed.
+    artifact_hashes = {}
+    for fam in sorted(by_family.keys()):
+        fp = OUTPUT / f"family_{fam.lower()}.py"
+        if fp.exists():
+            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
+    for af in ["fk_registry.py", "canonical_boundary.py", "contract_descriptor.json"]:
+        fp = CONTRACT_DIR / af
+        if fp.exists():
+            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
+
+    # Generate __init__.py WITH SCHEMA_REGISTRY + SCHEMA_BUILD_IDENTITY (last,
+    # so artifact hashes are complete; __init__.py itself is excluded from hashing)
     init_lines = [
         '"""QAD Runtime Schema Models — all 68 frozen M4A canonical schemas."""',
         'from __future__ import annotations', '',
@@ -662,6 +683,8 @@ def main():
             artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
 
     # Build identity — machine-readable dict
+    # Exclusion rule: __init__.py itself is excluded from generated_artifact_hashes
+    # to avoid self-referential hashing. All other compiler outputs are hashed.
     init_lines.append('')
     init_lines.append('')
     init_lines.append('# Machine-readable build identity (auto-generated)')
@@ -672,17 +695,10 @@ def main():
     init_lines.append(f'    "generator_version": "{generator_version}",')
     init_lines.append(f'    "total_schemas": {len(schemas)},')
     init_lines.append(f'    "total_models": {len(all_models)},')
-    init_lines.append('    # generated_artifact_hashes populated post-generation via regeneration test',)
+    init_lines.append(f'    "generated_artifact_hashes": {json.dumps(artifact_hashes, indent=4)},')
     init_lines.append('}')
 
     (OUTPUT / "__init__.py").write_text('\n'.join(init_lines))
-
-    # Generate contract artifacts
-    (CONTRACT_DIR / "fk_registry.py").write_text(generate_fk_registry(schemas))
-    (CONTRACT_DIR / "canonical_boundary.py").write_text(generate_canonical_boundary(schemas))
-
-    descriptor = generate_contract_descriptor(schemas)
-    (CONTRACT_DIR / "contract_descriptor.json").write_text(descriptor)
 
     fk_count = sum(len(s["fks"]) for s in schemas.values())
     canonical = sum(1 for s in schemas.values() if s["is_canonical"])

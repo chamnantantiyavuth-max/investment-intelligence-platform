@@ -83,4 +83,8 @@
 
 **M4A = FINAL / FROZEN.** All freeze criteria met. Final independent review PASS. No remaining items.
 
+**Supersession:** Four M4A_SCHEMA_OMISSION field corrections applied per
+QAD-M4A-SCHEMA-ERRATUM-001 / FD #136 (24 Aug 2026). See erratum for exact
+changes. No methodology, enum value, or state machine changes.
+
 <!-- 2026-08-19 16:15 UTC+7 -->

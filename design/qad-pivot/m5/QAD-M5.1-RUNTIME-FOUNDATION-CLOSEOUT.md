@@ -1,13 +1,32 @@
 # QAD-M5.1 Runtime Foundation Closeout
 
 > **Status:** M5.1 = FINAL / CONTRACT-CONFORMANT
-> **Authority:** FD #135; M4A Canonical Schema Registry (FROZEN)
+> **Authority:** FD #135 + FD #136; M4A Canonical Schema Registry (FROZEN + Erratum 001)
 > **M5.1 Proof-Closure Baseline:** `2563614503b93325d94bd7fd6e89da44b0393ae7`
-> **Proof-Closure Final Commit:** recorded by git history
+> **Proof-Closure Final Commit:** `618b33965a9448e0e9b64f86f917e7b18fdb58a5` (erratum decision)
+> **Erratum Commit:** `232e84d2e963cb455cbfa11cd7b79d56133577f8` (decision package)
+> **Final Closure Commit:** recorded by git history
 >
 > **Design principle:** All 68 frozen M4A schemas are materialized as
 > Pydantic v2 models via a deterministic contract compiler.
 > EVERYTHING derives from the ONE parsed representation of frozen M4A.
+
+---
+
+## 0. Erratum Resolution
+
+All four frozen-contract contradictions resolved via **QAD-M4A-SCHEMA-ERRATUM-001 / FD #136**:
+
+| Schema | Field | Classification | Status |
+|---|---|---|---|
+| EAR-01 | `admission_method` | M4A_SCHEMA_OMISSION | ADD REQUIRED |
+| RC-01 | `charter_state` | M4A_SCHEMA_OMISSION | ADD REQUIRED |
+| RB-01 | `budget_state` | M4A_SCHEMA_OMISSION | ADD REQUIRED |
+| CCV-01 | `validation_result` | M4A_SCHEMA_OMISSION | ADD REQUIRED |
+
+**CONTRACT_AMBIGUITY = 0**, **unused enum classes = 0**.
+
+No methodology, enum value, state machine, or schema count changes.
 
 ---
 
@@ -34,12 +53,12 @@
 | Metric | Value |
 |---|---|
 | Enum declarations parsed | 80 |
-| FIELD_ENUM (matches field) | 68 |
+| FIELD_ENUM (matches field) | 72 (was 68; +4 from Erratum 001) |
 | TYPE_ALIAS_ENUM (shared type) | 8 |
-| CONTRACT_AMBIGUITY (documented) | 4 |
+| CONTRACT_AMBIGUITY | **0** (was 4; resolved by Erratum 001) |
+| Unused enum classes | **0** (was 4; all now FIELD_ENUM) |
 | Enum values match frozen | Verified per schema |
 | Illegal enum rejected | Verified via negative test |
-| Unused enum classes | 4 (all CONTRACT_AMBIGUITY) |
 
 **TYPE_ALIAS_ENUM bindings (8):**
 - CLM-01.claimant_type → `claimant`
@@ -50,12 +69,6 @@
 - MA-01.moat_type → `moat_types[]`
 - MO-02.variance_type → `variance`
 - PLA-01.risk_level → 6 permanent-loss risk dimensions
-
-**CONTRACT_AMBIGUITY (4 — M4A declares enum with no matching field):**
-- CCV-01.validation_result
-- EAR-01.admission_method
-- RB-01.budget_state
-- RC-01.charter_state
 
 No enum declaration is silently skipped. Every declaration is classified.
 
@@ -72,6 +85,7 @@ No enum declaration is silently skipped. Every declaration is classified.
 | FK target fields exist | 87/87 |
 | No phantom FKs | Verified |
 | No dropped FKs | Verified |
+| FK set parity (runtime == descriptor) | Verified |
 | Generator self-sufficient | Yes — SCHEMA_REGISTRY generated |
 
 ---
@@ -84,7 +98,8 @@ No enum declaration is silently skipped. Every declaration is classified.
 | Regeneration determinism | Byte-identical across ALL artifacts |
 | Artifacts covered | models/*, contract/*.py, contract/contract_descriptor.json |
 | Manual patch required | None — SCHEMA_REGISTRY in generated code |
-| Build identity persisted | Machine-readable `SCHEMA_BUILD_IDENTITY` dict |
+| Build identity persisted | Machine-readable `SCHEMA_BUILD_IDENTITY` dict with 12 artifact hashes |
+| Self-hash exclusion | `models/__init__.py` excluded (manifest-containing) |
 | `SCHEMA_REGISTRY` importable | 68 entries |
 | `FK_REGISTRY` importable | 87 references |
 
@@ -115,10 +130,10 @@ No enum declaration is silently skipped. Every declaration is classified.
 
 | Policy | Field Count |
 |---|---|
-| RECORD_IMMUTABLE | 251 |
+| RECORD_IMMUTABLE | 253 |
 | FIELD_IMMUTABLE | 125 |
-| MUTABLE | 413 |
-| CONDITIONAL / APPEND_ONLY | 54 |
+| MUTABLE | 414 |
+| CONDITIONAL / APPEND_ONLY | 55 |
 
 **PITContext (PITC-01) — "Context immutable":** ALL fields frozen.
 - `case_id` frozen ✅
@@ -145,9 +160,11 @@ No enum declaration is silently skipped. Every declaration is classified.
 | Oracle source hash deterministic | Verified |
 | PITContext mutation → FAIL | Verified |
 | Scalar binding policy == runtime | 100% ✅ |
-| Unused enum class detection | 4 documented CONTRACT_AMBIGUITY |
-| All generated artifacts importable | ✅ |
-| Runtime validator 68/68 | ✅ |
+| Unused enum class detection | **0** (all resolved by Erratum 001) |
+| Generated artifact drift → FAIL | Verified (regeneration determinism) |
+| Build identity validates | PASS |
+| Runtime validator 68/68 | PASS |
+| Full import self-consistency | 68/68/87 ✅ |
 
 ---
 
@@ -156,8 +173,13 @@ No enum declaration is silently skipped. Every declaration is classified.
 | Check | Result |
 |---|---|
 | `validate_contract()` per schema | 68/68 PASS |
-| `validate_all_contracts()` | 68 per-schema PASS + 4 documented CONTRACT_AMBIGUITY |
-| Build identity validation | PASS |
+| `validate_all_contracts()` | 68 per-schema PASS + **0 global violations** |
+| `validate_build_identity()` | PASS (includes artifact hash verification) |
+| FK set parity | PASS (runtime == descriptor) |
+| Enum binding | 0 unused, 0 CONTRACT_AMBIGUITY |
+| Collection shape | Verified |
+| PIT field frozen | Verified |
+| Scalar type binding | Verified |
 | negative test: PITContext mutation | PASS |
 | negative test: scalar binding drift | PASS |
 | negative test: FK integrity | PASS |
@@ -172,8 +194,9 @@ No enum declaration is silently skipped. Every declaration is classified.
 | FAKE-99 negative self-test | PASS |
 | PIT leakage proof | 9/9 PASS |
 | M4B validator | 93/93 PASS |
-| Full contract conformance tests | 103/103 PASS |
+| QAD conformance tests | 103/103 PASS |
 | Runtime validator 68/68 | PASS |
+| Full pytest | recorded by session output |
 
 ---
 
@@ -188,6 +211,8 @@ No enum declaration is silently skipped. Every declaration is classified.
 | Contract descriptor | `qad/contract/contract_descriptor.json` |
 | Schema registry shim | `qad/schema_registry.py` |
 | Type binding policy | `design/qad-pivot/m5/QAD-M5.1-TYPE-BINDING-POLICY.md` |
+| Erratum artifact | `design/qad-pivot/m4a/QAD-M4A-SCHEMA-ERRATUM-001.md` |
+| Conflict decision package | `design/qad-pivot/m5/QAD-M5.1-CONTRACT-CONFLICT-DECISION-PACKAGE.md` |
 | Independent test oracle | `tests/qad/independent_oracle.py` |
 | Contract conformance tests | `tests/qad/test_contract_conformance.py` |
 | Runtime validator | `qad/validator.py` |
@@ -195,7 +220,19 @@ No enum declaration is silently skipped. Every declaration is classified.
 
 ---
 
-## 11. Gates
+## 11. Legal / Governance
+
+- **M4A = FINAL / FROZEN** + QAD-M4A-SCHEMA-ERRATUM-001 applied per FD #136
+- **M4B = FINAL / FROZEN — FOUNDER ACCEPTED** (FD #134)
+- **M5.1 = FINAL / CONTRACT-CONFORMANT** (this closeout)
+- **M5.2 = PROCEED UNDER FD #135** (no further authorization required)
+- **Production Release = NOT AUTHORIZED**
+
+FD #136 registered: item 136, fd_count 136. 24 August 2026.
+
+---
+
+## 12. Gates
 
 ```
 M5.1 = FINAL / CONTRACT-CONFORMANT

@@ -245,10 +245,23 @@ SCHEMA_REGISTRY: dict[str, type] = {
 # Machine-readable build identity (auto-generated)
 SCHEMA_BUILD_IDENTITY: dict[str, object] = {
     "spec_source": "QAD-M4A-CANONICAL-SCHEMAS.md",
-    "spec_source_sha256": "d4b27d82e72fa856c334709abbcc808eb14c3a7d2c4b710b29ffdb847b2a49ba",
+    "spec_source_sha256": "6755cff07cbb240a8bab8eb49ab39894f5673c73322e51c4e2ead932f706dfa6",
     "m4a_contract_version": "M4A-FROZEN-20260821",
     "generator_version": "M5.1-20260824",
     "total_schemas": 68,
     "total_models": 68,
-    # generated_artifact_hashes populated post-generation via regeneration test
+    "generated_artifact_hashes": {
+    "models\\family_a.py": "1a83970964f6d4e232d4b6a793f5cee20ccc57887ae2cfd0b919cfb97ab368fd",
+    "models\\family_b.py": "d5104184c90d0b56e505460306d5c37a7840ac8c19c9b4ec1c3c6e432f6c43ea",
+    "models\\family_c.py": "8d5e5e6d959797f87c5e8a718fc11a78a120fc07ccbbc31d3aed30cd8ca36380",
+    "models\\family_d.py": "8a6c4f4c9aebc12d019ac7b505ae16b7baa5e015f07a30b315e39c3573bb24b4",
+    "models\\family_e.py": "a111bde88ae0a1bf344f6b7da9d53b166a972865c0cd64074b15f17f896552e0",
+    "models\\family_f.py": "e6d281bf35f8165b0dfe05790a3c114f6ec41b0ed7c7ea2c85c2e3a22e2a448e",
+    "models\\family_g.py": "1eebac3e06f439cf29512fe25169ba64fdbb5191397bad964e39a6960638f4e1",
+    "models\\family_h.py": "51ca3b8ba338322a624e6536cb986b94684ecdc96a06bffa412bd79708e8c9a7",
+    "models\\family_i.py": "167efb03dc5772494cd3b7a7663388808d1ed499394d49eb52b4b284e58afcbc",
+    "contract\\fk_registry.py": "d811495b85382ed4495045c151d4d760b22d01874cbb56247a47dda20e562e4b",
+    "contract\\canonical_boundary.py": "2bdb68f5b837b037a48aaf98362686d00fb49f149a44c77e5dac6d609a738083",
+    "contract\\contract_descriptor.json": "74ab6622dc05f30aeea521351477532d23bb5f3c7322bc2fc1c79df2ed8a7629"
+},
 }
