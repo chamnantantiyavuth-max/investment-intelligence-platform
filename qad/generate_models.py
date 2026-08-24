@@ -53,14 +53,11 @@ TYPE_ALIAS_BINDING_MAP: dict[tuple[str, str], list[str]] = {
 }
 
 # --- Scalar Binding Map ---
-# Machine-readable binding that the generator consumes.
-# For fields that match policy pattern (count/token->int, monetary->float)
-# but whose names don't match suffix-based rules.
 SCALAR_BINDING_MAP: dict[str, str] = {
     # BU-01: BudgetUsage
     "amount_consumed": "float",
-    "cost": "float",              # monetary value
-    "tokens": "int",              # token count
+    "cost": "float",
+    "tokens": "int",
     # MOD-01: ModelInvocation
     "prompt_tokens": "int",
     "completion_tokens": "int",
@@ -77,8 +74,6 @@ SCALAR_BINDING_MAP: dict[str, str] = {
     "intrinsic_value_estimate": "float",
     "recovery_rate_implied": "float",
     "recovery_capital_needed": "float",
-    # Monitoring
-    # (metric_value{} is dict-typed in MO-01; no scalar metric_value field exists)
     # Scenario
     "probability_weight": "float",
 }
@@ -156,12 +151,10 @@ def get_field(block: str, label: str) -> str:
 def classify_immutability(imm_rules: str, field_name: str, schema_id: str) -> tuple[str, str]:
     """Classify immutability into (policy, detail)."""
     rules_lower = imm_rules.lower()
-    # Record-level rules
     if "record immutable" in rules_lower or "content immutable" in rules_lower:
         if field_name in ("content", "context", "evidence_id", "fact_id", "claim_id", "inference_id"):
             return ("FIELD_IMMUTABLE", "field content immutable per contract")
         return ("RECORD_IMMUTABLE", "record immutable per contract")
-    # Context immutable — special case for PIT context etc.
     if "context immutable" in rules_lower:
         return ("RECORD_IMMUTABLE", "context immutable per contract")
     if "append-only" in rules_lower and "state" in rules_lower:
@@ -177,14 +170,11 @@ def classify_immutability(imm_rules: str, field_name: str, schema_id: str) -> tu
 
 def classify_enum(schema_id: str, enum_field: str, field_descriptors: OrderedDict) -> tuple[str, list[str]]:
     """Classify an enum declaration. Returns (classification, bound_fields[])."""
-    # Check if it's a FIELD_ENUM (matches exact field name)
     if enum_field in field_descriptors:
         return ("FIELD_ENUM", [enum_field])
-    # Check if it's a TYPE_ALIAS_ENUM (in the binding map)
     bound = TYPE_ALIAS_BINDING_MAP.get((schema_id, enum_field))
     if bound:
         return ("TYPE_ALIAS_ENUM", bound)
-    # Check if there's a semantic relationship not yet mapped
     for fname in field_descriptors:
         if enum_field in fname.lower() or fname.lower().endswith(enum_field.lower()):
             return ("TYPE_ALIAS_ENUM", [fname])
@@ -192,7 +182,7 @@ def classify_enum(schema_id: str, enum_field: str, field_descriptors: OrderedDic
 
 
 def get_scalar_binding(field_name: str) -> str:
-    """Get scalar type binding for a field. Checks explicit map, then patterns, then str."""
+    """Get scalar type binding for a field."""
     if field_name in SCALAR_BINDING_MAP:
         return SCALAR_BINDING_MAP[field_name]
     if field_name in SCALAR_PATTERNS:
@@ -238,17 +228,14 @@ def parse_schema_block(block: str, family: str) -> dict | None:
     if prov_raw:
         prov_fields = {f.strip() for f in re.findall(r'`([^`]+)`', prov_raw)}
 
-    # PIT/provenance-only fields: add to expected surface
     all_pit_prov = pit_fields | prov_fields
     for pf in all_pit_prov:
         pf_clean, _ = parse_field_shape(pf)
         if pf_clean and pf_clean not in required and pf_clean not in optional:
             optional.add(pf_clean)
 
-    # Rebuild all_fields_raw from the complete surface (required + optional + PIT + provenance)
     all_fields_raw = []
     raw_fields_seen = set()
-    # Re-parse from original to get raw names with []/{}
     if required_raw:
         for f in re.findall(r'`([^`]+)`', required_raw):
             clean, _ = parse_field_shape(f)
@@ -261,7 +248,6 @@ def parse_schema_block(block: str, family: str) -> dict | None:
             if clean and clean not in raw_fields_seen:
                 all_fields_raw.append(f)
                 raw_fields_seen.add(clean)
-    # Add PIT/provenance-only fields with clean names
     for pf in sorted(all_pit_prov):
         pf_clean, _ = parse_field_shape(pf)
         if pf_clean and pf_clean not in raw_fields_seen:
@@ -276,34 +262,28 @@ def parse_schema_block(block: str, family: str) -> dict | None:
 
     immutability = get_field(block, "immutability_rules")
 
-    # Build field descriptors — NOW PIT/provenance fields are included
     field_descs = OrderedDict()
     for raw_field in all_fields_raw:
         clean_name, container = parse_field_shape(raw_field)
         if not clean_name or clean_name in field_descs:
             continue
         is_req = clean_name in required
-        # Determine enum binding
         enum_values = None
         for e in enums:
             if e["field"] == clean_name:
                 enum_values = e["values"]
                 break
-        # If no exact match, check TYPE_ALIAS map
         if enum_values is None:
             ta = TYPE_ALIAS_BINDING_MAP.get((schema_id, clean_name))
             if ta is None:
-                # Check if this field is itself a bound target of a type alias
                 for (sid, enum_name), bound_fields in TYPE_ALIAS_BINDING_MAP.items():
                     if sid == schema_id and clean_name in bound_fields:
-                        # Find the enum values for this type alias from the parsed enums
                         for e in enums:
                             if e["field"] == enum_name:
                                 enum_values = e["values"]
                                 break
                         break
         imm_policy, imm_detail = classify_immutability(immutability, clean_name, schema_id)
-        # PIT fields are frozen (point-in-time immutability)
         if clean_name in pit_fields:
             imm_policy = "FIELD_IMMUTABLE"
         is_immutable = imm_policy in ("FIELD_IMMUTABLE", "RECORD_IMMUTABLE")
@@ -316,7 +296,6 @@ def parse_schema_block(block: str, family: str) -> dict | None:
             "immutable_policy": imm_policy,
         }
 
-    # Classify all enum declarations
     enum_classifications = []
     for e in enums:
         cls, bound_fields = classify_enum(schema_id, e["field"], field_descs)
@@ -374,7 +353,6 @@ def get_class_name(schema_id: str, name: str) -> str:
 
 
 def get_enum_name(schema_id: str, schema_name: str, enum_field: str) -> str:
-    """Get the Python enum class name for a given enum field."""
     return f'{get_class_name(schema_id, schema_name)}{enum_field.capitalize()}'
 
 
@@ -385,11 +363,8 @@ def emit_field(lines, fname, fd, schema, all_enums):
     is_immutable = fd.get("immutable", False)
 
     if enum_values:
-        # This field has enum values bound to it (either FIELD_ENUM or TYPE_ALIAS_ENUM)
-        # Look up enum class name from (schema_id, field_name)
         enum_class_name = all_enums.get((schema["schema_id"], fname))
         if enum_class_name is None:
-            # Check TYPE_ALIAS map: the declaring enum name may differ from field name
             resolved = False
             for (sid, e_name), bound_fields in TYPE_ALIAS_BINDING_MAP.items():
                 if sid == schema["schema_id"] and fname in bound_fields:
@@ -398,7 +373,6 @@ def emit_field(lines, fname, fd, schema, all_enums):
                         resolved = True
                         break
             if not resolved:
-                # Fallback: use str
                 base = "str"
                 if container == "list":
                     py_type = f"list[{base}]"
@@ -466,21 +440,16 @@ def generate_family_models(family: str, schemas: list[dict], all_schema_ids: set
         'from pydantic import BaseModel, Field',
         '',
     ]
-    # Collect all enum declarations for this family
-    # Key = enum class name, Value = (schema_id, values, declaring_field)
     all_enums: dict[str, tuple[str, list[str], str]] = OrderedDict()
     for s in schemas:
         for e in s["enums"]:
-            # Generate enum class under the declaring field name
             enum_name = get_enum_name(s["schema_id"], s["name"], e["field"])
             if enum_name not in all_enums:
                 all_enums[enum_name] = (s["schema_id"], e["values"], e["field"])
 
-    # Generate enum classes
     for enum_name, (sid, values, declaring_field) in all_enums.items():
         lines.append(generate_enum_class(enum_name, values))
 
-    # Map (schema_id, declaring_field) -> enum_class_name for emit_field lookup
     enum_class_map = {}
     for enum_name, (sid, values, declaring_field) in all_enums.items():
         enum_class_map[(sid, declaring_field)] = enum_name
@@ -577,9 +546,8 @@ def generate_canonical_boundary(schemas: dict[str, dict]) -> str:
     for sid in sorted(non_canonical):
         lines.append(f'    "{sid}",')
     lines.append('}')
-    # Also add family index
     lines.append('')
-    lines.append('# Family index (infrastructure = Family I)')
+    lines.append('# Family index')
     lines.append('SCHEMA_FAMILIES = {')
     for sid in sorted(schemas.keys()):
         lines.append(f'    "{sid}": "{schemas[sid]["family"]}",')
@@ -589,7 +557,6 @@ def generate_canonical_boundary(schemas: dict[str, dict]) -> str:
     lines.append('CANONICAL_BOUNDARY_TEXT = {')
     for sid in sorted(schemas.keys()):
         cb = schemas[sid]["canonical_boundary"]
-        # Escape for Python string
         cb_escaped = cb.replace('"', '\\"')
         lines.append(f'    "{sid}": "{cb_escaped}",')
     lines.append('}')
@@ -621,28 +588,24 @@ def main():
         (OUTPUT / f"family_{fam.lower()}.py").write_text(code)
         print(f"  Family {fam} — {len(by_family[fam])} schemas")
 
-    # Generate contract artifacts (must happen before __init__.py so hashes are current)
+    # Generate contract artifacts
     (CONTRACT_DIR / "fk_registry.py").write_text(generate_fk_registry(schemas))
     (CONTRACT_DIR / "canonical_boundary.py").write_text(generate_canonical_boundary(schemas))
     descriptor = generate_contract_descriptor(schemas)
     (CONTRACT_DIR / "contract_descriptor.json").write_text(descriptor)
 
-    # Now compute artifact hashes for ALL non-self-referential outputs
-    # Exclusion rule: models/__init__.py is excluded because it contains the
-    # manifest including these hashes (self-referential). All other generated
-    # files are hashed.
+    # Compute artifact hashes using POSIX-normalized paths (portable across OS)
     artifact_hashes = {}
     for fam in sorted(by_family.keys()):
         fp = OUTPUT / f"family_{fam.lower()}.py"
         if fp.exists():
-            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
+            artifact_hashes[fp.relative_to(BASE).as_posix()] = compute_file_hash(fp)
     for af in ["fk_registry.py", "canonical_boundary.py", "contract_descriptor.json"]:
         fp = CONTRACT_DIR / af
         if fp.exists():
-            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
+            artifact_hashes[fp.relative_to(BASE).as_posix()] = compute_file_hash(fp)
 
-    # Generate __init__.py WITH SCHEMA_REGISTRY + SCHEMA_BUILD_IDENTITY (last,
-    # so artifact hashes are complete; __init__.py itself is excluded from hashing)
+    # Generate __init__.py (last, so all hashes are complete)
     init_lines = [
         '"""QAD Runtime Schema Models — all 68 frozen M4A canonical schemas."""',
         'from __future__ import annotations', '',
@@ -670,28 +633,15 @@ def main():
         init_lines.append(f'    "{sid}": {cn},')
     init_lines.append('}')
 
-    # Populate generated artifact hashes (before writing this file)
-    artifact_hashes = {}
-    for fam in sorted(by_family.keys()):
-        fp = OUTPUT / f"family_{fam.lower()}.py"
-        if fp.exists():
-            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
-    # Also hash contract artifacts already generated
-    for af in ["fk_registry.py", "canonical_boundary.py", "contract_descriptor.json"]:
-        fp = CONTRACT_DIR / af
-        if fp.exists():
-            artifact_hashes[str(fp.relative_to(BASE))] = compute_file_hash(fp)
-
     # Build identity — machine-readable dict
-    # Exclusion rule: __init__.py itself is excluded from generated_artifact_hashes
-    # to avoid self-referential hashing. All other compiler outputs are hashed.
+    # Exclusion rule: __init__.py excluded from generated_artifact_hashes (self-referential)
     init_lines.append('')
     init_lines.append('')
     init_lines.append('# Machine-readable build identity (auto-generated)')
     init_lines.append('SCHEMA_BUILD_IDENTITY: dict[str, object] = {')
     init_lines.append(f'    "spec_source": "QAD-M4A-CANONICAL-SCHEMAS.md",')
     init_lines.append(f'    "spec_source_sha256": "{source_hash}",')
-    init_lines.append(f'    "m4a_contract_version": "M4A-FROZEN-20260821",')
+    init_lines.append(f'    "m4a_contract_version": "M4A-FROZEN+ERRATUM-001",')
     init_lines.append(f'    "generator_version": "{generator_version}",')
     init_lines.append(f'    "total_schemas": {len(schemas)},')
     init_lines.append(f'    "total_models": {len(all_models)},')
@@ -704,11 +654,7 @@ def main():
     canonical = sum(1 for s in schemas.values() if s["is_canonical"])
     enum_count = sum(len(s["enums"]) for s in schemas.values())
     field_count = sum(len(s["field_descriptors"]) for s in schemas.values())
-    scalar_binding_count = sum(1 for s in schemas.values() for fd in s["field_descriptors"].values()
-                               if fd.get("enum_values") is None and fd.get("container") == ""
-                               and get_scalar_binding(fd.get("raw_name", "")) != "str")
 
-    # Enum classification summary
     field_enum_count = 0
     type_alias_enum_count = 0
     contract_ambiguity_count = 0
@@ -721,30 +667,13 @@ def main():
             else:
                 contract_ambiguity_count += 1
 
-    # Immutability counts
-    record_immutable_count = 0
-    field_immutable_count = 0
-    mutable_count = 0
-    conditional_count = 0
-    for s in schemas.values():
-        for fd in s["field_descriptors"].values():
-            if fd["immutable_policy"] == "RECORD_IMMUTABLE":
-                record_immutable_count += 1
-            elif fd["immutable_policy"] == "FIELD_IMMUTABLE":
-                field_immutable_count += 1
-            elif fd["immutable_policy"] == "MUTABLE":
-                mutable_count += 1
-            elif "APPEND_ONLY" in fd["immutable_policy"]:
-                conditional_count += 1
-
     print(f"\n  Source hash: {source_hash[:16]}")
     print(f"  FK references: {fk_count}")
     print(f"  Canonical: {canonical}, Non-canonical: {len(schemas) - canonical}")
     print(f"  Enum declarations: {enum_count}")
     print(f"    FIELD_ENUM: {field_enum_count}, TYPE_ALIAS_ENUM: {type_alias_enum_count}, CONTRACT_AMBIGUITY: {contract_ambiguity_count}")
-    print(f"  Scalar bindings (non-str): {scalar_binding_count}")
     print(f"  Field count: {field_count}")
-    print(f"  Immutability: RECORD_IMMUTABLE={record_immutable_count}, FIELD_IMMUTABLE={field_immutable_count}, MUTABLE={mutable_count}, CONDITIONAL={conditional_count}")
+    print(f"  Build identity version: M4A-FROZEN+ERRATUM-001")
     with open(OUTPUT / "__init__.py", "r") as f:
         init_content = f.read()
     build_hash = hashlib.sha256(init_content.encode('utf-8')).hexdigest() if 'SCHEMA_BUILD_IDENTITY' in init_content else "n/a"

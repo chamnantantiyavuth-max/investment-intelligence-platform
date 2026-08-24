@@ -176,11 +176,22 @@ def validate_contract(schema_id: str, model_class: type) -> list[str]:
         if bool(desc["is_canonical"]) != runtime_canonical:
             violations.append(f"{schema_id}: canonical boundary mismatch "
                               f"(descriptor={desc['is_canonical']}, runtime={runtime_canonical})")
+    # Exact canonical boundary text match
+    from qad.contract.canonical_boundary import CANONICAL_BOUNDARY_TEXT
+    cb_text = CANONICAL_BOUNDARY_TEXT.get(schema_id, "")
+    desc_cb = desc.get("canonical_boundary", "")
+    if cb_text and cb_text != desc_cb:
+        violations.append(f"{schema_id}: canonical boundary text mismatch "
+                          f"(runtime={cb_text!r}, descriptor={desc_cb!r})")
+
+    # Family must exist and match
     actual_family = SCHEMA_FAMILIES.get(schema_id, "")
-    if desc.get("family") and actual_family and desc["family"] != actual_family:
+    if not actual_family:
+        violations.append(f"{schema_id}: missing family mapping in SCHEMA_FAMILIES")
+    elif desc.get("family") and actual_family and desc["family"] != actual_family:
         violations.append(f"{schema_id}: family mismatch (descriptor={desc['family']}, runtime={actual_family})")
 
-    # --- scalar type binding (SCALAR_BINDING_MAP) ---
+    # --- scalar type binding (SCALAR_BINDING_MAP) — exact enforcement ---
     for sf, expected_type in gm.SCALAR_BINDING_MAP.items():
         if sf in model_class.model_fields:
             fld = model_class.model_fields[sf]
@@ -188,9 +199,11 @@ def validate_contract(schema_id: str, model_class: type) -> list[str]:
             if "dict" in ann.lower():
                 continue  # container-shaped exempt
             actual = ann.replace("<class '", "").replace("'>", "").replace("typing.", "")
-            # normalize e.g. "str" -> "str", "int", "float", enum name
-            if actual not in (expected_type, "str") and expected_type in ("int", "float"):
-                # enum-typed or list-typed fields are not scalar violations
+            # exact enforcement: float → str MUST fail, int → str MUST fail
+            if actual == "str" and expected_type in ("int", "float"):
+                violations.append(f"{schema_id}.{sf}: scalar binding expects {expected_type}, "
+                                  f"got str (drifted from binding policy)")
+            elif actual not in ("str", expected_type) and expected_type in ("int", "float"):
                 if "enum" not in actual.lower():
                     violations.append(f"{schema_id}.{sf}: scalar binding expected {expected_type}, got {ann}")
 

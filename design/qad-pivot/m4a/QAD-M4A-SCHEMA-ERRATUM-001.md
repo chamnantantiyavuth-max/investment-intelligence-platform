@@ -152,17 +152,25 @@ This erratum explicitly does NOT change:
 
 ## Historical Traceability
 
-Original M4A freeze at `2563614` contained these field omissions. The frozen
-M4A closeout (`QAD-M4A-CLOSEOUT.md`) and the original M4A document hash
-(`d4b27d82e72fa856`) remain valid as historical snapshots. This erratum is an
-amendment, not a rewrite.
+Original M4A freeze at M4A closeout baseline (see QAD-M4A-CLOSEOUT.md) contained these
+field omissions. The frozen M4A closeout document and the original M4A source hash
+remain valid as historical snapshots. This erratum is an amendment, not a rewrite.
 
 ```text
-M4A freeze baseline:      2563614503b93325d94bd7fd6e89da44b0393ae7
-M4A source hash (pre):    d4b27d82e72fa856
-M4A source hash (post):   <computed by compiler after application>
-Erratum applied at:       232e84d2e963cb455cbfa11cd7b79d56133577f8
-Erratum authority:        FD #136
+pre-erratum canonical source baseline =
+232e84d2e963cb455cbfa11cd7b79d56133577f8
+
+pre-erratum source SHA256 =
+d4b27d82e72fa856c334709abbcc808eb14c3a7d2c4b710b29ffdb847b2a49ba
+
+post-erratum source SHA256 =
+6755cff07cbb240a8bab8eb49ab39894f5673c73322e51c4e2ead932f706dfa6
+
+Erratum application commit =
+440d3323810d377073088b7a4ecaba46918a3499
+
+Erratum authority =
+FD #136 (24 Aug 2026)
 ```
 
 ---
@@ -177,6 +185,10 @@ unused enum classes = 0
 FIELD_ENUM = 72
 TYPE_ALIAS_ENUM = 8
 Total enum declarations = 80
+schemas = 68
 ```
+
+Cross-checked by runtime validator (68/68 PASS, 0 global violations) and
+`test_contract_conformance.py` (103/103 PASS).
 
 <!-- 2026-08-24 -->

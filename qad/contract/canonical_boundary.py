@@ -76,7 +76,7 @@ CANONICAL_SCHEMAS = {
 NON_CANONICAL_SCHEMAS = {
 }
 
-# Family index (infrastructure = Family I)
+# Family index
 SCHEMA_FAMILIES = {
     "AF-01": "G",
     "AG-01": "G",

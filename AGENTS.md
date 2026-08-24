@@ -179,7 +179,7 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - INVESTMENT-INTELLIGENCE-OPERATING-MODEL v0.1 defines dual intelligence paths: Fundamental & Opportunity (V1+) + Momentum & Market Leadership (V0). **🔴 SUPERSEDED — QAD is the canonical future identity (Constitution v0.6, FD #130). Legacy AM/CS/FO/II are not co-equal investment paths.**
 - Capital Command and Trading / Execution Systems remain external.
 - 8 templates (TPL-*) await conditional instantiation in later phases.
-- Founder Decisions #1–135 (FD #135 = item 135, 21 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
+- Founder Decisions #1–136 (FD #136 = item 136, 24 Aug 2026) + FD-CIW-001..016 + FD #101-A. See `operational/FOUNDERS-DECISIONS.md` (authoritative register).
 
 ## Current QAD Governance
 
@@ -187,10 +187,12 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - **M1 = FINAL PASS** (17 Aug 2026; independent governance review PASS WITH FINDINGS → 8 findings resolved).
 - **M2 = FINAL PASS** (18 Aug 2026; deterministic integrity validation PASS — 25/25 records, single disposition per capability, runtime audit corrected, FROZEN-with-runtime derived mechanically)
 - **M3 = FINAL PASS — FOUNDER ACCEPTED** (19 Aug 2026; FD #132; 9 domain contracts, 14 roles, 12 services S1–S12; independent review PASS_WITH_FINDINGS all findings resolved)
-- **M4A = FINAL / FROZEN** (68 schemas, 12 state machines, 15 invariants; structural validator 173/173 PASS; independent review PASS)
+- **M4A = FINAL / FROZEN** ++ QAD-M4A-SCHEMA-ERRATUM-001 / FD #136 applied (24 Aug 2026; 4 field omissions corrected, no methodology changes)
 - **M4B = FINAL / FROZEN — FOUNDER ACCEPTED** (10 DRAFT_UNSEALED AI_PROPOSED fixture candidates, 0 sealed fixtures, 44 metrics; PIT proof = 9/9 PASS, M4B validator 93/93 PASS; independent review substantive verdict = PASS; FD #134)
 - **M5 Gate Review = PASS / COMPLETE** (G1–G10 assessed; FD #135; 5 binding pre-production conditions: PIT runtime enforcement, retry/failure/idempotency, sealed benchmark corpus, cost calibration, production stack declaration; sealed-fixture policy = POST_IMPLEMENTATION_PRE_PRODUCTION per Founder decision)
-- **M5 Implementation = AUTHORIZED — Production Release NOT Authorized** (controlled build per FD #135; frozen M1–M4 remain governing specification; no workforce cutover, no cron cutover, no live autonomous QAD)
+- **M5.1 = FINAL / CONTRACT-CONFORMANT** (68/68 frozen schemas as Pydantic v2 models; CONTRACT_AMBIGUITY=0, unused enums=0; runtime validator 68/68 PASS; 103/103 QAD conformance; M5.2 = PROCEED UNDER FD #135)
+- **M5.2 = PROCEED under FD #135** — Canonical Persistence Boundaries implementation. See also M5.1 closeout for scope.
+- **Production Release = NOT Authorized** — all M5.2 persistence implementation is isolated/non-production. Production/destructive DB migration, live cutover, workforce cutover, and cron cutover remain NOT AUTHORIZED without a later Founder decision.
 - Legacy AM/CS/FO/II authorities are **not co-equal investment paths** — their data or methods may be repurposed as supporting QAD intelligence where separately authorised.
 - **Theme Intelligence is supporting context/discovery, not a mandatory research gateway.** Quality Discovery, Dislocation Detection, and external discovery lanes may create Candidates directly without Theme membership.
 - **Discovery & Coverage is a first-class QAD subsystem** — every eligible company observable ≠ every company LLM-reasoned; 6 registries, 3 independent discovery lanes, hybrid cadence, persistent provenance.
@@ -201,7 +203,7 @@ The following records the pre-QAD multi-strategy governance. These are preserved
 - No broker connectivity, execution, or portfolio allocation.
 - No Legacy or quarantine access without separate named authorization.
 - No AI-invented investment rules, thresholds, weights, formulas, lookbacks, benchmarks, taxonomies, cohorts, ordering, tie behavior, aggregation, or fallback.
-- No schema or migration.
+- No schema or migration to production database. Isolated/non-production QAD persistence implementation under FD #135 is authorized. Production/destructive DB migration, live cutover, workforce cutover, and cron cutover remain NOT AUTHORIZED without a later Founder decision.
 - Provisional technology only — no final stack selection claimed (ADR-001 ratified as current working direction via FD #44, not final selection).
 - UI/display changes are authorized (presentation layer only — non-material).
 - New pipeline stages, data sources, or strategy logic require explicit authorization.
