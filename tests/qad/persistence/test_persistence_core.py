@@ -15,7 +15,7 @@ Scenarios (20+)
  8.  Missing FK (EvidenceRecord with no SourceRecord)
  9.  Valid FK (SourceRecord first, then EvidenceRecord referencing it)
 10.  Same-batch FK resolution (both in one transaction)
-11.  Collection FK (contradicts_ids — all members must exist)
+11.  Collection FK (contradicts_ids - all members must exist)
 12.  Same ID + different payload → IntegrityConflict
 13.  BlobStore: correct hash passes, bad hash → HashMismatch
 14.  BlobStore: idempotent re-put (same hash, same data)
@@ -26,13 +26,11 @@ Scenarios (20+)
 19.  FinancialFact lineage preservation via get_lineage
 20.  PITContext round-trip (with FK chain)
 
-IMPORTANT: The reference implementation's ``_resolve_id`` helper scans a fixed
-list of candidate field names and returns the first non-None match.  Because FK
-fields like ``case_id``, ``source_id``, ``entity_id`` appear in the list before
-schema-specific PK fields (``evidence_id``, ``financial_fact_id``,
-``manifest_id``, ``pit_context_id``), the store's internal record key may be
-the FK value rather than the domain PK.  Tests that rely on ``load()`` use a
-consistent helper, ``_stored_id``, to compute the correct key.
+The reference implementation uses a mechanically derived M4A primary-identity
+registry (``primary_id_registry.json``) so that every canonical schema stores
+and loads under its correct primary-key field.  Tests use ``_stored_id()``
+(which calls ``_resolve_id()``) consistently for both store and load
+operations.
 """
 
 from __future__ import annotations
@@ -125,16 +123,15 @@ def _assert_fields_match(original: BaseModel, loaded: BaseModel) -> None:
 def _stored_id(instance: BaseModel) -> str:
     """Return the record ID that ``_resolve_id`` computes from *instance*.
 
-    Because the reference implementation's candidate list is ordered
-    alphabetically (FK fields before some PK fields), this may return
-    a FK value rather than the domain PK — always use this helper for
-    ``load()`` / ``contains()`` calls.
+    The M4A-derived primary-identity registry ensures every canonical
+    schema uses its correct PK field, so this helper now returns the
+    true primary identity rather than a FK fallback.
     """
     return _resolve_id(instance)
 
 
 # ====================================================================
-# Fixtures — shared store and model instances
+# Fixtures - shared store and model instances
 # ====================================================================
 
 @pytest.fixture
@@ -187,11 +184,10 @@ def fk_sm() -> SecurityMaster:
     )
 
 
-# NOTE: The reference implemention's _resolve_id() picks FK fields (entity_id,
-# source_id, case_id) before schema-specific PK fields because they appear
-# earlier in the candidate list.  For fixture records that participate in FK
-# chains, we set signal_id == entity_id and candidate_id == entity_id so
-# store_contains() resolves to the correct key.
+# NOTE: With the M4A-derived primary-identity registry, every canonical schema
+# uses its correct PK field.  The fixture values below happen to set
+# signal_id == entity_id and candidate_id == entity_id for convenience
+# in FK chains; the resolver no longer relies on this coincidence.
 
 @pytest.fixture
 def fk_signal(fk_sm) -> SignalRecord:
@@ -752,10 +748,11 @@ class TestSameBatchFK:
 
     def test_batch_fk_with_collection(self, seeded_store):
         """Collection FK (EV-01 → EV-01 via contradicts_ids) resolved after store.
-        NOTE: _resolve_id uses source_id as the EV-01 store key, so we create a
-        SRC record whose source_id matches the evidence_id we want to FK to."""
+        NOTE: _resolve_id returns evidence_id (correct PK for EV-01).
+        NOTE: _resolve_id returns evidence_id (correct PK for EV-01).
+        The SRC source_id is set to match evidence_id for FK convenience.
+        """
         # Create an extra SRC for the EV that also serves as FK target
-        from qad.models import SourceRecord
         extra_src = SourceRecord(
             source_id="EV-C-1",
             source_tier=SourceRecordSource_tier.L1,
@@ -793,7 +790,7 @@ class TestSameBatchFK:
 
 
 # ====================================================================
-# 11. Collection FK (contradicts_ids — list cardinality)
+# 11. Collection FK (contradicts_ids - list cardinality)
 # ====================================================================
 
 class TestCollectionFK:
@@ -964,7 +961,7 @@ class TestBlobStore:
 # ====================================================================
 
 class TestBlobStoreRePut:
-    """Content-addressed — same hash + same data is always safe."""
+    """Content-addressed - same hash + same data is always safe."""
 
     def test_put_same_hash_same_data_twice(self):
         store = InMemoryBlobStore()
@@ -1435,3 +1432,111 @@ class TestEdgeCases:
         retrieved = blank_store.get_canonical_hash("SM-01", _stored_id(sm))
         assert retrieved == ch
         assert isinstance(retrieved, str) and len(retrieved) == 64
+
+
+# ====================================================================
+# 17. PK distinct from FK - verify correct store key
+# ====================================================================
+
+class TestPrimaryKeyDistinctFromFK:
+    """Prove that every canonical schema's store key is its PK, not a FK.
+
+    We construct records where the primary identity field differs from
+    every FK field value.  The resolver must pick the PK as the store
+    key; loading by PK must succeed, and loading by FK must not find
+    the record (unless the FK coincidentally equals the PK).
+    """
+
+    def test_cr_01_pk_distinct_from_fk(self, blank_store, fk_sm, fk_signal):
+        """CR-01: candidate_id != entity_id (FK to SM-01)."""
+        blank_store.store(fk_sm)
+        blank_store.store(fk_signal)
+
+        cand = CandidateRecord(
+            candidate_id="CR-DISTINCT-001",
+            entity_id=fk_sm.entity_id,  # different from candidate_id
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2024-01-15T00:00:00",
+            evidence_freshness="2024-01-20",
+            selection_state=CandidateRecordSelection_state.AUTO_RESEARCH_NOW,
+            signal_ids=[fk_signal.signal_id],
+        )
+        blank_store.store(cand)
+
+        # Load by PK (candidate_id) - must succeed
+        loaded = blank_store.load("CR-01", "CR-DISTINCT-001")
+        assert loaded.candidate_id == "CR-DISTINCT-001"
+
+        # Load by FK (entity_id) - must NOT find the record
+        assert not blank_store.contains("CR-01", fk_sm.entity_id)
+
+    def test_case_01_pk_distinct_from_fk(self, blank_store, fk_sm, fk_signal, fk_candidate):
+        """CASE-01: case_id != entity_id/candidate_id (FKs to SM-01, CR-01)."""
+        # Must satisfy FK chain: SM-01 → SR-01 → CR-01 before CASE-01
+        blank_store.store(fk_sm)
+        blank_store.store(fk_signal)
+        blank_store.store(fk_candidate)
+
+        case = CaseRecord(
+            case_id="CASE-DISTINCT-001",
+            entity_id=fk_sm.entity_id,
+            candidate_id=fk_candidate.candidate_id,
+            case_state=CaseRecordCase_state.CASE_OPEN,
+            as_of_date="2024-01-20",
+            opened_at="2024-01-20T08:00:00",
+            research_director="dr_alice",
+        )
+        blank_store.store(case)
+
+        loaded = blank_store.load("CASE-01", "CASE-DISTINCT-001")
+        assert loaded.case_id == "CASE-DISTINCT-001"
+
+        assert not blank_store.contains("CASE-01", fk_sm.entity_id)
+        assert not blank_store.contains("CASE-01", fk_candidate.candidate_id)
+
+    def test_ff_01_pk_distinct_from_fk(self, blank_store, fk_sm, fk_signal, fk_candidate, fk_case, fk_src):
+        """FF-01: financial_fact_id != case_id (FK to CASE-01, FK to SRC-01)."""
+        blank_store.store(fk_sm)
+        blank_store.store(fk_signal)
+        blank_store.store(fk_candidate)
+        blank_store.store(fk_case)
+        blank_store.store(fk_src)
+
+        ff = FinancialFact(
+            financial_fact_id="FF-DISTINCT-001",
+            case_id=fk_case.case_id,
+            metric_name="REVENUE",
+            value="1000000.0",
+            unit="USD",
+            period="FY2024",
+            fiscal_year="2024",
+            source_id=fk_src.source_id,
+        )
+        blank_store.store(ff)
+
+        loaded = blank_store.load("FF-01", "FF-DISTINCT-001")
+        assert loaded.financial_fact_id == "FF-DISTINCT-001"
+
+        assert not blank_store.contains("FF-01", fk_case.case_id)
+
+    def test_ev_01_pk_distinct_from_fk(self, blank_store, fk_src):
+        """EV-01: evidence_id != source_id (FK to SRC-01)."""
+        blank_store.store(fk_src)
+
+        ev = EvidenceRecord(
+            evidence_id="EV-DISTINCT-001",
+            source_id=fk_src.source_id,
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="PK distinct from FK.",
+            admitting_role="researcher",
+            as_of="2024-01-20",
+            extractor="v1",
+            source_tier="L1",
+        )
+        blank_store.store(ev)
+
+        loaded = blank_store.load("EV-01", "EV-DISTINCT-001")
+        assert loaded.evidence_id == "EV-DISTINCT-001"
+
+        assert not blank_store.contains("EV-01", fk_src.source_id)

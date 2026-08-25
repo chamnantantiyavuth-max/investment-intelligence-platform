@@ -594,86 +594,25 @@ def _resolve_id(instance: BaseModel) -> str:
 def _schema_identity_field(schema_id: str) -> str | None:
     """Return the primary identity field name for a given schema ID.
 
-    This ensures that the correct PK is used even when the instance also
-    carries FK fields with similar names (e.g. ``source_id`` on EV-01).
+    Uses the mechanically derived primary-identity registry (generated from
+    frozen M4A ``IDs / foreign keys`` declarations).  This ensures the PK
+    is always correct even when the instance also carries FK fields with
+    similar names.
+
+    If the schema is not found in the registry (e.g. a non-canonical schema
+    that slipped through), returns ``None`` and the caller falls back to
+    heuristic candidate scanning or a ``PersistenceIdentityError``.
     """
-    mapping: dict[str, str] = {
-        # Family A — Identity & Coverage
-        "SM-01": "entity_id",
-        "SR-01": "signal_id",
-        "RU-01": "entity_id",
-        "QU-01": "entity_id",
-        "CR-01": "candidate_id",
-        "CASE-01": "case_id",
-        # Family B — Source & Evidence
-        "SRC-01": "source_id",
-        "SRCV-01": "version_id",
-        "EV-01": "evidence_id",
-        "EAR-01": "admission_id",
-        "FACT-01": "fact_id",
-        "CLM-01": "claim_id",
-        "INF-01": "inference_id",
-        "HYP-01": "hypothesis_id",
-        "CTR-01": "contradiction_id",
-        "EG-01": "gap_id",
-        # Family C — Research Governance
-        "RC-01": "charter_id",
-        "RSR-01": "stage_id",
-        "RSR-02": "stop_id",
-        "IC-01": "investigator_charter_id",
-        "RB-01": "budget_id",
-        "RFR-01": "failure_id",
-        "HS-01": "hypothesis_set_id",
-        "IR-01": "investigation_id",
-        # Family D — Business / Industry / Management
-        "QA-01": "assessment_id",
-        "MA-01": "assessment_id",
-        "IE-01": "entity_id",
-        "MC-01": "management_claim_id",
-        "CAE-01": "event_id",
-        "MDL-01": "ledger_id",
-        "MO-02": "outcome_id",
-        # Family E — Impairment & Recovery
-        "DR-01": "dislocation_id",
-        "IA-01": "assessment_id",
-        "CE-01": "explanation_id",
-        "RM-01": "model_id",
-        "TK-01": "thesis_killer_id",
-        "FE-01": "evidence_id",
-        # Family F — Financial & Economic
-        "FF-01": "financial_fact_id",
-        "NFF-01": "financial_fact_id",
-        "CALC-01": "calc_id",
-        "SCEN-01": "scenario_id",
-        "PLA-01": "assessment_id",
-        "RDCF-01": "r_dcf_id",
-        "VA-01": "valuation_id",
-        "PIE-01": "expectation_id",
-        # Family G — Challenge / Audit / Publication
-        "AF-01": "finding_id",
-        "AG-01": "audit_id",
-        "RTC-01": "challenge_id",
-        "CRESP-01": "response_id",
-        "UV-01": "verdict_id",
-        "PUB-01": "publication_id",
-        "FDR-01": "decision_id",
-        # Family H — Monitoring & Knowledge
-        "MI-01": "indicator_id",
-        "MO-01": "observation_id",
-        "MASS-01": "assessment_id",
-        "CL-01": "lesson_id",
-        "IKR-01": "knowledge_id",
-        "IPR-01": "playbook_id",
-        "CCV-01": "validation_id",
-        # Family I — Reproducibility & Operations
-        "RRM-01": "manifest_id",
-        "PITC-01": "pit_context_id",
-        "SI-01": "invocation_id",
-        "RR-01": "invocation_id",
-        "CLK-01": "lock_id",
-        "BU-01": "usage_id",
-        "MOD-01": "model_invocation_id",
-        "PROV-01": "provider_invocation_id",
-        "EHR-01": "eval_run_id",
-    }
-    return mapping.get(schema_id)
+    import json
+    from pathlib import Path
+
+    _reg_path = (
+        Path(__file__).resolve().parent.parent.parent
+        / "qad" / "contract" / "primary_id_registry.json"
+    )
+    try:
+        with open(_reg_path) as _f:
+            _registry = json.load(_f)["PRIMARY_ID_FIELDS"]
+    except Exception:
+        _registry = {}
+    return _registry.get(schema_id)
