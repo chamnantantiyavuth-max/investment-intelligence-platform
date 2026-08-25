@@ -1078,7 +1078,7 @@ class TestNonCanonicalStore:
 # ====================================================================
 
 class TestTransactionRollback:
-    """If any record in a batch fails validation, ZERO records are committed."""
+    """If any record in a batch fails, ZERO records are committed."""
 
     def test_rollback_on_fk_failure(self, blank_store):
         src = SourceRecord(
@@ -1137,6 +1137,56 @@ class TestTransactionRollback:
         assert exc.value.phase == "validate"
         assert any(isinstance(e, MissingForeignKey) for e in exc.value.errors)
 
+    def test_commit_phase_failure_rollback(self, blank_store):
+        """Commit-phase failure after first write must roll back ALL writes.
+
+        We create a store whose ``_write_record`` fails on the second
+        call, proving the snapshot/restore rollback works.
+        """
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import PersistenceError
+        from copy import deepcopy
+
+        # Store subclass with injectable failure
+        class _FaultyStore(InMemoryCanonicalRecordStore):
+            def __init__(self):
+                super().__init__()
+                self._write_count = 0
+                self._fail_on = 2  # fail on the 2nd write
+
+            def _write_record(self, schema_id, record_id, instance, canonical_hash):
+                self._write_count += 1
+                if self._write_count >= self._fail_on:
+                    raise PersistenceError("Injected commit failure",
+                                            schema_id=schema_id,
+                                            record_id=record_id)
+                super()._write_record(schema_id, record_id, instance, canonical_hash)
+
+        store = _FaultyStore()
+
+        sm1 = SecurityMaster(
+            entity_id="E-ROLLBACK-1", cik="RB1", exchange="NYSE",
+            name="Rollback1", primary_ticker="RB1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        sm2 = SecurityMaster(
+            entity_id="E-ROLLBACK-2", cik="RB2", exchange="NYSE",
+            name="Rollback2", primary_ticker="RB2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+
+        # store_batch calls Transaction.execute() which validates + commits
+        with pytest.raises(TransactionFailure) as exc:
+            store.store_batch([sm1, sm2])
+
+        assert exc.value.phase == "commit"
+        assert any("Injected commit failure" in str(e) for e in exc.value.errors)
+
+        # Rollback must have been applied: ZERO records committed
+        assert not store.contains("SM-01", "E-ROLLBACK-1")
+        assert not store.contains("SM-01", "E-ROLLBACK-2")
 
 # ====================================================================
 # 18. List IDs by schema

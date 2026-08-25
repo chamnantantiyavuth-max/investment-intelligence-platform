@@ -13,19 +13,15 @@ Usage
     tx = Transaction(
         store_contains=my_store.contains,
         commit_store=my_store._write_record,
+        commit_delete=my_store._remove_record,
+        commit_snapshot=my_store._snapshot,
+        commit_restore=my_store._restore,
     )
 
     for instance in batch:
         tx.add_store(instance)
 
-    tx.execute()          # validate + commit
-
-    # or for deletes:
-    tx.add_delete("CASE-01", "case_001")
-    tx.execute()
-
-If you need to inspect what would be committed, call ``validate()``
-separately before ``commit()``.
+    tx.execute()          # validate + commit (atomic)
 """
 
 from __future__ import annotations
@@ -49,7 +45,6 @@ from qad.persistence.fk_enforcer import validate_fks
 from qad.persistence.immutability import check_immutability
 from qad.persistence.interfaces import CanonicalHash, RecordID, SchemaID
 from qad.persistence.serialization import compute_canonical_hash
-# _schema_identity_field imported lazily inside _record_id to avoid circular import
 from qad.validator import validate_schema_instance
 
 # ---------------------------------------------------------------------------
@@ -57,13 +52,12 @@ from qad.validator import validate_schema_instance
 # ---------------------------------------------------------------------------
 
 _Operation = tuple[str, Any, Any]  # (type, schema_id, record_or_pair)
-# type: "store" → (schema_id, record_id, instance)
-# type: "delete" → (schema_id, schema_id, record_id)
 
 
 # ---------------------------------------------------------------------------
 # Transaction
 # ---------------------------------------------------------------------------
+
 
 class Transaction:
     """Collect, validate, and atomically commit persistence operations.
@@ -86,6 +80,14 @@ class Transaction:
     get_existing_hash:
         ``Callable[[SchemaID, RecordID], str | None]`` — returns the
         canonical hash of the existing record, or None.
+    commit_snapshot:
+        ``Callable[[], dict[str, Any]]`` — returns a deep-copy snapshot
+        of the committed state *before* the commit begins.  Used for
+        rollback if the commit fails partway.
+    commit_restore:
+        ``Callable[[dict[str, Any]], None]`` — restores committed state
+        from a snapshot taken by ``commit_snapshot``.  Called only when
+        a commit-phase failure occurs.
     """
 
     def __init__(
@@ -96,12 +98,20 @@ class Transaction:
         commit_delete: Callable[[SchemaID, RecordID], None],
         get_existing: Callable[[SchemaID, RecordID], BaseModel | None],
         get_existing_hash: Callable[[SchemaID, RecordID], str | None],
+        commit_snapshot: (
+            Callable[[], dict[str, Any]] | None
+        ) = None,
+        commit_restore: (
+            Callable[[dict[str, Any]], None] | None
+        ) = None,
     ) -> None:
         self._store_contains = store_contains
         self._commit_store = commit_store
         self._commit_delete = commit_delete
         self._get_existing = get_existing
         self._get_existing_hash = get_existing_hash
+        self._commit_snapshot = commit_snapshot
+        self._commit_restore = commit_restore
         self._operations: list[_Operation] = []
         self._executed = False
 
@@ -165,13 +175,30 @@ class Transaction:
                 phase="validate",
             )
 
-        # Phase 2: commit
+        # Phase 2: commit with rollback support
+        snapshot = None
+        if self._commit_snapshot:
+            try:
+                snapshot = self._commit_snapshot()
+            except Exception:
+                pass  # best-effort snapshot; we still try to commit
+
         commit_errors = self._commit(ops)
         if commit_errors:
-            # Rollback is caller responsibility — guarantee ZERO records
-            # were written since we raise before returning.
+            # Rollback: restore committed state from snapshot
+            if snapshot is not None and self._commit_restore:
+                try:
+                    self._commit_restore(snapshot)
+                except Exception as rb_err:
+                    # Chain rollback error into the report
+                    commit_errors.append(
+                        PersistenceError(
+                            f"Rollback after commit failure also failed: {rb_err}",
+                        )
+                    )
             raise TransactionFailure(
-                f"Transaction commit failed with {len(commit_errors)} error(s)",
+                f"Transaction commit failed with {len(commit_errors)} error(s)"
+                + ("; rollback applied" if snapshot is not None and self._commit_restore else ""),
                 errors=commit_errors,
                 phase="commit",
             )
@@ -200,8 +227,6 @@ class Transaction:
                     self._validate_one(instance, rid, batch_context)
                 except PersistenceError as e:
                     errors.append(e)
-            # Deletions do not need validation beyond existence (enforced
-            # by store caller, not here).
 
         return errors
 
@@ -239,7 +264,6 @@ class Transaction:
             batch_context=batch_context,
         )
         if fk_errors:
-            # Raise the first FK error — but they're all bundled
             raise fk_errors[0]
 
         # 4. Immutability check
@@ -260,12 +284,11 @@ class Transaction:
     def _commit(self, ops: list[_Operation]) -> list[PersistenceError]:
         """Execute all write operations.  Returns errors (empty = success).
 
-        NOTE: A commit-phase failure means some records may have been
-        written.  The caller (or a future version with rollback) must
-        handle this.
+        Uses rollback callbacks (``commit_snapshot`` / ``commit_restore``)
+        to guarantee atomicity.  If a commit-phase failure occurs after
+        some records have been written, the snapshot is restored.
         """
         errors: list[PersistenceError] = []
-        committed: list[tuple[str, str]] = []  # (schema_id, record_id)
 
         for optype, schema_id, payload in ops:
             try:
@@ -273,19 +296,18 @@ class Transaction:
                     rid, instance = payload
                     ch = compute_canonical_hash(instance)
                     self._commit_store(schema_id, rid, instance, ch)
-                    committed.append((schema_id, rid))
                 elif optype == "delete":
                     rid = payload
                     self._commit_delete(schema_id, rid)
-                    committed.append((schema_id, rid))
             except PersistenceError as e:
                 errors.append(e)
-                # Stop on first commit failure to minimise partial writes
                 break
             except Exception as e:
                 errors.append(
-                    PersistenceError(f"Unexpected commit error: {e}",
-                                     schema_id=schema_id, record_id=rid)
+                    PersistenceError(
+                        f"Unexpected commit error: {e}",
+                        schema_id=schema_id, record_id=rid,
+                    )
                 )
                 break
 
@@ -296,24 +318,23 @@ class Transaction:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _record_id(instance: BaseModel) -> str:
-    """Best-effort extraction of the record's primary identity.
+    """Extract record primary identity.
 
-    Uses the same schema-specific identity-field resolution as
-    ``qad.persistence.reference._resolve_id`` so that store/load keys
-    are consistent regardless of which module resolves the ID.
-
-    (Lazy-imports ``_schema_identity_field`` from
-    ``qad.persistence.reference`` to avoid a circular import.)
+    Uses the schema-specific identity-field resolution via the
+    M4A-derived primary-identity registry.  Same resolution as
+    ``qad.persistence.reference._resolve_id``.
     """
     schema_id: str = getattr(instance, "schema_id", "")
-    # Lazy import to avoid circular dependency
     from qad.persistence.reference import _schema_identity_field
+
     identity_field = _schema_identity_field(schema_id)
     if identity_field:
         val = getattr(instance, identity_field, None)
         if val is not None:
             return str(val)
+    # Fallback: search the general candidates list
     candidates = (
         "source_id", "evidence_id", "finding_id",
         "financial_fact_id", "manifest_id", "pit_context_id",
@@ -331,6 +352,5 @@ def _record_id(instance: BaseModel) -> str:
         val = getattr(instance, name, None)
         if val is not None:
             return str(val)
-    # Fallback: use schema_id + id() as a last resort
     sid = getattr(instance, "schema_id", "UNKNOWN")
     return f"{sid}:{id(instance)}"

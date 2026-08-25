@@ -110,6 +110,8 @@ class InMemoryCanonicalRecordStore:
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         tx.add_store(instance)
         tx.execute()
@@ -130,6 +132,8 @@ class InMemoryCanonicalRecordStore:
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         tx.add_delete(schema_id, record_id)
         tx.execute()
@@ -149,6 +153,8 @@ class InMemoryCanonicalRecordStore:
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         for inst in instances:
             tx.add_store(inst)
@@ -164,6 +170,8 @@ class InMemoryCanonicalRecordStore:
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         for sid, rid in pairs:
             tx.add_delete(sid, rid)
@@ -179,6 +187,20 @@ class InMemoryCanonicalRecordStore:
 
     def contains(self, schema_id: SchemaID, record_id: RecordID, /) -> bool:
         return record_id in self._data.get(schema_id, {})
+
+    # -- atomic commit helpers (snapshot/restore for Transaction rollback) ---
+
+    def _snapshot(self) -> dict[str, dict[str, "_Record"]]:
+        """Deep-copy snapshot of the entire store state for rollback.
+
+        Returns a dict of ``{schema_id: {record_id: _Record}}`` that can
+        be restored via ``_restore()``.
+        """
+        return deepcopy(self._data)
+
+    def _restore(self, snapshot: dict[str, dict[str, "_Record"]]) -> None:
+        """Restore store state from a ``_snapshot()`` result."""
+        self._data = snapshot
 
     # -- internal helpers (used by Transaction callbacks) --------------------
 
@@ -282,6 +304,8 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         tx.add_store(instance)
         tx.execute()
@@ -392,6 +416,8 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
             commit_delete=self._remove_record,
             get_existing=self._load_raw,
             get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
         )
         tx.add_store(merged)
         tx.execute()
