@@ -1018,7 +1018,7 @@ class TestRawSourceArchive:
         assert ver_record.source_id == "SRC-TOMB"
         assert ver_blob == raw_data
 
-    def test_tombstoned_raw_blob_inaccessible(self):
+    def test_tombstoned_raw_blob_history_preserved(self):
         store = InMemoryRawSourceArchive()
         src = SourceRecord(
             source_id="SRC-TOMB-2",
@@ -1033,8 +1033,11 @@ class TestRawSourceArchive:
         raw_hash = hashlib.sha256(raw_data).hexdigest()
         store.store_raw_blob("SRC-TOMB-2", raw_hash, raw_data)
         store.tombstone("SRC-TOMB-2", "Sensitive")
-        with pytest.raises(KeyError):
-            store.load_raw_blob("SRC-TOMB-2")
+
+        # Raw blobs survive tombstone — historical audit requirement
+        blob = store.load_raw_blob("SRC-TOMB-2")
+        assert blob == raw_data
+        assert store.get_raw_blob_hash("SRC-TOMB-2") == raw_hash
 
 
 # ====================================================================
@@ -1423,20 +1426,58 @@ class TestEdgeCases:
             blank_store.store(wrong)
         assert any(isinstance(e, ValidationFailure) for e in exc.value.errors)
 
-    def test_delete_then_reinsert(self, blank_store):
+    def test_delete_makes_tombstone(self, blank_store):
         sm = SecurityMaster(
-            entity_id="E-DR-1", cik="DR1", exchange="NYSE", name="DelRe",
-            primary_ticker="DR",
+            entity_id="E-TOMB-1", cik="TMB1", exchange="NYSE", name="Tomb",
+            primary_ticker="TB",
             security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
             status=SecurityMasterStatus.ACTIVE,
         )
+        eid = _stored_id(sm)
         blank_store.store(sm)
-        blank_store.delete("SM-01", _stored_id(sm))
-        with pytest.raises(KeyError):
-            blank_store.load("SM-01", _stored_id(sm))
+        blank_store.delete("SM-01", eid)
+
+        # Active read must reject tombstoned record
+        with pytest.raises(KeyError) as exc:
+            blank_store.load("SM-01", eid)
+        assert "tombstoned" in str(exc.value).lower()
+
+        # contains() must return False for tombstoned
+        assert not blank_store.contains("SM-01", eid)
+
+        # list_ids / list_all must exclude tombstoned
+        assert eid not in blank_store.list_ids("SM-01")
+        assert all(rec.entity_id != "E-TOMB-1"
+                   for rec in blank_store.list_all("SM-01"))
+
+        # But the record MUST be recoverable via load_historical()
+        recovered = blank_store.load_historical("SM-01", eid)
+        assert recovered.name == "Tomb"
+        assert recovered.primary_ticker == "TB"
+
+        # is_tombstoned must return True
+        assert blank_store.is_tombstoned("SM-01", eid)
+
+        # canonical hash must still be retrievable
+        h = blank_store.get_canonical_hash("SM-01", eid)
+        assert isinstance(h, str) and len(h) == 64
+
+    def test_tombstoned_record_reject_reinsert(self, blank_store):
+        """Canonical hard delete is forbidden — re-insert after
+        tombstone must raise IntegrityConflict (RECORD_IMMUTABLE)."""
+        sm = SecurityMaster(
+            entity_id="E-REJECT", cik="REJ1", exchange="NYSE", name="Reject",
+            primary_ticker="RJ",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        eid = _stored_id(sm)
         blank_store.store(sm)
-        loaded = blank_store.load("SM-01", _stored_id(sm))
-        assert loaded.name == "DelRe"
+        blank_store.delete("SM-01", eid)
+
+        # Re-insert must fail — record is tombstoned, not physically removed
+        with pytest.raises((TransactionFailure, IntegrityConflict)):
+            blank_store.store(sm)
 
     def test_delete_batch_atomic(self, blank_store):
         ids = [f"E-DB-{i}" for i in range(3)]
@@ -1448,9 +1489,20 @@ class TestEdgeCases:
                 status=SecurityMasterStatus.ACTIVE,
             ))
         blank_store.delete_batch([("SM-01", ids[0]), ("SM-01", ids[1])])
+
+        # Tombstoned records are excluded from active reads
         assert not blank_store.contains("SM-01", ids[0])
         assert not blank_store.contains("SM-01", ids[1])
         assert blank_store.contains("SM-01", ids[2])
+
+        # Tombstoned records remain recoverable
+        recovered = blank_store.load_historical("SM-01", ids[0])
+        assert recovered is not None
+        assert recovered.entity_id == ids[0]
+        assert blank_store.is_tombstoned("SM-01", ids[0])
+
+        # The surviving record is NOT tombstoned
+        assert not blank_store.is_tombstoned("SM-01", ids[2])
 
     def test_store_and_raw_source_archive_raw_blob(self, blank_store):
         """Storing a SRC-01 through RawSourceArchive preserves raw blobs."""
@@ -1590,3 +1642,156 @@ class TestPrimaryKeyDistinctFromFK:
         assert loaded.evidence_id == "EV-DISTINCT-001"
 
         assert not blank_store.contains("EV-01", fk_src.source_id)
+
+
+# ====================================================================
+# 19. NonCanonicalResearchArtifactStore — physical delete permitted
+# ====================================================================
+
+class TestNonCanonicalPhysicalDelete:
+    """NonCanonicalResearchArtifactStore may retain physical delete."""
+
+    def test_non_canonical_physical_delete(self):
+        from qad.persistence.reference import InMemoryNonCanonicalResearchArtifactStore
+        store = InMemoryNonCanonicalResearchArtifactStore()
+        store.store("test_ns", "key1", {"data": 42})
+        assert store.load("test_ns", "key1") == {"data": 42}
+        store.delete("test_ns", "key1")
+        with pytest.raises(KeyError):
+            store.load("test_ns", "key1")
+
+    def test_non_canonical_reinsert_after_delete(self):
+        from qad.persistence.reference import InMemoryNonCanonicalResearchArtifactStore
+        store = InMemoryNonCanonicalResearchArtifactStore()
+        store.store("test_ns", "key1", {"data": 42})
+        store.delete("test_ns", "key1")
+        store.store("test_ns", "key1", {"data": 99})
+        assert store.load("test_ns", "key1") == {"data": 99}
+
+
+# ====================================================================
+# 20. RawSourceArchive tombstone preserves history
+# ====================================================================
+
+class TestRawSourceArchiveTombstone:
+    """RawSourceArchive tombstone preserves version history and raw blobs."""
+
+    def test_tombstone_preserves_history(self):
+        from qad.persistence.reference import InMemoryRawSourceArchive
+        from qad.models.family_b import SourceRecord, SourceRecordSource_tier, SourceRecordSource_type
+
+        store = InMemoryRawSourceArchive()
+        src = SourceRecord(
+            source_id="SRC-TOMB-HIST",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/hist",
+            content_hash="hist1",
+            retrieval_date="2024-01-01",
+        )
+        store.store(src)
+        store.store_version(src, "v1")
+
+        # Tombstone
+        store.tombstone("SRC-TOMB-HIST", "test reason")
+
+        # Active read must reject
+        with pytest.raises(KeyError) as exc:
+            store.load("SRC-01", "SRC-TOMB-HIST")
+        assert "tombstoned" in str(exc.value).lower()
+
+        # Historical version must still be recoverable
+        ver, blob = store.load_version("SRC-TOMB-HIST", "v1")
+        assert ver.source_id == "SRC-TOMB-HIST"
+        assert ver.content_hash == "hist1"
+
+        # Tombstone status must be queryable
+        assert store.is_tombstoned("SRC-TOMB-HIST")
+        assert "SRC-TOMB-HIST" in store.list_tombstoned_ids()
+
+    def test_tombstone_preserves_raw_blobs(self):
+        from qad.persistence.reference import InMemoryRawSourceArchive
+        from qad.models.family_b import SourceRecord, SourceRecordSource_tier, SourceRecordSource_type
+        import hashlib
+
+        store = InMemoryRawSourceArchive()
+        src = SourceRecord(
+            source_id="SRC-TOMB-RAW",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/raw",
+            content_hash="raw1",
+            retrieval_date="2024-01-01",
+        )
+        store.store(src)
+        raw = b"Raw content that must survive tombstone"
+        h = hashlib.sha256(raw).hexdigest()
+        store.store_raw_blob("SRC-TOMB-RAW", h, raw)
+
+        # Tombstone
+        store.tombstone("SRC-TOMB-RAW", "test reason")
+
+        # Raw blob must still be loadable (history preserved)
+        assert store.load_raw_blob("SRC-TOMB-RAW") == raw
+        assert store.get_raw_blob_hash("SRC-TOMB-RAW") == h
+
+
+# ====================================================================
+# 21. Tombstone + Transaction rollback
+# ====================================================================
+
+class TestTombstoneRollback:
+    """Transaction failure during delete/tombstone must not leave partial state."""
+
+    def test_tombstone_rollback_on_commit_failure(self, blank_store):
+        """Commit-phase failure during tombstone rollback restores all records."""
+        from qad.persistence.errors import PersistenceError
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+
+        class _FaultyTombstoneStore(InMemoryCanonicalRecordStore):
+            def __init__(self):
+                super().__init__()
+                self._fail_on_second = False
+
+            def _remove_record(self, schema_id, record_id):
+                if self._fail_on_second:
+                    raise PersistenceError("Injected tombstone failure",
+                                           schema_id=schema_id,
+                                           record_id=record_id)
+                self._fail_on_second = True
+                super()._remove_record(schema_id, record_id)
+
+            def _snapshot(self):
+                return super()._snapshot()
+
+        store = _FaultyTombstoneStore()
+
+        # Pre-store two records
+        sm1 = SecurityMaster(
+            entity_id="E-TOMB-RB1", cik="TRB1", exchange="NYSE",
+            name="TombRB1", primary_ticker="TR1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        sm2 = SecurityMaster(
+            entity_id="E-TOMB-RB2", cik="TRB2", exchange="NYSE",
+            name="TombRB2", primary_ticker="TR2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm1)
+        store.store(sm2)
+
+        # Delete batch — should rollback on commit failure
+        with pytest.raises(TransactionFailure) as exc:
+            store.delete_batch([
+                ("SM-01", "E-TOMB-RB1"),
+                ("SM-01", "E-TOMB-RB2"),
+            ])
+        assert exc.value.phase == "commit"
+
+        # After rollback: both records must still be active (not tombstoned)
+        assert not store.is_tombstoned("SM-01", "E-TOMB-RB1")
+        assert not store.is_tombstoned("SM-01", "E-TOMB-RB2")
+        assert store.contains("SM-01", "E-TOMB-RB1")
+        assert store.contains("SM-01", "E-TOMB-RB2")

@@ -36,6 +36,7 @@ from pydantic import BaseModel
 
 from qad.persistence.errors import (
     HashMismatch,
+    IntegrityConflict,
     NonCanonicalAdmissionRejected,
     PersistenceError,
     TransactionFailure,
@@ -97,12 +98,26 @@ class InMemoryCanonicalRecordStore:
 
     def __init__(self, data: dict[str, dict[str, _Record]] | None = None):
         self._data: dict[str, dict[str, _Record]] = data or {}
+        # Tombstone tracking: {schema_id: {record_id1, record_id2, ...}}
+        # Records in _data persist indefinitely for historical/audit recovery.
+        # Tombstoned records are excluded from active reads (load, contains,
+        # list_ids, list_all) but are recoverable via load_historical().
+        self._tombstones: dict[str, set[str]] = {}
 
     # -- CanonicalRecordStore implementation ---------------------------------
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
         schema_id: str = instance.schema_id  # type: ignore[assignment]
         record_id = _resolve_id(instance)
+
+        # Reject writes to tombstoned canonical records
+        if record_id in self._tombstones.get(schema_id, set()):
+            raise IntegrityConflict(
+                f"{schema_id}/{record_id}: cannot write to tombstoned record "
+                f"(canonical hard delete is forbidden)",
+                schema_id=schema_id,
+                record_id=record_id,
+            )
 
         tx = Transaction(
             store_contains=self.contains,
@@ -119,6 +134,8 @@ class InMemoryCanonicalRecordStore:
         return compute_canonical_hash(instance)
 
     def load(self, schema_id: SchemaID, record_id: RecordID, /) -> BaseModel:
+        if record_id in self._tombstones.get(schema_id, set()):
+            raise KeyError(f"{schema_id}/{record_id}: tombstoned")
         rec = self._load_raw(schema_id, record_id)
         if rec is None:
             raise KeyError(f"{schema_id}/{record_id}: not found")
@@ -140,13 +157,71 @@ class InMemoryCanonicalRecordStore:
 
     def list_ids(self, schema_id: SchemaID, /) -> list[RecordID]:
         bucket = self._data.get(schema_id, {})
-        return list(bucket.keys())
+        tombstones = self._tombstones.get(schema_id, set())
+        return [rid for rid in bucket if rid not in tombstones]
 
     def list_all(self, schema_id: SchemaID, /) -> list[BaseModel]:
         bucket = self._data.get(schema_id, {})
-        return [deepcopy(rec.instance) for rec in bucket.values()]
+        tombstones = self._tombstones.get(schema_id, set())
+        return [
+            deepcopy(rec.instance)
+            for rid, rec in bucket.items()
+            if rid not in tombstones
+        ]
+
+    # -- Canonical tombstone API (public) -----------------------------------
+
+    def tombstone(
+        self, schema_id: SchemaID, record_id: RecordID,
+        reason: str = "by delete()",
+    ) -> None:
+        """Explicitly tombstone a canonical record.
+
+        The record is marked as logically deleted for active reads.  Its
+        data remains recoverable via ``load_historical()``.
+
+        Raises:
+            KeyError: record not found.
+        """
+        self._remove_record(schema_id, record_id)
+
+    def is_tombstoned(
+        self, schema_id: SchemaID, record_id: RecordID, /,
+    ) -> bool:
+        """Return True if the record has been tombstoned."""
+        return record_id in self._tombstones.get(schema_id, set())
+
+    def list_tombstoned_ids(
+        self, schema_id: SchemaID, /,
+    ) -> list[RecordID]:
+        """Return all tombstoned record IDs for a schema."""
+        return sorted(self._tombstones.get(schema_id, set()))
+
+    def load_historical(
+        self, schema_id: SchemaID, record_id: RecordID, /,
+    ) -> BaseModel:
+        """Load a record regardless of tombstone status.
+
+        For audit/historical recovery — bypasses the tombstone gate.
+        Raises KeyError if the record was never stored.
+        """
+        rec = self._load_raw(schema_id, record_id)
+        if rec is None:
+            raise KeyError(f"{schema_id}/{record_id}: not found")
+        return deepcopy(rec)
 
     def store_batch(self, instances: list[BaseModel], /) -> list[CanonicalHash]:
+        for inst in instances:
+            sid: str = inst.schema_id  # type: ignore[assignment]
+            rid = _resolve_id(inst)
+            if rid in self._tombstones.get(sid, set()):
+                raise IntegrityConflict(
+                    f"{sid}/{rid}: cannot write to tombstoned record "
+                    f"(canonical hard delete is forbidden)",
+                    schema_id=sid,
+                    record_id=rid,
+                )
+
         tx = Transaction(
             store_contains=self.contains,
             commit_store=self._write_record,
@@ -186,21 +261,26 @@ class InMemoryCanonicalRecordStore:
         return rec.canonical_hash
 
     def contains(self, schema_id: SchemaID, record_id: RecordID, /) -> bool:
-        return record_id in self._data.get(schema_id, {})
+        bucket = self._data.get(schema_id, {})
+        if record_id not in bucket:
+            return False
+        if record_id in self._tombstones.get(schema_id, set()):
+            return False
+        return True
 
     # -- atomic commit helpers (snapshot/restore for Transaction rollback) ---
 
-    def _snapshot(self) -> dict[str, dict[str, "_Record"]]:
+    def _snapshot(self) -> tuple[dict[str, dict[str, "_Record"]], dict[str, set[str]]]:
         """Deep-copy snapshot of the entire store state for rollback.
 
-        Returns a dict of ``{schema_id: {record_id: _Record}}`` that can
-        be restored via ``_restore()``.
+        Returns ``(data, tombstones)`` — both must be restored via
+        ``_restore()`` to guarantee atomic rollback.
         """
-        return deepcopy(self._data)
+        return deepcopy(self._data), deepcopy(self._tombstones)
 
-    def _restore(self, snapshot: dict[str, dict[str, "_Record"]]) -> None:
+    def _restore(self, snapshot: tuple[dict[str, dict[str, "_Record"]], dict[str, set[str]]]) -> None:
         """Restore store state from a ``_snapshot()`` result."""
-        self._data = snapshot
+        self._data, self._tombstones = snapshot
 
     # -- internal helpers (used by Transaction callbacks) --------------------
 
@@ -217,11 +297,23 @@ class InMemoryCanonicalRecordStore:
     def _remove_record(
         self, schema_id: SchemaID, record_id: RecordID,
     ) -> None:
-        """Direct delete — bypasses validation; called from Transaction.commit."""
+        """Canonical tombstone — preserves history; called from Transaction.commit.
+
+        The record stays in ``_data`` so its data, canonical hash, and raw
+        blobs remain recoverable for audit/historical queries.  Active reads
+        (``load``, ``contains``, ``list_ids``, ``list_all``) exclude
+        tombstoned records.
+
+        Canonical records MUST NOT be physically deleted through persistent
+        storage.  This is a frozen M4A invariant:
+
+            "Deletion without tombstone → VIOLATION."
+        """
         bucket = self._data.get(schema_id)
         if bucket is None or record_id not in bucket:
             raise KeyError(f"{schema_id}/{record_id}: not found")
-        del bucket[record_id]
+        # Mark tombstoned instead of deleting from _data
+        self._tombstones.setdefault(schema_id, set()).add(record_id)
 
     def _load_raw(
         self, schema_id: SchemaID, record_id: RecordID,
@@ -255,8 +347,8 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         self._version_data: dict[str, dict[str, _Record]] = {}
         # {record_id: raw_blob_bytes}
         self._raw_blobs: dict[str, bytes] = {}
-        # {record_id: reason}
-        self._tombstones: dict[str, str] = {}
+        # {record_id: reason} — supplements base-class _tombstones set
+        self._tombstone_reasons: dict[str, str] = {}
 
     # -- Raw blob storage ---------------------------------------------------
 
@@ -275,8 +367,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         self._raw_blobs[record_id] = data
 
     def load_raw_blob(self, record_id: RecordID) -> bytes:
-        if record_id in self._tombstones:
-            raise KeyError(f"{record_id}: tombstoned")
+        """Load raw blob — survives tombstone for historical audit."""
         try:
             return self._raw_blobs[record_id]
         except KeyError:
@@ -334,24 +425,27 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
     # -- Tombstone ----------------------------------------------------------
 
     def tombstone(self, record_id: RecordID, reason: str, /) -> None:
-        self._tombstones[record_id] = reason
+        self._tombstone_reasons[record_id] = reason
 
-        # Remove from active data in every schema bucket
-        for schema_bucket in self._data.values():
+        # Also mark in the base class tombstone set for every schema bucket
+        for schema_id, schema_bucket in self._data.items():
             if record_id in schema_bucket:
-                del schema_bucket[record_id]
+                self._tombstones.setdefault(schema_id, set()).add(record_id)
+                # Do NOT delete from _data — history preserved for audit
                 break
 
     def is_tombstoned(self, record_id: RecordID) -> bool:
-        return record_id in self._tombstones
+        return record_id in self._tombstone_reasons
 
     def list_tombstoned_ids(self) -> list[RecordID]:
-        return list(self._tombstones.keys())
+        return list(self._tombstone_reasons.keys())
 
     # -- Override load to reject tombstoned records -------------------------
 
     def load(self, schema_id: SchemaID, record_id: RecordID, /) -> BaseModel:
-        if record_id in self._tombstones:
+        if record_id in self._tombstone_reasons:
+            raise KeyError(f"{schema_id}/{record_id}: tombstoned")
+        if record_id in self._tombstones.get(schema_id, set()):
             raise KeyError(f"{schema_id}/{record_id}: tombstoned")
         return super().load(schema_id, record_id)
 
