@@ -2717,3 +2717,187 @@ class TestAppendOnlyFinalClosure:
             f"now contains SM-01: {sorted(a2)}"
         )
         assert a == a2, "APPEND_ONLY set changed between calls"
+
+
+# ===================================================================
+# Item 4 final edge closure — N and O
+# ===================================================================
+
+
+class TestAppendOnlyEdgeClosure:
+    """Final edge-case tests for M5.2 Item 4.
+
+    N: Same-ticker write must not erase existing canonical ticker history.
+    O: Batch duplicate identity must be rejected with IntegrityConflict.
+    """
+
+    # -- N: Same-ticker history preservation --------------------------------
+
+    def test_sm01_same_ticker_empty_incoming_preserves_history(self):
+        """Re-storing the same ticker with empty incoming history must
+        NOT erase the existing canonical ticker_history."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-N-FIX", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="APPL1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["AAPL"],
+        )
+        store.store(sm)
+
+        # Re-store SAME ticker with empty incoming history
+        sm2 = SecurityMaster(
+            entity_id="E-N-FIX", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="APPL1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=[],
+        )
+        store.store(sm2)
+
+        loaded = store.load("SM-01", "E-N-FIX")
+        assert loaded.ticker_history == ["AAPL"], (
+            f"Expected ['AAPL'], got {loaded.ticker_history}"
+        )
+
+    def test_sm01_same_ticker_stale_incoming_cannot_replace(self):
+        """Same ticker with stale incoming history must not replace
+        canonical history."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-N-STALE", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["T1"],
+        )
+        store.store(sm)
+
+        # Re-store with stale/fake incoming history
+        sm2 = SecurityMaster(
+            entity_id="E-N-STALE", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["FAKE"],
+        )
+        store.store(sm2)
+
+        loaded = store.load("SM-01", "E-N-STALE")
+        assert loaded.ticker_history == ["T1"], (
+            f"Expected ['T1'], got {loaded.ticker_history}"
+        )
+
+    def test_sm01_same_ticker_preserves_hash_invariant(self):
+        """Same-ticker idempotent write must preserve the hash invariant."""
+        from qad.persistence.serialization import compute_canonical_hash
+
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-N-HASH", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="STABLE",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["OLD"],
+        )
+        store.store(sm)
+
+        # Same ticker, same history — idempotent
+        sm2 = SecurityMaster(
+            entity_id="E-N-HASH", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="STABLE",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["OLD"],
+        )
+        ch = store.store(sm2)
+        stored_hash = store.get_canonical_hash("SM-01", "E-N-HASH")
+        assert ch == stored_hash, (
+            f"Hash mismatch on idempotent write: {ch} != {stored_hash}"
+        )
+
+    def test_sm01_repeated_same_ticker_no_duplicate(self):
+        """Repeated same-ticker writes must not create duplicate history."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-N-DUP", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        # Change ticker once
+        sm2 = SecurityMaster(
+            entity_id="E-N-DUP", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm2)
+        assert store.load("SM-01", "E-N-DUP").ticker_history == ["T1"]
+
+        # Re-store T2 three times — no duplicates
+        for _ in range(3):
+            s = SecurityMaster(
+                entity_id="E-N-DUP", cik="0000320193", exchange="NASDAQ",
+                name="Test Corp", primary_ticker="T2",
+                security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                status=SecurityMasterStatus.ACTIVE,
+            )
+            store.store(s)
+
+        loaded = store.load("SM-01", "E-N-DUP")
+        assert loaded.ticker_history == ["T1"], (
+            f"Expected ['T1'], got {loaded.ticker_history}"
+        )
+
+    # -- O: Batch duplicate identity ----------------------------------------
+
+    def test_batch_duplicate_identity_rejected(self):
+        """store_batch with duplicate (schema_id, record_id) must raise
+        IntegrityConflict and leave state unchanged."""
+        from qad.persistence.errors import IntegrityConflict
+
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-O-TEST", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="AAPL",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        # Capture snapshot before
+        before_hash = store.get_canonical_hash("SM-01", "E-O-TEST")
+        before_ticker = store.load("SM-01", "E-O-TEST").primary_ticker
+
+        # Batch with duplicate identity
+        t2 = SecurityMaster(
+            entity_id="E-O-TEST", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        t3 = SecurityMaster(
+            entity_id="E-O-TEST", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T3",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        with pytest.raises(IntegrityConflict, match="duplicate identity in batch"):
+            store.store_batch([t2, t3])
+
+        # State must be unchanged
+        after_hash = store.get_canonical_hash("SM-01", "E-O-TEST")
+        assert after_hash == before_hash, "Hash changed after failed batch"
+        after_ticker = store.load("SM-01", "E-O-TEST").primary_ticker
+        assert after_ticker == before_ticker, (
+            f"Ticker changed after failed batch: {before_ticker} -> {after_ticker}"
+        )

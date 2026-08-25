@@ -241,9 +241,24 @@ class InMemoryCanonicalRecordStore:
         return deepcopy(rec)
 
     def store_batch(self, instances: list[BaseModel], /) -> list[CanonicalHash]:
+        # Check for duplicate identities — a batch is a set of independent
+        # operations, not a sequence of dependent mutations.  Duplicate
+        # (schema_id, record_id) pairs would produce undefined ordering
+        # and incorrect history enrichment (each _prepare_instance() sees
+        # the same pre-batch state).
+        seen: set[tuple[str, str]] = set()
         for inst in instances:
             sid: str = inst.schema_id  # type: ignore[assignment]
             rid = _resolve_id(inst)
+            key = (sid, rid)
+            if key in seen:
+                raise IntegrityConflict(
+                    f"{sid}/{rid}: duplicate identity in batch — "
+                    f"batch operations must be independent",
+                    schema_id=sid,
+                    record_id=rid,
+                )
+            seen.add(key)
             if rid in self._tombstones.get(sid, {}):
                 raise IntegrityConflict(
                     f"{sid}/{rid}: cannot write to tombstoned record "
@@ -391,11 +406,15 @@ class InMemoryCanonicalRecordStore:
         """Transform the incoming instance into its final canonical form
         before Transaction submission.
 
-        Currently handles SM-01 ticker-history enrichment: when a ticker
-        changes, the old ticker from the STORED canonical record is
-        appended to the new record's ``ticker_history``.  History is
-        derived from canonical stored state, NOT from the incoming
-        instance's ``ticker_history`` (which may be stale or empty).
+        Currently handles SM-01 ticker-history enrichment: the existing
+        canonical ticker_history is ALWAYS authoritative.  If the ticker
+        changed, the old ticker is appended.  If the ticker is unchanged,
+        the existing history is preserved as-is (never erased by a stale
+        or empty incoming ``ticker_history``).
+
+        Enrichment is only applied when the incoming instance's history
+        differs from the canonical stored history, so idempotent writes
+        (same ticker, same history) produce identical hashes.
 
         This runs BEFORE validation/hashing/commit, so the returned
         hash from ``store()`` equals the stored canonical hash.
@@ -406,16 +425,22 @@ class InMemoryCanonicalRecordStore:
         if schema_id == "SM-01":
             existing = self._data.get(schema_id, {}).get(record_id)
             if existing is not None:
+                existing_history = list(
+                    getattr(existing.instance, "ticker_history", []) or []
+                )
+                # Determine the authoritative next history
                 old_ticker = getattr(existing.instance, "primary_ticker", None)
                 new_ticker = getattr(instance, "primary_ticker", None)
+                next_history = list(existing_history)
                 if old_ticker is not None and old_ticker != new_ticker:
-                    # Derive history from canonical stored state, not incoming
-                    existing_history = list(
-                        getattr(existing.instance, "ticker_history", []) or []
-                    )
-                    existing_history.append(str(old_ticker))
+                    next_history.append(str(old_ticker))
+
+                # Only apply enrichment if the incoming instance's history
+                # differs from the authoritative next history
+                incoming_history = getattr(instance, "ticker_history", None) or []
+                if list(incoming_history) != next_history:
                     instance = instance.model_copy(
-                        update={"ticker_history": existing_history}
+                        update={"ticker_history": next_history}
                     )
 
         return instance
