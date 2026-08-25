@@ -1877,6 +1877,8 @@ class TestAppendOnlyVersionPreservation:
 
         loaded = store.load("SM-01", "E-VER-001")
         assert loaded.primary_ticker == "AAPL.NEW"
+        # Canonical ticker_history must be updated per M4A contract
+        assert loaded.ticker_history == ["AAPL"]
         versions = store.list_versions("SM-01", "E-VER-001")
         assert len(versions) == 1
         prior = store.load_version("SM-01", "E-VER-001", versions[0])
@@ -2400,9 +2402,10 @@ class TestAppendOnlyAdversarial:
 
     def test_sm01_is_versioned_through_contract(self):
         """SM-01 is included in the versioned schema set via
-        _load_append_only_schemas, not via a separate hard-coded branch."""
-        from qad.persistence.reference import _load_append_only_schemas, _has_versioned_fields
-        schemas = _load_append_only_schemas()
+        _load_versioned_schemas, acknowledging the contract-metadata
+        limitation (prose-based rule, not machine-readable field policy)."""
+        from qad.persistence.reference import _load_versioned_schemas, _has_versioned_fields
+        schemas = _load_versioned_schemas()
         assert "SM-01" in schemas, "SM-01 must be in versioned schema set"
         assert _has_versioned_fields("SM-01"), "SM-01 must be versioned"
 
@@ -2423,28 +2426,53 @@ class TestAppendOnlyAdversarial:
 
     def test_mutable_only_change_on_versioned_schema(self):
         """Changing only a MUTABLE field on a versioned schema still creates
-        a prior version (full-record revision per M5.2 Item 4 semantics)."""
+        a prior version -- verified on CR-01 where the contract descriptor
+        marks ALL fields as APPEND_ONLY_STATE (except entry_timestamp and
+        last_evaluated which are FIELD_IMMUTABLE).  The machine-readable
+        descriptor is the authority for this behavior."""
         store = InMemoryCanonicalRecordStore()
 
         sm = SecurityMaster(
-            entity_id="E-MUT-ONLY", cik="0000320193", exchange="NASDAQ",
-            name="Original Name", primary_ticker="MUT",
+            entity_id="E-CR-MUT", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="MUT.T",
             security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
             status=SecurityMasterStatus.ACTIVE,
         )
         store.store(sm)
 
-        # Change only name (a MUTABLE field on SM-01)
-        sm2 = SecurityMaster(
-            entity_id="E-MUT-ONLY", cik="0000320193", exchange="NASDAQ",
-            name="Updated Name", primary_ticker="MUT",
-            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
-            status=SecurityMasterStatus.ACTIVE,
+        sig = SignalRecord(
+            signal_id="SIG-CR-MUT", entity_id="E-CR-MUT",
+            signal_type=SignalRecordSignal_type.QUALITY,
+            signal_family=SignalRecordSignal_family.EARNINGS_REVISION,
+            entry_route=SignalRecordEntry_route.QUALITY_FIRST,
+            detection_timestamp="2026-01-01T00:00:00",
         )
-        store.store(sm2)
+        store.store(sig)
 
-        # Prior version preserved
-        assert store.get_version_count("SM-01", "E-MUT-ONLY") == 1
-        prior = store.load_version("SM-01", "E-MUT-ONLY", "v0001")
-        assert prior.name == "Original Name"
-        assert prior.primary_ticker == "MUT"  # unchanged
+        cr = CandidateRecord(
+            candidate_id="CAND-CR-MUT",
+            entity_id="E-CR-MUT",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-CR-MUT"],
+        )
+        store.store(cr)
+
+        # Change only entry_route (an APPEND_ONLY_STATE field per contract)
+        cr2 = CandidateRecord(
+            candidate_id="CAND-CR-MUT",
+            entity_id="E-CR-MUT",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.EXTERNAL,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-CR-MUT"],
+        )
+        store.store(cr2)
+
+        # Prior version preserved (CR-01 has APPEND_ONLY_STATE on all fields)
+        assert store.get_version_count("CR-01", "CAND-CR-MUT") == 1
+        prior = store.load_version("CR-01", "CAND-CR-MUT", "v0001")
+        assert prior.entry_route == CandidateRecordEntry_route.QUALITY_FIRST

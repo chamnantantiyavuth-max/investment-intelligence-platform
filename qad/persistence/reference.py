@@ -361,13 +361,27 @@ class InMemoryCanonicalRecordStore:
     ) -> None:
         """Direct write — bypasses validation; called from Transaction.commit.
 
-        If the record already exists and the schema has APPEND_ONLY or
-        APPEND_ONLY_STATE fields, the prior version is preserved in
-        ``_versions`` before overwriting.  This guarantees history
-        preservation for state/content revisions per M5.2 Item 4.
+        If the record already exists and the schema requires versioning,
+        the prior version is preserved in ``_versions`` before overwriting.
+
+        For SM-01 ticker changes, the old ticker is also appended to the
+        new record's ``ticker_history`` field per M4A contract:
+        ``Ticker changes create ticker_history entries``.
         """
-        # Preserve prior version if this is an update to an APPEND_ONLY schema
         existing = self._data.get(schema_id, {}).get(record_id)
+
+        # SM-01 ticker change: update ticker_history on the incoming record
+        if schema_id == "SM-01" and existing is not None:
+            old_ticker = getattr(existing.instance, "primary_ticker", None)
+            new_ticker = getattr(instance, "primary_ticker", None)
+            if old_ticker is not None and old_ticker != new_ticker:
+                # Append old ticker to the new record's ticker_history
+                history = list(getattr(instance, "ticker_history", []) or [])
+                history.append(str(old_ticker))
+                instance = instance.model_copy(update={"ticker_history": history})
+                canonical_hash = compute_canonical_hash(instance)
+
+        # Preserve prior version if this is an update to a versioned schema
         if existing is not None and _has_versioned_fields(schema_id):
             _save_version(self, schema_id, record_id, existing)
 
@@ -946,29 +960,42 @@ def _load_append_only_schemas() -> set[str]:
             if policy in ("APPEND_ONLY", "APPEND_ONLY_STATE"):
                 result.add(sid)
                 break
-    # SM-01 is versioned per frozen M4A contract: ``Ticker changes create
-    # ticker_history entries``.  SM-01's fields are all MUTABLE or
-    # FIELD_IMMUTABLE, so the APPEND_ONLY field-policy scan above cannot
-    # detect it.  The frozen contract source is:
-    #   design/qad-pivot/m4a/QAD-M4A-CANONICAL-SCHEMAS.md §Family A
-    #   SM-01.immutability_rules
-    result.add("SM-01")
     _APPEND_ONLY_SCHEMAS = result
+    return result
+
+
+def _load_versioned_schemas() -> set[str]:
+    """Return the set of schema IDs that require prior-version preservation.
+
+    Derivation order:
+    1. Schemas with any APPEND_ONLY / APPEND_ONLY_STATE field policy in
+       the contract descriptor (machine-readable).
+    2. SM-01 — requires versioning because its frozen M4A contract says
+       ``Ticker changes create ticker_history entries`` and ``Corporate
+       actions create new version with superseded_by pointer``, but the
+       contract descriptor has no APPEND_ONLY field policies for SM-01
+       (all fields are MUTABLE or FIELD_IMMUTABLE).  This is a known
+       contract-metadata limitation: SM-01's versioning requirement is
+       expressed in prose (``immutability_rules`` / ``revision_rules``)
+       rather than machine-readable field policy.  Once the contract
+       descriptor gains a ``revision_policy`` or ``versioned`` flag,
+       SM-01 should derive from that flag instead.
+
+    Raises:
+        PersistenceError: descriptor missing, corrupt, or unparseable.
+    """
+    result = _load_append_only_schemas()
+    # SM-01: contract-required versioning (see derivation note above)
+    result.add("SM-01")
     return result
 
 
 def _has_versioned_fields(schema_id: str) -> bool:
     """Return True if *schema_id* requires prior-version preservation.
 
-    Derives from the contract descriptor's per-field ``immutable_policy``:
-    schemas with any APPEND_ONLY or APPEND_ONLY_STATE field are versioned.
-    SM-01 is included via ``_load_append_only_schemas()`` based on its
-    frozen M4A immutability_rules text.
-
-    Once the contract descriptor gains a machine-readable flag for
-    versioning, this function should derive from that flag instead.
+    See ``_load_versioned_schemas()`` for derivation logic.
     """
-    return schema_id in _load_append_only_schemas()
+    return schema_id in _load_versioned_schemas()
 
 
 def _save_version(
