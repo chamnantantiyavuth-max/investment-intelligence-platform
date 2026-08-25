@@ -110,7 +110,8 @@ class InMemoryCanonicalRecordStore:
         # Version tracking for APPEND_ONLY / APPEND_ONLY_STATE schemas
         # {schema_id: {record_id: {version_label: _Record}}}
         self._versions: dict[str, dict[str, dict[str, _Record]]] = {}
-        # Monotonic version counter keyed by record_id
+        # Monotonic version counter keyed by schema-qualified identity
+        # {schema_id:record_id: count}
         self._version_counts: dict[str, int] = {}
 
     # -- CanonicalRecordStore implementation ---------------------------------
@@ -312,8 +313,19 @@ class InMemoryCanonicalRecordStore:
 
         Does NOT include the current (active) record unless it was itself
         preserved as a prior version by a later write.
+
+        Uses numeric ordering (v1, v2, ..., v9, v10, v11) via the
+        stored version_counter metadata keyed by ``schema_id:record_id``.
         """
-        return sorted(self._versions.get(schema_id, {}).get(record_id, {}))
+        versions = self._versions.get(schema_id, {}).get(record_id, {})
+        # Sort by extracting the numeric suffix, not by string label
+        # (v10 < v9 in string sort; we want v1, v2, ..., v9, v10, v11)
+        def _sort_key(label: str) -> int:
+            try:
+                return int(label.lstrip("v"))
+            except (ValueError, AttributeError):
+                return 0
+        return sorted(versions.keys(), key=_sort_key)
 
     def get_version_count(self, schema_id: SchemaID, record_id: RecordID, /) -> int:
         """Return the number of preserved prior versions for a record."""
@@ -628,12 +640,23 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
 
         ch = compute_canonical_hash(merged)
 
-        # For EV-01 status changes, preserve prior version and write directly
+        # For EV-01 status changes, preserve prior version and write directly.
+        # EV-01 is RECORD_IMMUTABLE per contract descriptor, so the normal
+        # Transaction path would reject the write.  We use a snapshot/restore
+        # boundary here instead, providing the same atomicity guarantee as
+        # Transaction._commit() — if _write_record fails, the store state
+        # (including _versions, _data, _tombstones, _version_counts) is
+        # restored to the pre-update snapshot.
         if schema_id == "EV-01":
-            _save_version(self, schema_id, evidence_id,
-                          _Record(instance=deepcopy(existing),
-                                  canonical_hash=compute_canonical_hash(existing)))
-            self._write_record(schema_id, evidence_id, merged, ch)
+            snapshot = self._snapshot()
+            try:
+                _save_version(self, schema_id, evidence_id,
+                              _Record(instance=deepcopy(existing),
+                                      canonical_hash=compute_canonical_hash(existing)))
+                self._write_record(schema_id, evidence_id, merged, ch)
+            except BaseException:
+                self._restore(snapshot)
+                raise
             return ch
 
         # Non-EV-01: commit via Transaction (standard path)
@@ -882,12 +905,17 @@ def _load_append_only_schemas() -> set[str]:
     """Load the set of schema IDs that have APPEND_ONLY or APPEND_ONLY_STATE
     fields from the contract descriptor.  Cached in ``_APPEND_ONLY_SCHEMAS``
     after first call.
+
+    Raises:
+        PersistenceError: descriptor missing, corrupt, or unparseable
+            (fail-closed — versioning must not silently disable).
     """
     global _APPEND_ONLY_SCHEMAS
     if _APPEND_ONLY_SCHEMAS:
         return _APPEND_ONLY_SCHEMAS
     import json
     from pathlib import Path
+    from qad.persistence.errors import PersistenceError
     _path = (
         Path(__file__).resolve().parent.parent.parent
         / "qad" / "contract" / "contract_descriptor.json"
@@ -895,8 +923,21 @@ def _load_append_only_schemas() -> set[str]:
     try:
         with open(_path) as _f:
             desc = json.load(_f)
-    except Exception:
-        return set()
+    except FileNotFoundError:
+        raise PersistenceError(
+            f"Contract descriptor not found at {_path} — "
+            f"versioned schema set unavailable (fail-closed)"
+        )
+    except json.JSONDecodeError as e:
+        raise PersistenceError(
+            f"Contract descriptor corrupt at {_path}: {e} — "
+            f"versioned schema set unavailable (fail-closed)"
+        )
+    except Exception as e:
+        raise PersistenceError(
+            f"Failed to load contract descriptor: {e} — "
+            f"versioned schema set unavailable (fail-closed)"
+        )
     result: set[str] = set()
     for schema in desc.get("schemas", []):
         sid = schema["schema_id"]
@@ -905,17 +946,28 @@ def _load_append_only_schemas() -> set[str]:
             if policy in ("APPEND_ONLY", "APPEND_ONLY_STATE"):
                 result.add(sid)
                 break
+    # SM-01 is versioned per frozen M4A contract: ``Ticker changes create
+    # ticker_history entries``.  SM-01's fields are all MUTABLE or
+    # FIELD_IMMUTABLE, so the APPEND_ONLY field-policy scan above cannot
+    # detect it.  The frozen contract source is:
+    #   design/qad-pivot/m4a/QAD-M4A-CANONICAL-SCHEMAS.md §Family A
+    #   SM-01.immutability_rules
+    result.add("SM-01")
     _APPEND_ONLY_SCHEMAS = result
     return result
 
 
 def _has_versioned_fields(schema_id: str) -> bool:
-    """Return True if *schema_id* has any APPEND_ONLY or APPEND_ONLY_STATE
-    fields, or if it is SM-01 (ticker changes must be versioned per
-    M4A contract: ``Ticker changes create ticker_history entries``).
+    """Return True if *schema_id* requires prior-version preservation.
+
+    Derives from the contract descriptor's per-field ``immutable_policy``:
+    schemas with any APPEND_ONLY or APPEND_ONLY_STATE field are versioned.
+    SM-01 is included via ``_load_append_only_schemas()`` based on its
+    frozen M4A immutability_rules text.
+
+    Once the contract descriptor gains a machine-readable flag for
+    versioning, this function should derive from that flag instead.
     """
-    if schema_id in ("SM-01",):
-        return True
     return schema_id in _load_append_only_schemas()
 
 
@@ -927,13 +979,21 @@ def _save_version(
 ) -> None:
     """Preserve *existing* as a prior version before overwrite.
 
-    Uses a monotonic ``v1, v2, v3, ...`` label scheme per record.
+    Uses a monotonic counter keyed by schema-qualified identity
+    (``{schema_id}:{record_id}``) to prevent counter collision between
+    different schemas that share the same record_id value.
+
+    Version labels are zero-padded to 4 digits (``v0001``) so that
+    ``list_versions()`` can sort numerically without relying on lexical
+    ordering of a fixed-width scheme.
+
     The version label is stored in ``_versions[schema_id][record_id]``
     and the counter is incremented in ``_version_counts``.
     """
-    version_count = store._version_counts.get(record_id, 0) + 1
-    store._version_counts[record_id] = version_count
-    version_label = f"v{version_count}"
+    counter_key = f"{schema_id}:{record_id}"
+    version_count = store._version_counts.get(counter_key, 0) + 1
+    store._version_counts[counter_key] = version_count
+    version_label = f"v{version_count:04d}"
     store._versions.setdefault(schema_id, {}).setdefault(record_id, {})[
         version_label
     ] = _Record(
