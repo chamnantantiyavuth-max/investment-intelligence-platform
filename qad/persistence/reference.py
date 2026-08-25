@@ -107,6 +107,12 @@ class InMemoryCanonicalRecordStore:
         # Active reads exclude records in this dict.
         self._tombstones: dict[str, dict[str, dict]] = {}
 
+        # Version tracking for APPEND_ONLY / APPEND_ONLY_STATE schemas
+        # {schema_id: {record_id: {version_label: _Record}}}
+        self._versions: dict[str, dict[str, dict[str, _Record]]] = {}
+        # Monotonic version counter keyed by record_id
+        self._version_counts: dict[str, int] = {}
+
     # -- CanonicalRecordStore implementation ---------------------------------
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
@@ -278,6 +284,41 @@ class InMemoryCanonicalRecordStore:
             raise KeyError(f"{schema_id}/{record_id}: not found")
         return rec.canonical_hash
 
+    # -- Version API (APPEND_ONLY / APPEND_ONLY_STATE history) --------------
+
+    def load_version(
+        self, schema_id: SchemaID, record_id: RecordID,
+        version_label: str, /,
+    ) -> BaseModel:
+        """Load a specific historical version of a record.
+
+        Prior versions are preserved for APPEND_ONLY / APPEND_ONLY_STATE
+        schemas when a record is updated.  The latest version is the
+        current ``load()`` state; earlier versions are retrievable here.
+
+        Raises:
+            KeyError: no such version archived for this record.
+        """
+        try:
+            rec = self._versions[schema_id][record_id][version_label]
+        except KeyError:
+            raise KeyError(
+                f"{schema_id}/{record_id}@{version_label}: version not found"
+            )
+        return deepcopy(rec.instance)
+
+    def list_versions(self, schema_id: SchemaID, record_id: RecordID, /) -> list[str]:
+        """Return all preserved version labels (oldest first) for a record.
+
+        Does NOT include the current (active) record unless it was itself
+        preserved as a prior version by a later write.
+        """
+        return sorted(self._versions.get(schema_id, {}).get(record_id, {}))
+
+    def get_version_count(self, schema_id: SchemaID, record_id: RecordID, /) -> int:
+        """Return the number of preserved prior versions for a record."""
+        return len(self._versions.get(schema_id, {}).get(record_id, {}))
+
     def contains(self, schema_id: SchemaID, record_id: RecordID, /) -> bool:
         bucket = self._data.get(schema_id, {})
         if record_id not in bucket:
@@ -288,17 +329,17 @@ class InMemoryCanonicalRecordStore:
 
     # -- atomic commit helpers (snapshot/restore for Transaction rollback) ---
 
-    def _snapshot(self) -> tuple[dict[str, dict[str, "_Record"]], dict[str, dict[str, dict]]]:
+    def _snapshot(self) -> tuple[dict[str, dict[str, "_Record"]], dict[str, dict[str, dict]], dict[str, dict[str, dict[str, "_Record"]]], dict[str, int]]:
         """Deep-copy snapshot of the entire store state for rollback.
 
-        Returns ``(data, tombstones)`` — both must be restored via
-        ``_restore()`` to guarantee atomic rollback.
+        Returns ``(data, tombstones, versions, version_counts)`` — all four
+        must be restored via ``_restore()`` to guarantee atomic rollback.
         """
-        return deepcopy(self._data), deepcopy(self._tombstones)
+        return deepcopy(self._data), deepcopy(self._tombstones), deepcopy(self._versions), deepcopy(self._version_counts)
 
-    def _restore(self, snapshot: tuple[dict[str, dict[str, "_Record"]], dict[str, dict[str, dict]]]) -> None:
+    def _restore(self, snapshot: tuple[dict[str, dict[str, "_Record"]], dict[str, dict[str, dict]], dict[str, dict[str, dict[str, "_Record"]]], dict[str, int]]) -> None:
         """Restore store state from a ``_snapshot()`` result."""
-        self._data, self._tombstones = snapshot
+        self._data, self._tombstones, self._versions, self._version_counts = snapshot
 
     # -- internal helpers (used by Transaction callbacks) --------------------
 
@@ -306,7 +347,18 @@ class InMemoryCanonicalRecordStore:
         self, schema_id: SchemaID, record_id: RecordID,
         instance: BaseModel, canonical_hash: CanonicalHash,
     ) -> None:
-        """Direct write — bypasses validation; called from Transaction.commit."""
+        """Direct write — bypasses validation; called from Transaction.commit.
+
+        If the record already exists and the schema has APPEND_ONLY or
+        APPEND_ONLY_STATE fields, the prior version is preserved in
+        ``_versions`` before overwriting.  This guarantees history
+        preservation for state/content revisions per M5.2 Item 4.
+        """
+        # Preserve prior version if this is an update to an APPEND_ONLY schema
+        existing = self._data.get(schema_id, {}).get(record_id)
+        if existing is not None and _has_versioned_fields(schema_id):
+            _save_version(self, schema_id, record_id, existing)
+
         self._data.setdefault(schema_id, {})[record_id] = _Record(
             instance=deepcopy(instance),
             canonical_hash=canonical_hash,
@@ -527,20 +579,64 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
 
         Immutable fields are preserved from the original.  Only fields
         whose ``immutable_policy`` is ``MUTABLE`` are updated.
+
+        For EV-01 evidence records, status changes are append-only (per
+        M4A contract: ``Status changes are append-only``).  When only
+        ``validation_status`` changes, the prior version is preserved and
+        the new status is stored as a new version.  Since EV-01 is
+        RECORD_IMMUTABLE, this bypasses the Transaction's immutability
+        check and writes directly through versioned ``_write_record``.
         """
         from qad.persistence.immutability import _field_policy
 
-        merged = deepcopy(existing)
+        # Collect updates as a dict (avoids setattr on frozen Pydantic fields)
+        # Apply all at once via model_copy(update=...) which bypasses frozen
+        # field protection (frozen means "no setattr on instance", not
+        # "cannot appear in constructor").  This is contract-safe because
+        # the contract's immutable_policy controls write semantics through
+        # the persistence layer — Pydantic frozen is a serialisation concern.
+        updates: dict[str, Any] = {}
+        changed = False
+
         for field_name in incoming.model_fields:
             if field_name == "schema_id":
                 continue
             policy = _field_policy(schema_id, field_name)
-            if policy == "MUTABLE":
-                new_val = getattr(incoming, field_name)
-                setattr(merged, field_name, new_val)
+            new_val = getattr(incoming, field_name)
+            old_val = getattr(existing, field_name)
 
-        # Commit via Transaction
+            if policy == "MUTABLE":
+                if new_val != old_val:
+                    updates[field_name] = new_val
+                    changed = True
+
+            # EV-01: validation_status changes are append-only (versioned)
+            elif (
+                schema_id == "EV-01"
+                and field_name == "validation_status"
+                and new_val != old_val
+            ):
+                updates[field_name] = new_val
+                changed = True
+
+        if not changed:
+            # Idempotent — nothing to update
+            return compute_canonical_hash(existing)
+
+        # Apply all collected updates atomically via model_copy
+        merged = existing.model_copy(update=updates)
+
         ch = compute_canonical_hash(merged)
+
+        # For EV-01 status changes, preserve prior version and write directly
+        if schema_id == "EV-01":
+            _save_version(self, schema_id, evidence_id,
+                          _Record(instance=deepcopy(existing),
+                                  canonical_hash=compute_canonical_hash(existing)))
+            self._write_record(schema_id, evidence_id, merged, ch)
+            return ch
+
+        # Non-EV-01: commit via Transaction (standard path)
         tx = Transaction(
             store_contains=self.contains,
             commit_store=self._write_record,
@@ -773,3 +869,74 @@ def _schema_identity_field(schema_id: str) -> str | None:
     except Exception:
         _registry = {}
     return _registry.get(schema_id)
+
+
+# ---------------------------------------------------------------------------
+# Versioning helpers for APPEND_ONLY / APPEND_ONLY_STATE (M5.2 Item 4)
+# ---------------------------------------------------------------------------
+
+_APPEND_ONLY_SCHEMAS: set[str] = set()
+
+
+def _load_append_only_schemas() -> set[str]:
+    """Load the set of schema IDs that have APPEND_ONLY or APPEND_ONLY_STATE
+    fields from the contract descriptor.  Cached in ``_APPEND_ONLY_SCHEMAS``
+    after first call.
+    """
+    global _APPEND_ONLY_SCHEMAS
+    if _APPEND_ONLY_SCHEMAS:
+        return _APPEND_ONLY_SCHEMAS
+    import json
+    from pathlib import Path
+    _path = (
+        Path(__file__).resolve().parent.parent.parent
+        / "qad" / "contract" / "contract_descriptor.json"
+    )
+    try:
+        with open(_path) as _f:
+            desc = json.load(_f)
+    except Exception:
+        return set()
+    result: set[str] = set()
+    for schema in desc.get("schemas", []):
+        sid = schema["schema_id"]
+        for field in schema.get("fields", []):
+            policy = field.get("immutable_policy", "MUTABLE")
+            if policy in ("APPEND_ONLY", "APPEND_ONLY_STATE"):
+                result.add(sid)
+                break
+    _APPEND_ONLY_SCHEMAS = result
+    return result
+
+
+def _has_versioned_fields(schema_id: str) -> bool:
+    """Return True if *schema_id* has any APPEND_ONLY or APPEND_ONLY_STATE
+    fields, or if it is SM-01 (ticker changes must be versioned per
+    M4A contract: ``Ticker changes create ticker_history entries``).
+    """
+    if schema_id in ("SM-01",):
+        return True
+    return schema_id in _load_append_only_schemas()
+
+
+def _save_version(
+    store: InMemoryCanonicalRecordStore,
+    schema_id: str,
+    record_id: str,
+    existing: _Record,
+) -> None:
+    """Preserve *existing* as a prior version before overwrite.
+
+    Uses a monotonic ``v1, v2, v3, ...`` label scheme per record.
+    The version label is stored in ``_versions[schema_id][record_id]``
+    and the counter is incremented in ``_version_counts``.
+    """
+    version_count = store._version_counts.get(record_id, 0) + 1
+    store._version_counts[record_id] = version_count
+    version_label = f"v{version_count}"
+    store._versions.setdefault(schema_id, {}).setdefault(record_id, {})[
+        version_label
+    ] = _Record(
+        instance=deepcopy(existing.instance),
+        canonical_hash=existing.canonical_hash,
+    )

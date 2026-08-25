@@ -1817,3 +1817,330 @@ class TestTombstoneRollback:
         assert not store.is_tombstoned("SM-01", "E-TOMB-RB2")
         assert store.contains("SM-01", "E-TOMB-RB1")
         assert store.contains("SM-01", "E-TOMB-RB2")
+
+
+# ===================================================================
+# Item 4 — APPEND_ONLY version preservation
+# ===================================================================
+
+
+class TestAppendOnlyVersionPreservation:
+    """M5.2 Item 4: APPEND_ONLY / APPEND_ONLY_STATE schemas must preserve
+    prior versions when a record is updated (not overwrite in-place).
+
+    Covers frozen M4A examples:
+    - SM-01 ticker change -> history/new version, no in-place overwrite
+    - CR-01 selection-state change -> prior state preserved
+    - CASE-01 case-state change -> prior state preserved
+    - EV-01 status revision -> prior evidence version preserved
+    """
+
+    def _make_sm(self, store, eid, ticker):
+        sm = SecurityMaster(
+            entity_id=eid,
+            cik="0000320193",
+            exchange="NASDAQ",
+            name="Test Corp",
+            primary_ticker=ticker,
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+        return sm
+
+    def _make_signal(self, store, eid, sig_id):
+        sig = SignalRecord(
+            signal_id=sig_id,
+            entity_id=eid,
+            signal_type=SignalRecordSignal_type.QUALITY,
+            signal_family=SignalRecordSignal_family.EARNINGS_REVISION,
+            entry_route=SignalRecordEntry_route.QUALITY_FIRST,
+            detection_timestamp="2026-01-01T00:00:00",
+        )
+        store.store(sig)
+        return sig
+
+    def test_sm01_ticker_change_preserves_version(self):
+        store = InMemoryCanonicalRecordStore()
+        self._make_sm(store, "E-VER-001", "AAPL")
+
+        sm2 = SecurityMaster(
+            entity_id="E-VER-001",
+            cik="0000320193",
+            exchange="NASDAQ",
+            name="Apple Inc.",
+            primary_ticker="AAPL.NEW",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm2)
+
+        loaded = store.load("SM-01", "E-VER-001")
+        assert loaded.primary_ticker == "AAPL.NEW"
+        versions = store.list_versions("SM-01", "E-VER-001")
+        assert len(versions) == 1
+        prior = store.load_version("SM-01", "E-VER-001", versions[0])
+        assert prior.primary_ticker == "AAPL"
+
+    def test_cr01_selection_state_preserves_prior(self):
+        store = InMemoryCanonicalRecordStore()
+        self._make_sm(store, "E-CR-VER", "CRV.T")
+        self._make_signal(store, "E-CR-VER", "SIG-CR-VER")
+
+        cr = CandidateRecord(
+            candidate_id="CAND-CR-VER",
+            entity_id="E-CR-VER",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-CR-VER"],
+        )
+        store.store(cr)
+
+        cr2 = CandidateRecord(
+            candidate_id="CAND-CR-VER",
+            entity_id="E-CR-VER",
+            selection_state=CandidateRecordSelection_state.AUTO_RESEARCH_NOW,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-10",
+            signal_ids=["SIG-CR-VER"],
+        )
+        store.store(cr2)
+
+        loaded = store.load("CR-01", "CAND-CR-VER")
+        assert loaded.selection_state == CandidateRecordSelection_state.AUTO_RESEARCH_NOW
+        versions = store.list_versions("CR-01", "CAND-CR-VER")
+        assert len(versions) == 1
+        prior = store.load_version("CR-01", "CAND-CR-VER", versions[0])
+        assert prior.selection_state == CandidateRecordSelection_state.WATCH_EVIDENCE
+
+    def test_case01_state_preserves_prior(self):
+        store = InMemoryCanonicalRecordStore()
+        self._make_sm(store, "E-CA-VER", "CAV.T")
+        self._make_signal(store, "E-CA-VER", "SIG-CA-VER")
+
+        cand = CandidateRecord(
+            candidate_id="CAND-CA-VER",
+            entity_id="E-CA-VER",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-CA-VER"],
+        )
+        store.store(cand)
+
+        case = CaseRecord(
+            case_id="CASE-CA-VER",
+            entity_id="E-CA-VER",
+            candidate_id="CAND-CA-VER",
+            case_state=CaseRecordCase_state.CASE_OPEN,
+            as_of_date="2026-01-01",
+            opened_at="2026-01-01T00:00:00",
+            research_director="DIR-001",
+        )
+        store.store(case)
+
+        case2 = CaseRecord(
+            case_id="CASE-CA-VER",
+            entity_id="E-CA-VER",
+            candidate_id="CAND-CA-VER",
+            case_state=CaseRecordCase_state.INITIAL_ANALYSIS_COMPLETE,
+            as_of_date="2026-01-01",
+            opened_at="2026-01-01T00:00:00",
+            research_director="DIR-001",
+        )
+        store.store(case2)
+
+        loaded = store.load("CASE-01", "CASE-CA-VER")
+        assert loaded.case_state == CaseRecordCase_state.INITIAL_ANALYSIS_COMPLETE
+        versions = store.list_versions("CASE-01", "CASE-CA-VER")
+        assert len(versions) == 1
+        prior = store.load_version("CASE-01", "CASE-CA-VER", versions[0])
+        assert prior.case_state == CaseRecordCase_state.CASE_OPEN
+
+    def test_ev01_status_revision_preserves_prior(self):
+        store = InMemoryEvidenceRegistry()
+        src = SourceRecord(
+            source_id="SRC-EV-VER",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/filing/001",
+            content_hash="abc123",
+            retrieval_date="2026-01-01",
+        )
+        store.store(src)
+
+        ev = EvidenceRecord(
+            evidence_id="EVI-EV-VER",
+            source_id="SRC-EV-VER",
+            evidence_type=EvidenceRecordEvidence_type.INFERENCE,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="Original evidence content",
+            as_of="2026-01-01",
+            extraction_method="filing_parser",
+            source_tier="PRIMARY",
+            extractor="test",
+            confidence="medium",
+            admitting_role="analyst",
+        )
+        store.store(ev)
+
+        ev2 = EvidenceRecord(
+            evidence_id="EVI-EV-VER",
+            source_id="SRC-EV-VER",
+            evidence_type=EvidenceRecordEvidence_type.INFERENCE,
+            validation_status=EvidenceRecordValidation_status.VALIDATED,
+            content="Original evidence content",
+            as_of="2026-01-01",
+            extraction_method="filing_parser",
+            source_tier="PRIMARY",
+            extractor="test",
+            confidence="medium",
+            admitting_role="analyst",
+        )
+        store.store(ev2)
+
+        loaded = store.load("EV-01", "EVI-EV-VER")
+        assert loaded.validation_status == EvidenceRecordValidation_status.VALIDATED
+        versions = store.list_versions("EV-01", "EVI-EV-VER")
+        assert len(versions) == 1
+        prior = store.load_version("EV-01", "EVI-EV-VER", versions[0])
+        assert prior.validation_status == EvidenceRecordValidation_status.RAW
+
+    def test_no_versions_on_first_write(self):
+        store = InMemoryCanonicalRecordStore()
+        sm = SecurityMaster(
+            entity_id="E-NO-VER",
+            cik="0000320193",
+            exchange="NASDAQ",
+            name="Test Corp",
+            primary_ticker="NOVR",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+        assert store.get_version_count("SM-01", "E-NO-VER") == 0
+
+    def test_multiple_versions_preserved(self):
+        store = InMemoryCanonicalRecordStore()
+        self._make_sm(store, "E-MV-VER", "MV.T")
+        self._make_signal(store, "E-MV-VER", "SIG-MV-VER")
+
+        cand = CandidateRecord(
+            candidate_id="CAND-MV-VER",
+            entity_id="E-MV-VER",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-MV-VER"],
+        )
+        store.store(cand)
+
+        case = CaseRecord(
+            case_id="CASE-MV-VER",
+            entity_id="E-MV-VER",
+            candidate_id="CAND-MV-VER",
+            case_state=CaseRecordCase_state.CASE_OPEN,
+            as_of_date="2026-01-01",
+            opened_at="2026-01-01T00:00:00",
+            research_director="DIR-001",
+        )
+        store.store(case)
+
+        # Update 1
+        case2 = CaseRecord(
+            case_id="CASE-MV-VER",
+            entity_id="E-MV-VER",
+            candidate_id="CAND-MV-VER",
+            case_state=CaseRecordCase_state.INITIAL_ANALYSIS_COMPLETE,
+            as_of_date="2026-01-01",
+            opened_at="2026-01-01T00:00:00",
+            research_director="DIR-001",
+        )
+        store.store(case2)
+
+        # Update 2
+        case3 = CaseRecord(
+            case_id="CASE-MV-VER",
+            entity_id="E-MV-VER",
+            candidate_id="CAND-MV-VER",
+            case_state=CaseRecordCase_state.FOUNDER_READY,
+            as_of_date="2026-01-01",
+            opened_at="2026-01-01T00:00:00",
+            research_director="DIR-001",
+        )
+        store.store(case3)
+
+        versions = store.list_versions("CASE-01", "CASE-MV-VER")
+        assert len(versions) == 2
+        loaded = store.load("CASE-01", "CASE-MV-VER")
+        assert loaded.case_state == CaseRecordCase_state.FOUNDER_READY
+        prior1 = store.load_version("CASE-01", "CASE-MV-VER", versions[0])
+        assert prior1.case_state == CaseRecordCase_state.CASE_OPEN
+        prior2 = store.load_version("CASE-01", "CASE-MV-VER", versions[1])
+        assert prior2.case_state == CaseRecordCase_state.INITIAL_ANALYSIS_COMPLETE
+
+    def test_version_data_survives_transaction_rollback(self):
+        store = InMemoryCanonicalRecordStore()
+        self._make_sm(store, "E-RB-VER", "RB.T")
+        self._make_signal(store, "E-RB-VER", "SIG-RB-VER")
+
+        cr = CandidateRecord(
+            candidate_id="CAND-RB-VER",
+            entity_id="E-RB-VER",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-RB-VER"],
+        )
+        store.store(cr)
+        assert store.get_version_count("CR-01", "CAND-RB-VER") == 0
+
+        cr2 = CandidateRecord(
+            candidate_id="CAND-RB-VER",
+            entity_id="E-RB-VER",
+            selection_state=CandidateRecordSelection_state.AUTO_RESEARCH_NOW,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-10",
+            signal_ids=["SIG-RB-VER"],
+        )
+        store.store(cr2)
+        assert store.get_version_count("CR-01", "CAND-RB-VER") == 1
+
+        # Trigger rollback via FK-violating batch
+        self._make_sm(store, "E-RB-VER2", "RB2.T")
+        self._make_signal(store, "E-RB-VER2", "SIG-RB-VER2")
+        valid_cr = CandidateRecord(
+            candidate_id="CAND-RB-VER2",
+            entity_id="E-RB-VER2",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-RB-VER2"],
+        )
+        bad_ev = EvidenceRecord(
+            evidence_id="EV-RB-BAD",
+            source_id="SRC-NONEXISTENT",
+            evidence_type=EvidenceRecordEvidence_type.INFERENCE,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="Should fail",
+            as_of="2026-01-01",
+            extraction_method="filing_parser",
+            source_tier="PRIMARY",
+            extractor="test",
+            confidence="medium",
+            admitting_role="analyst",
+        )
+        with pytest.raises(TransactionFailure):
+            store.store_batch([valid_cr, bad_ev])
+
+        assert store.get_version_count("CR-01", "CAND-RB-VER") == 1
+        loaded = store.load("CR-01", "CAND-RB-VER")
+        assert loaded.selection_state == CandidateRecordSelection_state.AUTO_RESEARCH_NOW

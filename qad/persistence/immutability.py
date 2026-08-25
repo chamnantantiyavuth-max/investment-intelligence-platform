@@ -20,12 +20,17 @@ Policy model (per field ``immutable_policy`` in contract descriptor)
 
 ``APPEND_ONLY``
     New fields/values may be added but existing values cannot be changed.
-    (Noted here; full enforcement deferred to M5.3.)
+    Updates to APPEND_ONLY fields are versioned — the prior record is
+    preserved and a new version is created (see reference adapter
+    ``_write_record``).  This is NOT a rejection — the versioning layer
+    handles history preservation.
 
 ``APPEND_ONLY_STATE``
     State transitions are append-only: new values replace old in a
-    monotonically forward direction.  (Noted here; full enforcement
-    deferred to M5.3 with access to state-machine metadata.)
+    monotonically forward direction.  Updates to APPEND_ONLY_STATE fields
+    are versioned — the prior state is preserved and a new version is
+    created.  This is NOT a rejection — the versioning layer handles
+    history preservation.
 
 Record-level rules
 ------------------
