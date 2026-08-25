@@ -1018,7 +1018,7 @@ class TestRawSourceArchive:
         assert ver_record.source_id == "SRC-TOMB"
         assert ver_blob == raw_data
 
-    def test_tombstoned_raw_blob_history_preserved(self):
+    def test_tombstoned_raw_blob_historical_access(self):
         store = InMemoryRawSourceArchive()
         src = SourceRecord(
             source_id="SRC-TOMB-2",
@@ -1034,8 +1034,13 @@ class TestRawSourceArchive:
         store.store_raw_blob("SRC-TOMB-2", raw_hash, raw_data)
         store.tombstone("SRC-TOMB-2", "Sensitive")
 
-        # Raw blobs survive tombstone — historical audit requirement
-        blob = store.load_raw_blob("SRC-TOMB-2")
+        # Normal load_raw_blob must REJECT tombstoned (quarantine)
+        with pytest.raises(KeyError) as exc:
+            store.load_raw_blob("SRC-TOMB-2")
+        assert "tombstoned" in str(exc.value).lower()
+
+        # Historical API bypasses tombstone gate for audit purposes
+        blob = store.load_raw_blob_historical("SRC-TOMB-2")
         assert blob == raw_data
         assert store.get_raw_blob_hash("SRC-TOMB-2") == raw_hash
 
@@ -1462,6 +1467,26 @@ class TestEdgeCases:
         h = blank_store.get_canonical_hash("SM-01", eid)
         assert isinstance(h, str) and len(h) == 64
 
+    def test_tombstone_metadata_persisted(self, blank_store):
+        """Tombstone metadata (reason, authorizer, timestamp) must survive per M4A contract."""
+        sm = SecurityMaster(
+            entity_id="E-TOMB-META", cik="TMETA", exchange="NYSE",
+            name="TombMeta", primary_ticker="TM",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        eid = _stored_id(sm)
+        blank_store.store(sm)
+        blank_store.tombstone("SM-01", eid,
+                              reason="Founder request",
+                              authorizer="Founder")
+
+        assert blank_store.is_tombstoned("SM-01", eid)
+        # Historical access still works
+        rec = blank_store.load_historical("SM-01", eid)
+        assert rec.name == "TombMeta"
+        assert rec.primary_ticker == "TM"
+
     def test_tombstoned_record_reject_reinsert(self, blank_store):
         """Canonical hard delete is forbidden — re-insert after
         tombstone must raise IntegrityConflict (RECORD_IMMUTABLE)."""
@@ -1731,8 +1756,8 @@ class TestRawSourceArchiveTombstone:
         # Tombstone
         store.tombstone("SRC-TOMB-RAW", "test reason")
 
-        # Raw blob must still be loadable (history preserved)
-        assert store.load_raw_blob("SRC-TOMB-RAW") == raw
+        # Historical API must survive tombstone for audit
+        assert store.load_raw_blob_historical("SRC-TOMB-RAW") == raw
         assert store.get_raw_blob_hash("SRC-TOMB-RAW") == h
 
 
@@ -1743,7 +1768,7 @@ class TestRawSourceArchiveTombstone:
 class TestTombstoneRollback:
     """Transaction failure during delete/tombstone must not leave partial state."""
 
-    def test_tombstone_rollback_on_commit_failure(self, blank_store):
+    def test_tombstone_rollback_on_commit_failure(self):
         """Commit-phase failure during tombstone rollback restores all records."""
         from qad.persistence.errors import PersistenceError
         from qad.persistence.reference import InMemoryCanonicalRecordStore
@@ -1751,18 +1776,15 @@ class TestTombstoneRollback:
         class _FaultyTombstoneStore(InMemoryCanonicalRecordStore):
             def __init__(self):
                 super().__init__()
-                self._fail_on_second = False
+                self._fail_count = 0
 
             def _remove_record(self, schema_id, record_id):
-                if self._fail_on_second:
+                self._fail_count += 1
+                if self._fail_count >= 2:
                     raise PersistenceError("Injected tombstone failure",
                                            schema_id=schema_id,
                                            record_id=record_id)
-                self._fail_on_second = True
                 super()._remove_record(schema_id, record_id)
-
-            def _snapshot(self):
-                return super()._snapshot()
 
         store = _FaultyTombstoneStore()
 
