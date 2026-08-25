@@ -129,6 +129,11 @@ class InMemoryCanonicalRecordStore:
                 record_id=record_id,
             )
 
+        # Prepare the final canonical instance before Transaction
+        # (e.g. SM-01 ticker_history enrichment — must happen before
+        # validation/hashing/commit so the returned hash matches stored hash)
+        instance = self._prepare_instance(instance)
+
         tx = Transaction(
             store_contains=self.contains,
             commit_store=self._write_record,
@@ -247,6 +252,9 @@ class InMemoryCanonicalRecordStore:
                     record_id=rid,
                 )
 
+        # Prepare all instances before Transaction
+        prepared = [self._prepare_instance(inst) for inst in instances]
+
         tx = Transaction(
             store_contains=self.contains,
             commit_store=self._write_record,
@@ -256,10 +264,10 @@ class InMemoryCanonicalRecordStore:
             commit_snapshot=self._snapshot,
             commit_restore=self._restore,
         )
-        for inst in instances:
+        for inst in prepared:
             tx.add_store(inst)
         tx.execute()
-        return [compute_canonical_hash(inst) for inst in instances]
+        return [compute_canonical_hash(inst) for inst in prepared]
 
     def delete_batch(
         self, pairs: list[tuple[SchemaID, RecordID]], /,
@@ -364,22 +372,11 @@ class InMemoryCanonicalRecordStore:
         If the record already exists and the schema requires versioning,
         the prior version is preserved in ``_versions`` before overwriting.
 
-        For SM-01 ticker changes, the old ticker is also appended to the
-        new record's ``ticker_history`` field per M4A contract:
-        ``Ticker changes create ticker_history entries``.
+        SM-01 ticker-history enrichment is NOT done here — it is handled
+        in ``_prepare_instance()`` before Transaction submission, so the
+        canonical hash returned by ``store()`` matches the stored hash.
         """
         existing = self._data.get(schema_id, {}).get(record_id)
-
-        # SM-01 ticker change: update ticker_history on the incoming record
-        if schema_id == "SM-01" and existing is not None:
-            old_ticker = getattr(existing.instance, "primary_ticker", None)
-            new_ticker = getattr(instance, "primary_ticker", None)
-            if old_ticker is not None and old_ticker != new_ticker:
-                # Append old ticker to the new record's ticker_history
-                history = list(getattr(instance, "ticker_history", []) or [])
-                history.append(str(old_ticker))
-                instance = instance.model_copy(update={"ticker_history": history})
-                canonical_hash = compute_canonical_hash(instance)
 
         # Preserve prior version if this is an update to a versioned schema
         if existing is not None and _has_versioned_fields(schema_id):
@@ -389,6 +386,39 @@ class InMemoryCanonicalRecordStore:
             instance=deepcopy(instance),
             canonical_hash=canonical_hash,
         )
+
+    def _prepare_instance(self, instance: BaseModel, /) -> BaseModel:
+        """Transform the incoming instance into its final canonical form
+        before Transaction submission.
+
+        Currently handles SM-01 ticker-history enrichment: when a ticker
+        changes, the old ticker from the STORED canonical record is
+        appended to the new record's ``ticker_history``.  History is
+        derived from canonical stored state, NOT from the incoming
+        instance's ``ticker_history`` (which may be stale or empty).
+
+        This runs BEFORE validation/hashing/commit, so the returned
+        hash from ``store()`` equals the stored canonical hash.
+        """
+        schema_id: str = instance.schema_id  # type: ignore[assignment]
+        record_id = _resolve_id(instance)
+
+        if schema_id == "SM-01":
+            existing = self._data.get(schema_id, {}).get(record_id)
+            if existing is not None:
+                old_ticker = getattr(existing.instance, "primary_ticker", None)
+                new_ticker = getattr(instance, "primary_ticker", None)
+                if old_ticker is not None and old_ticker != new_ticker:
+                    # Derive history from canonical stored state, not incoming
+                    existing_history = list(
+                        getattr(existing.instance, "ticker_history", []) or []
+                    )
+                    existing_history.append(str(old_ticker))
+                    instance = instance.model_copy(
+                        update={"ticker_history": existing_history}
+                    )
+
+        return instance
 
     def _remove_record(
         self, schema_id: SchemaID, record_id: RecordID,
@@ -984,7 +1014,7 @@ def _load_versioned_schemas() -> set[str]:
     Raises:
         PersistenceError: descriptor missing, corrupt, or unparseable.
     """
-    result = _load_append_only_schemas()
+    result = set(_load_append_only_schemas())  # copy — must not mutate cache
     # SM-01: contract-required versioning (see derivation note above)
     result.add("SM-01")
     return result

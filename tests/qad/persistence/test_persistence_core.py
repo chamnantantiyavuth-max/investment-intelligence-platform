@@ -2476,3 +2476,244 @@ class TestAppendOnlyAdversarial:
         assert store.get_version_count("CR-01", "CAND-CR-MUT") == 1
         prior = store.load_version("CR-01", "CAND-CR-MUT", "v0001")
         assert prior.entry_route == CandidateRecordEntry_route.QUALITY_FIRST
+
+
+# ===================================================================
+# Item 4 final closure — J, K, L adversarial tests
+# ===================================================================
+
+
+class TestAppendOnlyFinalClosure:
+    """Adversarial tests for M5.2 Item 4 final code-level closure.
+
+    J: Hash invariant — store() return value must equal stored hash
+    K: Multi-ticker history — canonical history must survive multiple revisions
+    L: Cache isolation — _load_versioned_schemas() must not mutate _APPEND_ONLY_SCHEMAS
+    """
+
+    # -- J: Hash invariant --------------------------------------------------
+
+    def _check_hash_invariant(self, store, schema_id, record_id, returned_hash):
+        """Verify the three-way hash invariant for a stored record."""
+        stored_hash = store.get_canonical_hash(schema_id, record_id)
+        assert returned_hash == stored_hash, (
+            f"returned hash {returned_hash} != stored hash {stored_hash}"
+        )
+        loaded = store.load(schema_id, record_id)
+        recomputed = compute_canonical_hash(loaded)
+        assert stored_hash == recomputed, (
+            f"stored hash {stored_hash} != recomputed hash {recomputed}"
+        )
+
+    def test_sm01_returned_hash_equals_stored_hash(self):
+        """SM-01 ticker revision: store() return value must equal the
+        stored canonical hash and the recomputed hash of the loaded record."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-HASH-1", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="AAPL",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        ch1 = store.store(sm)
+        self._check_hash_invariant(store, "SM-01", "E-HASH-1", ch1)
+
+        # Ticker change
+        sm2 = SecurityMaster(
+            entity_id="E-HASH-1", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="AAPL.NEW",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        ch2 = store.store(sm2)
+        self._check_hash_invariant(store, "SM-01", "E-HASH-1", ch2)
+
+        # Also verify ticker_history was correctly populated
+        loaded = store.load("SM-01", "E-HASH-1")
+        assert loaded.ticker_history == ["AAPL"]
+
+    def test_store_batch_hash_invariant(self):
+        """store_batch must return hashes that match stored hashes even
+        when an SM-01 record is included in the batch."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-HASH-B", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="OLD",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        sm2 = SecurityMaster(
+            entity_id="E-HASH-B", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="NEW",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        hashes = store.store_batch([sm2])
+        assert len(hashes) == 1
+        self._check_hash_invariant(store, "SM-01", "E-HASH-B", hashes[0])
+
+    def test_hash_invariant_non_sm01_schema(self):
+        """Non-SM-01 schemas also maintain the hash invariant."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-HASH-C", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="C.T",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        sig = SignalRecord(
+            signal_id="SIG-HASH-C", entity_id="E-HASH-C",
+            signal_type=SignalRecordSignal_type.QUALITY,
+            signal_family=SignalRecordSignal_family.EARNINGS_REVISION,
+            entry_route=SignalRecordEntry_route.QUALITY_FIRST,
+            detection_timestamp="2026-01-01T00:00:00",
+        )
+        store.store(sig)
+
+        cr = CandidateRecord(
+            candidate_id="CAND-HASH-C",
+            entity_id="E-HASH-C",
+            selection_state=CandidateRecordSelection_state.WATCH_EVIDENCE,
+            entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+            entry_timestamp="2026-01-01",
+            evidence_freshness="2026-01-01",
+            signal_ids=["SIG-HASH-C"],
+        )
+        ch = store.store(cr)
+        self._check_hash_invariant(store, "CR-01", "CAND-HASH-C", ch)
+
+    # -- K: Multi-ticker history ---------------------------------------------
+
+    def test_sm01_multiple_ticker_changes_preserve_complete_history(self):
+        """Multiple ticker changes must preserve the complete prior ticker
+        sequence in canonical ticker_history, regardless of what the
+        incoming instance carries."""
+        store = InMemoryCanonicalRecordStore()
+
+        # Initial: AAPL
+        sm = SecurityMaster(
+            entity_id="E-MULTI", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="AAPL",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        # Revision 1: APPL1, incoming ticker_history = []
+        sm1 = SecurityMaster(
+            entity_id="E-MULTI", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="APPL1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm1)
+        loaded = store.load("SM-01", "E-MULTI")
+        assert loaded.ticker_history == ["AAPL"]
+
+        # Revision 2: APPL2, incoming ticker_history = [] (stale empty)
+        sm2 = SecurityMaster(
+            entity_id="E-MULTI", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="APPL2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm2)
+        loaded = store.load("SM-01", "E-MULTI")
+        assert loaded.ticker_history == ["AAPL", "APPL1"]
+
+        # Revision 3: APPL3, incoming ticker_history = ["FAKE"] (stale/bad)
+        sm3 = SecurityMaster(
+            entity_id="E-MULTI", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="APPL3",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=["FAKE"],
+        )
+        store.store(sm3)
+        loaded = store.load("SM-01", "E-MULTI")
+        # Canonical history from stored state, not incoming
+        assert loaded.ticker_history == ["AAPL", "APPL1", "APPL2"]
+
+    def test_sm01_incoming_empty_history_cannot_erase(self):
+        """Incoming instance with empty ticker_history must not erase
+        canonical history on subsequent ticker changes."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-ERASE", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="T1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        for ticker in ["T2", "T3", "T4"]:
+            s = SecurityMaster(
+                entity_id="E-ERASE", cik="0000320193", exchange="NASDAQ",
+                name="Test Corp", primary_ticker=ticker,
+                security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                status=SecurityMasterStatus.ACTIVE,
+            )
+            store.store(s)
+
+        loaded = store.load("SM-01", "E-ERASE")
+        assert loaded.ticker_history == ["T1", "T2", "T3"]
+
+    def test_sm01_ticker_history_no_duplicate_on_idempotent(self):
+        """Same ticker re-stored must not create duplicate history entries."""
+        store = InMemoryCanonicalRecordStore()
+
+        sm = SecurityMaster(
+            entity_id="E-IDEM", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="STABLE",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+
+        # Same ticker — no change, no history entry
+        sm2 = SecurityMaster(
+            entity_id="E-IDEM", cik="0000320193", exchange="NASDAQ",
+            name="Test Corp", primary_ticker="STABLE",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm2)
+        loaded = store.load("SM-01", "E-IDEM")
+        assert loaded.ticker_history == [] or loaded.ticker_history is None
+
+    # -- L: Cache isolation --------------------------------------------------
+
+    def test_append_only_cache_not_mutated_by_versioned_loader(self):
+        """_load_versioned_schemas() must not mutate the cached
+        _APPEND_ONLY_SCHEMAS set.  The pure APPEND_ONLY set must remain
+        free of SM-01 even after _load_versioned_schemas() is called."""
+        from qad.persistence.reference import (
+            _load_append_only_schemas,
+            _load_versioned_schemas,
+            _APPEND_ONLY_SCHEMAS,
+        )
+        # Clear cache
+        _APPEND_ONLY_SCHEMAS.clear()
+
+        a = _load_append_only_schemas()
+        assert "SM-01" not in a, (
+            f"Pure APPEND_ONLY set must not contain SM-01, got {sorted(a)}"
+        )
+
+        v = _load_versioned_schemas()
+        assert "SM-01" in v, "versioned set must contain SM-01"
+
+        a2 = _load_append_only_schemas()
+        assert "SM-01" not in a2, (
+            "APPEND_ONLY cache was mutated by _load_versioned_schemas() — "
+            f"now contains SM-01: {sorted(a2)}"
+        )
+        assert a == a2, "APPEND_ONLY set changed between calls"
