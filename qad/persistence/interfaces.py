@@ -326,30 +326,42 @@ class EvidenceRegistry(CanonicalRecordStore, Protocol):
 
 @runtime_checkable
 class FinancialFactStore(CanonicalRecordStore, Protocol):
-    """Financial fact store with lineage and normalisation-chain support.
+    """Financial fact store with lineage support.
 
-    Every fact carries a ``source_id`` FK to ``SRC-01`` and may be
-    linked to a parent fact (``FF-01.financial_fact_id``) to form a
-    normalisation chain (raw → normalised → restated).
+    Supports the frozen financial-record family:
+
+    FF-01   FinancialFact       source_id -> SRC-01
+    NFF-01  NormalizedFinancialFact  financial_fact_id -> FF-01
+    CALC-01 CalculationRecord   case_id -> CASE-01; input_fact_ids[] provenance
+    SCEN-01 ScenarioRecord      case_id -> CASE-01
+
+    ``get_lineage`` is schema-aware: each schema type has its own lineage
+    resolution path.  No cross-schema FK edges beyond those declared in
+    frozen M4A are invented.
     """
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
-        """Store a financial fact, enforcing source FK.
+        """Store a financial record, enforcing source FK for FF-01.
 
         Raises:
-            MissingForeignKey: source_id references a non-existent source.
+            MissingForeignKey: FF-01.source_id references a non-existent source.
         """
-        ...
 
     def get_lineage(
-        self, financial_fact_id: RecordID, /,
+        self, schema_id: SchemaID, record_id: RecordID, /,
     ) -> list[BaseModel]:
-        """Return the normalisation chain for a fact, raw → normalised.
+        """Return the lineage chain for a financial record.
 
-        The first element is the root (raw) fact; the last is the most
-        recent normalised version.
+        Semantics per schema:
+        NFF-01:  follows financial_fact_id -> FF-01, returns [FF, NFF]
+        FF-01:   returns [FF]
+        CALC-01: returns [CALC] + resolved FF nodes from input_fact_ids[]
+        SCEN-01: returns [SCEN]
+
+        Raises:
+            KeyError: record not found.
+            TypeError: unsupported schema_id.
         """
-        ...
 
 
 # ===================================================================

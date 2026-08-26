@@ -1275,13 +1275,13 @@ class TestListIDs:
 class TestFinancialFactLineage:
     """FinancialFactStore preserves facts and returns them via get_lineage."""
 
-    def test_lineage_single_fact(self, seeded_store):
-        # _resolve_id for FF-01 returns case_id, so we set financial_fact_id
-        # == case_id for get_lineage alignment.
+    def test_lineage_single_fact(self, blank_store):
+        """FF-01 lineage returns [FF]."""
+        from qad.models.family_f import FinancialFactMetric_family
         ff = FinancialFact(
-            financial_fact_id="CASE-FK-001",
-            case_id="CASE-FK-001",
-            source_id="SRC-FK-001",
+            financial_fact_id="FF-001",
+            case_id="CASE-001",
+            source_id="SRC-001",
             fiscal_year="2024",
             metric_name=FinancialFactMetric_family.REVENUE,
             period="FY",
@@ -1289,17 +1289,27 @@ class TestFinancialFactLineage:
             value="1000000",
         )
         ff_store = InMemoryFinancialFactStore()
-        ff_store._data = seeded_store._data
-        ff_store.store(ff)
-        lineage = ff_store.get_lineage(ff.financial_fact_id)
-        assert len(lineage) >= 1
-        assert getattr(lineage[0], "financial_fact_id", None) == "CASE-FK-001"
-        assert lineage[0].value == "1000000"
+        # No source_archive provided — FF-01 store will fail on source check.
+        # We test lineage after store separately. For the lineage test,
+        # store the FF through the generic base class path.
+        ff_store._data.setdefault("FF-01", {})
+        from qad.persistence.serialization import compute_canonical_hash
+        ch = compute_canonical_hash(ff)
+        from qad.persistence.reference import _Record as _R
+        ff_store._data["FF-01"]["FF-001"] = _R(instance=ff, canonical_hash=ch)
+        lineage = ff_store.get_lineage("FF-01", "FF-001")
+        assert len(lineage) == 1
+        assert lineage[0].financial_fact_id == "FF-001"
 
     def test_get_lineage_nonexistent_raises(self):
         ff_store = InMemoryFinancialFactStore()
         with pytest.raises(KeyError):
-            ff_store.get_lineage("FF-GHOST")
+            ff_store.get_lineage("FF-01", "FF-GHOST")
+
+    def test_get_lineage_unsupported_schema_raises(self):
+        ff_store = InMemoryFinancialFactStore()
+        with pytest.raises(TypeError, match="unsupported"):
+            ff_store.get_lineage("SM-01", "E-GHOST")
 
 
 # ====================================================================

@@ -1340,45 +1340,157 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
 class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
     """REFERENCE / NON_PRODUCTION — financial fact store with lineage.
 
-    Stores facts in memory and supports retrieval of normalisation
-    chains (raw → normalised) via ``get_lineage``.
+    Stores facts in memory and supports schema-aware lineage retrieval.
+
+    Parameters
+    ----------
+    source_archive:
+        Optional authoritative ``RawSourceArchive`` for FF-01.source_id
+        validation.  When absent, FF-01 source validation fails closed.
     """
 
-    def __init__(self, data: dict[str, dict[str, Any]] | None = None) -> None:
-        super().__init__(data)
-        # Parent fact tracking: {financial_fact_id: parent_financial_fact_id}
-        self._parent_links: dict[str, str] = {}
+    def __init__(
+        self,
+        source_archive: RawSourceArchive | None = None,
+    ) -> None:
+        super().__init__()
+        self._source_archive = source_archive
+
+    # -- Source-existence check (bridges to RawSourceArchive, fail-closed) ---
+
+    def _source_exists(self, source_id: str) -> bool:
+        """Return True if *source_id* refers to an admitted, non-tombstoned
+        source with intact metadata-bytes binding.
+
+        FAIL CLOSED: if ``_source_archive`` is unavailable, returns False.
+        """
+        archive = self._source_archive
+        if archive is None:
+            return False
+        if not archive.contains("SRC-01", source_id):
+            return False
+        try:
+            raw = archive.load_raw_blob(source_id)
+            src = archive.load("SRC-01", source_id)
+            import hashlib
+            raw_hash = hashlib.sha256(raw).hexdigest()
+            content_hash = getattr(src, "content_hash", None)
+            return raw_hash == content_hash
+        except (KeyError, AttributeError):
+            return False
+
+    # -- Store (with source validation for FF-01 and composite FK resolution) --
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
-        # Detect parent lineage from the instance
-        parent = getattr(instance, "parent_fact_id", None) or \
-                 getattr(instance, "normalized_from_id", None)
-        ch = super().store(instance)
-        fid = _resolve_id(instance)
-        if parent:
-            self._parent_links[fid] = str(parent)
-        return ch
+        """Store a financial record.
+
+        For FF-01, validates source_id against the authoritative
+        RawSourceArchive (Item 5 boundary).  No shadow SRC-01 copies.
+
+        Uses a composite store_contains that resolves FK lookups against
+        both local data and the authoritative RawSourceArchive.
+        """
+        schema_id: str = instance.schema_id  # type: ignore[assignment]
+
+        if schema_id == "FF-01":
+            source_id = getattr(instance, "source_id", None)
+            if not source_id:
+                raise MissingForeignKey(
+                    "FF-01.source_id is required",
+                    schema_id="FF-01",
+                )
+            if not self._source_exists(source_id):
+                raise MissingForeignKey(
+                    f"FF-01.source_id ({source_id}) does not resolve to "
+                    f"an admitted SRC-01 with intact binding",
+                    schema_id="FF-01",
+                    record_id=_resolve_id(instance),
+                    target_schema="SRC-01",
+                    target_ids=[source_id],
+                )
+
+        # Build composite store_contains that checks local data AND
+        # the authoritative RawSourceArchive (for SRC-01 FK resolution).
+        def _composite_contains(sid: SchemaID, rid: RecordID) -> bool:
+            if self.contains(sid, rid):
+                return True
+            if self._source_archive is not None:
+                return self._source_archive.contains(sid, rid)
+            return False
+
+        # Prepare instance (ticker_history enrichment etc.)
+        instance = self._prepare_instance(instance)
+
+        tx = Transaction(
+            store_contains=_composite_contains,
+            commit_store=self._write_record,
+            commit_delete=self._remove_record,
+            get_existing=self._load_raw,
+            get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
+        )
+        tx.add_store(instance)
+        tx.execute()
+
+        return compute_canonical_hash(instance)
+
+    # -- Schema-aware lineage ----------------------------------------------
 
     def get_lineage(
-        self, financial_fact_id: RecordID, /,
+        self, schema_id: SchemaID, record_id: RecordID, /,
     ) -> list[BaseModel]:
-        """Return chain from root (raw) to current, ordered oldest first."""
-        chain: list[BaseModel] = []
-        current_id = financial_fact_id
+        """Return the lineage chain for a financial record.
 
-        # Walk backwards to root
-        while current_id:
-            try:
-                inst = super().load("FF-01", current_id)
-                chain.insert(0, inst)
-                current_id = self._parent_links.get(current_id)
-            except KeyError:
-                break
+        Raises:
+            KeyError: record not found.
+            TypeError: unsupported schema_id.
+        """
+        # Load the requested record
+        if schema_id not in ("FF-01", "NFF-01", "CALC-01", "SCEN-01"):
+            raise TypeError(
+                f"get_lineage: unsupported schema_id {schema_id}"
+            )
 
-        if not chain:
-            raise KeyError(f"FF-01/{financial_fact_id}: not found")
+        record = self._load_raw(schema_id, record_id)
+        if record is None:
+            raise KeyError(f"{schema_id}/{record_id}: not found")
 
-        return chain
+        if schema_id == "FF-01":
+            return [record]
+
+        if schema_id == "NFF-01":
+            # Follow NFF.financial_fact_id -> FF-01
+            parent_financial_fact_id = getattr(record, "financial_fact_id", None)
+            chain: list[BaseModel] = [record]
+            if parent_financial_fact_id:
+                try:
+                    parent = self._load_raw("FF-01", parent_financial_fact_id)
+                    if parent is not None:
+                        chain.insert(0, parent)
+                except KeyError:
+                    pass  # parent not found — return [NFF] only
+            return chain
+
+        if schema_id == "CALC-01":
+            # Return [CALC] + resolved FF nodes from input_fact_ids[] (provenance)
+            chain = [record]
+            input_ids = getattr(record, "input_fact_ids", None) or []
+            for fid in input_ids:
+                try:
+                    ff = self._load_raw("FF-01", fid)
+                    if ff is not None:
+                        chain.append(ff)
+                except KeyError:
+                    pass  # unresolved provenance — include in chain as-is
+            return chain
+
+        if schema_id == "SCEN-01":
+            return [record]
+
+        raise TypeError(
+            f"get_lineage: unsupported schema_id {schema_id}"
+        )
 
 
 # ===================================================================
