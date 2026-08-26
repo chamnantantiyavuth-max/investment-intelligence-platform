@@ -994,7 +994,7 @@ class TestRawSourceArchive:
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/tomb",
-            content_hash="tomb1",
+            content_hash="74926aa6b46f709ff79dfa057008bfb4efe590ce3584d457b0589be21fb7d928",
             retrieval_date="2024-01-01",
         )
         store.store(src)
@@ -1025,7 +1025,7 @@ class TestRawSourceArchive:
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.NEWS,
             url_or_identifier="https://news.com/t2",
-            content_hash="t2",
+            content_hash="5c5836f6a614f2ea3e2727f48287efa2e30051ed1c022e0a0fbaa75f51fe01dd",
             retrieval_date="2024-02-01",
         )
         store.store(src)
@@ -1537,7 +1537,7 @@ class TestEdgeCases:
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/rsa",
-            content_hash="rsa1",
+            content_hash="34a3ee1f3d931633e905e51d12aff808af7be857253d7511b5ce82015db6b8b0",
             retrieval_date="2024-01-01",
         )
         store.store(src)
@@ -1745,7 +1745,7 @@ class TestRawSourceArchiveTombstone:
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/raw",
-            content_hash="raw1",
+            content_hash="f426caa90e11791360c15aed8625ed4e8099477cd3b696e654ac27807c9ec155",
             retrieval_date="2024-01-01",
         )
         store.store(src)

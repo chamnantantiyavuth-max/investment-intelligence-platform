@@ -619,6 +619,214 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             raise KeyError(f"{schema_id}/{record_id}: tombstoned")
         return super().load(schema_id, record_id)
 
+    # -- Extended snapshot/restore (covers RawSourceArchive-specific state) --
+
+    def _snapshot(
+        self,
+    ) -> tuple[
+        dict[str, dict[str, "_Record"]],
+        dict[str, dict[str, dict]],
+        dict[str, dict[str, dict[str, "_Record"]]],
+        dict[str, int],
+        dict[str, bytes],
+        dict[str, dict[str, "_Record"]],
+        dict[str, str],
+    ]:
+        """Deep-copy snapshot — extends base with raw-blob/version/tombstone state.
+
+        Returns ``(data, tombstones, versions, version_counts, raw_blobs,
+        version_data, tombstone_reasons)``.
+        """
+        base = super()._snapshot()
+        return (
+            *base,
+            deepcopy(self._raw_blobs),
+            deepcopy(self._version_data),
+            deepcopy(self._tombstone_reasons),
+        )
+
+    def _restore(
+        self,
+        snapshot: tuple[
+            dict[str, dict[str, "_Record"]],
+            dict[str, dict[str, dict]],
+            dict[str, dict[str, dict[str, "_Record"]]],
+            dict[str, int],
+            dict[str, bytes],
+            dict[str, dict[str, "_Record"]],
+            dict[str, str],
+        ],
+    ) -> None:
+        """Restore — extends base to include RawSourceArchive-specific state."""
+        (
+            self._data,
+            self._tombstones,
+            self._versions,
+            self._version_counts,
+            self._raw_blobs,
+            self._version_data,
+            self._tombstone_reasons,
+        ) = snapshot
+
+    # -- Atomic source admission (Item 5) ----------------------------------
+
+    def admit_source(
+        self, instance: BaseModel, raw_bytes: bytes, /,
+    ) -> CanonicalHash:
+        """Atomically admit a SourceRecord with its raw bytes.
+
+        Requirements (M5.2 Item 5):
+        1. ``sha256(raw_bytes) == SourceRecord.content_hash`` **before**
+           canonical admission — ``HashMismatch`` otherwise.
+        2. Same ``source_id`` + identical raw bytes + same metadata →
+           idempotent (return existing hash).
+        3. Same ``source_id`` + identical raw bytes + changed metadata →
+           legitimate metadata revision (SRC-01 is not RECORD_IMMUTABLE;
+           mutable fields may update while content integrity holds).
+        4. Same ``source_id`` + different raw bytes → ``IntegrityConflict``
+           (\"content never edited in place\").
+        5. Raw blob cannot be overwritten via ``store_raw_blob()`` after
+           admission (enforced by guard in ``store_raw_blob``).
+        6. Metadata + bytes are ONE admission unit: failure anywhere
+           restores ALL state (data, raw_blobs, version_data, tombstones).
+
+        Single-write vs batch admission
+        --------------------------------
+        This method admits ONE source at a time.  Batch source admission
+        is possible by calling ``admit_source`` in a loop inside the
+        caller's own snapshot/restore boundary, but M5.2 does not require
+        cross-source batch atomicity (each source is independent).
+        """
+        import hashlib
+
+        schema_id: str = instance.schema_id  # type: ignore[assignment]
+        record_id = _resolve_id(instance)
+
+        # ---- Step 1: hash match ----
+        content_hash = getattr(instance, "content_hash", None)
+        actual_hash = hashlib.sha256(raw_bytes).hexdigest()
+        if content_hash != actual_hash:
+            raise HashMismatch(
+                f"SourceRecord.content_hash ({content_hash}) != "
+                f"sha256(raw_bytes) ({actual_hash})",
+                record_id=record_id,
+                expected_hash=content_hash,
+                actual_hash=actual_hash,
+            )
+
+        # ---- Step 2: conflict / idempotency / revision check ----
+        existing_meta = self._data.get("SRC-01", {}).get(record_id)
+        existing_raw = self._raw_blobs.get(record_id)
+
+        if existing_raw is not None:
+            if existing_raw == raw_bytes:
+                # Same bytes — admissible
+                if existing_meta is not None:
+                    existing_ch = existing_meta.canonical_hash
+                    incoming_ch = compute_canonical_hash(instance)
+                    if incoming_ch == existing_ch:
+                        return existing_ch  # Idempotent
+                    # Metadata revision — allow (SRC-01 is not RECORD_IMMUTABLE)
+                    # Falls through to metadata update below
+                else:
+                    # Raw bytes exist without metadata — inconsistent state
+                    # (shouldn't happen in normal flow, but protect against it)
+                    raise IntegrityConflict(
+                        f"SRC-01/{record_id}: raw bytes exist without matching "
+                        f"SourceRecord metadata — inconsistent state",
+                        schema_id=schema_id,
+                        record_id=record_id,
+                    )
+            else:
+                # Different raw bytes → content integrity violation
+                raise IntegrityConflict(
+                    f"SRC-01/{record_id}: content cannot be edited in place — "
+                    f"already admitted with different raw bytes",
+                    schema_id=schema_id,
+                    record_id=record_id,
+                    existing_hash=hashlib.sha256(existing_raw).hexdigest(),
+                    incoming_hash=actual_hash,
+                )
+
+        # ---- Step 3: atomic admission (snapshot/restore) ----
+        snapshot = self._snapshot()
+        try:
+            # 3a. Store SourceRecord metadata via Transaction (full validation)
+            tx = Transaction(
+                store_contains=self.contains,
+                commit_store=self._write_record,
+                commit_delete=self._remove_record,
+                get_existing=self._load_raw,
+                get_existing_hash=self._load_hash,
+                commit_snapshot=self._snapshot,
+                commit_restore=self._restore,
+            )
+            tx.add_store(instance)
+            tx.execute()
+
+            # 3b. Store raw bytes
+            self._raw_blobs[record_id] = raw_bytes
+
+            # 3c. Also set content_hash on already-existing SourceRecord
+            #     metadata if it was a metadata revision (content_hash unchanged
+            #     since we already validated it matches)
+        except BaseException:
+            self._restore(snapshot)
+            raise
+
+        return compute_canonical_hash(instance)
+
+    # -- Guarded store_raw_blob (no overwrite of admitted content) ---------
+
+    def store_raw_blob(
+        self, record_id: RecordID, blob_hash: BlobHash, data: bytes,
+    ) -> None:
+        """Store raw blob — guarded against overwrite of admitted content.
+
+        Raises
+        ------
+        IntegrityConflict
+            If ``record_id`` already has an admitted raw blob.
+        HashMismatch
+            If ``blob_hash != sha256(data)`` OR, when a ``SourceRecord``
+            already exists for this ``record_id``, if ``blob_hash`` does
+            not match the record's ``content_hash``.
+        """
+        import hashlib
+
+        # Guard 1: no overwrite of existing admitted raw blob
+        if record_id in self._raw_blobs:
+            raise IntegrityConflict(
+                f"SRC-01/{record_id}: raw blob already admitted — "
+                f"content cannot be overwritten",
+                record_id=record_id,
+            )
+
+        actual = hashlib.sha256(data).hexdigest()
+        if actual != blob_hash:
+            raise HashMismatch(
+                f"Blob hash mismatch: expected {blob_hash}, got {actual}",
+                record_id=record_id,
+                expected_hash=blob_hash,
+                actual_hash=actual,
+            )
+
+        # Guard 2: if a SourceRecord already exists, blob_hash must match
+        #          its content_hash
+        existing_src = self._data.get("SRC-01", {}).get(record_id)
+        if existing_src is not None:
+            src_content_hash = getattr(existing_src.instance, "content_hash", None)
+            if blob_hash != src_content_hash:
+                raise HashMismatch(
+                    f"Blob hash ({blob_hash}) does not match "
+                    f"existing SourceRecord.content_hash ({src_content_hash})",
+                    record_id=record_id,
+                    expected_hash=src_content_hash,
+                    actual_hash=blob_hash,
+                )
+
+        self._raw_blobs[record_id] = data
+
 
 # ===================================================================
 # InMemoryEvidenceRegistry
