@@ -690,16 +690,21 @@ class TestValidForeignKey:
         from qad.models.family_b import (
             EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
         )
-        store = InMemoryEvidenceRegistry()
+        from qad.persistence.reference import InMemoryRawSourceArchive
+
+        src_archive = InMemoryRawSourceArchive()
+        raw = b"valid source"
+        ch = hashlib.sha256(raw).hexdigest()
         src = SourceRecord(
             source_id="SRC-VALID-2",
             source_tier=SourceRecordSource_tier.L2,
             source_type=SourceRecordSource_type.TRANSCRIPT,
             url_or_identifier="https://example.com/t",
-            content_hash="ch",
+            content_hash=ch,
             retrieval_date="2024-02-01",
         )
-        store.store(src)
+        src_archive.admit_source(src, raw)
+        store = InMemoryEvidenceRegistry(source_archive=src_archive)
         ev = EvidenceRecord(
             evidence_id="EV-VALID-2",
             source_id="SRC-VALID-2",
@@ -1979,16 +1984,21 @@ class TestAppendOnlyVersionPreservation:
         from qad.models.family_b import (
             EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
         )
-        store = InMemoryEvidenceRegistry()
+        from qad.persistence.reference import InMemoryRawSourceArchive
+
+        src_archive = InMemoryRawSourceArchive()
+        raw = b"source for ev01 versioning"
+        ch = hashlib.sha256(raw).hexdigest()
         src = SourceRecord(
             source_id="SRC-EV-VER",
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/filing/001",
-            content_hash="abc123",
+            content_hash=ch,
             retrieval_date="2026-01-01",
         )
-        store.store(src)
+        src_archive.admit_source(src, raw)
+        store = InMemoryEvidenceRegistry(source_archive=src_archive)
 
         ev = EvidenceRecord(
             evidence_id="EVI-EV-VER",
@@ -2196,14 +2206,19 @@ class TestAppendOnlyAdversarial:
         from qad.models.family_b import (
             EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
         )
-        store = InMemoryEvidenceRegistry()
+        from qad.persistence.reference import InMemoryRawSourceArchive
+
+        src_archive = InMemoryRawSourceArchive()
+        raw = b"source for ev01 versioning"
+        ch = hashlib.sha256(raw).hexdigest()
         src = SourceRecord(
             source_id="SRC-ADV-A", source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/filing/001",
-            content_hash="abc123", retrieval_date="2026-01-01",
+            content_hash=ch, retrieval_date="2026-01-01",
         )
-        store.store(src)
+        src_archive.admit_source(src, raw)
+        store = InMemoryEvidenceRegistry(source_archive=src_archive)
 
         ev = EvidenceRecord(
             evidence_id="EV-ADV-A", source_id="SRC-ADV-A",
@@ -2358,14 +2373,19 @@ class TestAppendOnlyAdversarial:
         from qad.models.family_b import (
             EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
         )
-        store = InMemoryEvidenceRegistry()
+        from qad.persistence.reference import InMemoryRawSourceArchive
+
+        src_archive = InMemoryRawSourceArchive()
+        raw = b"source for ev01 rollback"
+        ch = hashlib.sha256(raw).hexdigest()
         src = SourceRecord(
             source_id="SRC-ADV-D", source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/filing/001",
-            content_hash="abc123", retrieval_date="2026-01-01",
+            content_hash=ch, retrieval_date="2026-01-01",
         )
-        store.store(src)
+        src_archive.admit_source(src, raw)
+        store = InMemoryEvidenceRegistry(source_archive=src_archive)
 
         ev = EvidenceRecord(
             evidence_id="EV-ADV-D", source_id="SRC-ADV-D",

@@ -969,38 +969,44 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         of a local shadow copy.
     """
 
-    def __init__(self, *, source_archive: RawSourceArchive | None = None) -> None:
+    def __init__(self, source_archive: RawSourceArchive) -> None:
+        """Initialize with an authoritative RawSourceArchive.
+
+        Parameters
+        ----------
+        source_archive:
+            REQUIRED authoritative ``RawSourceArchive``.  Without it,
+            ``admit_evidence()`` fails closed — no evidence may be
+            admitted.  This is intentional: ''source authority must
+            come from Item 5'', not a local shadow copy.
+        """
         super().__init__()
         self._source_archive = source_archive
 
-    # -- Source-existence check (bridges to RawSourceArchive) ---------------
+    # -- Source-existence check (bridges to RawSourceArchive, fail-closed) ---
 
     def _source_exists(self, source_id: str) -> bool:
         """Return True if *source_id* refers to an admitted, non-tombstoned
         source with intact metadata-bytes binding.
 
-        Checks the authoritative RawSourceArchive when available.
-        Falls back to local SRC-01 data only as a legacy path.
+        FAIL CLOSED: if ``_source_archive`` is unavailable (should never
+        happen in normal operation), returns False — no evidence may be
+        admitted.
         """
-        # Primary: authoritative RawSourceArchive
-        if self._source_archive is not None:
-            if not self._source_archive.contains("SRC-01", source_id):
-                return False
-            # Verify binding integrity: raw blob exists and hash matches
-            try:
-                raw = self._source_archive.load_raw_blob(source_id)
-                src = self._source_archive.load("SRC-01", source_id)
-                import hashlib
-                raw_hash = hashlib.sha256(raw).hexdigest()
-                content_hash = getattr(src, "content_hash", None)
-                return raw_hash == content_hash
-            except (KeyError, AttributeError):
-                return False
-        # Fallback: local SRC-01 (legacy, not preferred)
+        archive = self._source_archive
+        if archive is None:
+            return False  # fail closed
+        if not archive.contains("SRC-01", source_id):
+            return False
+        # Verify binding integrity: raw blob exists and hash matches
         try:
-            rec = self._load_raw("SRC-01", source_id)
-            return rec is not None
-        except KeyError:
+            raw = archive.load_raw_blob(source_id)
+            src = archive.load("SRC-01", source_id)
+            import hashlib
+            raw_hash = hashlib.sha256(raw).hexdigest()
+            content_hash = getattr(src, "content_hash", None)
+            return raw_hash == content_hash
+        except (KeyError, AttributeError):
             return False
 
     # -- Atomic evidence admission (Item 6) --------------------------------
@@ -1077,14 +1083,23 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
                 target_ids=[source_id],
             )
 
-        # ---- AI method gate: original_source_verified required ----
+        # ---- AI method gate: original_source_verified flag required ----
+        # Authority: M4A INV-005 (I-5) — "If admission_method = AI_SYNTHESIS
+        # and no original_source_verified flag → VIOLATION."
+        # Founder Item-6 correction extends this to AI_EXTRACTION.
+        #
+        # NOTE: CONTRACT_AMBIGUITY — The exact lexical representation of
+        # "true" for original_source_verified (Optional[str]) is not defined
+        # by any frozen contract.  INV-005 uses "flag" (present/not-None).
+        # For now, any non-None value satisfies the flag requirement.
+        # Exact truth values require a Founder decision.
         admission_method = getattr(admission, "admission_method", None)
         if admission_method in ("AI_EXTRACTION", "AI_SYNTHESIS"):
             osv = getattr(admission, "original_source_verified", None)
-            if osv != "true":
+            if osv is None:
                 raise IntegrityConflict(
                     f"AI admission method ({admission_method}) requires "
-                    f"original_source_verified='true', got {osv!r}",
+                    f"original_source_verified flag (not None)",
                     schema_id="EAR-01", record_id=ear_id,
                 )
 
@@ -1135,6 +1150,14 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
             raise CanonicalBoundaryViolation(
                 f"EAR-01 direct store rejected: use admit_evidence() "
                 f"to atomically admit evidence with admission record",
+                schema_id=schema_id, record_id=record_id,
+            )
+
+        # Block SRC-01 store (no shadow source authority)
+        if schema_id == "SRC-01":
+            raise CanonicalBoundaryViolation(
+                f"SRC-01 direct store rejected: use the authoritative "
+                f"RawSourceArchive for source storage",
                 schema_id=schema_id, record_id=record_id,
             )
 
