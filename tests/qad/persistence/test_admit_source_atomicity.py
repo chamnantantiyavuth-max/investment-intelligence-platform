@@ -426,7 +426,7 @@ class TestNoRemainingBypass:
             store.load_raw_blob("BYPASS-VER")
 
     def test_store_version_src01_with_admission_allowed(self):
-        """store_version on already-admitted SRC-01 is valid."""
+        """store_version on already-admitted SRC-01 is valid (identical snapshot)."""
         store = InMemoryRawSourceArchive()
         raw = b"invariant version-admitted"
         src = _make_src("BYPASS-VER-OK", content_raw=raw)
@@ -436,6 +436,86 @@ class TestNoRemainingBypass:
         assert store.load_raw_blob("BYPASS-VER-OK") == raw
         vers = store.list_versions("BYPASS-VER-OK")
         assert "v1" in vers
+
+    def test_store_version_raw_only_orphan_cannot_create_src01(self):
+        """Orphan raw blob without canonical SRC-01 cannot create one via store_version."""
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant orphan"
+        ch = hashlib.sha256(raw).hexdigest()
+        # Create orphan raw blob via store_raw_blob directly
+        store._raw_blobs["ORPHAN-1"] = raw
+        src = SourceRecord(
+            source_id="ORPHAN-1",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/orphan",
+            content_hash=ch,
+            retrieval_date="2024-01-01",
+        )
+        with pytest.raises(CanonicalBoundaryViolation, match="no canonical SRC-01"):
+            store.store_version(src, "v1")
+        assert not store.contains("SRC-01", "ORPHAN-1")
+        assert store._raw_blobs.get("ORPHAN-1") == raw  # raw blob unchanged
+
+    def test_store_version_changed_content_hash_rejected(self):
+        """Admitted source with changed content_hash via store_version is rejected."""
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant content-hash"
+        src = _make_src("CH-HASH", content_raw=raw)
+        store.admit_source(src, raw)
+        # Same source_id, different content_hash
+        bad_hash = "0" * 64
+        src_bad = SourceRecord(
+            source_id="CH-HASH",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/ch-hash",
+            content_hash=bad_hash,
+            retrieval_date="2024-01-01",
+        )
+        with pytest.raises(IntegrityConflict, match="incoming payload differs"):
+            store.store_version(src_bad, "v2")
+        # Canonical unchanged
+        loaded = store.load("SRC-01", "CH-HASH")
+        assert loaded.content_hash != bad_hash
+        assert store.load_raw_blob("CH-HASH") == raw
+
+    def test_store_version_changed_mutable_metadata_rejected(self):
+        """Admitted source with changed metadata (e.g., title) is rejected."""
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant mutable-meta"
+        src = _make_src("CH-META", content_raw=raw)
+        store.admit_source(src, raw)
+        # Same source_id, same content_hash, different title (MUTABLE field)
+        src_mutated = SourceRecord(
+            source_id="CH-META",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/ch-meta",
+            content_hash=hashlib.sha256(raw).hexdigest(),
+            retrieval_date="2024-01-01",
+            title="Changed title via store_version",
+        )
+        with pytest.raises(IntegrityConflict, match="incoming payload differs"):
+            store.store_version(src_mutated, "v2")
+        # Canonical unchanged
+        loaded = store.load("SRC-01", "CH-META")
+        assert loaded.title is None  # unchanged
+        assert store.load_raw_blob("CH-META") == raw
+
+    def test_store_version_binding_integrity_check(self):
+        """If raw blob hash diverges from canonical content_hash, store_version is rejected."""
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant binding"
+        src = _make_src("BINDING", content_raw=raw)
+        store.admit_source(src, raw)
+        # Corrupt raw blob (different bytes, same record_id)
+        store._raw_blobs["BINDING"] = b"corrupted bytes"
+        with pytest.raises(IntegrityConflict, match="binding integrity violated"):
+            store.store_version(src, "v1")
+        # Restore and verify
+        store._raw_blobs["BINDING"] = raw
+        store.store_version(src, "v1")  # should pass now
     """Item 5 changes must not break Item 1-4 semantics.
     These are sample regression probes — full suite runs later."""
 

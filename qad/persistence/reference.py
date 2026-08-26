@@ -553,21 +553,80 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
     def store_version(
         self, instance: BaseModel, version_label: str, /,
     ) -> CanonicalHash:
-        """Override to enforce that SRC-01 must be admitted before versioning.
+        """Enforce metadata-bytes binding for SRC-01 versioning.
 
-        ``store_version`` on an already-admitted source is valid (version
-        tracking).  ``store_version`` on a fresh SRC-01 with no raw bytes
-        is a bypass of ``admit_source()``.
+        ``store_version`` on an already-admitted source is permitted ONLY
+        when ALL of the following hold:
+
+        1. Canonical SRC-01 already exists in ``_data``.
+        2. Raw blob already exists in ``_raw_blobs``.
+        3. ``sha256(raw_blob) == existing canonical SRC-01.content_hash``
+           (binding intact).
+        4. Incoming canonical hash == existing canonical hash
+           (identical snapshot — no mutation of any kind).
+
+        Otherwise the operation is rejected deterministically.
+        Anything other than an identical-snapshot version is a bypass
+        of ``admit_source()`` or a violation of the source-record
+        immutability invariant.
         """
+        import hashlib
+
         schema_id: str = instance.schema_id  # type: ignore[assignment]
         record_id = _resolve_id(instance)
-        if schema_id == "SRC-01" and record_id not in self._raw_blobs:
-            raise CanonicalBoundaryViolation(
-                f"SRC-01/{record_id}: store_version rejected — "
-                f"source not yet admitted; use admit_source() first",
-                schema_id=schema_id,
-                record_id=record_id,
+
+        if schema_id == "SRC-01":
+            # Check 1: canonical SRC-01 exists
+            existing_meta = self._data.get("SRC-01", {}).get(record_id)
+            if existing_meta is None:
+                raise CanonicalBoundaryViolation(
+                    f"SRC-01/{record_id}: store_version rejected — "
+                    f"no canonical SRC-01 exists; use admit_source() first",
+                    schema_id=schema_id,
+                    record_id=record_id,
+                )
+
+            # Check 2: raw blob exists
+            raw = self._raw_blobs.get(record_id)
+            if raw is None:
+                raise CanonicalBoundaryViolation(
+                    f"SRC-01/{record_id}: store_version rejected — "
+                    f"no raw blob bound to this source; use admit_source() first",
+                    schema_id=schema_id,
+                    record_id=record_id,
+                )
+
+            # Check 3: raw blob SHA256 matches existing canonical content_hash
+            raw_hash = hashlib.sha256(raw).hexdigest()
+            existing_content_hash = getattr(
+                existing_meta.instance, "content_hash", None
             )
+            if raw_hash != existing_content_hash:
+                raise IntegrityConflict(
+                    f"SRC-01/{record_id}: store_version rejected — "
+                    f"raw blob hash ({raw_hash}) does not match "
+                    f"canonical content_hash ({existing_content_hash}); "
+                    f"binding integrity violated",
+                    schema_id=schema_id,
+                    record_id=record_id,
+                    existing_hash=existing_content_hash,
+                    incoming_hash=raw_hash,
+                )
+
+            # Check 4: incoming payload must be identical snapshot
+            incoming_ch = compute_canonical_hash(instance)
+            existing_ch = existing_meta.canonical_hash
+            if incoming_ch != existing_ch:
+                raise IntegrityConflict(
+                    f"SRC-01/{record_id}: store_version rejected — "
+                    f"incoming payload differs from admitted source; "
+                    f"versioning is identical-snapshot only",
+                    schema_id=schema_id,
+                    record_id=record_id,
+                    existing_hash=existing_ch,
+                    incoming_hash=incoming_ch,
+                )
+
         ch = compute_canonical_hash(instance)
 
         tx = Transaction(
