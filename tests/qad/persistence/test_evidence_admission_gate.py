@@ -295,36 +295,27 @@ class TestAIAdmissionGate:
 # =====================================================================
 
 class TestLValidationFailureZeroPartial:
-    """Contract validation failures must leave zero partial state.
+    """Real Transaction validation failure via model_copy bypass.
 
-    These tests demonstrate that contract-enforcement preflight checks
-    (which are placed before Transaction for efficiency, not as bypass)
-    reject invalid admissions without leaving partial state.
+    validate_schema_instance() now revalidates field values via
+    model_dump() + model_validate(), so model_copy(update=...) with
+    invalid enum values is caught during Transaction.validate().
     """
 
-    def test_ev_invalid_evidence_type_via_model_copy(self):
-        """model_copy with invalid evidence_type creates a string, not
-        the enum. The contract validator doesn't catch this, but it
-        demonstrates that Pydantic model_copy bypasses model validation.
-        The actual contract enforcement is through the preflight checks
-        in admit_evidence, which are tested in A-Q."""
+    def test_ev_invalid_evidence_type_rejected_by_validator(self):
         src_archive, ev_registry = _paired_store()
         _admit_src(src_archive, b"source", "SRC-L")
         ev_ok = _make_ev("SRC-L", "EV-L")
-        # model_copy creates a string, not an enum
         ev_bad = ev_ok.model_copy(
             update={"evidence_type": "NOT_A_VALID_TYPE"}
         )
-        # type is now str, not Enum
-        assert isinstance(ev_bad.evidence_type, str)
-        # The canonical boundary / contract enforcement happens through
-        # admit_evidence's preflight checks. The validation phase
-        # catches issues through the composite store_contains FK check.
-        # This test proves the model_copy technique works for future
-        # validator hardening.
+        ear = _make_ear(ev_ok.evidence_id, "ADM-L")
+        with pytest.raises(TransactionFailure, match="validation failed"):
+            ev_registry.admit_evidence(ev_bad, ear)
+        assert not ev_registry.contains("EV-01", "EV-L")
+        assert not ev_registry.contains("EAR-01", "ADM-L")
 
-    def test_ear_invalid_admission_method_via_model_copy(self):
-        """Same as above for EAR-01 admission_method."""
+    def test_ear_invalid_admission_method_rejected_by_validator(self):
         src_archive, ev_registry = _paired_store()
         _admit_src(src_archive, b"source", "SRC-L2")
         ev = _make_ev("SRC-L2", "EV-L2")
@@ -332,7 +323,10 @@ class TestLValidationFailureZeroPartial:
         ear_bad = ear_ok.model_copy(
             update={"admission_method": "NOT_A_VALID_METHOD"}
         )
-        assert isinstance(ear_bad.admission_method, str)
+        with pytest.raises(TransactionFailure, match="validation failed"):
+            ev_registry.admit_evidence(ev, ear_bad)
+        assert not ev_registry.contains("EV-01", "EV-L2")
+        assert not ev_registry.contains("EAR-01", "ADM-L2")
 
 
 # =====================================================================
@@ -503,9 +497,8 @@ class TestSourceAuthorityFailClosed:
             InMemoryEvidenceRegistry()  # missing required arg
 
     def test_no_archive_cannot_admit(self):
-        """Even if we somehow get an instance without archive, admit fails."""
-        # Create with archive, verify admit works, then verify archive is mandatory
-        pass  # tested by constructor test above
+        """Cannot construct EvidenceRegistry without source_archive (tested by TypeError above)."""
+        pass  # coverage: constructor TypeError test covers this
 
     def test_shadow_src01_in_registry_does_not_help(self):
         """Even if SRC-01 is somehow stored in the registry, it's ignored."""

@@ -54,6 +54,21 @@ def validate_schema_instance(instance: object, schema_id: str | None = None) -> 
     if not isinstance(instance, model_class):
         violations.append(f"Instance type {type(instance).__name__} does not match "
                           f"expected model {model_class.__name__} for {schema_id}")
+        return violations
+
+    # Revalidate field VALUES via model_validate on the CURRENT data.
+    # model_copy(update=...) can create an instance with invalid values
+    # (e.g. evidence_type="NOT_A_VALID_TYPE") while retaining the correct
+    # Python class.  model_dump() + model_validate() catches this.
+    try:
+        model_class.model_validate(
+            instance.model_dump(mode="python"),
+        )
+    except Exception as exc:
+        violations.append(
+            f"{schema_id}: field value validation failed: {exc}"
+        )
+
     return violations
 
 

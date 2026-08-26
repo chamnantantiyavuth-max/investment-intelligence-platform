@@ -1084,7 +1084,7 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
             )
 
         # ---- AI method gate: original_source_verified must be "true" ----
-        # Authority: Founder Decision (27 Aug 2026) — canonical TRUE
+        # Author: Founder Decision (26 Aug 2026) — canonical TRUE
         # representation for AI_EXTRACTION / AI_SYNTHESIS is the exact
         # lowercase string "true".
         # None, "", "false", "TRUE", "yes", "1", or any other value
