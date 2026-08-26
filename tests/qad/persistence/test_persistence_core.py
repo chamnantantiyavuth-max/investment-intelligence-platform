@@ -686,7 +686,10 @@ class TestValidForeignKey:
         assert loaded_ev.source_id == "SRC-VALID"
 
     def test_evidence_registry_valid_fk(self, blank_store):
-        """Round-trip through InMemoryEvidenceRegistry."""
+        """Round-trip through InMemoryEvidenceRegistry via admit_evidence."""
+        from qad.models.family_b import (
+            EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
+        )
         store = InMemoryEvidenceRegistry()
         src = SourceRecord(
             source_id="SRC-VALID-2",
@@ -708,10 +711,21 @@ class TestValidForeignKey:
             extractor="v1",
             source_tier="L2",
         )
-        store.store(ev)
+        ear = EvidenceAdmissionRecord(
+            admission_id="ADM-VALID-2",
+            evidence_id="EV-VALID-2",
+            admitting_role="analyst",
+            admission_timestamp="2024-02-01T00:00:00",
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            validation_method="manual_review",
+            source_tier_check="L2",
+        )
+        store.admit_evidence(ev, ear)
         loaded = store.load("EV-01", _stored_id(ev))
         assert loaded.content == "Evidence round-trip."
         assert loaded.evidence_type == EvidenceRecordEvidence_type.INFERENCE
+        # EAR-01 must also exist atomically
+        assert store.contains("EAR-01", "ADM-VALID-2")
 
 
 # ====================================================================
@@ -1962,6 +1976,9 @@ class TestAppendOnlyVersionPreservation:
         assert prior.case_state == CaseRecordCase_state.CASE_OPEN
 
     def test_ev01_status_revision_preserves_prior(self):
+        from qad.models.family_b import (
+            EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
+        )
         store = InMemoryEvidenceRegistry()
         src = SourceRecord(
             source_id="SRC-EV-VER",
@@ -1986,7 +2003,16 @@ class TestAppendOnlyVersionPreservation:
             confidence="medium",
             admitting_role="analyst",
         )
-        store.store(ev)
+        ear = EvidenceAdmissionRecord(
+            admission_id="ADM-EV-VER",
+            evidence_id="EVI-EV-VER",
+            admitting_role="analyst",
+            admission_timestamp="2026-01-01T00:00:00",
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            validation_method="manual_review",
+            source_tier_check="L1",
+        )
+        store.admit_evidence(ev, ear)
 
         ev2 = EvidenceRecord(
             evidence_id="EVI-EV-VER",
@@ -2167,6 +2193,9 @@ class TestAppendOnlyAdversarial:
 
     def test_ev01_exactly_one_version_per_transition(self):
         """Each EV-01 status transition creates exactly one prior version."""
+        from qad.models.family_b import (
+            EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
+        )
         store = InMemoryEvidenceRegistry()
         src = SourceRecord(
             source_id="SRC-ADV-A", source_tier=SourceRecordSource_tier.L1,
@@ -2184,7 +2213,16 @@ class TestAppendOnlyAdversarial:
             extraction_method="filing_parser", source_tier="PRIMARY",
             extractor="test", confidence="medium", admitting_role="analyst",
         )
-        store.store(ev)
+        ear = EvidenceAdmissionRecord(
+            admission_id="ADM-ADV-A",
+            evidence_id="EV-ADV-A",
+            admitting_role="analyst",
+            admission_timestamp="2026-01-01T00:00:00",
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            validation_method="manual_review",
+            source_tier_check="L1",
+        )
+        store.admit_evidence(ev, ear)
 
         # 3 status transitions
         for status in [EvidenceRecordValidation_status.VALIDATED,
@@ -2317,6 +2355,9 @@ class TestAppendOnlyAdversarial:
     def test_ev01_failed_transition_rollback(self):
         """If an EV-01 status transition fails mid-write, the store state
         (record, versions, counter) is unchanged."""
+        from qad.models.family_b import (
+            EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method,
+        )
         store = InMemoryEvidenceRegistry()
         src = SourceRecord(
             source_id="SRC-ADV-D", source_tier=SourceRecordSource_tier.L1,
@@ -2334,7 +2375,16 @@ class TestAppendOnlyAdversarial:
             extraction_method="filing_parser", source_tier="PRIMARY",
             extractor="test", confidence="medium", admitting_role="analyst",
         )
-        store.store(ev)
+        ear = EvidenceAdmissionRecord(
+            admission_id="ADM-ADV-D",
+            evidence_id="EV-ADV-D",
+            admitting_role="analyst",
+            admission_timestamp="2026-01-01T00:00:00",
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            validation_method="manual_review",
+            source_tier_check="L1",
+        )
+        store.admit_evidence(ev, ear)
 
         # First successful transition
         ev2 = ev.model_copy(update={"validation_status": EvidenceRecordValidation_status.VALIDATED})

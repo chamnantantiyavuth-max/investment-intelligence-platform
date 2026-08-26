@@ -279,12 +279,36 @@ class RawSourceArchive(CanonicalRecordStore, Protocol):
 
 @runtime_checkable
 class EvidenceRegistry(CanonicalRecordStore, Protocol):
-    """Evidence record store with source-FK enforcement.
+    """Evidence record store with source-FK enforcement and admission gate.
 
-    Once an evidence record is *admitted* (written), its identity-bearing
-    fields (evidence_id, source_id) are immutable.  Only status fields
-    may be updated.
+    Once an evidence record is *admitted* (written through
+    ``admit_evidence``), its identity-bearing fields (evidence_id,
+    source_id) are immutable.  Only status fields may be updated.
+
+    ``admit_evidence`` is the ONLY path for creating new canonical
+    evidence.  Direct ``store(EV-01)`` for a non-existent evidence
+    record is rejected.
     """
+
+    def admit_evidence(
+        self,
+        evidence: BaseModel,
+        admission: BaseModel,
+        /,
+    ) -> CanonicalHash:
+        """Atomically admit an EvidenceRecord with its EvidenceAdmissionRecord.
+
+        The admission gate enforces:
+        - Source (SRC-01) exists in the authoritative RawSourceArchive
+        - Source record is not tombstoned
+        - Source content binding is intact (raw bytes exist)
+        - EAR.evidence_id == EV.evidence_id
+        - AI_EXTRACTION / AI_SYNTHESIS requires original_source_verified == true
+        - Both records pass contract validation
+
+        Failure rollback guarantees zero partial state.
+        """
+        ...
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
         """Store evidence record.

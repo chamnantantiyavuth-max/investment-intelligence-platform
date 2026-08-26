@@ -37,7 +37,9 @@ from pydantic import BaseModel
 from qad.persistence.errors import (
     CanonicalBoundaryViolation,
     HashMismatch,
+    ImmutabilityViolation,
     IntegrityConflict,
+    MissingForeignKey,
     NonCanonicalAdmissionRejected,
     PersistenceError,
     TransactionFailure,
@@ -952,32 +954,264 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
 # ===================================================================
 
 class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
-    """REFERENCE / NON-PRODUCTION — evidence store with source-FK enforcement.
+    """REFERENCE / NON-PRODUCTION — evidence store with admission gate.
 
-    Once admitted, evidence content is immutable.  Only mutable fields
-    (per contract descriptor) may be updated in subsequent writes.
+    ``admit_evidence`` is the ONLY path for creating new canonical
+    evidence.  Direct ``store(EV-01)`` for a non-existent evidence
+    record is rejected.
+
+    Parameters
+    ----------
+    source_archive:
+        Optional authoritative ``RawSourceArchive`` for SRC-01
+        existence and binding-integrity checks.  When provided,
+        EV-01 FK validation uses the real source archive instead
+        of a local shadow copy.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, source_archive: RawSourceArchive | None = None) -> None:
         super().__init__()
-        self._admitted: set[str] = set()  # evidence_id set
+        self._source_archive = source_archive
+
+    # -- Source-existence check (bridges to RawSourceArchive) ---------------
+
+    def _source_exists(self, source_id: str) -> bool:
+        """Return True if *source_id* refers to an admitted, non-tombstoned
+        source with intact metadata-bytes binding.
+
+        Checks the authoritative RawSourceArchive when available.
+        Falls back to local SRC-01 data only as a legacy path.
+        """
+        # Primary: authoritative RawSourceArchive
+        if self._source_archive is not None:
+            if not self._source_archive.contains("SRC-01", source_id):
+                return False
+            # Verify binding integrity: raw blob exists and hash matches
+            try:
+                raw = self._source_archive.load_raw_blob(source_id)
+                src = self._source_archive.load("SRC-01", source_id)
+                import hashlib
+                raw_hash = hashlib.sha256(raw).hexdigest()
+                content_hash = getattr(src, "content_hash", None)
+                return raw_hash == content_hash
+            except (KeyError, AttributeError):
+                return False
+        # Fallback: local SRC-01 (legacy, not preferred)
+        try:
+            rec = self._load_raw("SRC-01", source_id)
+            return rec is not None
+        except KeyError:
+            return False
+
+    # -- Atomic evidence admission (Item 6) --------------------------------
+
+    def admit_evidence(
+        self,
+        evidence: BaseModel,
+        admission: BaseModel,
+        /,
+    ) -> CanonicalHash:
+        """Atomically admit an EvidenceRecord with its EvidenceAdmissionRecord.
+
+        Raises
+        ------
+        CanonicalBoundaryViolation
+            If schema_id is not EV-01/EAR-01, or evidence already admitted.
+        MissingForeignKey
+            If source (SRC-01) does not exist in authoritative archive.
+        IntegrityConflict
+            If EAR.evidence_id != EV.evidence_id,
+            or AI method without original_source_verified="true",
+            or evidence already exists.
+        TransactionFailure
+            If validation or commit fails (zero partial state).
+        """
+        from qad.contract.canonical_boundary import CANONICAL_SCHEMAS
+
+        ev_schema: str = evidence.schema_id  # type: ignore[assignment]
+        ear_schema: str = admission.schema_id  # type: ignore[assignment]
+        ev_id = _resolve_id(evidence)
+        ear_id = _resolve_id(admission)
+
+        # ---- Schema checks ----
+        if ev_schema != "EV-01":
+            raise CanonicalBoundaryViolation(
+                f"admit_evidence requires EV-01, got {ev_schema}",
+                schema_id=ev_schema, record_id=ev_id,
+            )
+        if ear_schema != "EAR-01":
+            raise CanonicalBoundaryViolation(
+                f"admit_evidence requires EAR-01, got {ear_schema}",
+                schema_id=ear_schema, record_id=ear_id,
+            )
+
+        # ---- Evidence must not already exist ----
+        if self._data.get("EV-01", {}).get(ev_id) is not None:
+            raise IntegrityConflict(
+                f"EV-01/{ev_id}: evidence already admitted",
+                schema_id="EV-01", record_id=ev_id,
+            )
+
+        # ---- EAR.evidence_id must match EV.evidence_id ----
+        ear_evidence_id = getattr(admission, "evidence_id", None)
+        if ear_evidence_id != ev_id:
+            raise IntegrityConflict(
+                f"EAR-01/{ear_id}.evidence_id ({ear_evidence_id}) "
+                f"!= EV-01/{ev_id}",
+                schema_id="EAR-01", record_id=ear_id,
+            )
+
+        # ---- Source must exist in authoritative archive ----
+        source_id = getattr(evidence, "source_id", None)
+        if not source_id:
+            raise MissingForeignKey(
+                "EV-01.source_id is required",
+                schema_id="EV-01", record_id=ev_id,
+            )
+        if not self._source_exists(source_id):
+            raise MissingForeignKey(
+                f"EV-01.source_id ({source_id}) does not resolve to "
+                f"an admitted SRC-01 with intact binding",
+                schema_id="EV-01", record_id=ev_id,
+                target_schema="SRC-01",
+                target_ids=[source_id],
+            )
+
+        # ---- AI method gate: original_source_verified required ----
+        admission_method = getattr(admission, "admission_method", None)
+        if admission_method in ("AI_EXTRACTION", "AI_SYNTHESIS"):
+            osv = getattr(admission, "original_source_verified", None)
+            if osv != "true":
+                raise IntegrityConflict(
+                    f"AI admission method ({admission_method}) requires "
+                    f"original_source_verified='true', got {osv!r}",
+                    schema_id="EAR-01", record_id=ear_id,
+                )
+
+        # ---- Atomic admission via Transaction ----
+        # Build a composite store_contains that checks both the
+        # EvidenceRegistry AND the authoritative RawSourceArchive
+        def _composite_contains(schema_id: SchemaID, record_id: RecordID) -> bool:
+            if self.contains(schema_id, record_id):
+                return True
+            if self._source_archive is not None:
+                return self._source_archive.contains(schema_id, record_id)
+            return False
+
+        snapshot = self._snapshot()
+        try:
+            tx = Transaction(
+                store_contains=_composite_contains,
+                commit_store=self._write_record,
+                commit_delete=self._remove_record,
+                get_existing=self._load_raw,
+                get_existing_hash=self._load_hash,
+                commit_snapshot=self._snapshot,
+                commit_restore=self._restore,
+            )
+            tx.add_store(evidence)
+            tx.add_store(admission)
+            tx.execute()
+        except BaseException:
+            self._restore(snapshot)
+            raise
+
+        return compute_canonical_hash(evidence)
+
+    # -- Override store() to block bypass paths ----------------------------
 
     def store(self, instance: BaseModel, /) -> CanonicalHash:
+        """Override to enforce that new EV-01 and EAR-01 must go through
+        ``admit_evidence()``.
+
+        For existing EV-01 (already admitted), only mutable status fields
+        may be updated through the controlled path.
+        """
         schema_id: str = instance.schema_id  # type: ignore[assignment]
-        evidence_id = _resolve_id(instance)
+        record_id = _resolve_id(instance)
 
-        # If already admitted, only mutable fields may change
-        if evidence_id in self._admitted:
-            existing = self._load_raw(schema_id, evidence_id)
-            if existing is not None:
-                return self._update_mutable_fields(schema_id, evidence_id,
-                                                    instance, existing)
-            # Fall through to new admission
+        # Block EAR-01 direct store
+        if schema_id == "EAR-01":
+            raise CanonicalBoundaryViolation(
+                f"EAR-01 direct store rejected: use admit_evidence() "
+                f"to atomically admit evidence with admission record",
+                schema_id=schema_id, record_id=record_id,
+            )
 
-        # First admission
-        ch = super().store(instance)
-        self._admitted.add(evidence_id)
-        return ch
+        # Block new EV-01 direct store
+        if schema_id == "EV-01":
+            existing = self._data.get("EV-01", {}).get(record_id)
+            if existing is None:
+                raise CanonicalBoundaryViolation(
+                    f"EV-01 direct store rejected: use admit_evidence() "
+                    f"to create new evidence through the admission gate",
+                    schema_id=schema_id, record_id=record_id,
+                )
+            # Already admitted — allow status/mutable-field update
+            return self._update_mutable_fields(
+                schema_id, record_id, instance, existing.instance,
+            )
+
+        return super().store(instance)
+
+    # -- Override store_batch() to block EV-01/EAR-01 bypass ---------------
+
+    def store_batch(
+        self, instances: list[BaseModel], /,
+    ) -> list[CanonicalHash]:
+        """Override to reject any batch containing EV-01 or EAR-01.
+
+        Evidence admission must go through ``admit_evidence()``.
+        Non-evidence schemas pass through unchanged.
+        """
+        for inst in instances:
+            sid: str = inst.schema_id  # type: ignore[assignment]
+            if sid in ("EV-01", "EAR-01"):
+                raise CanonicalBoundaryViolation(
+                    f"{sid} in batch rejected: use admit_evidence() "
+                    f"for evidence admission",
+                    schema_id=sid, record_id=_resolve_id(inst),
+                )
+        return super().store_batch(instances)
+
+    # -- Eliminate _admitted — derive from canonical state -----------------
+
+    def _snapshot(self) -> tuple[
+        dict[str, dict[str, "_Record"]],
+        dict[str, dict[str, dict]],
+        dict[str, dict[str, dict[str, "_Record"]]],
+        dict[str, int],
+        dict[str, dict[str, "_Record"]],
+    ]:
+        """Snapshot — extends base with version_data (no _admitted needed).
+
+        ``_admitted`` is eliminated; admission state is derived from
+        canonical EV-01 existence in ``_data``.
+        """
+        base = super()._snapshot()
+        return (
+            *base,
+            deepcopy(self._version_data) if hasattr(self, "_version_data") else {},
+        )
+
+    def _restore(
+        self,
+        snapshot: tuple[
+            dict[str, dict[str, "_Record"]],
+            dict[str, dict[str, dict]],
+            dict[str, dict[str, dict[str, "_Record"]]],
+            dict[str, int],
+            dict[str, dict[str, "_Record"]],
+        ],
+    ) -> None:
+        """Restore — extends base with version_data."""
+        (
+            self._data,
+            self._tombstones,
+            self._versions,
+            self._version_counts,
+            self._version_data,
+        ) = snapshot
 
     def _update_mutable_fields(
         self, schema_id: SchemaID, evidence_id: RecordID,
@@ -1026,6 +1260,16 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
             ):
                 updates[field_name] = new_val
                 changed = True
+
+            elif new_val != old_val:
+                # Immutable field changed — must be REJECTED, not silently
+                # dropped (Item 6: post-admission evidence mutation gate)
+                raise ImmutabilityViolation(
+                    f"{schema_id}/{evidence_id}: cannot change immutable "
+                    f"field '{field_name}' after admission",
+                    schema_id=schema_id, record_id=evidence_id,
+                    violated_fields=[field_name],
+                )
 
         if not changed:
             # Idempotent — nothing to update
