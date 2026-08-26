@@ -1083,23 +1083,19 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
                 target_ids=[source_id],
             )
 
-        # ---- AI method gate: original_source_verified flag required ----
-        # Authority: M4A INV-005 (I-5) — "If admission_method = AI_SYNTHESIS
-        # and no original_source_verified flag → VIOLATION."
-        # Founder Item-6 correction extends this to AI_EXTRACTION.
-        #
-        # NOTE: CONTRACT_AMBIGUITY — The exact lexical representation of
-        # "true" for original_source_verified (Optional[str]) is not defined
-        # by any frozen contract.  INV-005 uses "flag" (present/not-None).
-        # For now, any non-None value satisfies the flag requirement.
-        # Exact truth values require a Founder decision.
+        # ---- AI method gate: original_source_verified must be "true" ----
+        # Authority: Founder Decision (27 Aug 2026) — canonical TRUE
+        # representation for AI_EXTRACTION / AI_SYNTHESIS is the exact
+        # lowercase string "true".
+        # None, "", "false", "TRUE", "yes", "1", or any other value
+        # = NOT VERIFIED / reject admission.
         admission_method = getattr(admission, "admission_method", None)
         if admission_method in ("AI_EXTRACTION", "AI_SYNTHESIS"):
             osv = getattr(admission, "original_source_verified", None)
-            if osv is None:
+            if osv != "true":
                 raise IntegrityConflict(
                     f"AI admission method ({admission_method}) requires "
-                    f"original_source_verified flag (not None)",
+                    f"original_source_verified=\"true\", got {osv!r}",
                     schema_id="EAR-01", record_id=ear_id,
                 )
 
@@ -1189,10 +1185,10 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         """
         for inst in instances:
             sid: str = inst.schema_id  # type: ignore[assignment]
-            if sid in ("EV-01", "EAR-01"):
+            if sid in ("EV-01", "EAR-01", "SRC-01"):
                 raise CanonicalBoundaryViolation(
                     f"{sid} in batch rejected: use admit_evidence() "
-                    f"for evidence admission",
+                    f"for evidence admission, or RawSourceArchive for source storage",
                     schema_id=sid, record_id=_resolve_id(inst),
                 )
         return super().store_batch(instances)
