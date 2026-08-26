@@ -35,6 +35,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from qad.persistence.errors import (
+    CanonicalBoundaryViolation,
     HashMismatch,
     IntegrityConflict,
     NonCanonicalAdmissionRejected,
@@ -678,17 +679,26 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         Requirements (M5.2 Item 5):
         1. ``sha256(raw_bytes) == SourceRecord.content_hash`` **before**
            canonical admission — ``HashMismatch`` otherwise.
-        2. Same ``source_id`` + identical raw bytes + same metadata →
-           idempotent (return existing hash).
-        3. Same ``source_id`` + identical raw bytes + changed metadata →
-           legitimate metadata revision (SRC-01 is not RECORD_IMMUTABLE;
-           mutable fields may update while content integrity holds).
-        4. Same ``source_id`` + different raw bytes → ``IntegrityConflict``
-           (\"content never edited in place\").
-        5. Raw blob cannot be overwritten via ``store_raw_blob()`` after
+        2. Same ``source_id`` + same metadata + identical raw bytes →
+           idempotent.
+        3. Same ``source_id`` + EITHER different metadata OR different
+           bytes → ``IntegrityConflict``.  Source records are IMMUTABLE
+           source document references; re-admission requires versioning
+           through ``SRCV-01`` (M4A SRC-01 immutability_rules + revision_rules).
+        4. Raw blob cannot be overwritten via ``store_raw_blob()`` after
            admission (enforced by guard in ``store_raw_blob``).
-        6. Metadata + bytes are ONE admission unit: failure anywhere
+        5. Metadata + bytes are ONE admission unit: failure anywhere
            restores ALL state (data, raw_blobs, version_data, tombstones).
+
+        Raises
+        ------
+        CanonicalBoundaryViolation
+            If ``instance.schema_id`` is not ``SRC-01``.
+        HashMismatch
+            If ``content_hash != sha256(raw_bytes)``.
+        IntegrityConflict
+            If a matching ``source_id`` already exists with different
+            payload (either metadata or bytes).
 
         Single-write vs batch admission
         --------------------------------
@@ -698,9 +708,18 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         cross-source batch atomicity (each source is independent).
         """
         import hashlib
+        from qad.contract.canonical_boundary import CANONICAL_SCHEMAS
 
         schema_id: str = instance.schema_id  # type: ignore[assignment]
         record_id = _resolve_id(instance)
+
+        # ---- Step 0: schema boundary ----
+        if schema_id != "SRC-01":
+            raise CanonicalBoundaryViolation(
+                f"{schema_id}: admit_source() requires SRC-01, got {schema_id}",
+                schema_id=schema_id,
+                record_id=record_id,
+            )
 
         # ---- Step 1: hash match ----
         content_hash = getattr(instance, "content_hash", None)
@@ -714,39 +733,30 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
                 actual_hash=actual_hash,
             )
 
-        # ---- Step 2: conflict / idempotency / revision check ----
+        # ---- Step 2: conflict / idempotency check ----
         existing_meta = self._data.get("SRC-01", {}).get(record_id)
         existing_raw = self._raw_blobs.get(record_id)
 
-        if existing_raw is not None:
-            if existing_raw == raw_bytes:
-                # Same bytes — admissible
-                if existing_meta is not None:
-                    existing_ch = existing_meta.canonical_hash
-                    incoming_ch = compute_canonical_hash(instance)
-                    if incoming_ch == existing_ch:
-                        return existing_ch  # Idempotent
-                    # Metadata revision — allow (SRC-01 is not RECORD_IMMUTABLE)
-                    # Falls through to metadata update below
-                else:
-                    # Raw bytes exist without metadata — inconsistent state
-                    # (shouldn't happen in normal flow, but protect against it)
-                    raise IntegrityConflict(
-                        f"SRC-01/{record_id}: raw bytes exist without matching "
-                        f"SourceRecord metadata — inconsistent state",
-                        schema_id=schema_id,
-                        record_id=record_id,
-                    )
-            else:
-                # Different raw bytes → content integrity violation
-                raise IntegrityConflict(
-                    f"SRC-01/{record_id}: content cannot be edited in place — "
-                    f"already admitted with different raw bytes",
-                    schema_id=schema_id,
-                    record_id=record_id,
-                    existing_hash=hashlib.sha256(existing_raw).hexdigest(),
-                    incoming_hash=actual_hash,
-                )
+        if existing_raw is not None or existing_meta is not None:
+            # Source already exists — check idempotency
+            if (
+                existing_raw is not None
+                and existing_raw == raw_bytes
+                and existing_meta is not None
+            ):
+                existing_ch = existing_meta.canonical_hash
+                incoming_ch = compute_canonical_hash(instance)
+                if incoming_ch == existing_ch:
+                    return existing_ch  # Idempotent
+
+            # Any difference → conflict
+            raise IntegrityConflict(
+                f"SRC-01/{record_id}: source record already admitted — "
+                f"content cannot be edited in place; "
+                f"re-admission requires SRCV-01 versioning",
+                schema_id=schema_id,
+                record_id=record_id,
+            )
 
         # ---- Step 3: atomic admission (snapshot/restore) ----
         snapshot = self._snapshot()
@@ -766,15 +776,29 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
 
             # 3b. Store raw bytes
             self._raw_blobs[record_id] = raw_bytes
-
-            # 3c. Also set content_hash on already-existing SourceRecord
-            #     metadata if it was a metadata revision (content_hash unchanged
-            #     since we already validated it matches)
         except BaseException:
             self._restore(snapshot)
             raise
 
         return compute_canonical_hash(instance)
+
+    # -- Override store() to reject SRC-01 bypass --------------------------
+
+    def store(self, instance: BaseModel, /) -> CanonicalHash:
+        """Override to enforce that SRC-01 must go through ``admit_source()``.
+
+        Non-SRC-01 schemas pass through to generic canonical storage
+        unchanged.
+        """
+        schema_id: str = instance.schema_id  # type: ignore[assignment]
+        if schema_id == "SRC-01":
+            raise CanonicalBoundaryViolation(
+                f"SRC-01 direct store rejected: use admit_source() "
+                f"to bind SourceRecord metadata to raw bytes",
+                schema_id=schema_id,
+                record_id=_resolve_id(instance),
+            )
+        return super().store(instance)
 
     # -- Guarded store_raw_blob (no overwrite of admitted content) ---------
 

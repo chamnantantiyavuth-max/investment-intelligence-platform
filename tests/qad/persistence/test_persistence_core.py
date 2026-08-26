@@ -989,6 +989,7 @@ class TestRawSourceArchive:
 
     def test_tombstone_preserves_versions(self):
         store = InMemoryRawSourceArchive()
+        raw_data = b"Raw source content"
         src = SourceRecord(
             source_id="SRC-TOMB",
             source_tier=SourceRecordSource_tier.L1,
@@ -997,12 +998,8 @@ class TestRawSourceArchive:
             content_hash="74926aa6b46f709ff79dfa057008bfb4efe590ce3584d457b0589be21fb7d928",
             retrieval_date="2024-01-01",
         )
-        store.store(src)
+        store.admit_source(src, raw_data)
         store.store_version(src, "v1")
-
-        raw_data = b"Raw source content"
-        raw_hash = hashlib.sha256(raw_data).hexdigest()
-        store.store_raw_blob("SRC-TOMB", raw_hash, raw_data)
 
         store.tombstone("SRC-TOMB", "Source retracted")
 
@@ -1020,6 +1017,8 @@ class TestRawSourceArchive:
 
     def test_tombstoned_raw_blob_historical_access(self):
         store = InMemoryRawSourceArchive()
+        raw_data = b"Sensitive content"
+        raw_hash = hashlib.sha256(raw_data).hexdigest()
         src = SourceRecord(
             source_id="SRC-TOMB-2",
             source_tier=SourceRecordSource_tier.L1,
@@ -1028,10 +1027,7 @@ class TestRawSourceArchive:
             content_hash="5c5836f6a614f2ea3e2727f48287efa2e30051ed1c022e0a0fbaa75f51fe01dd",
             retrieval_date="2024-02-01",
         )
-        store.store(src)
-        raw_data = b"Sensitive content"
-        raw_hash = hashlib.sha256(raw_data).hexdigest()
-        store.store_raw_blob("SRC-TOMB-2", raw_hash, raw_data)
+        store.admit_source(src, raw_data)
         store.tombstone("SRC-TOMB-2", "Sensitive")
 
         # Normal load_raw_blob must REJECT tombstoned (quarantine)
@@ -1529,8 +1525,8 @@ class TestEdgeCases:
         # The surviving record is NOT tombstoned
         assert not blank_store.is_tombstoned("SM-01", ids[2])
 
-    def test_store_and_raw_source_archive_raw_blob(self, blank_store):
-        """Storing a SRC-01 through RawSourceArchive preserves raw blobs."""
+    def test_store_and_raw_source_archive_raw_blob_is_bypassed(self, blank_store):
+        """SRC-01 cannot become canonical without admit_source (bypass gate)."""
         store = InMemoryRawSourceArchive()
         src = SourceRecord(
             source_id="SRC-RSA",
@@ -1540,11 +1536,13 @@ class TestEdgeCases:
             content_hash="34a3ee1f3d931633e905e51d12aff808af7be857253d7511b5ce82015db6b8b0",
             retrieval_date="2024-01-01",
         )
-        store.store(src)
+        from qad.persistence.errors import CanonicalBoundaryViolation
+        with pytest.raises(CanonicalBoundaryViolation):
+            store.store(src)
+        # admit_source() is the only valid path
         raw = b"Raw source PDF content"
-        h = hashlib.sha256(raw).hexdigest()
-        store.store_raw_blob("SRC-RSA", h, raw)
-        assert store.get_raw_blob_hash("SRC-RSA") == h
+        store.admit_source(src, raw)
+        assert store.get_raw_blob_hash("SRC-RSA") == hashlib.sha256(raw).hexdigest()
         assert store.load_raw_blob("SRC-RSA") == raw
 
     def test_get_canonical_hash_introspection(self, blank_store):
@@ -1706,15 +1704,16 @@ class TestRawSourceArchiveTombstone:
         from qad.models.family_b import SourceRecord, SourceRecordSource_tier, SourceRecordSource_type
 
         store = InMemoryRawSourceArchive()
+        raw = b"tombstone history content"
         src = SourceRecord(
             source_id="SRC-TOMB-HIST",
             source_tier=SourceRecordSource_tier.L1,
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/hist",
-            content_hash="hist1",
+            content_hash="87f470ca39302635a5abb398b9ce86634fb2f6dd8b19d0a31535a6e07d028242",
             retrieval_date="2024-01-01",
         )
-        store.store(src)
+        store.admit_source(src, raw)
         store.store_version(src, "v1")
 
         # Tombstone
@@ -1728,7 +1727,7 @@ class TestRawSourceArchiveTombstone:
         # Historical version must still be recoverable
         ver, blob = store.load_version("SRC-TOMB-HIST", "v1")
         assert ver.source_id == "SRC-TOMB-HIST"
-        assert ver.content_hash == "hist1"
+        assert ver.content_hash == "87f470ca39302635a5abb398b9ce86634fb2f6dd8b19d0a31535a6e07d028242"
 
         # Tombstone status must be queryable
         assert store.is_tombstoned("SRC-TOMB-HIST")
@@ -1740,6 +1739,8 @@ class TestRawSourceArchiveTombstone:
         import hashlib
 
         store = InMemoryRawSourceArchive()
+        raw = b"Raw content that must survive tombstone"
+        h = hashlib.sha256(raw).hexdigest()
         src = SourceRecord(
             source_id="SRC-TOMB-RAW",
             source_tier=SourceRecordSource_tier.L1,
@@ -1748,10 +1749,7 @@ class TestRawSourceArchiveTombstone:
             content_hash="f426caa90e11791360c15aed8625ed4e8099477cd3b696e654ac27807c9ec155",
             retrieval_date="2024-01-01",
         )
-        store.store(src)
-        raw = b"Raw content that must survive tombstone"
-        h = hashlib.sha256(raw).hexdigest()
-        store.store_raw_blob("SRC-TOMB-RAW", h, raw)
+        store.admit_source(src, raw)
 
         # Tombstone
         store.tombstone("SRC-TOMB-RAW", "test reason")
