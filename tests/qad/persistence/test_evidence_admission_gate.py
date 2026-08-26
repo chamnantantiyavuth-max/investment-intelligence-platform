@@ -496,10 +496,6 @@ class TestSourceAuthorityFailClosed:
         with pytest.raises(TypeError):
             InMemoryEvidenceRegistry()  # missing required arg
 
-    def test_no_archive_cannot_admit(self):
-        """Cannot construct EvidenceRegistry without source_archive (tested by TypeError above)."""
-        pass  # coverage: constructor TypeError test covers this
-
     def test_shadow_src01_in_registry_does_not_help(self):
         """Even if SRC-01 is somehow stored in the registry, it's ignored."""
         src_archive, ev_registry = _paired_store()
