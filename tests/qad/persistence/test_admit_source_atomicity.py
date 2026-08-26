@@ -269,20 +269,14 @@ class TestInvariant8Atomicity:
         assert store.load_raw_blob("INV8V") == raw
 
     def test_commit_phase_failure_rollback_all_seven_dicts(self):
-        """REAL fault injection: metadata committed, then fault before
-        raw_bytes assignment — prove ALL 7 state dicts are rolled back.
+        """REAL fault injection: raise in _raw_blobs.__setitem__ AFTER
+        metadata commit. Prove ALL 7 state dicts roll back.
 
-        This creates a subclass that raises after Transaction.execute()
-        succeeds but before _raw_blobs is written, verifying that
-        admit_source's snapshot/restore covers every state dict.
+        Uses a fault-injecting _FaultyBlobDict that raises on any write.
         """
-        from copy import deepcopy
         from qad.persistence.errors import PersistenceError
 
         class _FaultySourceArchive(InMemoryRawSourceArchive):
-            """Subclass that injects a failure after metadata commit
-            by raising in _raw_blobs.__setitem__."""
-
             class _FaultyBlobDict(dict):
                 def __setitem__(self, key, value):
                     raise PersistenceError(
@@ -291,41 +285,32 @@ class TestInvariant8Atomicity:
 
             def __init__(self):
                 super().__init__()
-                # Replace _raw_blobs with a dict that raises on write
                 self._raw_blobs = self._FaultyBlobDict()
 
         store = _FaultySourceArchive()
         raw = b"invariant8 commit-fault"
         ch = hashlib.sha256(raw).hexdigest()
 
-        # Snapshot pre-admission state
-        # (verify all 7 state dicts are empty/clean)
         snap_before = store._snapshot()
-        data0, tombs0, vers0, vc0, blobs0, vdata0, treasons0 = snap_before
-
-        assert len(data0) == 0 or all(len(v) == 0 for v in data0.values())
-        assert len(blobs0) == 0
-        assert len(vdata0) == 0
-        assert len(treasons0) == 0
 
         src = _make_src("INV8-FAULT", content_raw=raw)
-        # Ensure source_id is unique so we can track it
-        # Actually "INV8-FAULT" is fine
-        try:
-            with pytest.raises((PersistenceError, BaseException)):
-                store.admit_source(src, raw)
-        except BaseException:
-            pass
 
-        # Prove full rollback: ALL 7 dicts back to pre-admission state
+        # Exact expected failure -- no exception swallowing
+        with pytest.raises(PersistenceError, match="Injected fault"):
+            store.admit_source(src, raw)
+
+        # Prove full rollback: ALL 7 state dicts back to pre-admission
         snap_after = store._snapshot()
         assert snap_after == snap_before, (
             f"Rollback failed: state differs from pre-admission snapshot"
         )
 
+        # Individual verifications
         assert not store.contains("SRC-01", _resolve_id(src))
         with pytest.raises(KeyError):
             store.load_raw_blob(_resolve_id(src))
+        assert store.get_version_count("SRC-01", _resolve_id(src)) == 0
+        assert not store.is_tombstoned(_resolve_id(src))
 
     def test_admit_source_non_src01_rejected(self):
         """admit_source rejects non-SRC-01 input."""
@@ -390,7 +375,67 @@ class TestInvariant9HashConsistency:
 # Invariant 10: Items 1-4 invariants remain unchanged
 # =====================================================================
 
-class TestInvariant10RegressionItems1to4:
+class TestNoRemainingBypass:
+    """Prove no public API can create canonical SRC-01 without admit_source."""
+
+    def test_store_batch_src01_rejected(self):
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant bypass-batch"
+        ch = hashlib.sha256(raw).hexdigest()
+        src = _make_src("BYPASS-BATCH", content_raw=raw)
+        with pytest.raises(CanonicalBoundaryViolation, match="SRC-01 in batch"):
+            store.store_batch([src])
+        assert not store.contains("SRC-01", "BYPASS-BATCH")
+        with pytest.raises(KeyError):
+            store.load_raw_blob("BYPASS-BATCH")
+
+    def test_store_batch_non_src01_passes(self):
+        """Non-SRC-01 schemas can still use store_batch."""
+        from qad.models.family_a import (
+            SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+        )
+        store = InMemoryRawSourceArchive()
+        sm1 = SecurityMaster(
+            entity_id="E-BATCH-OK",
+            cik="B1", exchange="NYSE", name="BatchOK",
+            primary_ticker="BOK",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        sm2 = SecurityMaster(
+            entity_id="E-BATCH-OK-2",
+            cik="B2", exchange="NYSE", name="BatchOK2",
+            primary_ticker="BK2",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        hashes = store.store_batch([sm1, sm2])
+        assert len(hashes) == 2
+        assert store.contains("SM-01", "E-BATCH-OK")
+        assert store.contains("SM-01", "E-BATCH-OK-2")
+
+    def test_store_version_src01_without_admission_rejected(self):
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant bypass-version"
+        ch = hashlib.sha256(raw).hexdigest()
+        src = _make_src("BYPASS-VER", content_raw=raw)
+        with pytest.raises(CanonicalBoundaryViolation, match="store_version rejected"):
+            store.store_version(src, "v1")
+        assert not store.contains("SRC-01", "BYPASS-VER")
+        with pytest.raises(KeyError):
+            store.load_raw_blob("BYPASS-VER")
+
+    def test_store_version_src01_with_admission_allowed(self):
+        """store_version on already-admitted SRC-01 is valid."""
+        store = InMemoryRawSourceArchive()
+        raw = b"invariant version-admitted"
+        src = _make_src("BYPASS-VER-OK", content_raw=raw)
+        store.admit_source(src, raw)
+        store.store_version(src, "v1")
+        assert store.contains("SRC-01", "BYPASS-VER-OK")
+        assert store.load_raw_blob("BYPASS-VER-OK") == raw
+        vers = store.list_versions("BYPASS-VER-OK")
+        assert "v1" in vers
     """Item 5 changes must not break Item 1-4 semantics.
     These are sample regression probes — full suite runs later."""
 

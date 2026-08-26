@@ -548,11 +548,26 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
 
     # -- Versioning ---------------------------------------------------------
 
+    # -- Guard store_version() to reject SRC-01 without prior admission ---
+
     def store_version(
         self, instance: BaseModel, version_label: str, /,
     ) -> CanonicalHash:
+        """Override to enforce that SRC-01 must be admitted before versioning.
+
+        ``store_version`` on an already-admitted source is valid (version
+        tracking).  ``store_version`` on a fresh SRC-01 with no raw bytes
+        is a bypass of ``admit_source()``.
+        """
         schema_id: str = instance.schema_id  # type: ignore[assignment]
         record_id = _resolve_id(instance)
+        if schema_id == "SRC-01" and record_id not in self._raw_blobs:
+            raise CanonicalBoundaryViolation(
+                f"SRC-01/{record_id}: store_version rejected — "
+                f"source not yet admitted; use admit_source() first",
+                schema_id=schema_id,
+                record_id=record_id,
+            )
         ch = compute_canonical_hash(instance)
 
         tx = Transaction(
@@ -799,6 +814,27 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
                 record_id=_resolve_id(instance),
             )
         return super().store(instance)
+
+    # -- Override store_batch() to reject SRC-01 bypass --------------------
+
+    def store_batch(
+        self, instances: list[BaseModel], /,
+    ) -> list[CanonicalHash]:
+        """Override to reject any batch containing SRC-01.
+
+        SRC-01 may only enter through ``admit_source()``.
+        Non-SRC-01 schemas pass through unchanged.
+        """
+        for inst in instances:
+            sid: str = inst.schema_id  # type: ignore[assignment]
+            if sid == "SRC-01":
+                raise CanonicalBoundaryViolation(
+                    f"SRC-01 in batch rejected: use admit_source() "
+                    f"to bind SourceRecord metadata to raw bytes",
+                    schema_id=sid,
+                    record_id=_resolve_id(inst),
+                )
+        return super().store_batch(instances)
 
     # -- Guarded store_raw_blob (no overwrite of admitted content) ---------
 
