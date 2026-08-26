@@ -1,4 +1,29 @@
-# Session — 2026-08-18 (cron review, 12:20): 18 Aug world reconciled — M2 FINAL CLOSEOUT committed + pushed; weekly-radar root cause CORRECTED (unpinned config-drift guard) + 3 cron pins APPLIED
+# Session — 2026-08-26 (cron review, 26 Aug): 25 Aug world reconciled — M5.2 correction Items 1–4/14 CLOSED (Item 4 FINAL, Founder-approved); suite 449/449; F6 closed; Learning Loop Telegram delivery failing
+
+**Review window:** 25 Aug 15:22 → 26 Aug (this review). **What this review found (evidence-backed):**
+
+1. **M5.2 correction Items 1–4/14 CLOSED — Item 4 = FINAL / FOUNDER-APPROVED (25 Aug 17:03):** HEAD == origin/main == `5b458bc` (484 commits), tree CLEAN, push SYNCED (ls-remote verified). Item 3 (tombstone-only, no canonical hard delete) `3b947d4` + micro-audit `050ff0d`; **Item 4 (APPEND_ONLY version preservation)** `6496786` (version tracking + API) → `48ee3dd` (micro-audit B–E) → `db77e04` (SM-01 ticker_history + revision policy matrix) → `3ba2382` (hash invariant + cache isolation) → `5b458bc` (same-ticker history preservation + batch duplicate rejection — Findings N/O). **Suite 449/449 PASS re-verified this review** (hermes-agent venv interpreter, 4.15s; 6 pydantic deprecation warnings only).
+2. **M5.2 Items 5–14 PENDING** (source-byte integrity, evidence gate, lineage, etc.) — per the 25 Aug session closeout: "Next session: M5.2 Items 5–14 … รอท่านเริ่มครับ". **M5.3 = HOLD** until M5.2 correction complete. Production Release / Live Autonomous QAD / workforce cutover / cron cutover NOT AUTHORIZED (FD #135 unchanged).
+3. **⚠ Learning Loop cron delivery failing:** `hermes cron list` shows IIP Daily Learning Loop (`1f5f03f9236d`) last run 25 Aug 11:31 **ok** but **"⚠ Delivery failed: delivery error: Telegram send failed: Chat not found (target telegram:8964964996)"** — the Learning Loop digest is not reaching the Founder's Telegram. Flag for next interactive session (delivery target config check).
+4. **F5 still open:** AGENTS.md checkpoint fd-134-135 + M5.2 status NOT added (protected file — grep 0 matches). **F6 CLOSED:** stray `dashboard_overall` PNG removed by the 25 Aug correction session (verified absent).
+5. **Radar cadence:** mid-week radar next **Thu 27 Aug 08:00** (20 Aug run was late + zero deliverables — still the open fragility evidence point); weekly radar + CIW monitor next **Mon 31 Aug** (= FD #110 Live Office acceptance observation; 24 Aug weekly ran late-but-COMPLETE with digest + 1 card; 24 Aug CIW tick ran 11:26 NO TRIGGER). Nick-Weekly next **Sat 29 Aug 09:00** (last run 24 Aug ok — AM-V0-20260824-111142).
+6. **Market snapshot 26 Aug (equities Tue 25 Aug COMPLETED EOD + futures live):** SPY 765.91 +0.32% 1d −0.20% 5d / **SMCI 38.46 +9.35% 1d** (largest 1d) / NVDA 213.05 +2.19% 1d −3.04% 5d / MSFT 491.71 +0.90% 1d +2.09% 5d (CIW: no trigger — $483.24 tick 24 Aug, watch band −25% not breached) / AAPL 309.90 −0.14% / GOOGL 346.96 −0.32% / JNJ 273.14 +0.04% / FSLR 206.82 −0.72% 1d **−6.00% 5d** (tariff-pop unwind continues) / SLV 62.32 +0.19% 1d **+8.50% 5d** / inflection quartet ABBV 265.79 +2.65% 5d / BMY 67.92 +2.83% 5d / LLY 1233.66 −1.06% 1d +0.65% 5d / VRTX 552.85 +4.67% 5d; **futures live: GC=F 4,698.70 +1.31% 1d +4.66% 5d / SI=F 69.13 +0.72% 1d +5.17% 5d — still above ~$62 SILVER-CORR-001 anchor (ratio ≈ 68:1) / CL=F 80.27 −2.54% 1d −6.48% 5d** (Hormuz premium cooling). **No ±10% 1d moves → no mandatory news lookups.**
+7. **Register / vault / governance:** FDs max #136 (no new FDs since 24 Aug) → no vault fd-register backfill needed. Governance sync not re-audited (no SOUL/governance changes this window).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs; register items 1–136 contiguous (max #136 = QAD-M4A-SCHEMA-ERRATUM-001, 24 Aug)
+- [x] Session captured? — this entry + PROJECT_STATE session row + build metrics + cadence updates
+- [x] Verify-First? — HEAD/remote verified via ls-remote + git rev-parse; suite re-run live; cron state read from `hermes cron list`; market quotes pulled live; F6 file absence verified
+- [x] Verification tags? — suite **449/449**; HEAD `5b458bc` 484 commits; push SYNCED; tree clean
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) pushed after commit (clean-tree exception precedent)
+- [x] Working tree — clean before + after (docs-only delta committed)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 correction Items 1–4 are closed and pushed — next engineering slice is **M5.2 Items 5–14** (source-byte integrity, evidence gate, lineage) whenever the Founder starts the next interactive session; M5.3 stays HOLD. Two open ops items for that session: **Learning Loop Telegram delivery failing** ("Chat not found" target telegram:8964964996 — digest not reaching Founder) and **AGENTS.md checkpoint fd-134-135** (protected file, F5). Radar evidence point: **Thu 27 Aug 08:00** mid-week scan (watch for the late-start/zero-deliverables pattern recurring).
+
+---
 
 **Review window:** 18 Aug 00:36 → 12:14 UTC+7. **What this review found (evidence-backed):**
 
