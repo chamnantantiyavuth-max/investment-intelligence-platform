@@ -1,3 +1,31 @@
+# Session — 2026-08-27 (cron review, 27 Aug): 26 Aug world reconciled — M5.2 Items 5–7 CLOSED + PUSHED (Item 7 READY FOR FOUNDER APPROVAL); suite 527/527; Radar Mid-Week 27 Aug MISSED (5th cadence fragility point)
+
+**Review window:** 26 Aug 12:22 → 27 Aug 10:16 (this review). **What this review found (evidence-backed):**
+
+1. **M5.2 correction Items 5–7 CLOSED + PUSHED (26 Aug interactive session `20260826_122213_5387b0`):** HEAD == origin/main == `12ffcf0` (497 commits), tree CLEAN, push SYNCED. Chain: Item 4 FOUNDER APPROVED (25 Aug) → **Item 5 RAW SOURCE ADMISSION BINDS METADATA TO BYTES** (`3a1bfe4`, +20 adversarial tests; canonical-bypass blocked, real atomicity fault-injection proof, metadata revision removed per M4A SRC-01 immutability) → **Item 6 REAL EVIDENCE ADMISSION GATE EAR-01** (`e999dc3` → instance-validation closure + no-op test removal; FOUNDER APPROVED) → **Item 7 REAL FINANCIAL FACT LINEAGE — CODE COMPLETE + TESTED — ▶ READY FOR FOUNDER APPROVAL** (`12ffcf0`, 14/14 adversarial tests). Founder's 6 ambiguities resolved: schema-aware `get_lineage(schema_id, record_id)`, CALC `input_fact_ids[]` = provenance not FK, NFF lineage via canonical `financial_fact_id`, FF source authority fail-closed via RawSourceArchive bytes-binding, NO EV→FF link, SCEN standalone. **Items 8–14 ⏳ pending; M5.3 = HOLD; Item 7 does NOT auto-start** (session closeout: "รอท่าน approve Item 7 ครับ"). FD #135 unchanged (production release / live QAD / cutovers NOT authorized).
+2. **Suite re-verified THIS review: 527/527 PASS** (hermes-agent venv interpreter, 6.23s; 10 pydantic deprecation warnings only — `model_fields` instance access, Pydantic 2.11 deprecation, non-blocking).
+3. **⚠ Radar Mid-Week Watch Thu 27 Aug 08:00 — MISSED, NO FIRE ATTEMPT (this review):** scheduler daemon down at 08:00 (the 2 interval jobs — Obsidian Auto-Save + Identity Watchdog — last ticked 26 Aug 17:36/17:21; daemon up again with this review ~10:16). Evidence: job `cda817d17236` output dir last file still `2026-08-13_11-44-20.md`; `last_run_at` still 13 Aug; `next_run_at` already auto-advanced to **03 Sep** with NO catch-up materialized by review time; no `evidence/radar/digests/2026-08-27-radar-midweek.md`; no board task. **5th radar-cadence fragility evidence point** (17 Aug guard-block / 20 Aug late+zero-deliverables / 24 Aug weekly late-but-complete / 27 Aug skip-no-catchup). Root cause = **gateway availability at 08:00** — durable gateway supervision (dashboard-VBS pattern, 14 Aug) is now a CONFIRMED recurring failure mode (3 full misses in 5 evidence points); recommend it move from "decision item" to a named ops task before Mon 31 Aug (next weekly radar + CIW = FD #110 Live Office acceptance observation).
+4. **Learning Loop Telegram delivery ⚠ STILL FLAGGED:** the 26 Aug run output (`cron/output/1f5f03f9236d/2026-08-26_11-36-39.md`) still carries the delivery-failure warning — "Telegram send failed: Chat not found (target telegram:8964964996)". The daily digest is not reaching the Founder. Needs delivery-target config check (interactive session).
+5. **No new FDs** (max #136) → no vault fd-register backfill needed. **F5 still open:** AGENTS.md checkpoint fd-134-135 + M5.2 status row (protected file — interactive + Founder approval; "Current QAD Governance" section still reads M5.2 = PROCEED, now stale vs Items 5–7 closed). F6 (dashboard_overall PNG) stays closed.
+6. **Cadence:** Nick-Weekly next **Sat 29 Aug 09:00** (last run 24 Aug 11:16 OK — AM-V0-20260824-111142, as-of Fri 21 Aug EOD ≤7d ✅); CIW monitor next **Mon 31 Aug 09:00** (24 Aug tick NO TRIGGER); weekly radar next **Mon 31 Aug 08:00** = FD #110 acceptance observation. **27 Aug mid-week = lost window** (next mid-week 03 Sep unless catch-up appears — re-check next review).
+7. **Market snapshot 27 Aug 10:16 (equities Wed 26 Aug COMPLETED EOD + futures):** SPY 766.08 +0.02% 1d −0.39% 5d / AAPL 313.45 +1.15% 1d −1.07% 5d / MSFT 496.37 +0.95% 1d +2.68% 5d (**CIW: NO TRIGGER — −9.6% vs 52wk high 549.20, −25% watch band at 411.90 not approached**) / JNJ 270.00 −1.15% / GOOGL 342.00 −1.43% / FSLR 205.93 −0.43% 1d **−7.41% 5d** (tariff-pop unwind continues — watch) / SMCI 37.39 −2.78% 1d (volatile) / NVDA 209.66 −1.59% 1d −3.63% 5d / SLV 61.59 −1.17% 1d +2.63% 5d / inflection quartet cooling: ABBV 262.90 −1.09% / BMY 67.57 −0.52% / **LLY 1189.41 −3.59% 1d −7.10% 5d (largest 5d move — watch)** / VRTX 547.29 −1.01% / futures **GC=F 4,686.80 +1.05% 1d +4.40% 5d** / **SI=F 69.32 +1.00% 1d +5.46% 5d — above ~$62 SILVER-CORR-001 anchor, ratio 67.6:1 consistent** / CL=F 81.69 −0.81% 1d −4.82% 5d (Hormuz premium cooling). **No ±10% 1d moves → no mandatory news lookups.**
+8. **Register / vault / governance:** no new FDs; governance sync not re-audited (no SOUL/governance changes in window); Obsidian CURRENT-STATE not updated (no new FDs — last capture MEM-IIP-079).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs; register items 1–136 contiguous (max #136, 24 Aug)
+- [x] Session captured? — this entry + PROJECT_STATE session row + build metrics + cadence updates (items 1/2)
+- [x] Verify-First? — HEAD/remote via `git status --branch` + `git log origin/main..HEAD` (empty = synced); suite re-run live **527/527**; cron state read from jobs.json + output dirs; radar digest dir listed; market quotes pulled live via yfinance (Wed EOD); Learning Loop 26 Aug output read
+- [x] Verification tags? — suite **527/527**; HEAD `12ffcf0` 497 commits; push SYNCED; tree clean
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) pushed after commit (clean-tree exception precedent)
+- [x] Working tree — clean before + after (docs-only delta committed)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 7 (REAL FINANCIAL FACT LINEAGE) is READY FOR FOUNDER APPROVAL** — HEAD `12ffcf0`, 527/527, 6 ambiguities resolved as specified; approve to close Item 7 (then Items 8–14 follow; M5.3 stays HOLD). Two ops items queued for the next session: ① **durable gateway supervision (dashboard-VBS pattern)** — radar cadence now has 3 full misses in 5 evidence points (27 Aug mid-week skipped with no catch-up); next proof point Mon 31 Aug 08:00 (weekly) + 09:00 (CIW) = FD #110 Live Office acceptance observation; ② **Learning Loop Telegram delivery target** ("Chat not found" telegram:8964964996 — digest not reaching Founder). Also open: F5 AGENTS.md checkpoint fd-134-135 + M5.2 status (protected file).
+
+---
+
 # Session — 2026-08-26 (cron review, 26 Aug): 25 Aug world reconciled — M5.2 correction Items 1–4/14 CLOSED (Item 4 FINAL, Founder-approved); suite 449/449; F6 closed; Learning Loop Telegram delivery failing
 
 **Review window:** 25 Aug 15:22 → 26 Aug (this review). **What this review found (evidence-backed):**
@@ -909,3 +937,5 @@ PROJECT_STATE.md (Build Metrics **401/401** + push state `70b8f45`/473 + Session
 **M5.3 — PIT Enforcement** (authorized under FD #135, no new permission; base = M5.2 `70b8f45`; M5 Gate conditions: PIT runtime enforcement + retry/failure/idempotency + sealed benchmark corpus + cost calibration + production stack declaration). Alternatives: (a) interactive session — AGENTS.md checkpoint fd-134-135 (+ M5.2 status row) + ORG-2026-0022 publish gate + 0016/0017 recovery + harness board-safety-hook.sh commit; (b) durable gateway supervision (dashboard-VBS pattern) before Mon 31 Aug 08:00 radar evidence point.
 
 <!-- 2026-08-25 11:45 UTC+7 -->
+
+<!-- 2026-08-27 10:20 UTC+7 -->
