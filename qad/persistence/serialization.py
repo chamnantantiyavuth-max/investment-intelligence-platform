@@ -16,6 +16,11 @@ Design decisions
   trailing timezone when naive; Z suffix when UTC).
 - enum members are serialised to their **value** (str), not their name.
 - Output is always UTF-8 encoded JSON with no whitespace (compact).
+- **Fail-closed:** values not in the explicit supported domain (``BaseModel``,
+  ``Enum``, ``datetime``, ``date``, ``list``, ``dict``, ``bytes``, and JSON
+  primitives ``str``/``int``/``float``/``bool``/``None``) are rejected with a
+  ``TypeError``.  Non-finite floats (NaN, Infinity, -Infinity) are rejected
+  with a ``ValueError``.  No ``default=str`` fallback is used.
 """
 
 from __future__ import annotations
@@ -93,7 +98,7 @@ def serialize_to_canonical_bytes(instance: BaseModel) -> bytes:
     ordered = _model_to_ordered(instance)
     # Ensure schema_id is first
     payload = json.dumps(ordered, ensure_ascii=False, separators=(",", ":"),
-                         sort_keys=False, default=str)
+                         sort_keys=False, allow_nan=False)
     return payload.encode("utf-8")
 
 
