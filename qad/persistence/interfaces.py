@@ -139,7 +139,15 @@ class CanonicalRecordStore(Protocol):
         ...
 
     def delete(self, schema_id: SchemaID, record_id: RecordID, /) -> None:
-        """Remove a record.
+        """Logically tombstone a record.
+
+        Canonical hard delete is FORBIDDEN.  The record is marked as
+        tombstoned but its data, canonical hash, and history remain
+        preserved in the store for audit/historical recovery.
+
+        Active reads (``load``, ``contains``, ``list_ids``, ``list_all``)
+        exclude tombstoned records.  Use ``load_historical`` (where
+        available) for audit access.
 
         Raises:
             KeyError: record not found.
@@ -229,6 +237,27 @@ class RawSourceArchive(CanonicalRecordStore, Protocol):
         """Return the hash of the raw blob for a given source record."""
         ...
 
+    # -- Atomic source admission (Item 5) -----------------------------------
+
+    def admit_source(
+        self, instance: BaseModel, raw_bytes: bytes, /,
+    ) -> CanonicalHash:
+        """Atomically admit a SourceRecord with its raw bytes.
+
+        ``SRC-01.content_hash`` MUST equal ``sha256(raw_bytes)``.
+        Metadata + bytes are admitted as ONE atomic unit.
+        Direct ``store(SRC-01)`` is prohibited.
+        ``store_batch`` containing SRC-01 is prohibited.
+        Admitted raw bytes cannot be overwritten.
+        Tombstone preserves historical state.
+
+        Raises:
+            CanonicalBoundaryViolation: instance is not SRC-01.
+            HashMismatch: content_hash != sha256(raw_bytes).
+            IntegrityConflict: same source_id, different payload.
+        """
+        ...
+
     # -- Versioning ---------------------------------------------------------
 
     def store_version(
@@ -313,9 +342,33 @@ class EvidenceRegistry(CanonicalRecordStore, Protocol):
     def store(self, instance: BaseModel, /) -> CanonicalHash:
         """Store evidence record.
 
-        On first write, the source FK (``source_id → SRC-01``) is
-        enforced.  After admission the content is immutable; only
-        mutable status fields may change.
+        ADMISSION GATE CONTROLS:
+        - NEW EV-01: MUST use ``admit_evidence()`` — direct store rejected.
+        - EAR-01: direct store PROHIBITED — must use ``admit_evidence()``.
+        - SRC-01: direct store PROHIBITED — must use authoritative
+          ``RawSourceArchive.admit_source()``.
+        - EXISTING admitted EV-01: only controlled status/mutable-field
+          transitions are permitted.  Immutable fields are enforced.
+
+        Source FK (``source_id → SRC-01``) is enforced against the
+        authoritative RawSourceArchive.
+        """
+        ...
+
+    def store_batch(self, instances: list[BaseModel], /) -> list[CanonicalHash]:
+        """Atomically persist multiple records.
+
+        ADMISSION BYPASS GUARD:
+        EV-01, EAR-01, and SRC-01 in a batch are REJECTED as admission
+        bypasses.  Use ``admit_evidence()`` for evidence admission and
+        ``RawSourceArchive.admit_source()`` for source admission.
+
+        Non-evidence schemas pass through unchanged (all-or-nothing per
+        ``CanonicalRecordStore.store_batch``).
+
+        Raises:
+            TransactionFailure: wraps errors.
+            CanonicalBoundaryViolation: batch contains EV-01/EAR-01/SRC-01.
         """
         ...
 

@@ -963,10 +963,10 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
     Parameters
     ----------
     source_archive:
-        Optional authoritative ``RawSourceArchive`` for SRC-01
-        existence and binding-integrity checks.  When provided,
-        EV-01 FK validation uses the real source archive instead
-        of a local shadow copy.
+        REQUIRED authoritative ``RawSourceArchive``.  Without it,
+        ``admit_evidence()`` fails closed — no evidence may be
+        admitted.  This is intentional: source authority must
+        come from Item 5, not a local shadow copy.
     """
 
     def __init__(self, source_archive: RawSourceArchive) -> None:

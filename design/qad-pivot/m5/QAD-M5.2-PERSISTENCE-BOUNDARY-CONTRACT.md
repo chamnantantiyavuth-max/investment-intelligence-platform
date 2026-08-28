@@ -1,18 +1,21 @@
 # QAD-M5.2 Persistence Boundary Contract
 
-> **Status:** NEW_M5_IMPLEMENTATION_DERIVATION
-> **Authority:** FD #135
-> **Date:** 2026-08-24
+> **Status:** RECONCILIATION — 28 AUG 2026  
+> Items 1–8 FOUNDER APPROVED / CLOSED. Item 9 = DOCUMENTATION / PROTOCOL RECONCILIATION ONLY.  
+> See also: `QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md` (historical closeout, reconciled).
+> 
+> **Authority:** FD #135; M4A Canonical Schema Registry (FROZEN + Erratum 001)
+> **Date:** 2026-08-28
 > **Spec Source:** `QAD-M4A-CANONICAL-SCHEMAS.md` (68 frozen schemas, M4A-FROZEN+ERRATUM-001)
-> **Generator:** M5.2-20260824
+> **Generator:** M5.2-20260828
 > **Predecessor:** `QAD-M4A-CANONICAL-SCHEMAS.md` (M4A boundary metadata), `qad/contract/canonical_boundary.py`, `qad/contract/fk_registry.py`, `qad/contract/contract_descriptor.json`
 
 ---
 
 ## Table of Contents
 
-1. [Architecture Overview — Ports & Adapters](#1-architecture-overview--ports--adapters)
-2. [The Five Canonical Stores](#2-the-five-canonical-stores)
+1. [Architecture Overview — M5.2 Five-Anchor Topology](#1-architecture-overview--m52-five-anchor-topology)
+2. [The Five Canonical Anchors](#2-the-five-canonical-anchors)
 3. [Noncanonical Research Room](#3-noncanonical-research-room)
 4. [Identity Key Policy](#4-identity-key-policy)
 5. [Version Semantics](#5-version-semantics)
@@ -20,56 +23,63 @@
 7. [Transaction Boundaries](#7-transaction-boundaries)
 8. [Deterministic Canonical Serialization](#8-deterministic-canonical-serialization)
 9. [Reference Adapter Scope](#9-reference-adapter-scope)
-10. [Deferred to M5.3](#10-deferred-to-m53)
-11. [Schema-to-Store Derivation](#11-schema-to-store-derivation)
-12. [Appendix A: Full Store-to-Schema Map](#appendix-a-full-store-to-schema-map)
-13. [Appendix B: FK Graph by Store](#appendix-b-fk-graph-by-store)
-14. [Appendix C: Immutable-field Policy Summary](#appendix-c-immutable-field-policy-summary)
+10. [Source Hash Distinction](#10-source-hash-distinction)
+11. [Deferred to M5.3](#11-deferred-to-m53)
+12. [Schema-to-Anchor Derivation](#12-schema-to-anchor-derivation)
+13. [Appendix A: Full Anchor-to-Schema Map](#appendix-a-full-anchor-to-schema-map)
+14. [Appendix B: FK Graph by Store](#appendix-b-fk-graph-by-store)
+15. [Appendix C: Immutable-field Policy Summary](#appendix-c-immutable-field-policy-summary)
 
 ---
 
-## 1. Architecture Overview — Ports & Adapters
+## 1. Architecture Overview — M5.2 Five-Anchor Topology
 
-The M5.2 persistence boundary introduces a **ports-and-adapters** architecture that separates the canonical domain from any specific storage technology. No production stack is selected here; the contract defines the shape of the persistence boundary that any adapter must satisfy.
+The M5.2 persistence boundary defines **five canonical anchors** — distinct store responsibilities — backed by a shared `CanonicalRecordStore` base. The contract separates the canonical domain from any specific storage technology. No production stack is selected here; the contract defines the shape of the persistence boundary that any adapter must satisfy.
 
-### 1.1 High-Level Structure
+### 1.1 Five Anchors
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     CANONICAL DOMAIN (inside hexagon)                    │
-│                                                                          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │ Identity │  │ Evidence │  │Governance│  │ Analytics│  │ Operations│  │
-│  │  Store   │  │  Store   │  │  Store   │  │  Store   │  │  Store   │  │
-│  │  (Port)  │  │  (Port)  │  │  (Port)  │  │  (Port)  │  │  (Port)  │  │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
-│       │              │             │             │             │        │
-│       └──────────────┴─────────────┴─────────────┴─────────────┘        │
-│                              │                                           │
-│                    Port Interface Layer                                   │
-│                    (StorePort Protocol)                                   │
-└───────────────────────────────┬───────────────────────────────────────────┘
-                                │
-                    ┌───────────┴───────────┐
-                    │   Adapter Boundary    │
-                    │ (technology-specific) │
-                    └───────────────────────┘
-```
+| # | Anchor | Responsibility | Schemas |
+|---|--------|---------------|---------|
+| 1 | **RawSourceArchive** | Raw source bytes + SRC-01 metadata, content-addressed, versioned, tombstone-aware | SRC-01, SRCV-01 |
+| 2 | **EvidenceRegistry** | Evidence admission gate, FK-on-source, immutable-after-admission | EV-01, EAR-01, EG-01, CLM-01, FACT-01, CTR-01, INF-01, HYP-01 |
+| 3 | **FinancialFactStore** | Financial facts, normalisation chain, lineage | FF-01, NFF-01, CALC-01, SCEN-01, PIE-01, RDCF-01, PLA-01, VA-01 |
+| 4 | **RunManifestStore** | Run manifests and service invocations (pure CR) | RRM-01, SI-01, RR-01, BU-01, MOD-01, PROV-01 |
+| 5 | **PITContextStore** | PIT context and case locks (pure CR) | PITC-01, CLK-01 |
 
-### 1.2 Port Interface
+**CanonicalRecordStore** is shared base infrastructure — it provides the generic `store()`/`load()`/`contains()`/`get_canonical_hash()`/tombstone semantics for all five anchors. It is NOT a sixth anchor.
 
-Every canonical store exposes a **StorePort** — an abstract interface that defines:
+Non-anchor canonical schemas (families A, C, D, E, G, H) use the generic `CanonicalRecordStore` via their respective future adapters. The M5.2 scope does not define those adapters — they are mechanically derived from the same base contract.
 
-- `save(record: CanonicalRecord) -> Result[RecordId, StoreError]` — persist a single canonical record
-- `save_batch(records: list[CanonicalRecord]) -> Result[list[RecordId], StoreError]` — batch persist (all-or-nothing per store)
-- `load(record_id: RecordId) -> Result[CanonicalRecord, StoreError]` — load by identity key
-- `load_by_fk(target: str, fk_value: str) -> Result[list[CanonicalRecord], StoreError]` — load by foreign key
-- `exists(record_id: RecordId) -> bool` — existence check
-- `delete(record_id: RecordId) -> Result[None, StoreError]` — logical or physical delete (per schema immutability rules)
+### 1.2 Protocol Interface
+
+Every canonical store exposes a `Protocol` (structural typing) interface in `qad/persistence/interfaces.py`. The current protocol vocabulary:
+
+| Method | Purpose | Part of |
+|--------|---------|---------|
+| `store(instance) -> CanonicalHash` | Persist a single canonical record | All stores |
+| `store_batch(instances) -> list[CanonicalHash]` | Atomic batch persist | CanonicalRecordStore |
+| `load(schema_id, record_id) -> BaseModel` | Retrieve by identity | All stores |
+| `contains(schema_id, record_id) -> bool` | Existence check (active reads exclude tombstoned) | CanonicalRecordStore |
+| `get_canonical_hash(schema_id, record_id) -> CanonicalHash` | Return stored canonical hash | CanonicalRecordStore |
+| `delete(schema_id, record_id) -> None` | Logical tombstone (NOT physical hard delete) | CanonicalRecordStore |
+| `delete_batch(pairs) -> None` | Atomic batch tombstone | CanonicalRecordStore |
+| `list_ids(schema_id) -> list[RecordID]` | List active record IDs | CanonicalRecordStore |
+| `list_all(schema_id) -> list[BaseModel]` | List all active records | CanonicalRecordStore |
+| `tombstone(schema_id, record_id, reason, authorizer)` | Explicit tombstone with metadata | CanonicalRecordStore |
+| `is_tombstoned(schema_id, record_id) -> bool` | Check tombstone status | CanonicalRecordStore |
+| `load_historical(schema_id, record_id) -> BaseModel` | Load regardless of tombstone | CanonicalRecordStore |
+| `admit_source(instance, raw_bytes) -> CanonicalHash` | Atomic source admission | RawSourceArchive |
+| `store_version(instance, version_label) -> CanonicalHash` | Store a versioned snapshot | RawSourceArchive |
+| `load_version(record_id, version_label) -> tuple[BaseModel, bytes\|None]` | Load historical version | RawSourceArchive |
+| `list_versions(record_id) -> list[str]` | List version labels | RawSourceArchive |
+| `admit_evidence(evidence, admission) -> CanonicalHash` | Atomic evidence admission | EvidenceRegistry |
+| `get_lineage(schema_id, record_id) -> list[BaseModel]` | Lineage chain | FinancialFactStore |
+
+**Obsolete vocabulary (removed from current contract):** `save()`, `save_batch()`, `exists()`, `load_by_fk()`, `begin_transaction()`, `commit()`, `rollback()`, `StorePort`.
 
 ### 1.3 Adapter Contract
 
-An adapter is any implementation of the StorePort protocol for a specific schema. The adapter must:
+An adapter is any implementation of the store Protocol(s) for a specific schema family. The adapter must:
 
 1. Enforce all **immutability rules** declared in the M4A schema metadata (see §5).
 2. Enforce all **FK references** declared in `fk_registry.py` (see §6).
@@ -84,13 +94,18 @@ An adapter is any implementation of the StorePort protocol for a specific schema
 │                     APPLICATION LAYER                             │
 │  (Domain services, research workflows, agents)                    │
 ├──────────────────────────────────────────────────────────────────┤
-│                      PORT LAYER                                   │
-│  StorePort (abstract) — 5 ports, one per canonical store          │
+│                      PORT LAYER (Protocols)                       │
+│  CanonicalRecordStore (base)                                      │
+│  ├── RawSourceArchive    (+admit_source, versioning, tombstone)   │
+│  ├── EvidenceRegistry    (+admit_evidence, admission gate)        │
+│  ├── FinancialFactStore  (+get_lineage, source authority)         │
+│  ├── RunManifestStore    (pure CanonicalRecordStore extension)    │
+│  └── PITContextStore     (pure CanonicalRecordStore extension)    │
+│  NonCanonicalResearchArtifactStore (separate hierarchy)           │
 ├──────────────────────────────────────────────────────────────────┤
 │                     ADAPTER LAYER                                  │
-│  IdentityStoreAdapter  EvidenceStoreAdapter  GovernanceStoreAdapter│
-│  AnalyticsStoreAdapter  OperationsStoreAdapter                     │
-│  + ResearchRoomAdapter (noncanonical)                             │
+│  In-memory reference adapter (reference.py) — NON_PRODUCTION      │
+│  Future adapters: SQLite, PostgreSQL, DuckDB, etc.                │
 ├──────────────────────────────────────────────────────────────────┤
 │                 PERSISTENCE TECHNOLOGY                             │
 │  (Not selected — may be SQL, document store, key-value, etc.)     │
@@ -99,32 +114,29 @@ An adapter is any implementation of the StorePort protocol for a specific schema
 
 ---
 
-## 2. The Five Canonical Stores
+## 2. The Five Canonical Anchors
 
-All 68 M4A schemas are canonical. The noncanonical set is empty (no noncanonical M4A schemas exist). The five stores are derived mechanically from the M4A family letter (see §11).
+All 68 M4A schemas are canonical. The five anchors are the stores with distinct responsibilities beyond generic CRUD. Non-anchor schemas use the generic `CanonicalRecordStore` base.
 
-### 2.1 Identity Store (Family A)
+### 2.1 RawSourceArchive (Anchor 1)
 
-**Schemas:** 6
+**Schemas:** SRC-01, SRCV-01
 
-| Schema ID | Name | Required FK Targets |
-|-----------|------|---------------------|
-| SM-01 | SecurityMaster | (none — root anchor) |
-| RU-01 | ResearchableUniverseRecord | SM-01.entity_id |
-| SR-01 | SignalRecord | SM-01.entity_id |
-| CR-01 | CandidateRecord | SM-01.entity_id, SR-01.signal_id |
-| QU-01 | QualityUniverseRecord | SM-01.entity_id, EV-01.evidence_id |
-| CASE-01 | CaseRecord | SM-01.entity_id, CR-01.candidate_id |
-
-**Purpose:** Ground truth for entity identity, universe membership, signal detection, candidate selection, quality assessment, and case lifecycle. Every other store references this store via `entity_id` or `case_id`.
-
-### 2.2 Evidence Store (Family B)
-
-**Schemas:** 10
+**Purpose:** Immutable source document storage — atomic metadata+bytes admission, content-addressed, versioned, tombstone-aware. The ONLY entry point for SRC-01. No shadow copies exist in any other store.
 
 | Schema ID | Name | Required FK Targets |
 |-----------|------|---------------------|
 | SRC-01 | SourceRecord | (none) |
+| SRCV-01 | SourceVersion | SRC-01.source_id |
+
+**Admission gate:** `admit_source(instance, raw_bytes)` binds metadata SHA-256(raw_bytes) atomically. Direct `store(SRC-01)` prohibited. `store_batch` containing SRC-01 prohibited. Admitted raw bytes cannot be overwritten. Tombstone preserves historical state.
+
+### 2.2 EvidenceRegistry (Anchor 2)
+
+**Schemas:** EV-01, EAR-01, EG-01, CLM-01, FACT-01, INF-01, HYP-01, CTR-01
+
+| Schema ID | Name | Required FK Targets |
+|-----------|------|---------------------|
 | EV-01 | EvidenceRecord | SRC-01.source_id, EV-01.evidence_id (self-ref) |
 | FACT-01 | FactRecord | EV-01.evidence_id |
 | CLM-01 | ClaimRecord | EV-01.evidence_id |
@@ -133,88 +145,53 @@ All 68 M4A schemas are canonical. The noncanonical set is empty (no noncanonical
 | CTR-01 | ContradictionRecord | EV-01.evidence_id |
 | EG-01 | EvidenceGap | CASE-01.case_id |
 | EAR-01 | EvidenceAdmissionRecord | EV-01.evidence_id |
-| SRCV-01 | SourceVersion | SRC-01.source_id |
 
-**Purpose:** Immutable source documents, canonical evidence objects, fact/claim/inference/hypothesis taxonomy, contradiction management, evidence gaps, and admission audit trail.
+**Purpose:** Canonical evidence objects with admission gate. `admit_evidence()` is the ONLY path for new EV-01+EAR-01. Direct `store(EV-01)` for non-existent evidence rejected. Direct `store(EAR-01)` rejected. Existing admitted EV-01: status/mutable field transitions only. Source FK enforced against authoritative RawSourceArchive. `store_batch` rejects EV-01/EAR-01/SRC-01 as admission bypasses.
 
-### 2.3 Governance Store (Family C)
+### 2.3 FinancialFactStore (Anchor 3)
 
-**Schemas:** 8
-
-| Schema ID | Name | Required FK Targets |
-|-----------|------|---------------------|
-| RC-01 | ResearchCharter | CASE-01.case_id, HYP-01.hypothesis_id |
-| RSR-01 | ResearchStageRecord | CASE-01.case_id |
-| IC-01 | InvestigatorCharter | EG-01.gap_id |
-| RB-01 | ResearchBudgetRecord | CASE-01.case_id |
-| RFR-01 | ResearchFailureRecord | CASE-01.case_id |
-| HS-01 | HypothesisSet | CASE-01.case_id, HYP-01.hypothesis_id |
-| IR-01 | InvestigationReport | IC-01.investigator_charter_id, EG-01.gap_id |
-| RSR-02 | ResearchStopRecord | CASE-01.case_id |
-
-**Purpose:** Research charter, stage execution, budget allocation, failure recording, hypothesis set management, scuttlebutt investigation charters and reports, and stop decisions.
-
-### 2.4 Analytics Store (Families D + E + F)
-
-**Schemas:** 21
+**Schemas:** FF-01, NFF-01, CALC-01, SCEN-01, PIE-01, RDCF-01, PLA-01, VA-01
 
 | Schema ID | Name | Required FK Targets |
 |-----------|------|---------------------|
-| QA-01 | QualityAssessment | CASE-01.case_id, EV-01.evidence_id |
-| MA-01 | MoatAssessment | CASE-01.case_id |
-| IE-01 | IndustryEconomicsRecord | CASE-01.case_id |
-| MC-01 | ManagementClaim | CASE-01.case_id, SRC-01.source_id |
-| CAE-01 | CapitalAllocationEvent | CASE-01.case_id |
-| MDL-01 | ManagementDecisionLedger | CASE-01.case_id |
-| MO-02 | ManagementOutcome | CASE-01.case_id, MC-01.claim_id |
-| DR-01 | DislocationRecord | CASE-01.case_id |
-| IA-01 | ImpairmentAssessment | CASE-01.case_id |
-| CE-01 | CompetingExplanation | IA-01.impairment_id |
-| RM-01 | RecoveryModel | CASE-01.case_id |
-| TK-01 | ThesisKiller | CASE-01.case_id |
-| FE-01 | FlipEvidence | IA-01.impairment_id |
 | FF-01 | FinancialFact | CASE-01.case_id, SRC-01.source_id |
 | NFF-01 | NormalizedFinancialFact | FF-01.financial_fact_id |
 | CALC-01 | CalculationRecord | CASE-01.case_id |
 | SCEN-01 | ScenarioRecord | CASE-01.case_id |
-| PLA-01 | PermanentLossAssessment | CASE-01.case_id |
-| RDCF-01 | ReverseDCFRecord | CASE-01.case_id |
-| VA-01 | ValuationAssessment | CASE-01.case_id, RDCF-01.r_dcf_id, PLA-01.assessment_id |
 | PIE-01 | PriceImpliedExpectation | CASE-01.case_id |
+| RDCF-01 | ReverseDCFRecord | CASE-01.case_id |
+| PLA-01 | PermanentLossAssessment | CASE-01.case_id |
+| VA-01 | ValuationAssessment | CASE-01.case_id, RDCF-01.r_dcf_id, PLA-01.assessment_id |
 
-**Purpose:** Business & industry analysis, management assessment, impairment diagnosis, recovery modeling, financial reconstruction, normalization, calculations, scenario analysis, valuation, and price-implied expectations.
+**Purpose:** Financial records with lineage support. FF-01.source_id validated against authoritative RawSourceArchive (no shadow copies). Schema-aware `get_lineage(schema_id, record_id)`.
 
-### 2.5 Operations Store (Families G + H + I)
+### 2.4 RunManifestStore (Anchor 4)
 
-**Schemas:** 23
+**Schemas:** RRM-01, SI-01, RR-01, BU-01, MOD-01, PROV-01
 
 | Schema ID | Name | Required FK Targets |
 |-----------|------|---------------------|
-| RTC-01 | RedTeamChallenge | CASE-01.case_id |
-| AF-01 | AuditFinding | AG-01.audit_id |
-| AG-01 | AuditGate (AuditReport) | CASE-01.case_id, AF-01.finding_id |
-| UV-01 | UnderwritingVerdict | CASE-01.case_id, RTC-01.challenge_id, AG-01.audit_id |
-| PUB-01 | PublicationRecord | CASE-01.case_id, UV-01.verdict_id |
-| FDR-01 | FounderDecisionReference | CASE-01.case_id, PUB-01.publication_id |
-| CRESP-01 | ChallengeResponse | RTC-01.challenge_id, CASE-01.case_id |
-| MI-01 | MonitoringIndicator | CASE-01.case_id |
-| MO-01 | MonitoringObservation | MI-01.indicator_id |
-| MASS-01 | MonitoringAssessment | CASE-01.case_id, MI-01.indicator_id |
-| CL-01 | CandidateLesson | CASE-01.case_id |
-| IKR-01 | InstitutionalKnowledgeRecord | CL-01.lesson_id |
-| IPR-01 | IndustryPlaybookRecord | IKR-01.knowledge_id |
-| CCV-01 | CrossCaseValidation | CL-01.lesson_id, CASE-01.case_id |
 | RRM-01 | RunManifestRecord | CASE-01.case_id |
-| PITC-01 | PITContext | CASE-01.case_id |
 | SI-01 | ServiceInvocation | CASE-01.case_id |
 | RR-01 | RetryRecord | SI-01.invocation_id |
-| CLK-01 | CaseLock | CASE-01.case_id |
 | BU-01 | BudgetUsage | RB-01.budget_id |
 | MOD-01 | ModelInvocation | CASE-01.case_id |
 | PROV-01 | ProviderInvocation | CASE-01.case_id, MOD-01.model_invocation_id |
-| EHR-01 | EvaluationHarnessRun | (none) |
 
-**Purpose:** Red Team challenge, audit, underwriting, publication, Founder decisions, monitoring, institutional knowledge, reproducibility (run manifests, invocations, retries, locks, budget usage), and evaluation harness.
+**Purpose:** Run manifests are written once (RECORD_IMMUTABLE). Pure CR extension of CanonicalRecordStore.
+
+### 2.5 PITContextStore (Anchor 5)
+
+**Schemas:** PITC-01, CLK-01
+
+| Schema ID | Name | Required FK Targets |
+|-----------|------|---------------------|
+| PITC-01 | PITContext | CASE-01.case_id |
+| CLK-01 | CaseLock | CASE-01.case_id |
+
+**Purpose:** PIT context records are written once (RECORD_IMMUTABLE). Pure CR extension of CanonicalRecordStore.
+
+**Non-anchor schemas** (families A, C, D, E, G, H — 22 schemas) use the generic `CanonicalRecordStore` via their respective future adapters. Schema-to-anchor derivation is mechanical (see §12).
 
 ---
 
@@ -271,99 +248,33 @@ A `ResearchRoomAdapter` implements a minimal `StorePort`-like interface but with
 
 ## 4. Identity Key Policy
 
-### 4.1 Key Type
+### 4.1 Principles
 
-All identity keys are **UUID v7** represented as **strings** in the canonical domain.
+- The authoritative primary identity field is **derived from generated metadata** in the `primary_id_registry` / M4A-generated schema registry — NOT from a hand-maintained list in this contract.
+- Format constraints belong to individual frozen schemas/models. Persistence does not maintain an independent primary-ID registry.
+- Illustrative examples below are representative, NOT an authoritative exhaustive list.
 
-**Rationale:**
-- UUID v7 is time-ordered (MSB encodes Unix timestamp), enabling natural sort by creation time.
-- String representation avoids binary encoding issues across adapters.
-- UUID v7 provides 122 bits of random entropy, sufficient for collision-free identity across all IIP records.
+### 4.2 Key Type
 
-### 4.2 Key Fields
+Record identity fields (`*_id`) are typed as strings in the canonical domain. The format is schema-defined in M4A; most are UUID v7 (time-ordered, 122-bit entropy). The only exception is `CASE-01.case_id` which uses the human-readable format `CASE-YYYY-NNN`.
 
-The following fields are identity keys (primary keys), all typed as `UUID v7`:
-
-| Schema | Identity Key | Exception |
-|--------|-------------|-----------|
-| SM-01 | `entity_id` | — |
-| RU-01 | `entity_id` | (inherits from SM-01) |
-| SR-01 | `signal_id` | — |
-| CR-01 | `candidate_id` | — |
-| QU-01 | `entity_id` | (inherits from SM-01) |
-| CASE-01 | `case_id` | Format: `CASE-YYYY-NNN` (human-readable, not UUID) |
-| SRC-01 | `source_id` | — |
-| EV-01 | `evidence_id` | — |
-| FACT-01 | `fact_id` | — |
-| CLM-01 | `claim_id` | — |
-| INF-01 | `inference_id` | — |
-| HYP-01 | `hypothesis_id` | — |
-| CTR-01 | `contradiction_id` | — |
-| EG-01 | `gap_id` | — |
-| EAR-01 | `admission_id` | — |
-| SRCV-01 | `version_id` | — |
-| RC-01 | `charter_id` | — |
-| RSR-01 | `stage_id` | — |
-| IC-01 | `investigator_charter_id` | — |
-| RB-01 | `budget_id` | — |
-| RFR-01 | `failure_id` | — |
-| HS-01 | `hypothesis_set_id` | — |
-| IR-01 | `investigation_id` | — |
-| RSR-02 | `stop_id` | — |
-| QA-01 | `assessment_id` | — |
-| MA-01 | `moat_assessment_id` | — |
-| IE-01 | `industry_economics_id` | — |
-| MC-01 | `claim_id` | — |
-| CAE-01 | `event_id` | — |
-| MDL-01 | `ledger_id` | — |
-| MO-02 | `outcome_id` | — |
-| DR-01 | `dislocation_id` | — |
-| IA-01 | `impairment_id` | — |
-| CE-01 | `explanation_id` | — |
-| RM-01 | `recovery_id` | — |
-| TK-01 | `thesis_killer_id` | — |
-| FE-01 | `flip_evidence_id` | — |
-| FF-01 | `financial_fact_id` | — |
-| NFF-01 | `normalized_fact_id` | — |
-| CALC-01 | `calculation_id` | — |
-| SCEN-01 | `scenario_id` | — |
-| PLA-01 | `assessment_id` | — |
-| RDCF-01 | `r_dcf_id` | — |
-| VA-01 | `valuation_id` | — |
-| PIE-01 | `expectation_id` | — |
-| RTC-01 | `challenge_id` | — |
-| AF-01 | `finding_id` | — |
-| AG-01 | `audit_id` | — |
-| UV-01 | `verdict_id` | — |
-| PUB-01 | `publication_id` | — |
-| FDR-01 | `founder_decision_id` | — |
-| CRESP-01 | `response_id` | — |
-| MI-01 | `indicator_id` | — |
-| MO-01 | `observation_id` | — |
-| MASS-01 | `assessment_id` | — |
-| CL-01 | `lesson_id` | — |
-| IKR-01 | `knowledge_id` | — |
-| IPR-01 | `playbook_id` | — |
-| CCV-01 | `validation_id` | — |
-| RRM-01 | `manifest_id` | — |
-| PITC-01 | `pit_context_id` | — |
-| SI-01 | `invocation_id` | — |
-| RR-01 | `retry_id` | — |
-| CLK-01 | `lock_id` | — |
-| BU-01 | `usage_id` | — |
-| MOD-01 | `model_invocation_id` | — |
-| PROV-01 | `provider_invocation_id` | — |
-| EHR-01 | `eval_run_id` | — |
-
-### 4.3 Exception: CaseRecord
-
-`CASE-01.case_id` uses the format `CASE-YYYY-NNN` (a human-readable sequential identifier, e.g., `CASE-2026-042`). This is the only exception. All other identity keys are UUID v7 strings.
-
-### 4.4 Generation Policy
+### 4.3 Generation Policy
 
 - UUID v7 generation must use a cryptographically secure random source.
 - The adapter must NOT modify the identity key after generation — keys are set by the domain layer before persistence.
 - Keys are immutable once persisted (per `immutable_policy`: `FIELD_IMMUTABLE` or `RECORD_IMMUTABLE`).
+
+### 4.4 Identity Key Fields (illustrative — not authoritative)
+
+The authoritative source is `primary_id_registry` (generated from M4A schema metadata). Common identity key fields include:
+
+- `entity_id` (SM-01, RU-01, QU-01)
+- `case_id` (CASE-01, format `CASE-YYYY-NNN`)
+- `source_id` (SRC-01)
+- `evidence_id` (EV-01)
+- Record-specific `*_id` fields per schema
+
+Do NOT treat this list as an exhaustive PK registry. The generated `primary_id_registry` is the single source of truth.
 
 ---
 
@@ -394,15 +305,18 @@ Each schema in the M4A document declares `immutability_rules` and `revision_rule
 | **Ticker/claim history append-only** | SM-01 (ticker_history), MC-01, MO-02 | History is append-only list. |
 | **Locked during active research** | CASE-01, CLK-01 | Case-lock service must gate writes. |
 
-### 5.3 Version Key
+### 5.3 Version History (Item 4 Behavior)
 
-For schemas that support revision (state transitions), the version key is a tuple:
+The persistence layer implements the following versioning semantics (Item 4, correction):
 
-```
-(CASE_VERSION, AS_OF_DATE, SEQUENCE_NUMBER)
-```
+- **Prior versions preserved** where the schema's versioning policy requires it (APPEND_ONLY_STATE / APPEND_ONLY schemas).
+- **Monotonic version labels** — numeric (v1, v2, ..., v10, v11) or string labels for explicit versioned snapshots (SRCV-01).
+- **Historical version access** — `load_version(record_id, version_label)` retrieves preserved prior versions.
+- **No silent overwrite** of append-only history — when a versioned record is updated, the prior version is preserved before the new write.
+- **RawSourceArchive-specific versioning** — `store_version(instance, version_label)` is a public API for SRCV-01 version snapshots. It enforces metadata-bytes binding integrity (identical-snapshot only).
+- **Generic CanonicalRecordStore versioning** — applies to APPEND_ONLY / APPEND_ONLY_STATE schemas during update (prior version auto-preserved).
 
-The `AS_OF_DATE` is the PIT field that determines which version is active for a given point-in-time query. The `SEQUENCE_NUMBER` is a monotonically increasing integer per (case, as_of) group.
+Do NOT conflate generic CanonicalRecordStore version history with RawSourceArchive-specific source-version API. The former is a write-time side-effect; the latter is a first-class versioned snapshot API.
 
 ### 5.4 Immutable Record Enforcement
 
@@ -411,7 +325,7 @@ The adapter must:
 1. **Reject any UPDATE** on a `RECORD_IMMUTABLE` schema (return `RecordImmutableError`).
 2. **Reject any UPDATE** to a `FIELD_IMMUTABLE` field (return `FieldImmutableError`).
 3. **Validate state transitions** for `APPEND_ONLY_STATE` fields — only forward enum transitions are accepted.
-4. **Reject DELETE** on canonical schemas — deletion is not permitted. Use logical tombstone or superseded_by pointer.
+4. **Logical tombstone** — hard physical delete is FORBIDDEN. The record stays in the store for audit/historical recovery. Active reads exclude tombstoned records. Explicit historical access may retrieve preserved records.
 
 ---
 
@@ -460,10 +374,13 @@ These schemas have self-referencing FKs (contradicts, supersedes):
 
 ### 6.6 Deletion Policy
 
-Canonical records are never deleted. FK targets must not be removed while referenced records exist. The adapter must:
+Canonical records are **never physically hard-deleted**. FK targets must not be removed while referenced records exist. The persistence layer:
 
-1. Reject DELETE on any canonical record that is referenced by another record.
-2. Support logical tombstone (e.g., status change to `SUPERSEDED` or `RETRACTED`).
+1. **Logical tombstone is the ONLY canonical delete operation.** `delete()` / `delete_batch()` mark records as tombstoned — the record's data, canonical hash, and history remain preserved.
+2. Active reads (`load`, `contains`, `list_ids`, `list_all`) EXCLUDE tombstoned records.
+3. Explicit historical access (`load_historical`, `load_version`) may retrieve preserved records.
+4. Reject DELETE on any canonical record that is referenced by another record (FK integrity).
+5. Tombstone metadata (reason, authorizer, timestamp) is retained per Evidence Doctrine.
 
 ---
 
@@ -475,33 +392,48 @@ Each canonical store defines its own transaction boundary. A write to a single s
 
 - **Single record write:** Must succeed or fail atomically.
 - **Batch write (same store):** Must succeed or fail atomically. Partial success is not permitted.
-- **Cross-store writes:** The application layer (not the adapter) is responsible for coordinating cross-store transactions. The adapter exposes `begin_transaction()`, `commit()`, and `rollback()` per store.
+- **Cross-store writes:** The application layer (not the adapter) is responsible for coordinating cross-store transactions.
 
-### 7.2 Cross-Store Transaction Strategy
+### 7.2 Current Reference Behavior (In-Memory Adapter)
 
-When a single domain operation writes to multiple stores (e.g., creating a new CaseRecord + ResearchStageRecord + ResearchBudgetRecord), the strategy is:
+The in-memory reference adapter uses snapshot/restore rollback:
 
-1. **Saga pattern** (preferred): Each store write is a local transaction. If a later write fails, compensating actions roll back earlier writes.
-2. **Two-phase commit** (optional): When the adapter stack supports distributed transactions.
-3. **Outbox pattern** (for async): Write to an outbox table within the first store's transaction; a background process delivers to other stores.
+1. **Validation phase** (before any mutation):
+   - Canonical boundary check (schema_id vs CANONICAL_SCHEMAS)
+   - Schema/contract validation (Pydantic model validation)
+   - FK existence validation (against FK_REGISTRY)
+   - Immutability policy enforcement
+   - Transaction-level checks (duplicate identity detection, tombstone gate)
+
+2. **Commit phase** (atomic, all-or-nothing):
+   - Canonical hash computation
+   - Write to internal dict structures
+   - Snapshot captured BEFORE validation; restored on any commit failure
+   - ZERO partial state on failure
+
+```text
+Snapshot → Validate → [FAIL → Restore → raise] → Commit → [FAIL → Restore → raise]
+```
+
+No Saga, no two-phase commit, no outbox pattern. These are **FUTURE PRODUCTION ADAPTER GUIDANCE** only, not current runtime behavior.
 
 ### 7.3 Transactional Guarantees
 
 | Property | Guarantee |
 |----------|-----------|
 | Atomicity | Per-store write is atomic. Cross-store coordination is application-layer. |
-| Consistency | FK constraints are validated before commit. Immutability policies are enforced before commit. |
-| Isolation | At least READ_COMMITTED. Adapter may implement SERIALIZABLE for PIT operations. |
-| Durability | Writes are durable on commit. In-memory-only adapters are not permitted for canonical stores. |
+| Consistency | FK constraints validated before commit. Immutability policies enforced before commit. |
+| Isolation | Snapshot isolation (in-memory reference adapter via deep-copy). Production adapter at least READ_COMMITTED. |
+| Durability | In-memory reference adapter: No durability (NON_PRODUCTION). Production adapters: durable on commit. |
 
 ### 7.4 Failure Semantics
 
 | Failure | Behavior |
 |---------|----------|
 | Write fails pre-commit | No partial state. Retry is safe. |
-| Write fails mid-commit | Adapter must detect and recover (idempotency key). |
-| FK violation | Write rejected with `FKViolationError`. No partial state. |
-| Immutability violation | Write rejected with `ImmutabilityViolationError`. No partial state. |
+| Write fails mid-commit | Snapshot restored — zero partial state. Retry is safe. |
+| FK violation | Entire transaction FAILS — zero records committed. |
+| Immutability violation | Entire transaction FAILS — zero records committed. |
 
 ---
 
@@ -515,30 +447,39 @@ Every canonical record must have a **deterministic serialization** — a byte-ex
 - Cross-adapter record comparison.
 - Idempotent writes (same serialized bytes → same record).
 
-### 8.2 Serialization Contract
+### 8.2 Serialization Contract (Item 8 Correction)
 
+```text
+CanonicalSerializer (qad/persistence/serialization.py):
+  Input:  Pydantic BaseModel instance
+  Output: bytes (compact UTF-8 JSON)
+
+  Rules (Item 8, frozen):
+    1. schema_id field serialized FIRST (always top of output)
+    2. Remaining top-level fields: deterministic order (alphabetical by field name)
+    3. Nested dict keys: deterministic (sorted alphabetically)
+    4. List order: PRESERVED as-is (do NOT sort canonical lists)
+    5. Explicit None → JSON null (do NOT omit None for normalisation)
+    6. Enum → .value (string value, not enum name)
+    7. date → ISO 8601 string
+    8. datetime → ISO 8601 string in UTC
+    9. bytes → hex string
+    10. Compact UTF-8 JSON (no whitespace padding)
+    11. Unsupported Python values → FAIL CLOSED (TypeError)
+    12. No default=str (must fail on unhandled types)
+    13. NaN / +Infinity / -Infinity → REJECTED (fail closed)
+    14. SHA-256 canonical hash derived from canonical bytes
+
+  NOT part of this contract:
+    - Semantic equivalence (different representations of the same value)
+    - Normalisation of None (do not strip None for compactness)
+    - Recursive list sorting (lists are insertion-order)
 ```
-CanonicalSerializer:
-  Input:  CanonicalRecord (typed Python object with M4A fields)
-  Output: bytes (UTF-8 JSON with sorted keys)
 
-  Rules:
-    1. Fields are serialized in lexicographic key order (sorted by field name).
-    2. Nested objects are serialized recursively with sorted keys.
-    3. Lists are serialized in insertion order (preserved as-is).
-    4. Null/missing optional fields are omitted.
-    5. Enums are serialized as their string values.
-    6. UUIDs are serialized as lowercase strings.
-    7. Timestamps are serialized as ISO 8601 strings in UTC.
-    8. No whitespace padding (compact JSON).
-    9. The serialized form is NOT stored alongside the record — it is a derived artifact.
-```
+### 8.3 Content Hash (Legacy — superseded)
 
-### 8.3 Content Hash
-
-Every record that carries a `content_hash` field (SRC-01, SRCV-01) must compute its hash over the deterministic serialization of the record's **content fields** (excluding provenance/metadata fields).
-
-Hash algorithm: **SHA-256**.
+The historical §8.3 reference to `content_hash` computed over "content fields only" is superseded.
+Use [§10 Source Hash Distinction](#10-source-hash-distinction) for the authoritative treatment.
 
 ### 8.4 Serialization Bypass
 
@@ -548,30 +489,34 @@ The Research Room has no serialization contract. Data stored there may use any r
 
 ## 9. Reference Adapter Scope
 
-### 9.1 What M5.2 Defines
+### 9.1 Reference Adapter
 
-M5.2 defines the **persistence boundary contract** — the abstract interfaces, rules, and invariants that any adapter must satisfy. It does NOT select or implement a production adapter.
+**`qad/persistence/reference.py`** is an **in-memory dict-backed reference adapter**, explicitly labeled:
 
-### 9.2 Reference Adapter
+> **REFERENCE / NON_PRODUCTION**
 
-A **reference adapter** is an in-memory implementation of all 5 StorePorts + ResearchRoomAdapter, used for:
+It is NOT a production persistence backend.
+
+### 9.2 Purpose
 
 1. **Testing** — unit tests for domain logic without database dependencies.
-2. **Prototyping** — rapid iteration on workflows before production adapter selection.
-3. **Contract verification** — validate that the StorePort interface is complete and correct.
+2. **Contract verification** — validate that the Protocol interface is complete and correct.
+3. **Prototyping** — rapid iteration on workflows before production adapter selection.
 
-### 9.3 Reference Adapter Properties
+### 9.3 Limitations
 
 | Property | Value |
 |----------|-------|
-| Backend | In-memory `dict[str, CanonicalRecord]` |
+| Backend | In-memory `dict[str, dict[str, _Record]]` |
 | FK enforcement | Full (all 87 FKs validated) |
 | Immutability enforcement | Full (per M4A metadata) |
 | Serialization | Deterministic (per §8) |
 | Transactions | In-memory snapshot isolation |
-| PIT enforcement | Not implemented (deferred to M5.3) |
-| Retry kernel | Not implemented (deferred to M5.3) |
-| Production readiness | Not a goal |
+| Durability | **No durability** (data lost on process restart) |
+| Concurrency | **No concurrent-access guarantee** |
+| Production readiness | **Not a goal** |
+| PIT enforcement | Not implemented (deferred) |
+| Retry kernel | Not implemented (deferred) |
 
 ### 9.4 Out of Scope for M5.2
 
@@ -588,9 +533,53 @@ These are deferred to M5.4+ production planning.
 
 ---
 
-## 10. Deferred to M5.3
+## 10. Source Hash Distinction
 
-### 10.1 PIT Enforcement (Point-in-Time Lock)
+**MANDATORY — CONFLATION OF SRC-01.content_hash WITH canonical_hash IS A DEFECT.**
+
+### 10.1 Source Content Hash (SRC-01.content_hash)
+
+```
+content_hash = SHA-256(raw source bytes)
+```
+
+- Computed over the **original raw source bytes** (web scrape, PDF, API response).
+- Bound by `admit_source()`: atomically links `raw_bytes ↔ SHA-256 ↔ SRC-01.content_hash`.
+- Purpose: content-addressing, integrity verification against the original source.
+- Independent of canonical serialization.
+
+### 10.2 Canonical Record Hash (canonical_hash)
+
+```
+canonical_hash = SHA-256(canonical serialized record)
+```
+
+- Computed over the **canonical serialized form** of the entire record (per §8 rules).
+- Purpose: record-level integrity, idempotent writes, cross-adapter comparison.
+- Derived from the deterministic JSON representation.
+
+### 10.3 Relationship
+
+| Property | SRC-01.content_hash | canonical_hash |
+|----------|---------------------|----------------|
+| Input | Raw source bytes | Canonical serialization of SourceRecord |
+| Algorithm | SHA-256 | SHA-256 |
+| Changes when | Source bytes change | Any field in SourceRecord changes |
+| Binding | `admit_source()` enforces match | Computed on every store() |
+| Independence | Independent of record schema | Schema-dependent |
+
+**SRC-01.content_hash** and **canonical_hash** are different hashes with different purposes.
+Do NOT conflate them. The canonical hash of a SourceRecord is NOT the source content hash.
+
+### 10.4 SRCV-01 (SourceVersion)
+
+SRCV-01 does NOT have `content_hash` in its frozen M4A schema. Do NOT invent content_hash derivation semantics for SRCV-01. If a version-level content binding is needed, it must be defined contract-specific — do not copy SRC-01 behavior without explicit authorization.
+
+---
+
+## 11. Deferred to M5.3
+
+### 11.1 PIT Enforcement (Point-in-Time Lock)
 
 The M4A specifies PIT semantics for every schema (see `pit_fields` in each schema definition). PIT enforcement is a **cross-cutting concern** that requires:
 
@@ -601,7 +590,7 @@ The M4A specifies PIT semantics for every schema (see `pit_fields` in each schem
 
 **Deferred to M5.3** because PIT enforcement is a query-time concern that depends on the adapter's query API, which is not yet defined.
 
-### 10.2 Retry Kernel
+### 11.2 Retry Kernel
 
 The M4A specifies retry semantics (max 3 retries per stage, `RR-01` RetryRecord). The retry kernel is a **service-layer concern** that requires:
 
@@ -611,7 +600,7 @@ The M4A specifies retry semantics (max 3 retries per stage, `RR-01` RetryRecord)
 
 **Deferred to M5.3** because the retry kernel is a service (not a persistence) concern.
 
-### 10.3 Other Deferred Items
+### 11.3 Other Deferred Items
 
 | Item | Reason |
 |------|--------|
@@ -623,91 +612,60 @@ The M4A specifies retry semantics (max 3 retries per stage, `RR-01` RetryRecord)
 
 ---
 
-## 11. Schema-to-Store Derivation
+## 12. Schema-to-Anchor Derivation
 
-### 11.1 Mechanical Rule
+### 12.1 Mechanical Rule
 
-The mapping from M4A schema to canonical store is **derived mechanically** from the M4A metadata — specifically from the `family` letter in `canonical_boundary.py`:
+The mapping from M4A schema to M5.2 anchor is **derived mechanically** from the M4A metadata — specifically from the `family` letter in `canonical_boundary.py`:
 
 ```
-Family A  → Identity Store
-Family B  → Evidence Store
-Family C  → Governance Store
-Families D+E+F → Analytics Store
-Families G+H+I → Operations Store
+Family B → Anchor-based stores (see §2)
+  SRC-01, SRCV-01        → RawSourceArchive
+  EV-01, EAR-01, EG-01,   → EvidenceRegistry
+  CLM-01, FACT-01, CTR-01,
+  INF-01, HYP-01
+Families F (financial)    → FinancialFactStore
+  FF-01, NFF-01, CALC-01,
+  SCEN-01, PIE-01, RDCF-01,
+  PLA-01, VA-01
+Family I (operations)     → RunManifestStore + PITContextStore
+  RRM-01, SI-01, RR-01,
+  BU-01, MOD-01, PROV-01
+  PITC-01, CLK-01
+Families A, C, D, E, G, H → Generic CanonicalRecordStore
+  (non-anchor, future adapters)
 ```
 
-### 11.2 Derivation Code
+### 12.2 Verification
 
-The following Python code generates the store mapping mechanically:
-
-```python
-"""Mechanical schema-to-store derivation from M4A metadata."""
-
-# Source: canonical_boundary.py
-SCHEMA_FAMILIES = {
-    # ... (69 entries from canonical_boundary.py)
-}
-
-STORE_MAP = {
-    "A": "IDENTITY",
-    "B": "EVIDENCE",
-    "C": "GOVERNANCE",
-    "D": "ANALYTICS",
-    "E": "ANALYTICS",
-    "F": "ANALYTICS",
-    "G": "OPERATIONS",
-    "H": "OPERATIONS",
-    "I": "OPERATIONS",
-}
-
-def schema_to_store(schema_id: str) -> str:
-    """Return the canonical store name for a given schema_id."""
-    family = SCHEMA_FAMILIES[schema_id]
-    return STORE_MAP[family]
-
-def store_schemas(store_name: str) -> list[str]:
-    """Return all schema IDs belonging to a given store."""
-    return [
-        sid for sid, fam in SCHEMA_FAMILIES.items()
-        if STORE_MAP[fam] == store_name
-    ]
-```
-
-### 11.3 Verification
-
-| Store | Family | Count | Schemas |
-|-------|--------|-------|---------|
-| Identity | A | 6 | SM-01, RU-01, SR-01, CR-01, QU-01, CASE-01 |
-| Evidence | B | 10 | SRC-01, EV-01, FACT-01, CLM-01, INF-01, HYP-01, CTR-01, EG-01, EAR-01, SRCV-01 |
-| Governance | C | 8 | RC-01, RSR-01, IC-01, RB-01, RFR-01, HS-01, IR-01, RSR-02 |
-| Analytics | D+E+F | 7+6+8 = 21 | QA-01, MA-01, IE-01, MC-01, CAE-01, MDL-01, MO-02, DR-01, IA-01, CE-01, RM-01, TK-01, FE-01, FF-01, NFF-01, CALC-01, SCEN-01, PLA-01, RDCF-01, VA-01, PIE-01 |
-| Operations | G+H+I | 7+7+9 = 23 | RTC-01, AF-01, AG-01, UV-01, PUB-01, FDR-01, CRESP-01, MI-01, MO-01, MASS-01, CL-01, IKR-01, IPR-01, CCV-01, RRM-01, PITC-01, SI-01, RR-01, CLK-01, BU-01, MOD-01, PROV-01, EHR-01 |
+| Anchor | Family | Count | Schemas |
+|--------|--------|-------|---------|
+| RawSourceArchive | B | 2 | SRC-01, SRCV-01 |
+| EvidenceRegistry | B | 8 | EV-01, EAR-01, EG-01, CLM-01, FACT-01, CTR-01, INF-01, HYP-01 |
+| FinancialFactStore | F | 8 | FF-01, NFF-01, CALC-01, SCEN-01, PIE-01, RDCF-01, PLA-01, VA-01 |
+| RunManifestStore | I | 6 | RRM-01, SI-01, RR-01, BU-01, MOD-01, PROV-01 |
+| PITContextStore | I | 2 | PITC-01, CLK-01 |
+| **Non-anchor** | A, C, D, E, G, H | 42 | 42 non-anchor schemas (future adapters) |
 | **Total** | | **68** | |
 
-### 11.4 Noncanonical Schemas
+### 12.3 Noncanonical Schemas
 
 The noncanonical set is empty. All 68 M4A schemas are canonical. The Research Room is a logical zone, not a schema family.
 
 ---
 
-## Appendix A: Full Store-to-Schema Map
+## Appendix A: Full Anchor-to-Schema Map
 
-### A.1 Identity Store (6 schemas)
-
-```
-SM-01  SecurityMaster
-RU-01  ResearchableUniverseRecord
-SR-01  SignalRecord
-CR-01  CandidateRecord
-QU-01  QualityUniverseRecord
-CASE-01  CaseRecord
-```
-
-### A.2 Evidence Store (10 schemas)
+### A.1 RawSourceArchive (2 schemas)
 
 ```
 SRC-01  SourceRecord
+SRCV-01  SourceVersion
+```
+
+### A.2 EvidenceRegistry (8 schemas)
+
+```
 EV-01   EvidenceRecord
 FACT-01  FactRecord
 CLM-01  ClaimRecord
@@ -716,81 +674,52 @@ HYP-01  HypothesisRecord
 CTR-01  ContradictionRecord
 EG-01   EvidenceGap
 EAR-01  EvidenceAdmissionRecord
-SRCV-01  SourceVersion
 ```
 
-### A.3 Governance Store (8 schemas)
+### A.3 FinancialFactStore (8 schemas)
 
 ```
-RC-01   ResearchCharter
-RSR-01  ResearchStageRecord
-IC-01   InvestigatorCharter
-RB-01   ResearchBudgetRecord
-RFR-01  ResearchFailureRecord
-HS-01   HypothesisSet
-IR-01   InvestigationReport
-RSR-02  ResearchStopRecord
-```
-
-### A.4 Analytics Store (21 schemas)
-
-```
-QA-01   QualityAssessment
-MA-01   MoatAssessment
-IE-01   IndustryEconomicsRecord
-MC-01   ManagementClaim
-CAE-01  CapitalAllocationEvent
-MDL-01  ManagementDecisionLedger
-MO-02   ManagementOutcome
-DR-01   DislocationRecord
-IA-01   ImpairmentAssessment
-CE-01   CompetingExplanation
-RM-01   RecoveryModel
-TK-01   ThesisKiller
-FE-01   FlipEvidence
 FF-01   FinancialFact
 NFF-01  NormalizedFinancialFact
 CALC-01  CalculationRecord
 SCEN-01  ScenarioRecord
-PLA-01  PermanentLossAssessment
-RDCF-01  ReverseDCFRecord
-VA-01   ValuationAssessment
 PIE-01  PriceImpliedExpectation
+RDCF-01  ReverseDCFRecord
+PLA-01  PermanentLossAssessment
+VA-01   ValuationAssessment
 ```
 
-### A.5 Operations Store (23 schemas)
+### A.4 RunManifestStore (6 schemas)
 
 ```
-RTC-01  RedTeamChallenge
-AF-01   AuditFinding
-AG-01   AuditGate (AuditReport)
-UV-01   UnderwritingVerdict
-PUB-01  PublicationRecord
-FDR-01  FounderDecisionReference
-CRESP-01  ChallengeResponse
-MI-01   MonitoringIndicator
-MO-01   MonitoringObservation
-MASS-01  MonitoringAssessment
-CL-01   CandidateLesson
-IKR-01  InstitutionalKnowledgeRecord
-IPR-01  IndustryPlaybookRecord
-CCV-01  CrossCaseValidation
 RRM-01  RunManifestRecord
-PITC-01  PITContext
 SI-01   ServiceInvocation
 RR-01   RetryRecord
-CLK-01  CaseLock
 BU-01   BudgetUsage
 MOD-01  ModelInvocation
 PROV-01  ProviderInvocation
-EHR-01  EvaluationHarnessRun
 ```
+
+### A.5 PITContextStore (2 schemas)
+
+```
+PITC-01  PITContext
+CLK-01   CaseLock
+```
+
+### A.6 Non-Anchor Schemas (42 schemas, future adapters via generic CanonicalRecordStore)
+
+Families A (Identity), C (Governance), D+E (Quality/Moat), G+H (Challenge/Monitoring/Knowledge)
+
+Non-anchor schemas are managed by the generic `CanonicalRecordStore` base. Their M5.2 scope does not define dedicated adapters — those are mechanically derived from the same contract when authorized.
 
 ---
 
 ## Appendix B: FK Graph by Store
 
-### B.1 Identity Store FK Targets
+> **NOTE:** The "Store" labels in this appendix (Identity / Evidence / Governance / Analytics / Operations) reflect the M4A family grouping — they are **historical/conceptual grouping**, NOT the current M5.2 store topology. The current M5.2 topology is the five-anchor model in §2. FK targets remain authoritative as declared in `qad/contract/fk_registry.py` (87 FKs across 68 schemas). Anchor-relevant cross-references: EV-01.source_id → SRC-01 (EvidenceRegistry → RawSourceArchive); FF-01.source_id → SRC-01 (FinancialFactStore → RawSourceArchive); EAR-01.evidence_id → EV-01 (self-anchor); RRM-01/SI-01/PITC-01/CLK-01.case_id → CASE-01 (RunManifestStore/PITContextStore → future Identity adapter).
+
+### B.1 Identity Group FK Targets
 
 | Schema | FK Field | Target | Store |
 |--------|----------|--------|-------|
@@ -938,13 +867,14 @@ Fields with `MUTABLE` policy are mostly found in:
 | Field | Value |
 |-------|-------|
 | Document ID | QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT |
-| Version | 1.0 |
-| Status | NEW_M5_IMPLEMENTATION_DERIVATION |
-| Authority | FD #135 |
-| Date | 2026-08-24 |
+| Version | 2.0 — RECONCILIATION (28 Aug 2026) |
+| Status | RECONCILIATION — Items 1–8 CLOSED; Item 9 in progress |
+| Authority | FD #135; M4A Canonical Schema Registry (FROZEN + Erratum 001) |
+| Date | 2026-08-28 |
 | Spec Source | QAD-M4A-CANONICAL-SCHEMAS.md (M4A-FROZEN+ERRATUM-001) |
 | Schemas Covered | 68 (all canonical) |
-| Stores Defined | 5 canonical + 1 Research Room |
+| Anchors Defined | 5 (RawSourceArchive, EvidenceRegistry, FinancialFactStore, RunManifestStore, PITContextStore) |
 | FK References | 87 (from fk_registry.py) |
-| Generator | M5.2-20260824 |
+| Generator | M5.2-20260828 |
 | Next Phase | M5.3 (PIT enforcement, retry kernel, query API) |
+| Predecessor | v1.0 (2026-08-24, NEW_M5_IMPLEMENTATION_DERIVATION) — superseded by this reconciliation |

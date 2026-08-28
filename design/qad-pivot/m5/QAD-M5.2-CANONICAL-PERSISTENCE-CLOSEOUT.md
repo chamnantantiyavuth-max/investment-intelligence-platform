@@ -11,6 +11,39 @@
 
 ---
 
+## ⚠ RECONCILIATION NOTICE — 28 AUG 2026
+
+This document records the **original M5.2 persistence closeout state** (24 Aug 2026).
+Founder-directed correction Items 1–8 (25–28 Aug 2026) subsequently superseded several
+technical statements.
+
+**Current authoritative operational state:** `PROJECT_STATE.md`.
+
+**Governance update (28 Aug 2026):**
+- M5.2 = CORRECTION IN PROGRESS
+  - Items 1–8 CLOSED (Item 8 28 Aug 2026)
+  - Item 9 in progress (DOCUMENTATION / PROTOCOL RECONCILIATION ONLY)
+  - Items 10–14 pending
+- M5.3 = HOLD
+
+### Superseded sections — reconcile as follows
+
+| Section | Original claim | Current interpretation |
+|---------|---------------|----------------------|
+| §7 Transaction | Saga / 2PC / Outbox patterns described as strategies | **FUTURE PRODUCTION ADAPTER GUIDANCE only.** Current runtime = validation phase + commit phase with snapshot/restore rollback. |
+| §8 Serialization | Null omitted; lists sorted; content hash over content fields only | **Item 8 correction:** Explicit None → JSON null; list order PRESERVED (no sort); no default=str; NaN/+Infinity/-Infinity fail closed; content hash rules superseded by §10 source hash distinction. |
+| §11 Test results | **401/401** (historical at original closeout) | **577/577 LOCAL pytest PASS** (after Item 8, 28 Aug 2026; NOT independent CI). |
+| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1–8 CLOSED; Item 9 in progress; Items 10–14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
+
+### Historical preservation
+
+The original test counts below are **HISTORICAL AT ORIGINAL CLOSEOUT (24 AUG 2026).**
+Do NOT replace with current counts as if the latter existed during the original closeout.
+
+**Current (28 Aug 2026):** 577/577 LOCAL pytest PASS after Item 8. Not independent CI.
+
+---
+
 ## 0. M5.2 Scope
 
 M5.2 implements the persistence boundary layer for the five canonical anchors:
@@ -224,9 +257,12 @@ Limitations:
 | List/delete by schema | 1 test | PASS |
 | PITContext + RunManifest round-trip | 2 tests | PASS |
 | Financial Fact lineage | 1 test | PASS |
-| **Total M5.2 persistence tests** | **60/60 PASS** |
-| **QAD conformance tests (M5.1 + M5.2)** | **165/165 PASS** |
-| **Full pytest** | **401/401 QAD+M5.2+core (1 pre-existing unrelated Live Office failure)** |
+| **Total M5.2 persistence tests** | **60/60 PASS** | |
+| **QAD conformance tests (M5.1 + M5.2)** | **165/165 PASS** | |
+| **Full pytest** | **401/401 QAD+M5.2+core (1 pre-existing unrelated Live Office failure)** | |
+| | | |
+| **Historical at original closeout (24 Aug 2026).** | | |
+| *Current (28 Aug 2026):* | *577/577 LOCAL pytest PASS (after Item 8)* | *Not independent CI* |
 
 ---
 
@@ -256,11 +292,22 @@ atomic transactions, FK integrity) but does not implement the policy layer.
 
 ```text
 M5.1 = FINAL / CONTRACT-CONFORMANT — CLOSED
-M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT
-M5.3 = PROCEED UNDER FD #135
+
+M5.2 = CORRECTION IN PROGRESS
+  Items 1–8 CLOSED (Item 8 FOUNDER APPROVED 28 Aug 2026)
+  Item 9 in progress (DOCUMENTATION / PROTOCOL RECONCILIATION ONLY)
+  Items 10–14 pending
+
+M5.3 = HOLD
 
 Production Release = NOT AUTHORIZED
 Live Autonomous QAD = NOT AUTHORIZED
+
+Governance note (28 Aug 2026 reconciliation):
+  This closeout document is a HISTORICAL artifact.  The original
+  "M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT" and
+  "M5.3 = PROCEED UNDER FD #135" statements are superseded
+  by the correction Items 1–8.  See RECONCILIATION NOTICE above.
 ```
 
 <!-- 2026-08-24 -->
