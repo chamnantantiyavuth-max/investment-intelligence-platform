@@ -327,7 +327,9 @@ The persistence layer implements the following versioning semantics (Item 4, cor
   4. Incoming canonical payload matches admitted canonical payload (identical-snapshot only).
 - `load_version(record_id, version_label) -> tuple[BaseModel, bytes | None]` — retrieves a specific version + its raw blob.
 - `list_versions(record_id) -> list[str]` — version labels, newest first.
-- `store_version` is NOT simply "the SRCV-01 API" — it enforces metadata-bytes binding integrity. SRCV-01 schema equivalence is established by frozen M4A, not inferred here.
+- `store_version` is NOT simply "the SRCV-01 API" — it enforces metadata-bytes binding integrity. RawSourceArchive.store_version() is the current explicit archive-version
+API.  Do not infer a one-to-one API mapping to SRCV-01 unless separately
+defined by frozen authority.
 
 Do NOT conflate generic CanonicalRecordStore version history with RawSourceArchive-specific source-version API. The former is a write-time side-effect; the latter is a first-class versioned snapshot API with guarded admission semantics.
 
@@ -540,7 +542,7 @@ It is NOT a production persistence backend.
 | FK enforcement | Full (all 87 FKs validated) |
 | Immutability enforcement | Full (per M4A metadata) |
 | Serialization | Deterministic (per §8) |
-| Transactions | In-memory snapshot isolation |
+| Transactions | Snapshot/restore rollback mechanism |
 | Durability | **No durability** (data lost on process restart) |
 | Concurrency | **No concurrent-access guarantee** |
 | Production readiness | **Not a goal** |
@@ -602,7 +604,21 @@ Do NOT conflate them. The canonical hash of a SourceRecord is NOT the source con
 
 ### 10.4 SRCV-01 (SourceVersion)
 
-SRCV-01 does NOT have `content_hash` in its frozen M4A schema. Do NOT invent content_hash derivation semantics for SRCV-01. If a version-level content binding is needed, it must be defined contract-specific — do not copy SRC-01 behavior without explicit authorization.
+SRCV-01 DOES contain a required `content_hash` field (frozen M4A B-10 SourceVersion:
+`required_fields` includes `version_id`, `source_id`, `version_number`, `retrieval_date`,
+`content_hash`).
+
+However, Item 9 does **NOT** define or change the derivation semantics of that field.
+
+Do NOT automatically infer that:
+
+```text
+SRCV-01.content_hash == SHA-256(raw source bytes)
+```
+
+merely because SRC-01 has that frozen Item-5 admission invariant. The field's existence
+is established by frozen M4A; its derivation/binding semantics for version snapshots are
+not newly defined here. No new SRCV-01 admission rule is authorized by Item 9.
 
 ---
 
