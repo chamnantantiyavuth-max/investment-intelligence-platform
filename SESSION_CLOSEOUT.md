@@ -1,3 +1,33 @@
+# Session — 2026-08-28 evening (cron review, 28 Aug 23:15): M5.2 Item 8 FOUNDER APPROVED + Item 9 AUTHORIZED & IMPLEMENTED (docs/protocol-only) — READY FOR FOUNDER APPROVAL; suite 577/577; HEAD `1bebe3b` pushed
+
+**Review window:** 28 Aug 11:05 → 28 Aug 23:15 (this review). **What this review found (evidence-backed):**
+
+1. **TWO interactive sessions since the morning review — M5.2 correction advanced 2 items:**
+   - **14:54 session (`20260828_145411_88b1ee`): Item 8 (FAIL-CLOSED CANONICAL SERIALIZATION) FOUNDER APPROVED / CLOSED** — `e440c2e` (remove `default=str`, `allow_nan=False`), `c0ad7fb`/`ba9361a` (proof closure +27 tests), `20a2f85`/`e28e551`/`3449cdf` (PROJECT_STATE truth corrections). Items 1–8 CLOSED; Item 9 READY FOR IMPLEMENTATION AUTHORIZATION.
+   - **22:15 session (`20260828_221537_d1aefd`): Item 9 AUTHORIZED with correction + IMPLEMENTED** — Founder corrected the reconciliation matrix: `EvidenceRegistry.store_batch()` override rejecting EV-01/EAR-01/SRC-01 **already exists at runtime** (`reference.py:1178-1194`) → Item 9 = DOCUMENT existing behavior, NOT add new runtime guards. Committed `1bebe3b` (22:31, pushed): 4 files +430/−400 — `reference.py` docstring-only (source_archive Optional→REQUIRED), `interfaces.py` Protocol/docstring-only (logical tombstone delete, admit_source, store/store_batch admission-gate contracts), boundary contract §1–§12 full reconciliation (five-anchor topology, Item-4 version history, Item-8 serialization truth, **SRC-01.content_hash vs canonical_hash distinct — do NOT conflate**), closeout reconciliation banner (historical 401/401 preserved + current 577/577 note). **NO runtime behavior changed** (git diff proof: zero `store_batch` matches in reference.py).
+   - **Item 9 status = CODE COMPLETE + READY FOR FOUNDER APPROVAL.** Items 10–14 ⏳ HOLD; M5.3 = HOLD; FD #135 unchanged.
+2. **Suite 577/577 PASS re-verified this review** (hermes-agent venv `$LOCALAPPDATA/hermes/hermes-agent/venv`, 4.72s) — unchanged by Item 9 (docs-only commit; Item 8 closure took 550→577 via +27 tests).
+3. **HEAD `1bebe3b` (509 commits), tree CLEAN, push SYNCED** (`git log origin/main..HEAD` empty) — Item 9 commit pushed by the session.
+4. **Learning Loop Telegram delivery ⚠ STILL FAILING (4th consecutive review):** today's 11:13 run output carries "Chat not found" (target telegram:8964964996) again → the daily digest is still not reaching the Founder. Ops item for interactive session.
+5. **Cadence:** Nick-Weekly **Sat 29 Aug 09:00** (tomorrow; last run 24 Aug as-of 21 Aug EOD → 8d stale, refresh due); weekly radar + CIW **Mon 31 Aug 08:00/09:00** = FD #110 Live Office acceptance observation; mid-week radar next Thu 03 Sep 08:00.
+6. **Market snapshot Fri 28 Aug 23:15 (US market OPEN — Friday midday ~12:15 ET, live bars):** SPY 771.07 ±0.00% 1d +0.70% 5d / **NVDA 220.74 −3.17% 1d** (post-earnings fade after Thu +8.74% pop — driver known, observation only) / **MSFT 516.39 +2.24% 1d +6.86% 5d** (**CIW NO TRIGGER** — −6.7% vs 52wk high 553.72, −25% band 415.29) / AAPL 321.82 +2.30% / JNJ 266.36 +0.22% / GOOGL 347.51 +2.01% / FSLR 203.84 −2.98% (−4.87% 5d) / SMCI 37.33 −2.95% / **SLV 61.10 −2.67% 1d −2.59% 5d — ETF dipped below ~$62 SILVER-CORR-001 anchor (SI=F futures 68.64 still above; observation only)** / inflection quartet: ABBV 256.91 −0.48% −3.04% 5d / BMY 66.33 −0.92% / **LLY 1172.93 −6.57% 5d (cooling continues)** / VRTX 543.02 −0.83% / futures **GC=F 4,565.50 −0.96% 1d −1.27% 5d** / **SI=F 68.64 −1.13% −1.18% 5d** / **CL=F 82.98 −0.66% 1d −4.69% 5d (Hormuz premium cooling)**. No ±10% 1d moves → no mandatory news lookups.
+7. **F5 still open:** AGENTS.md checkpoint fd-134-135 + M5.2 status row (protected file — interactive session + Founder approval required; "Current QAD Governance" section still reads M5.2 = PROCEED, Items 1–8 only).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs (Items 8/9 executed under FD #135 M5.2 authorization + session-level Founder authorizations; register max still #136)
+- [x] Session captured? — this entry + PROJECT_STATE session row + build metrics + M5.2 status lines
+- [x] Verify-First? — HEAD/remote via `git rev-parse` + `git log origin/main..HEAD` (empty = synced); suite re-run 577/577 (hermes-agent venv, 4.72s); Item 9 scope verified via `git show --stat 1bebe3b` (4 files, docs/protocol-only); market quotes pulled live via yfinance (Fri intraday); Learning Loop delivery re-checked from cron output (Chat not found, 4th day)
+- [x] Verification tags? — suite 577/577; HEAD `1bebe3b` 509 commits; push SYNCED; tree clean
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) pushed after commit (clean-tree exception precedent)
+- [x] Working tree — clean before + after
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 9 (DOCUMENTATION / PROTOCOL RECONCILIATION) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`1bebe3b` — docs-only, no runtime change, suite 577/577) — accept it to close Item 9; Items 10–14 then follow one-by-one with your per-item authorization (M5.3 stays HOLD). Ops queue (unchanged): ① durable gateway supervision (dashboard-VBS) + radar run resilience — next proof point **Mon 31 Aug 08:00** weekly radar + 09:00 CIW = FD #110 Live Office acceptance observation; ② **Learning Loop Telegram delivery target** ("Chat not found" telegram:8964964996 — 4th day, digest not reaching Founder); ③ F5 AGENTS.md checkpoint (protected file).
+
+---
+
 # Session — 2026-08-28 (cron review, 28 Aug): no new sessions/commits/FDs since 27 Aug; **CORRECTION — Radar Mid-Week 27 Aug FIRED LATE but ZERO deliverables** (not "no fire attempt"); M5.2 Item 7 still awaiting approval
 
 **Review window:** 27 Aug 10:19 → 28 Aug 11:05 (this review). **What this review found (evidence-backed):**
