@@ -1547,26 +1547,57 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
         tx.execute()
         return [compute_canonical_hash(inst) for inst in prepared]
 
+    # -- Active-lineage read helper (detached + tombstone-gated) -------------
+
+    def _load_active_lineage_record(
+        self, schema_id: SchemaID, record_id: RecordID,
+    ) -> BaseModel:
+        """Load a record for active lineage, enforcing read-isolation.
+
+        Semantics — matches ``load()`` safety:
+        1. Record must exist (KeyError if not).
+        2. Record must NOT be tombstoned (KeyError if tombstoned).
+        3. Returned instance is a ``deepcopy`` — mutation of the returned
+           object never mutates canonical store state.
+
+        This is the ONLY internal read helper ``get_lineage()`` should use.
+        Do NOT use ``_load_raw()`` inside lineage resolution.
+        """
+        if self.is_tombstoned(schema_id, record_id):
+            raise KeyError(
+                f"{schema_id}/{record_id}: tombstoned — "
+                f"active lineage cannot return tombstoned records"
+            )
+        rec = self._data.get(schema_id, {}).get(record_id)
+        if rec is None:
+            raise KeyError(f"{schema_id}/{record_id}: not found")
+        return deepcopy(rec.instance)
+
     # -- Schema-aware lineage ----------------------------------------------
 
     def get_lineage(
         self, schema_id: SchemaID, record_id: RecordID, /,
     ) -> list[BaseModel]:
-        """Return the lineage chain for a financial record.
+        """Return the active lineage chain for a financial record.
+
+        Every returned model is a **deep copy** — mutating a lineage node
+        does NOT affect canonical store state (``_data``, hashes, versions,
+        tombstones).
+
+        Tombstoned records are rejected on active lineage retrieval.
+        Use ``load_historical()`` for audit recovery.
 
         Raises:
-            KeyError: record not found.
+            KeyError: record not found or tombstoned.
             TypeError: unsupported schema_id.
         """
-        # Load the requested record
+        # Load the requested record (active — tombstone-gated, deep-copied)
         if schema_id not in ("FF-01", "NFF-01", "CALC-01", "SCEN-01"):
             raise TypeError(
                 f"get_lineage: unsupported schema_id {schema_id}"
             )
 
-        record = self._load_raw(schema_id, record_id)
-        if record is None:
-            raise KeyError(f"{schema_id}/{record_id}: not found")
+        record = self._load_active_lineage_record(schema_id, record_id)
 
         if schema_id == "FF-01":
             return [record]
@@ -1576,13 +1607,7 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
             parent_financial_fact_id = getattr(record, "financial_fact_id", None)
             chain: list[BaseModel] = [record]
             if parent_financial_fact_id:
-                parent = self._load_raw("FF-01", parent_financial_fact_id)
-                if parent is None:
-                    raise KeyError(
-                        f"NFF-01/{record_id}: formal FK parent FF-01/"
-                        f"{parent_financial_fact_id} not found — "
-                        f"cannot present [NFF] as complete lineage"
-                    )
+                parent = self._load_active_lineage_record("FF-01", parent_financial_fact_id)
                 chain.insert(0, parent)
             return chain
 
@@ -1593,10 +1618,11 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
             input_ids = getattr(record, "input_fact_ids", None) or []
             unresolved: list[str] = []
             for fid in input_ids:
-                ff = self._load_raw("FF-01", fid)
-                if ff is not None:
+                try:
+                    ff = self._load_active_lineage_record("FF-01", fid)
                     chain.append(ff)
-                else:
+                except KeyError:
+                    # FF not found OR tombstoned — either way it's incomplete
                     unresolved.append(fid)
             if unresolved:
                 raise KeyError(
