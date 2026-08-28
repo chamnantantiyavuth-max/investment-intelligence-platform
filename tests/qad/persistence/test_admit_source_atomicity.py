@@ -584,3 +584,23 @@ class TestNoRemainingBypass:
         assert ch1 != ch2
         loaded = store.load("SM-01", "E-REGRESS-04")
         assert loaded.ticker_history == ["RG4"]
+
+
+# ===================================================================
+# Item 11 — admit_source without raw bytes → rejection
+# ===================================================================
+
+def test_admit_without_raw_bytes_rejected():
+    """Calling admit_source() without raw bytes must fail closed.
+
+    admit_source(instance) without raw_bytes is a TypeError because
+    raw_bytes is a required positional parameter.  This ensures no
+    accidental source admission without the content-addressed binding.
+    """
+    import hashlib
+    store = InMemoryRawSourceArchive()
+    raw = b"orphan content"
+    src = _make_src("E-NO-RAW", content_raw=raw)
+    # admit_source requires raw_bytes — no default
+    with pytest.raises(TypeError):
+        store.admit_source(src)  # missing raw_bytes

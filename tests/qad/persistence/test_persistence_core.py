@@ -2979,3 +2979,192 @@ class TestAppendOnlyEdgeClosure:
         assert after_ticker == before_ticker, (
             f"Ticker changed after failed batch: {before_ticker} -> {after_ticker}"
         )
+
+
+# ====================================================================
+# 21. Item 11 — Commit-phase delete failure → ZERO deleted
+# ====================================================================
+
+class TestItem11CommitDeleteRollback:
+    """Item 11: commit-phase failure after delete must restore state."""
+
+    def test_commit_phase_delete_failure_rollback(self):
+        """Delete that fails mid-commit must leave store unchanged."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import PersistenceError, TransactionFailure
+        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+
+        class _FaultyDeleteStore(InMemoryCanonicalRecordStore):
+            def __init__(self):
+                super().__init__()
+                self._remove_count = 0
+                self._fail_on = 1  # fail on the 1st _remove_record call
+
+            def _remove_record(self, schema_id, record_id):
+                self._remove_count += 1
+                if self._remove_count >= self._fail_on:
+                    raise PersistenceError(
+                        "Injected delete commit failure",
+                        schema_id=schema_id,
+                        record_id=record_id,
+                    )
+                super()._remove_record(schema_id, record_id)
+
+        store = _FaultyDeleteStore()
+        sm = SecurityMaster(
+            entity_id="E-DEL-ROLL", cik="9999", exchange="NYSE",
+            name="DelRollback", primary_ticker="DRL",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+            ticker_history=[],
+        )
+        store.store(sm)
+        assert store.contains("SM-01", "E-DEL-ROLL")
+        ch_before = store.get_canonical_hash("SM-01", "E-DEL-ROLL")
+
+        with pytest.raises((PersistenceError, TransactionFailure)):
+            store.delete("SM-01", "E-DEL-ROLL")
+
+        # Must be unchanged
+        assert store.contains("SM-01", "E-DEL-ROLL"), \
+            "Record should still exist after failed delete"
+        ch_after = store.get_canonical_hash("SM-01", "E-DEL-ROLL")
+        assert ch_after == ch_before, \
+            "Hash changed after failed delete"
+
+
+class TestItem11MixedStoreDeleteRollback:
+    """Item 11: mixed store+delete commit failure must leave ZERO net change."""
+
+    def test_commit_phase_mixed_store_delete_rollback(self):
+        """A mixed store+delete operation failing mid-commit must leave
+        the store in its pre-operation state."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import PersistenceError, TransactionFailure
+        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+
+        store = InMemoryCanonicalRecordStore()
+
+        # Pre-existing records
+        existing = [
+            SecurityMaster(entity_id="E-MIX-01", cik="MX1", exchange="NYSE",
+                           name="Mix1", primary_ticker="MX1",
+                           security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                           status=SecurityMasterStatus.ACTIVE),
+            SecurityMaster(entity_id="E-MIX-02", cik="MX2", exchange="NYSE",
+                           name="Mix2", primary_ticker="MX2",
+                           security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                           status=SecurityMasterStatus.ACTIVE),
+        ]
+        for sm in existing:
+            store.store(sm)
+        hash_01_before = store.get_canonical_hash("SM-01", "E-MIX-01")
+
+        # Build a Transaction that adds a store AND a delete
+        # First, override to fail on the delete (2nd commit operation)
+        orig_delete = store._remove_record
+        del_count = 0
+
+        def _failing_delete(sid, rid):  # type: ignore[no-untyped-def]
+            nonlocal del_count
+            del_count += 1
+            if del_count >= 1:
+                raise PersistenceError("Injected mixed failure", schema_id=sid, record_id=rid)
+            orig_delete(sid, rid)
+
+        store._remove_record = _failing_delete  # type: ignore[assignment]
+
+        from qad.persistence.transaction import Transaction
+        tx = Transaction(
+            store_contains=store.contains,
+            commit_store=store._write_record,
+            commit_delete=store._remove_record,
+            get_existing=store._load_raw,
+            get_existing_hash=store._load_hash,
+            commit_snapshot=store._snapshot,
+            commit_restore=store._restore,
+        )
+
+        new_rec = SecurityMaster(entity_id="E-MIX-NEW", cik="MXN", exchange="NYSE",
+                                  name="MixNew", primary_ticker="MXN",
+                                  security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                                  status=SecurityMasterStatus.ACTIVE)
+        tx.add_store(new_rec)
+        tx.add_delete("SM-01", "E-MIX-01")
+
+        with pytest.raises((PersistenceError, TransactionFailure)):
+            tx.execute()
+        store._remove_record = orig_delete
+
+        # ZERO net change
+        assert not store.contains("SM-01", "E-MIX-NEW"), \
+            "New record should NOT exist after failed mixed operation"
+        assert store.contains("SM-01", "E-MIX-01"), \
+            "Existing record should still exist after failed delete"
+        hash_01_after = store.get_canonical_hash("SM-01", "E-MIX-01")
+        assert hash_01_after == hash_01_before, \
+            "Hash changed on existing record after failed mixed operation"
+
+
+# ====================================================================
+# 22. Item 11 — Canonical hard delete explicitly forbidden
+# ====================================================================
+
+class TestItem11CanonicalHardDeleteForbidden:
+    """Item 11: hard physical delete on canonical stores is forbidden.
+
+    Canonical delete() must NOT physically remove the record.
+    The record must remain loadable via historical access.
+    """
+
+    def test_canonical_delete_is_tombstone_not_hard_remove(self):
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+
+        store = InMemoryCanonicalRecordStore()
+        sm = SecurityMaster(
+            entity_id="E-FORBID", cik="F99", exchange="NYSE",
+            name="HardDelete", primary_ticker="FBD",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+        assert store.contains("SM-01", "E-FORBID")
+
+        # delete() via standard API
+        store.delete("SM-01", "E-FORBID")
+
+        # Active reads must NOT find it
+        assert not store.contains("SM-01", "E-FORBID"), \
+            "Active read must exclude tombstoned"
+        with pytest.raises(KeyError):
+            store.load("SM-01", "E-FORBID")
+
+        # But the canonical record must NOT be physically removed
+        # Historical access must still retrieve it
+        historical = store.load_historical("SM-01", "E-FORBID")
+        assert historical is not None, \
+            "Historical load must return the record after tombstone"
+        assert historical.primary_ticker == "FBD"
+
+        # Hash must be preserved
+        h = store.get_canonical_hash("SM-01", "E-FORBID")
+        assert h is not None
+
+    def test_tombstone_list_contains_tombstoned(self):
+        """Tombstoned records must appear in tombstone listing."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+
+        store = InMemoryCanonicalRecordStore()
+        sm = SecurityMaster(
+            entity_id="E-TLST", cik="T99", exchange="NYSE",
+            name="TombstoneList", primary_ticker="TLS",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(sm)
+        store.delete("SM-01", "E-TLST")
+        tids = store.list_tombstoned_ids("SM-01")
+        assert "E-TLST" in tids, \
+            "Tombstoned record must be listed"

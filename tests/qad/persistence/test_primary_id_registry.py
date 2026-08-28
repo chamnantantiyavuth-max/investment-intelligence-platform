@@ -182,3 +182,40 @@ class TestKnownCorrections:
             f"{schema_id}: expected PK={expected_pk!r}, "
             f"got {actual!r}"
         )
+
+# ====================================================================
+# Item 11 — Negative tests: wrong/missing PK → FAIL
+# ====================================================================
+
+
+class TestNegativePrimaryIdRejection:
+    """Item 11: wrong/missing primary-ID mapping must fail deterministically."""
+
+    def test_wrong_pk_mapping_does_not_store(self, production_registry):
+        """Injecting a record with a wrong PK field name fails closed."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import TransactionFailure
+        from pydantic import BaseModel
+
+        class _WrongPkModel(BaseModel):
+            schema_id: str = "SM-01"
+            wrong_key: str = "val"
+
+        store = InMemoryCanonicalRecordStore()
+        with pytest.raises((ValueError, TypeError, TransactionFailure)):
+            store.store(_WrongPkModel())
+
+    def test_missing_pk_field_raises(self):
+        """An instance with unresolvable schema_id must be rejected."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import TransactionFailure
+        from pydantic import BaseModel
+
+        store = InMemoryCanonicalRecordStore()
+
+        class _UnknownSchemaModel(BaseModel):
+            schema_id: str = "UNKNOWN-99"
+            data: str = "test"
+
+        with pytest.raises((ValueError, TypeError, TransactionFailure)):
+            store.store(_UnknownSchemaModel())
