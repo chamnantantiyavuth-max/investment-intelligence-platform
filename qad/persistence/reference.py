@@ -1387,10 +1387,23 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
         For FF-01, validates source_id against the authoritative
         RawSourceArchive (Item 5 boundary).  No shadow SRC-01 copies.
 
+        For SRC-01, rejects direct storage — SourceRecords may only
+        enter through RawSourceArchive.admit_source().
+
         Uses a composite store_contains that resolves FK lookups against
         both local data and the authoritative RawSourceArchive.
         """
         schema_id: str = instance.schema_id  # type: ignore[assignment]
+
+        # Reject SRC-01 — may only enter through RawSourceArchive
+        if schema_id == "SRC-01":
+            raise CanonicalBoundaryViolation(
+                "SRC-01 direct store rejected on FinancialFactStore: "
+                "use RawSourceArchive.admit_source() to bind SourceRecord "
+                "metadata to raw bytes",
+                schema_id=schema_id,
+                record_id=_resolve_id(instance),
+            )
 
         if schema_id == "FF-01":
             source_id = getattr(instance, "source_id", None)
@@ -1435,6 +1448,105 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
 
         return compute_canonical_hash(instance)
 
+    # -- Override store_batch() to block SRC-01 and validate FF source authority ---
+
+    def store_batch(
+        self, instances: list[BaseModel], /,
+    ) -> list[CanonicalHash]:
+        """Override to enforce source authority and block shadow SRC-01.
+
+        For every FF-01 in the batch:
+        1. source_id exists
+        2. resolves through authoritative RawSourceArchive (not local shadow)
+        3. not tombstoned
+        4. metadata↔bytes binding intact
+
+        Rejects any batch containing SRC-01 — SourceRecords may only
+        enter through RawSourceArchive.admit_source().
+
+        Uses a composite store_contains so legitimate RawSourceArchive
+        SRC references resolve during FK validation.
+        """
+        # Phase 1: reject SRC-01 in any batch position
+        for inst in instances:
+            sid: str = inst.schema_id  # type: ignore[assignment]
+            if sid == "SRC-01":
+                raise CanonicalBoundaryViolation(
+                    "SRC-01 in batch rejected on FinancialFactStore: "
+                    "use RawSourceArchive.admit_source() to bind SourceRecord "
+                    "metadata to raw bytes",
+                    schema_id=sid,
+                    record_id=_resolve_id(inst),
+                )
+
+        # Phase 2: validate every FF-01 source_id against authoritative archive
+        for inst in instances:
+            sid: str = inst.schema_id  # type: ignore[assignment]
+            if sid == "FF-01":
+                source_id = getattr(inst, "source_id", None)
+                if not source_id:
+                    raise MissingForeignKey(
+                        "FF-01.source_id is required",
+                        schema_id="FF-01",
+                    )
+                if not self._source_exists(source_id):
+                    raise MissingForeignKey(
+                        f"FF-01.source_id ({source_id}) does not resolve to "
+                        f"an admitted SRC-01 with intact binding",
+                        schema_id="FF-01",
+                        record_id=_resolve_id(inst),
+                        target_schema="SRC-01",
+                        target_ids=[source_id],
+                    )
+
+        # Phase 3: check for duplicate identities
+        seen: set[tuple[str, str]] = set()
+        for inst in instances:
+            sid = inst.schema_id  # type: ignore[assignment]
+            rid = _resolve_id(inst)
+            key = (sid, rid)
+            if key in seen:
+                raise IntegrityConflict(
+                    f"{sid}/{rid}: duplicate identity in batch — "
+                    f"batch operations must be independent",
+                    schema_id=sid,
+                    record_id=rid,
+                )
+            seen.add(key)
+            if rid in self._tombstones.get(sid, {}):
+                raise IntegrityConflict(
+                    f"{sid}/{rid}: cannot write to tombstoned record "
+                    f"(canonical hard delete is forbidden)",
+                    schema_id=sid,
+                    record_id=rid,
+                )
+
+        # Phase 4: prepare instances
+        prepared = [self._prepare_instance(inst) for inst in instances]
+
+        # Phase 5: build composite store_contains bridging to RawSourceArchive
+        def _composite_contains(schema_id: str, record_id: str) -> bool:
+            if self.contains(schema_id, record_id):
+                return True
+            if self._source_archive is not None:
+                return self._source_archive.contains(schema_id, record_id)
+            return False
+
+        # Phase 6: transaction
+        tx = Transaction(
+            store_contains=_composite_contains,
+            commit_store=self._write_record,
+            commit_delete=self._remove_record,
+            get_existing=self._load_raw,
+            get_existing_hash=self._load_hash,
+            commit_snapshot=self._snapshot,
+            commit_restore=self._restore,
+        )
+        for inst in prepared:
+            tx.add_store(inst)
+        tx.execute()
+        return [compute_canonical_hash(inst) for inst in prepared]
+
     # -- Schema-aware lineage ----------------------------------------------
 
     def get_lineage(
@@ -1460,29 +1572,37 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
             return [record]
 
         if schema_id == "NFF-01":
-            # Follow NFF.financial_fact_id -> FF-01
+            # Follow NFF.financial_fact_id -> FF-01 (formal FK — fail loudly)
             parent_financial_fact_id = getattr(record, "financial_fact_id", None)
             chain: list[BaseModel] = [record]
             if parent_financial_fact_id:
-                try:
-                    parent = self._load_raw("FF-01", parent_financial_fact_id)
-                    if parent is not None:
-                        chain.insert(0, parent)
-                except KeyError:
-                    pass  # parent not found — return [NFF] only
+                parent = self._load_raw("FF-01", parent_financial_fact_id)
+                if parent is None:
+                    raise KeyError(
+                        f"NFF-01/{record_id}: formal FK parent FF-01/"
+                        f"{parent_financial_fact_id} not found — "
+                        f"cannot present [NFF] as complete lineage"
+                    )
+                chain.insert(0, parent)
             return chain
 
         if schema_id == "CALC-01":
             # Return [CALC] + resolved FF nodes from input_fact_ids[] (provenance)
+            # If any input_fact_id is unresolved, raise a deterministic error.
             chain = [record]
             input_ids = getattr(record, "input_fact_ids", None) or []
+            unresolved: list[str] = []
             for fid in input_ids:
-                try:
-                    ff = self._load_raw("FF-01", fid)
-                    if ff is not None:
-                        chain.append(ff)
-                except KeyError:
-                    pass  # unresolved provenance — include in chain as-is
+                ff = self._load_raw("FF-01", fid)
+                if ff is not None:
+                    chain.append(ff)
+                else:
+                    unresolved.append(fid)
+            if unresolved:
+                raise KeyError(
+                    f"CALC-01/{record_id}: incomplete provenance; "
+                    f"unresolved input_fact_ids={unresolved}"
+                )
             return chain
 
         if schema_id == "SCEN-01":
