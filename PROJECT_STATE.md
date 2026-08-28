@@ -43,7 +43,7 @@
 
 | Metric | Value | Last verified |
 |--------|-------|---------------|
-| Python tests | **577/577 PASS** (28 Aug 2026 — M5.2 Items 1–8 FOUNDER APPROVED / CLOSED; Item 8 fail-closed serialization +27 tests; **Item 9 CODE COMPLETE + READY FOR FOUNDER APPROVAL** — docs/protocol-only reconciliation `1bebe3b`, suite unchanged) | 2026-08-28 |
+| Python tests | **577/577 PASS** (28 Aug 2026 — M5.2 Items 1–9 FOUNDER APPROVED / CLOSED; Item 8 fail-closed serialization +27 tests; Item 9 documentation/protocol reconciliation, suite unchanged) | 2026-08-28 |
 | Frontend build | ✅ passes (`npm run build` exit 0) | 2026-08-13 |
 | Frontend lint | 0 errors (oxlint) | 2026-08-10 |
 | Commits | count via `git rev-list --count HEAD` — NOT hard-coded here (P2: a mutable state file must not self-reference its own HEAD/count; exact SHAs live in immutable evidence/closeout artifacts) | — |
