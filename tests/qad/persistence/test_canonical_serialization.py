@@ -291,8 +291,16 @@ class TestDeterminismRegression:
             value="500",
         )
         raw = serialize_to_canonical_bytes(ff)
-        # Must contain the VALUE "SG&A", not the name "SGA"
+        # Must contain the VALUE "SG&A", not the enum name "SGA"
         assert b'"SG&A"' in raw, "serializer must use Enum .value, not .name"
+        # The field 'metric_name' must NOT contain bare "SGA" as the value
+        # (it may appear as substring of "SG&A" — we need a field-aware check)
+        raw_str = raw.decode("utf-8")
+        import json
+        parsed = json.loads(raw_str)
+        assert parsed["metric_name"] == "SG&A", (
+            f"metric_name must be 'SG&A', got {parsed['metric_name']!r}"
+        )
 
     def test_normal_finite_floats_work(self):
         """Normal finite floats in dict fields serialize normally."""
@@ -497,8 +505,9 @@ class TestPublicPersistenceHashEquivalence:
         )
         returned = store.store(sm)
         stored = store.get_canonical_hash("SM-01", "E-HASH")
-        computed = compute_canonical_hash(sm)
-        assert returned == stored == computed
+        loaded = store.load("SM-01", "E-HASH")
+        loaded_hash = compute_canonical_hash(loaded)
+        assert returned == stored == loaded_hash
 
     def test_store_batch(self):
         store = InMemoryCanonicalRecordStore()
@@ -515,8 +524,10 @@ class TestPublicPersistenceHashEquivalence:
             status=SecurityMasterStatus.ACTIVE,
         )
         hashes = store.store_batch([sm_a, sm_b])
-        assert hashes[0] == compute_canonical_hash(sm_a)
-        assert hashes[1] == compute_canonical_hash(sm_b)
+        loaded_a = store.load("SM-01", "E-BA")
+        loaded_b = store.load("SM-01", "E-BB")
+        assert hashes[0] == compute_canonical_hash(loaded_a)
+        assert hashes[1] == compute_canonical_hash(loaded_b)
         assert hashes[0] == store.get_canonical_hash("SM-01", "E-BA")
         assert hashes[1] == store.get_canonical_hash("SM-01", "E-BB")
 
@@ -532,8 +543,9 @@ class TestPublicPersistenceHashEquivalence:
         )
         returned = archive.admit_source(src, raw)
         stored = archive.get_canonical_hash("SRC-01", "SRC-HASH-EQ")
-        computed = compute_canonical_hash(src)
-        assert returned == stored == computed
+        loaded = archive.load("SRC-01", "SRC-HASH-EQ")
+        loaded_hash = compute_canonical_hash(loaded)
+        assert returned == stored == loaded_hash
 
     def test_admit_evidence(self):
         archive = InMemoryRawSourceArchive()
@@ -565,9 +577,11 @@ class TestPublicPersistenceHashEquivalence:
         returned = registry.admit_evidence(ev, ear)
         stored_ev = registry.get_canonical_hash("EV-01", "EV-HASH-EQ")
         stored_ear = registry.get_canonical_hash("EAR-01", "EAR-HASH-EQ")
+        loaded_ev = registry.load("EV-01", "EV-HASH-EQ")
+        loaded_ear = registry.load("EAR-01", "EAR-HASH-EQ")
         assert returned == stored_ev
-        assert stored_ev == compute_canonical_hash(ev)
-        assert stored_ear == compute_canonical_hash(ear)
+        assert stored_ev == compute_canonical_hash(loaded_ev)
+        assert stored_ear == compute_canonical_hash(loaded_ear)
 
     def test_financial_fact_store(self):
         archive = InMemoryRawSourceArchive()
@@ -593,8 +607,9 @@ class TestPublicPersistenceHashEquivalence:
         )
         returned = ff_store.store(ff)
         stored = ff_store.get_canonical_hash("FF-01", "FF-HASH-EQ")
-        computed = compute_canonical_hash(ff)
-        assert returned == stored == computed
+        loaded = ff_store.load("FF-01", "FF-HASH-EQ")
+        loaded_hash = compute_canonical_hash(loaded)
+        assert returned == stored == loaded_hash
 
     def test_financial_fact_store_batch(self):
         archive = InMemoryRawSourceArchive()
@@ -625,7 +640,8 @@ class TestPublicPersistenceHashEquivalence:
             adjustment_type=NormalizedFinancialFactAdjustment_type.NON_RECURRING,
         )
         hashes = ff_store.store_batch([nff])
-        assert hashes[0] == compute_canonical_hash(nff)
+        loaded = ff_store.load("NFF-01", "NFF-BATCH-HASH")
+        assert hashes[0] == compute_canonical_hash(loaded)
         assert hashes[0] == ff_store.get_canonical_hash("NFF-01", "NFF-BATCH-HASH")
 
 
@@ -692,9 +708,17 @@ class TestVersionSnapshotHash:
         assert ver_record is not None, "version v1 must exist in _versions"
         ver_hash = ver_record.canonical_hash
 
-        assert ver_hash == v1_hash, (
+        # Hash the actual loaded historical instance
+        historical_instance_hash = compute_canonical_hash(historical_v1)
+
+        # All three must match: original v1 == version snapshot == loaded historical
+        assert ver_hash == historical_instance_hash, (
             f"version snapshot hash ({ver_hash}) must match "
-            f"compute_canonical_hash(v1 instance) ({v1_hash})"
+            f"compute_canonical_hash(historical_v1) ({historical_instance_hash})"
+        )
+        assert historical_instance_hash == v1_hash, (
+            f"historical instance hash ({historical_instance_hash}) must match "
+            f"original v1 hash ({v1_hash})"
         )
 
 
