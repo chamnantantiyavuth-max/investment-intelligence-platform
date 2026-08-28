@@ -309,14 +309,27 @@ Each schema in the M4A document declares `immutability_rules` and `revision_rule
 
 The persistence layer implements the following versioning semantics (Item 4, correction):
 
-- **Prior versions preserved** where the schema's versioning policy requires it (APPEND_ONLY_STATE / APPEND_ONLY schemas).
-- **Monotonic version labels** — numeric (v1, v2, ..., v10, v11) or string labels for explicit versioned snapshots (SRCV-01).
-- **Historical version access** — `load_version(record_id, version_label)` retrieves preserved prior versions.
-- **No silent overwrite** of append-only history — when a versioned record is updated, the prior version is preserved before the new write.
-- **RawSourceArchive-specific versioning** — `store_version(instance, version_label)` is a public API for SRCV-01 version snapshots. It enforces metadata-bytes binding integrity (identical-snapshot only).
-- **Generic CanonicalRecordStore versioning** — applies to APPEND_ONLY / APPEND_ONLY_STATE schemas during update (prior version auto-preserved).
+#### Generic CanonicalRecordStore history
 
-Do NOT conflate generic CanonicalRecordStore version history with RawSourceArchive-specific source-version API. The former is a write-time side-effect; the latter is a first-class versioned snapshot API.
+- Prior canonical record auto-preserved where the schema's versioning policy requires it (APPEND_ONLY_STATE / APPEND_ONLY schemas).
+- Schema-qualified history keyed by `(schema_id, record_id)`.
+- Monotonic version labels: `v0001`, `v0002`, ..., `v0010` (zero-padded numeric ordering).
+- Historical access via `load_version(schema_id, record_id, version_label)` retrieves preserved prior versions.
+- No silent overwrite of append-only history — when a versioned record is updated, the prior version is preserved in `_versions` before the new write.
+
+#### RawSourceArchive explicit version API
+
+- `store_version(instance, version_label)` — public API for SRC-01 versioned snapshots.
+- For SRC-01, `store_version` is **guarded**:
+  1. Admitted SRC-01 already exists in the archive.
+  2. Raw bytes exist for the source record.
+  3. SHA-256(raw_bytes) matches existing SRC-01.content_hash (binding intact).
+  4. Incoming canonical payload matches admitted canonical payload (identical-snapshot only).
+- `load_version(record_id, version_label) -> tuple[BaseModel, bytes | None]` — retrieves a specific version + its raw blob.
+- `list_versions(record_id) -> list[str]` — version labels, newest first.
+- `store_version` is NOT simply "the SRCV-01 API" — it enforces metadata-bytes binding integrity. SRCV-01 schema equivalence is established by frozen M4A, not inferred here.
+
+Do NOT conflate generic CanonicalRecordStore version history with RawSourceArchive-specific source-version API. The former is a write-time side-effect; the latter is a first-class versioned snapshot API with guarded admission semantics.
 
 ### 5.4 Immutable Record Enforcement
 
@@ -361,7 +374,9 @@ FKs that cross store boundaries (the most architecturally significant):
 
 ### 6.4 Cross-Store FK Constraints
 
-Adapters that implement multiple stores (e.g., a single SQL database) must enforce cross-store FK constraints. Adapters that use separate persistence backends per store must implement **application-level FK verification** or **eventual FK consistency** with explicit documentation.
+Adapters that implement multiple stores (e.g., a single SQL database) must enforce cross-store FK constraints. Adapters that use separate persistence backends per store must implement **application-level FK verification** — required FK targets must resolve before canonical commit.
+
+> **Frozen invariant:** Required FK targets must resolve before canonical commit. Intentional dangling required FKs are NOT permitted, regardless of backend topology. Future distributed implementations may choose coordination technology but may not admit unresolved required FKs.
 
 ### 6.5 Self-Referencing FKs
 
@@ -374,13 +389,14 @@ These schemas have self-referencing FKs (contradicts, supersedes):
 
 ### 6.6 Deletion Policy
 
-Canonical records are **never physically hard-deleted**. FK targets must not be removed while referenced records exist. The persistence layer:
+Canonical records are **never physically hard-deleted**. The persistence layer:
 
 1. **Logical tombstone is the ONLY canonical delete operation.** `delete()` / `delete_batch()` mark records as tombstoned — the record's data, canonical hash, and history remain preserved.
 2. Active reads (`load`, `contains`, `list_ids`, `list_all`) EXCLUDE tombstoned records.
 3. Explicit historical access (`load_historical`, `load_version`) may retrieve preserved records.
-4. Reject DELETE on any canonical record that is referenced by another record (FK integrity).
-5. Tombstone metadata (reason, authorizer, timestamp) is retained per Evidence Doctrine.
+4. Tombstone metadata (reason, authorizer, timestamp) is retained per Evidence Doctrine.
+
+> **Inbound-FK deletion guard:** The current reference adapter does NOT implement an automatic inbound-FK tombstone guard (no check that another record references the target before tombstoning). This is a future implementation concern for production adapters. Frozen invariant: FK targets should not be silently tombstoned while active references exist — enforcement mechanism is deferred.
 
 ---
 
@@ -398,22 +414,33 @@ Each canonical store defines its own transaction boundary. A write to a single s
 
 The in-memory reference adapter uses snapshot/restore rollback:
 
-1. **Validation phase** (before any mutation):
-   - Canonical boundary check (schema_id vs CANONICAL_SCHEMAS)
-   - Schema/contract validation (Pydantic model validation)
-   - FK existence validation (against FK_REGISTRY)
-   - Immutability policy enforcement
-   - Transaction-level checks (duplicate identity detection, tombstone gate)
-
-2. **Commit phase** (atomic, all-or-nothing):
-   - Canonical hash computation
-   - Write to internal dict structures
-   - Snapshot captured BEFORE validation; restored on any commit failure
-   - ZERO partial state on failure
-
 ```text
-Snapshot → Validate → [FAIL → Restore → raise] → Commit → [FAIL → Restore → raise]
+Persistence API prechecks (before Transaction):
+  - tombstone rejection
+  - duplicate batch identity rejection
+  - source/admission authority checks (RawSourceArchive, EvidenceRegistry)
+  - instance preparation (SM-01 ticker_history enrichment)
+
+Then Transaction._validate() runs before any mutation:
+  - Canonical boundary check (schema_id vs CANONICAL_SCHEMAS)
+  - Schema/contract validation (Pydantic model validation)
+  - FK existence validation (against FK_REGISTRY)
+  - Immutability policy enforcement
+  └─ failure → raise; ZERO mutation
+
+Transaction._commit() (after successful validation):
+  1. Snapshot captured (deep-copy of entire store state)
+  2. Canonical hash computation
+  3. Write to internal dict structures
+  4. └─ failure → Restore Snapshot → raise
+  5. Success
 ```
+
+Snapshot is captured **AFTER** successful validation and immediately before commit.
+
+Persistence API prechecks (tombstone, duplicate identity, source authority) are
+separate from Transaction._validate() — they run before Transaction execution
+and protect against admission bypasses.
 
 No Saga, no two-phase commit, no outbox pattern. These are **FUTURE PRODUCTION ADAPTER GUIDANCE** only, not current runtime behavior.
 
@@ -423,8 +450,10 @@ No Saga, no two-phase commit, no outbox pattern. These are **FUTURE PRODUCTION A
 |----------|-----------|
 | Atomicity | Per-store write is atomic. Cross-store coordination is application-layer. |
 | Consistency | FK constraints validated before commit. Immutability policies enforced before commit. |
-| Isolation | Snapshot isolation (in-memory reference adapter via deep-copy). Production adapter at least READ_COMMITTED. |
+| Isolation | **NONE / NOT PROVIDED** (reference adapter). Snapshot/restore rollback mechanism only — no concurrency safety, no database isolation level, no READ_COMMITTED, no SERIALIZABLE. |
 | Durability | In-memory reference adapter: No durability (NON_PRODUCTION). Production adapters: durable on commit. |
+
+> **FUTURE PRODUCTION ADAPTER GUIDANCE:** Production adapters must provide at least READ_COMMITTED isolation. The reference adapter is NOT a model for production isolation guarantees.
 
 ### 7.4 Failure Semantics
 
@@ -614,9 +643,17 @@ The M4A specifies retry semantics (max 3 retries per stage, `RR-01` RetryRecord)
 
 ## 12. Schema-to-Anchor Derivation
 
-### 12.1 Mechanical Rule
+### 12.1 Explicit Anchor Mapping
 
-The mapping from M4A schema to M5.2 anchor is **derived mechanically** from the M4A metadata — specifically from the `family` letter in `canonical_boundary.py`:
+The five-anchor mapping is the **explicit reconciled M5.2 persistence mapping**, informed by
+frozen M4A schema/family metadata. Family letter alone is NOT a complete derivation rule
+because:
+
+- Family B splits into **RawSourceArchive** (SRC-01, SRCV-01) and **EvidenceRegistry** (8 evidence-family schemas)
+- Family I splits into **RunManifestStore** (6 manifest schemas) and **PITContextStore** (2 context schemas)
+- **FinancialFactStore** uses an explicit financial subset (Family F schemas with lineage/source-authority requirements)
+
+The mapping is:
 
 ```
 Family B → Anchor-based stores (see §2)
