@@ -21,9 +21,9 @@ technical statements.
 
 **Governance update (29 Aug 2026):**
 - M5.2 = CORRECTION IN PROGRESS
-  - Items 1-11 FOUNDER APPROVED / CLOSED (Item 11 FOUNDER APPROVED 29 Aug 2026)
-  - Item 12 = READY FOR FOUNDER APPROVAL / NOT CLOSED
-  - Items 13-14 pending
+  - Items 1-12 FOUNDER APPROVED / CLOSED (Item 12 FOUNDER APPROVED 29 Aug 2026)
+  - Item 13 = NEXT — cross-contract validation
+  - Item 14 = pending
 - M5.3 = HOLD
 
 ### Superseded sections — reconcile as follows
@@ -35,7 +35,7 @@ technical statements.
 | §8 Serialization | schema_id first, alphabetical fields, enum values → string, dict sorted keys, **list sorted** elements, **None excluded**, compact JSON, SHA-256 | **list order PRESERVED** (no sort); **explicit None → JSON null** (do not omit for normalisation); fail closed on unsupported types; **no default=str**; NaN/+Infinity/-Infinity rejected. Source content_hash distinction belongs to Boundary Contract reconciliation (§10), not the historical closeout §8 claim. |
 | §9 Reference adapter | InMemoryBlobStore + NonCanonicalResearchArtifactStore listed; anchor adapters not yet listed | Current anchor adapter inventory: **InMemoryRawSourceArchive, InMemoryEvidenceRegistry, InMemoryFinancialFactStore, InMemoryRunManifestStore, InMemoryPITContextStore** plus generic infrastructure. Historical §9 is preserved as-is above. |
 | §11 Test results | **401/401** (historical at original closeout) | **589/589 LOCAL pytest PASS** (after Item 11, 29 Aug 2026; NOT independent CI). Prior: 577/577 after Item 8 (28 Aug). |
-| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1-11 CLOSED; Item 12 READY FOR FOUNDER APPROVAL / NOT CLOSED; Items 13-14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
+| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1-12 CLOSED; Item 13 NEXT — cross-contract validation; Item 14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
 
 ### Historical preservation
 
@@ -297,9 +297,9 @@ atomic transactions, FK integrity) but does not implement the policy layer.
 M5.1 = FINAL / CONTRACT-CONFORMANT — CLOSED
 
 M5.2 = CORRECTION IN PROGRESS
-  Items 1-11 FOUNDER APPROVED / CLOSED (Item 11 29 Aug 2026)
-  Item 12 = READY FOR FOUNDER APPROVAL / NOT CLOSED
-  Items 13-14 pending
+  Items 1-12 FOUNDER APPROVED / CLOSED (Item 12 29 Aug 2026)
+  Item 13 = NEXT — cross-contract validation
+  Item 14 = pending
 
 M5.3 = HOLD
 
@@ -319,6 +319,18 @@ Item-9 documentation/protocol reconciliation (Founder 28 Aug 2026):
   truth reconciled.  SRC-01.content_hash kept distinct from canonical record hash.
   Item 9 introduced NO new runtime persistence behavior — existing guards
   were documented rather than recreated.
+
+Item-12 documentation truth update (Founder 29 Aug 2026):
+  Item 12 = FOUNDER APPROVED / CLOSED / FROZEN.
+  Historical closeout chronology preserved (original 24 Aug marker retained;
+  separate reconciliation marker added).
+  Item 9 explicit closure record, Item 10 waiver, Item 11 fail-closed truth
+  all documented.
+  Historical test counts (401/401, 577/577) preserved as historical evidence.
+  Current test metric = 589/589 LOCAL pytest PASS (NOT independent CI).
+  PROJECT_STATE temporal layers (historical vs current) correctly separated.
+  No production/runtime/test/schema behavior changed under Item 12.
+  4 documentation commits preserved (no squash/rewrite).
 
 Item-10 waiver (Founder 28 Aug 2026):
   Historical Live Office failure provenance was unrecoverable.
