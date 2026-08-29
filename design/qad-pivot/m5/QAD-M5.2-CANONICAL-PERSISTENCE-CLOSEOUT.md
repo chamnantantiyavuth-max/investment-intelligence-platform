@@ -19,11 +19,10 @@ technical statements.
 
 **Current authoritative operational state:** `PROJECT_STATE.md`.
 
-**Governance update (28 Aug 2026):**
+**Governance update (29 Aug 2026):**
 - M5.2 = CORRECTION IN PROGRESS
-  - Items 1–8 CLOSED (Item 8 28 Aug 2026)
-  - Item 9 in progress (DOCUMENTATION / PROTOCOL RECONCILIATION ONLY)
-  - Items 10–14 pending
+  - Items 1–11 CLOSED (Item 11 FOUNDER APPROVED 29 Aug 2026)
+  - Items 12–14 pending
 - M5.3 = HOLD
 
 ### Superseded sections — reconcile as follows
@@ -34,15 +33,15 @@ technical statements.
 | §7 Transaction | Transaction.begin() → validate phase (FK, canonical, immutability, serialization+hash) → commit; no Saga/2PC/Outbox | **serialization/hash placement and implementation details superseded by Item-2/current Transaction behavior.** Current: Persistence API prechecks (tombstone, duplicate identity, authority) → Transaction._validate() → snapshot → commit → [fail → restore]. Serialization+hash computed during commit, not during validation. Saga/2PC/Outbox were never in this closeout doc — those were a Boundary Contract claim. |
 | §8 Serialization | schema_id first, alphabetical fields, enum values → string, dict sorted keys, **list sorted** elements, **None excluded**, compact JSON, SHA-256 | **list order PRESERVED** (no sort); **explicit None → JSON null** (do not omit for normalisation); fail closed on unsupported types; **no default=str**; NaN/+Infinity/-Infinity rejected. Source content_hash distinction belongs to Boundary Contract reconciliation (§10), not the historical closeout §8 claim. |
 | §9 Reference adapter | InMemoryBlobStore + NonCanonicalResearchArtifactStore listed; anchor adapters not yet listed | Current anchor adapter inventory: **InMemoryRawSourceArchive, InMemoryEvidenceRegistry, InMemoryFinancialFactStore, InMemoryRunManifestStore, InMemoryPITContextStore** plus generic infrastructure. Historical §9 is preserved as-is above. |
-| §11 Test results | **401/401** (historical at original closeout) | **577/577 LOCAL pytest PASS** (after Item 8, 28 Aug 2026; NOT independent CI). |
-| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1–8 CLOSED; Item 9 in progress; Items 10–14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
+| §11 Test results | **401/401** (historical at original closeout) | **589/589 LOCAL pytest PASS** (after Item 11, 29 Aug 2026; NOT independent CI). Prior: 577/577 after Item 8 (28 Aug). |
+| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1–11 CLOSED; Items 12–14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
 
 ### Historical preservation
 
 The original test counts below are **HISTORICAL AT ORIGINAL CLOSEOUT (24 AUG 2026).**
 Do NOT replace with current counts as if the latter existed during the original closeout.
 
-**Current (28 Aug 2026):** 577/577 LOCAL pytest PASS after Item 8. Not independent CI.
+**Current (29 Aug 2026):** 589/589 LOCAL pytest PASS after Item 11. Prior: 577/577 after Item 8 (28 Aug). Not independent CI.
 
 ---
 
@@ -296,20 +295,34 @@ atomic transactions, FK integrity) but does not implement the policy layer.
 M5.1 = FINAL / CONTRACT-CONFORMANT — CLOSED
 
 M5.2 = CORRECTION IN PROGRESS
-  Items 1–8 CLOSED (Item 8 FOUNDER APPROVED 28 Aug 2026)
-  Item 9 in progress (DOCUMENTATION / PROTOCOL RECONCILIATION ONLY)
-  Items 10–14 pending
+  Items 1–11 FOUNDER APPROVED / CLOSED (Item 11 29 Aug 2026)
+  Items 12–14 pending
 
 M5.3 = HOLD
 
 Production Release = NOT AUTHORIZED
 Live Autonomous QAD = NOT AUTHORIZED
 
-Governance note (28 Aug 2026 reconciliation):
+Governance note (29 Aug 2026 reconciliation):
   This closeout document is a HISTORICAL artifact.  The original
   "M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT" and
   "M5.3 = PROCEED UNDER FD #135" statements are superseded
-  by the correction Items 1–8.  See RECONCILIATION NOTICE above.
+  by the correction Items 1–11.  See RECONCILIATION NOTICE above.
+
+Item-10 waiver (Founder 28 Aug 2026):
+  Historical Live Office failure provenance was unrecoverable.
+  Founder waived the requirement to reproduce the exact historical
+  root cause; only the provenance requirement is waived.
+  Current regression requirement is NOT waived.
+
+Item-11 runtime fail-closed truth (Founder 29 Aug 2026):
+  Canonical primary-ID resolution (reference._resolve_id() and
+  Transaction._record_id()) now FAILS CLOSED when authoritative
+  mapping/value is unavailable.  Heuristic FK fallback and synthetic
+  identity generation removed.  Two-layer design:
+  Layer 1 — wrong-but-present mapping → independent M4A oracle fails.
+  Layer 2 — mapping missing/unavailable → runtime PersistenceError.
+  38/38 Item-11 negative requirements covered.
 ```
 
 <!-- 2026-08-24 -->
