@@ -10,7 +10,7 @@ Usage: python source_adapter.py            # fetch + cache all tickers
 
 NOT LIVE TRADING DATA — FOR V0.5 DEVELOPMENT ONLY.
 """
-import os, sys, json, argparse
+import os, sys, json, argparse, math
 from datetime import datetime
 from pathlib import Path
 
@@ -62,14 +62,38 @@ def fetch_eod(ticker: str, force_refresh: bool = False) -> dict:
     prices = None
     if not hist.empty:
         last = hist.iloc[-1]
-        prices = {
-            "close": round(float(last["Close"]), 2),
-            "open": round(float(last["Open"]), 2),
-            "high": round(float(last["High"]), 2),
-            "low": round(float(last["Low"]), 2),
-            "volume": int(last["Volume"]),
-            "as_of": str(hist.index[-1].date()),
-        }
+        as_of = str(hist.index[-1].date())
+        close = float(last["Close"])
+        if not math.isfinite(close):
+            # The final history bar is occasionally served all-NaN (partial/stale
+            # bar; observed 2026-08-29: 9/9 tickers as_of 2026-08-28 with NaN OHLC
+            # while fast_info carried the real Friday close). Fall back to
+            # fast_info.lastPrice (real last trade), then to the most recent
+            # completed bar if that is unavailable too.
+            close = None
+            try:
+                fi_close = stock.fast_info.get("lastPrice")
+                if fi_close is not None:
+                    fi_close = float(fi_close)
+                    if math.isfinite(fi_close):
+                        close = round(fi_close, 2)
+            except Exception:
+                pass
+            if close is None:
+                valid = hist.dropna(subset=["Close"])
+                if not valid.empty:
+                    last = valid.iloc[-1]
+                    close = round(float(last["Close"]), 2)
+                    as_of = str(valid.index[-1].date())
+        if close is not None:
+            prices = {
+                "close": close,
+                "open": round(float(last["Open"]), 2) if math.isfinite(float(last["Open"])) else None,
+                "high": round(float(last["High"]), 2) if math.isfinite(float(last["High"])) else None,
+                "low": round(float(last["Low"]), 2) if math.isfinite(float(last["Low"])) else None,
+                "volume": int(last["Volume"]) if math.isfinite(float(last["Volume"])) else None,
+                "as_of": as_of,
+            }
 
     data = {
         "ticker": ticker,
@@ -118,7 +142,12 @@ def summarize(results: dict[str, dict]) -> str:
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="AM V0.5 EOD source adapter")
+    parser.add_argument("--refresh", action="store_true",
+                        help="force re-fetch all tickers (bypass 24h cache)")
+    args = parser.parse_args()
     print("Fetching EOD data...")
-    data = fetch_all()
+    data = fetch_all(force_refresh=args.refresh)
     print(summarize(data))
     print(f"\nCache: {CACHE_DIR} ({len(list(CACHE_DIR.glob('*.json')))} files)")
