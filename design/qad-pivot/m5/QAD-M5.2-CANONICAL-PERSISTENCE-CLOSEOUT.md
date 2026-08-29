@@ -42,7 +42,7 @@ technical statements.
 The original test counts below are **HISTORICAL AT ORIGINAL CLOSEOUT (24 AUG 2026).**
 Do NOT replace with current counts as if the latter existed during the original closeout.
 
-**Current (29 Aug 2026):** 589/589 LOCAL pytest PASS after Items 1-11. Item 12 = documentation-only closure (no test delta). Prior: 577/577 after Item 8 (28 Aug). Not independent CI.
+**Current (29 Aug 2026):** 589/589 LOCAL pytest PASS after Items 1-11. Item 12 = documentation-only update; no test delta. Prior: 577/577 after Item 8 (28 Aug). Not independent CI.
 
 ---
 
@@ -265,7 +265,7 @@ Limitations:
 | | | |
 | **Historical at original closeout (24 Aug 2026).** | | |
 | *Current (28 Aug 2026, Items 1-8):* | *577/577 LOCAL pytest PASS* | *Not independent CI* |
-| *Current (29 Aug 2026, Items 1-11):* | *589/589 LOCAL pytest PASS (Item 12 = documentation-only closure)* | *Not independent CI* |
+| *Current (29 Aug 2026, Items 1-11):* | *589/589 LOCAL pytest PASS (Item 12 = documentation-only update; no test delta)* | *Not independent CI* |
 
 ---
 
@@ -312,6 +312,14 @@ Governance note (29 Aug 2026 reconciliation):
   "M5.3 = PROCEED UNDER FD #135" statements are superseded
   by the correction Items 1–11.  See RECONCILIATION NOTICE above.
 
+Item-9 documentation/protocol reconciliation (Founder 28 Aug 2026):
+  Item 9 = FOUNDER APPROVED / CLOSED.
+  Five-anchor persistence documentation/protocol reconciliation completed.
+  Generated primary-ID authority, transaction/current tombstone/version/serialization
+  truth reconciled.  SRC-01.content_hash kept distinct from canonical record hash.
+  Item 9 introduced NO new runtime persistence behavior — existing guards
+  were documented rather than recreated.
+
 Item-10 waiver (Founder 28 Aug 2026):
   Historical Live Office failure provenance was unrecoverable.
   Founder waived the requirement to reproduce the exact historical
@@ -328,4 +336,5 @@ Item-11 runtime fail-closed truth (Founder 29 Aug 2026):
   38/38 Item-11 negative requirements covered.
 ```
 
-<!-- 2026-08-29 -->
+<!-- 2026-08-24 -->
+<!-- reconciliation updated 2026-08-29 -->
