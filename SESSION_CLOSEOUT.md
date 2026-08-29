@@ -1,3 +1,31 @@
+# Session — 2026-08-29 (cron review, Sat 12:05): M5.2 Item 11 CODE COMPLETE + 7 adversarial tests → suite 584/584 — AWAITING FOUNDER APPROVAL; Nick-Weekly AM-V0-20260829-113515 ran with NaN-incident fix; HEAD `8a32bea` pushed
+
+**Review window:** 28 Aug 23:15 → 29 Aug 12:05 (this review). **What this review found (evidence-backed):**
+
+1. **M5.2 advanced to Item 11 — CODE COMPLETE + READY FOR FOUNDER APPROVAL:** the 28 Aug 22:15 session (`20260828_221537_d1aefd`) also closed **Item 10 (FULL REGRESSION CLOSURE) FOUNDER APPROVED / CLOSED** (Founder waiver for the unrecoverable historical Live Office node provenance; `a3a9916`/`e2300f7`/`518a255` docs) and implemented **Item 11 (NEGATIVE-TEST CLOSURE) — 7 new adversarial tests, commit `2185169`** → suite 584/584. Item 11 status = **▶ AWAITING FOUNDER APPROVAL** (per session closeout). Items 12–14 ⏳ HOLD; M5.3 = HOLD; FD #135 unchanged. No new FDs (max #136) → no vault fd-register backfill.
+2. **Nick-Weekly AM pipeline ran today — AM-V0-20260829-113515 (Sat 11:38, as-of Fri 28 Aug close; fresh ≤7d ✅):** **data incident caught+fixed mid-run** — yfinance served the final history bar (08-28) all-NaN for 9/9 tickers → `source_adapter.py` fixed in `98a507a`: ① NaN final-bar fallback → `fast_info.lastPrice` (real last trade), ② **`--refresh` flag WIRED** (documented but never implemented — silent no-op). Re-fetched + re-ran clean. Weekly moves (08-21→08-28): **CRWD +13.8%** (earnings 08-27; P/E 4,368 field anomaly — trailingEps $0.05 — valuation blind this week, flag), **PANW +3.8%**, NVDA +1.3% (**EPS refresh genuine $6.53→$7.91, P/E 32.88→27.50**), SMCI −0.4% (**refresh confirmed genuine 2nd week — 24 Aug open question CLOSED**), **INTC 200-day question ANSWERED (+23.4% ABOVE $72.53 — field was in cache all along, enrichment miss, logged)**, FSLR −4.6% (**broke the ~$211 base → $204.46, −12% vs 200-day, P/E clean ⇒ real structural break**). Breadth 4/9 up, median −0.4% (stress regime stabilizing but diverging — leaders +13.8% vs laggards −4.6%). Q-Conditions 10/10 Qualified, **0 exit signals (4th consecutive clean stress week)**. SRL 7 sections + 3 new lessons (`operational/self-reflection-logs/2026-08-29-run-AM-V0-20260829-113515.md`). Commits `98a507a` + `8a32bea` PUSHED.
+3. **Suite 584/584 PASS re-verified this review** (hermes-agent venv `$LOCALAPPDATA/hermes/hermes-agent/venv`, 5.38s).
+4. **HEAD `8a32bea` (520 commits), tree CLEAN, push SYNCED** (`git log origin/main..HEAD` empty; ls-remote == HEAD).
+5. **Learning Loop Telegram delivery ⚠ STILL FAILING (5th consecutive review):** verified at **job level** this review — jobs.json `last_delivery_error` on `1f5f03f9236d` = *"live adapter delivery to telegram:8964964996 failed: Chat not found"* — the daily digest is still not reaching the Founder. Ops item for interactive session (delivery-target config check).
+6. **Cadence:** Nick-Weekly next **Sat 5 Sep 09:00** (fresh); **weekly radar + CIW Mon 31 Aug 08:00/09:00 = FD #110 Live Office acceptance observation** (radar late-fire + run-time tool-retry death still open ops items); mid-week radar Thu 3 Sep 08:00. All 5 jobs pinned + enabled.
+7. **Market snapshot Fri 28 Aug COMPLETED EOD** (via `fast_info` — yfinance history 08-28 bar all-NaN, same incident the AM run fixed): SPY 769.35 −0.06% / **NVDA 217.55 −3.80%** (post-earnings fade continued after Wed +8.74% spike; EPS refresh genuine — observation only) / **MSFT 513.53 +2.08% — CIW NO TRIGGER** (52wk high 553.72, −25% band 415.29) / AAPL 319.70 +1.51% / JNJ 268.04 +0.77% / GOOGL 346.59 +1.80% / **FSLR 204.46 −2.64%** (base break, structural) / SMCI 37.08 −2.83% / **SLV 60.02 −3.94% — ETF below ~$62 SILVER-CORR-001 anchor (SI=F 67.79 above; observation only)** / inflection quartet: ABBV 255.48 −0.97% / BMY 66.58 −0.77% / LLY 1174.61 −0.07% (−5.49% 5d cooling) / VRTX 541.69 −0.61% / AM universe: CRWD 218.40 **−4.08%** (Fri pullback after Thu +20.5% spike) / PANW 371.59 −2.85% / AVGO 368.79 −0.59% / INTC 89.47 −1.82% / AMD 465.58 −1.84% / MDT 91.23 +0.91% / futures **GC=F 4,529.90 −2.19%** / **SI=F 67.79 −2.56%** (ratio ~66.8:1) / **CL=F 83.40 +0.35%** (Hormuz premium cooled). No ±10% 1d moves → no mandatory news lookups.
+8. **F5 still open:** AGENTS.md checkpoint fd-134-135 + M5.2 status row (protected file — interactive session + Founder approval required).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs (Item 11 executed under FD #135 M5.2 authorization + session-level Founder authorizations; register max still #136)
+- [x] Session captured? — this entry + PROJECT_STATE session row + build metrics + M5.2 status lines
+- [x] Verify-First? — HEAD/remote via `git rev-parse` + `git ls-remote` + `git log origin/main..HEAD` (empty = synced); suite re-run 584/584 (hermes-agent venv, 5.38s); Nick-Weekly run output read (cron output 2026-08-29_11-38-36.md); Learning Loop delivery verified at job level (jobs.json `last_delivery_error`); market quotes pulled via yfinance fast_info (Fri 28 Aug EOD)
+- [x] Verification tags? — suite 584/584; HEAD `8a32bea` 520 commits; push SYNCED; tree clean
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) pushed after commit (clean-tree exception precedent)
+- [x] Working tree — clean before + after
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 11 (NEGATIVE-TEST CLOSURE) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`2185169`, +7 adversarial tests, suite 584/584) — accept it to close Item 11; Items 12–14 then follow one-by-one with your per-item authorization (M5.3 stays HOLD). Ops queue (unchanged): ① durable gateway supervision (dashboard-VBS) + radar run resilience — next proof point **Mon 31 Aug 08:00** weekly radar + 09:00 CIW = FD #110 Live Office acceptance observation; ② **Learning Loop Telegram delivery target** ("Chat not found" telegram:8964964996 — 5th day, digest not reaching Founder; verified at job level); ③ F5 AGENTS.md checkpoint (protected file).
+
+---
+
 # Session — 2026-08-28 evening (cron review, 28 Aug 23:15): M5.2 Item 8 FOUNDER APPROVED + Item 9 AUTHORIZED & IMPLEMENTED (docs/protocol-only) — READY FOR FOUNDER APPROVAL; suite 577/577; HEAD `1bebe3b` pushed
 
 **Review window:** 28 Aug 11:05 → 28 Aug 23:15 (this review). **What this review found (evidence-backed):**
