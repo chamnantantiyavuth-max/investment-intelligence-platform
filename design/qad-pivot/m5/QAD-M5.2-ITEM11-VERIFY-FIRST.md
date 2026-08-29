@@ -427,4 +427,99 @@ The runtime fail-open is a **separate defect**: the runtime does NOT fail closed
 > **Suite: 587/587 PASS** (was 584)
 >
 > **Primary-ID diagnostic script output available** (in session evidence — not committed)
-<!-- 2026-08-29 23:30 UTC+7 -->
+
+---
+
+### Post-Production-Fix Update (Commit B, same session)
+
+> **Date:** 2026-08-29  
+> **Production fix applied:** `_resolve_id()` and `_record_id()` fail closed
+> **Suite:** 589/589 PASS (was 587, before Commit A was 584)
+
+#### Production fix summary
+
+**`qad/persistence/reference.py` — `_resolve_id()`:**
+- Removed heuristic FK candidate fallback (`source_id`, `evidence_id`, `financial_fact_id`, `entity_id`, `case_id`, etc.)
+- Removed synthetic identity fallback (`f"{sid}:{id(instance)}"`)
+- When `_schema_identity_field()` returns `None` → raises `PersistenceError`
+- When mapped PK field value is `None` on instance → raises `PersistenceError`
+- Normal resolution (registry intact, value present) → unchanged
+
+**`qad/persistence/transaction.py` — `_record_id()`:**
+- Same three changes above (identical logic, different file)
+
+**`_schema_identity_field()` docstring:**
+- Updated to state that canonical-persistence callers treat `None` as fatal
+
+**Existing test updates:**
+- `test_canonical_boundary_violation` — now catches `PersistenceError` from `add_store()` (identity fails before validation phase)
+- `test_validation_failure_wrong_type` — now catches `PersistenceError` from `_resolve_id()` (SM-01 without `entity_id` fails identity resolution)
+- Both remain valid edge-case guards; the fail-closed identity resolution fires before the old validation-phase rejection
+
+#### Test changes
+
+**Removed** (misleading tests from commit `2185169`):
+- `TestNegativePrimaryIdRejection.test_wrong_pk_mapping_does_not_store` — tested fake BaseModel, not real invariant
+- `TestNegativePrimaryIdRejection.test_missing_pk_field_raises` — tested unknown schema, not missing PK metadata
+
+**Added** (runtime fail-closed proofs):
+- `TestItem11IdentityFailClosed.test_missing_mapping_fails_closed_not_fk` — EV-01 monkeypatch: registry missing → PersistenceError, NOT FK fallback
+- `TestItem11IdentityFailClosed.test_record_id_missing_mapping_fails_closed` — Transaction._record_id() same proof
+- `TestItem11IdentityFailClosed.test_missing_pk_field_value_fails_closed` — EV-01 model_copy with `evidence_id=None` → PersistenceError
+- `TestItem11IdentityFailClosed.test_registry_unavailable_fails_closed` — SM-01 monkeypatch: registry corrupt → PersistenceError
+
+#### Final 38/38 matrix — post-production-fix
+
+| # | Requirement | Status | Evidence |
+|---|---|---|---|
+| 1 | wrong primary-ID mapping → FAIL | ✅ COVERED | Independent M4A oracle: `test_no_missing_schemas`, `test_all_identities_match`, `test_correction` — 68/68 oracle parity |
+| 2 | missing primary-ID metadata → FAIL | ✅ COVERED | Runtime fail-closed + oracle completeness: `test_missing_mapping_fails_closed_not_fk`, `test_record_id_missing_mapping_fails_closed`, `test_missing_pk_field_value_fails_closed`, `test_registry_unavailable_fails_closed`, plus oracle `test_no_missing_schemas` |
+| 3 | PK distinct from all FKs → correct store key | ✅ COVERED | 4 PK≠FK tests |
+| 4 | commit failure after first write → ZERO committed | ✅ COVERED | `test_commit_phase_failure_rollback` |
+| 5 | commit failure after first delete → ZERO deleted | ✅ COVERED | `test_commit_phase_delete_failure_rollback` (corrected) |
+| 6 | mixed store+delete failure → ZERO net change | ✅ COVERED | `test_commit_phase_mixed_store_delete_rollback` (corrected) |
+| 7 | append-only state transition → prior preserved | ✅ COVERED | 4 version-preservation tests |
+| 8 | tombstone active reads reject | ✅ COVERED | Implicit in load-after-tombstone |
+| 9 | physical hard delete on canonical forbidden | ✅ COVERED | `test_canonical_delete_is_tombstone_not_hard_remove` (explicit) |
+| 10 | content_hash mismatch → HashMismatch | ✅ COVERED | `test_admit_requires_hash_match` |
+| 11 | same ID + different metadata → IntegrityConflict | ✅ COVERED | `test_metadata_revision_is_conflict` |
+| 12 | same ID + different raw bytes → IntegrityConflict | ✅ COVERED | `test_same_id_different_bytes_conflict` |
+| 13 | raw bytes → SRC-01.store() bypass rejected | ✅ COVERED | `test_store_raw_blob_bypass_is_rejected` |
+| 14 | raw bytes → SRC-01.store_batch() bypass rejected | ✅ COVERED | `test_store_batch_src01_rejected` |
+| 15 | raw blob overwrite rejected | ✅ COVERED | `test_store_raw_blob_overwrite_rejected_on_admitted_record` |
+| 16 | admit source with no raw bytes rejected | ✅ COVERED | `test_admit_without_raw_bytes_rejected` (TypeError — API-signature fail-closed) |
+| 17 | EV-01 new direct store bypass rejected | ✅ COVERED | `test_direct_first_ev_store_rejected` |
+| 18 | EAR-01 direct store bypass rejected | ✅ COVERED | `test_direct_ear_store_rejected` |
+| 19 | SRC-01 through EvidenceRegistry rejected | ✅ COVERED | `test_direct_src01_store_on_registry_rejected` + `test_store_batch_src01_blocked_on_registry` |
+| 20 | EV-01 store_batch bypass rejected | ✅ COVERED | `test_store_batch_ev_ear_rejected` |
+| 21 | EAR-01 store_batch bypass rejected | ✅ COVERED | Same test |
+| 22 | EV-01/EAR-01 mismatch → integrity conflict | ✅ COVERED | `test_ear_evidence_id_mismatch_rejected` |
+| 23 | missing EAR provenance → rejected | ✅ COVERED | `test_missing_validation_method_rejected`, `test_missing_source_tier_check_rejected` (model_copy bypass) |
+| 24 | AI method without original_source_verified → rejected | ✅ COVERED | `test_ai_extraction_rejected_for_non_true` |
+| 25 | model_copy invalid-instance bypass → rejected | ✅ COVERED | `test_ev_invalid_evidence_type_rejected_by_validator` |
+| 26 | FF-01 missing authoritative source | ✅ COVERED | `test_missing_source_rejected` |
+| 27 | NFF-01 missing parent | ✅ COVERED | `test_nff_missing_parent_fails_deterministically` |
+| 28 | CALC-01 unresolved input_fact_ids | ✅ COVERED | `test_calc_unresolved_provenance_raises` |
+| 29 | tombstoned lineage dependency → fail | ✅ COVERED | 4 tombstoned-lineage tests |
+| 30 | detached returned objects not editable | ✅ COVERED | 3 deep-copy tests |
+| 31 | set → FAIL | ✅ COVERED | `test_set_rejected` |
+| 32 | frozenset → FAIL | ✅ COVERED | `test_frozenset_rejected` |
+| 33 | Decimal → FAIL | ✅ COVERED | `test_decimal_rejected` |
+| 34 | arbitrary object → FAIL | ✅ COVERED | `test_arbitrary_object_rejected` |
+| 35 | NaN → FAIL | ✅ COVERED | `test_nan_rejected` |
+| 36 | +Infinity → FAIL | ✅ COVERED | `test_infinity_rejected` |
+| 37 | -Infinity → FAIL | ✅ COVERED | `test_neg_infinity_rejected` |
+| 38 | cross-PYTHONHASHSEED rejection | ✅ COVERED | `test_frozenset_rejected_cross_process` |
+
+**ALL 38/38 COVERED.** No PARTIAL, no MISSING.
+
+#### Final Verdict
+
+> **ITEM 11 — READY FOR FOUNDER APPROVAL**
+>
+> Production fix complete: `_resolve_id()` and `_record_id()` fail closed.
+> Heuristic FK fallback and synthetic identity generation removed from canonical persistence.
+> 589/589 PASS.
+> No production code changed outside authorized scope.
+> Item 12 NOT started. M5.3 NOT unpaused.
+<!-- 2026-08-29 23:58 UTC+7 -->

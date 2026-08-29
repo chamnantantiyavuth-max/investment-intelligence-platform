@@ -325,32 +325,32 @@ def _record_id(instance: BaseModel) -> str:
     Uses the schema-specific identity-field resolution via the
     M4A-derived primary-identity registry.  Same resolution as
     ``qad.persistence.reference._resolve_id``.
+
+    Must FAIL CLOSED when the authoritative mapping is unavailable — no
+    heuristic FK fallback or synthetic identity.  See ``_resolve_id``
+    for the full rationale.
+
+    Raises
+    ------
+    PersistenceError
+        If the authoritative primary-ID mapping is unavailable, or the
+        mapped field is missing/None on the instance.
     """
     schema_id: str = getattr(instance, "schema_id", "")
     from qad.persistence.reference import _schema_identity_field
 
     identity_field = _schema_identity_field(schema_id)
-    if identity_field:
-        val = getattr(instance, identity_field, None)
-        if val is not None:
-            return str(val)
-    # Fallback: search the general candidates list
-    candidates = (
-        "source_id", "evidence_id", "finding_id",
-        "financial_fact_id", "manifest_id", "pit_context_id",
-        "entity_id", "signal_id", "candidate_id", "claim_id",
-        "usage_id", "audit_id", "budget_id", "lock_id",
-        "indicator_id", "hypothesis_id", "lesson_id",
-        "publication_id", "verdict_id", "challenge_id",
-        "assessment_id", "gap_id", "knowledge_id",
-        "r_dcf_id", "invocation_id", "eval_run_id",
-        "model_invocation_id", "impairment_id",
-        "case_id", "provider_invocation_id",
-        "expectation_id", "valuation_id",
-    )
-    for name in candidates:
-        val = getattr(instance, name, None)
-        if val is not None:
-            return str(val)
-    sid = getattr(instance, "schema_id", "UNKNOWN")
-    return f"{sid}:{id(instance)}"
+    if identity_field is None:
+        raise PersistenceError(
+            f"{schema_id}: authoritative primary-ID mapping unavailable — "
+            f"schema not found in primary-id registry",
+            schema_id=schema_id,
+        )
+    val = getattr(instance, identity_field, None)
+    if val is None:
+        raise PersistenceError(
+            f"{schema_id}: authoritative primary-ID field '{identity_field}' "
+            f"is missing or None on instance",
+            schema_id=schema_id,
+        )
+    return str(val)

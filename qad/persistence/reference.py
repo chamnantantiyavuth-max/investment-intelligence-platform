@@ -1751,37 +1751,34 @@ class InMemoryNonCanonicalResearchArtifactStore:
 def _resolve_id(instance: BaseModel) -> str:
     """Extract the record's primary identity field from a model instance.
 
-    For schemas with an explicit identity field (e.g. ``evidence_id`` for
-    ``EV-01``), that field is returned.  For schemas without one (e.g.
-    ``SRC-01 SourceRecord``), the first matching FK-/ID-pattern field is
-    used.  See also :func:`_schema_identity_field`.
+    For canonical schemas the authoritative primary-ID mapping comes from
+    the M4A-derived registry (``primary_id_registry.json``).  The runtime
+    MUST NOT guess or fall back to heuristic FK fields when the authoritative
+    mapping is unavailable — that would risk using an FK as the canonical
+    record identity.
+
+    Raises
+    ------
+    PersistenceError
+        If the authoritative primary-ID mapping is unavailable, or the
+        mapped field is missing/None on the instance.
     """
     sid: str = getattr(instance, "schema_id", "")
     identity_field = _schema_identity_field(sid)
-    if identity_field:
-        val = getattr(instance, identity_field, None)
-        if val is not None:
-            return str(val)
-    # Fallback: search the general candidates list (FK-style fields).
-    candidates = (
-        "source_id", "evidence_id", "finding_id",
-        "financial_fact_id", "manifest_id", "pit_context_id",
-        "entity_id", "signal_id", "candidate_id", "claim_id",
-        "usage_id", "audit_id", "budget_id", "lock_id",
-        "indicator_id", "hypothesis_id", "lesson_id",
-        "publication_id", "verdict_id", "challenge_id",
-        "assessment_id", "gap_id", "knowledge_id",
-        "r_dcf_id", "invocation_id", "eval_run_id",
-        "model_invocation_id", "impairment_id",
-        "case_id", "assessment_id", "provider_invocation_id",
-        "expectation_id", "valuation_id",
-    )
-    for name in candidates:
-        val = getattr(instance, name, None)
-        if val is not None:
-            return str(val)
-    sid = getattr(instance, "schema_id", "UNKNOWN")
-    return f"{sid}:{id(instance)}"
+    if identity_field is None:
+        raise PersistenceError(
+            f"{sid}: authoritative primary-ID mapping unavailable — "
+            f"schema not found in primary-id registry",
+            schema_id=sid,
+        )
+    val = getattr(instance, identity_field, None)
+    if val is None:
+        raise PersistenceError(
+            f"{sid}: authoritative primary-ID field '{identity_field}' "
+            f"is missing or None on instance",
+            schema_id=sid,
+        )
+    return str(val)
 
 
 def _schema_identity_field(schema_id: str) -> str | None:
@@ -1792,9 +1789,9 @@ def _schema_identity_field(schema_id: str) -> str | None:
     is always correct even when the instance also carries FK fields with
     similar names.
 
-    If the schema is not found in the registry (e.g. a non-canonical schema
-    that slipped through), returns ``None`` and the caller falls back to
-    heuristic candidate scanning or a ``PersistenceIdentityError``.
+    If the schema is not found in the registry, returns ``None`` and the
+    canonical-persistence callers (``_resolve_id``, ``_record_id``) treat
+    that as a fatal condition — they fail closed rather than guessing.
     """
     import json
     from pathlib import Path

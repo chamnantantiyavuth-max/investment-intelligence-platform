@@ -1424,6 +1424,7 @@ class TestEdgeCases:
     """Additional edge-case coverage beyond the 20 scenarios."""
 
     def test_canonical_boundary_violation(self, blank_store):
+        from qad.persistence.errors import PersistenceError
         class NonCanonicalModel(BaseModel):
             model_config = {"extra": "forbid"}
             schema_id: str = "NONCANON-99"
@@ -1437,12 +1438,16 @@ class TestEdgeCases:
             get_existing=blank_store._load_raw,
             get_existing_hash=blank_store._load_hash,
         )
-        tx.add_store(model)
-        with pytest.raises(TransactionFailure) as exc:
+        # _record_id() now fails closed for NONCANON-99 (not in registry)
+        with pytest.raises(
+            (TransactionFailure, PersistenceError),
+            match="authoritative primary-ID mapping unavailable",
+        ):
+            tx.add_store(model)
             tx.execute()
-        assert any(isinstance(e, CanonicalBoundaryViolation) for e in exc.value.errors)
 
     def test_validation_failure_wrong_type(self, blank_store):
+        from qad.persistence.errors import PersistenceError
         src = SourceRecord(
             source_id="WRONG",
             source_tier=SourceRecordSource_tier.L1,
@@ -1452,9 +1457,13 @@ class TestEdgeCases:
             retrieval_date="2024-01-01",
         )
         wrong = src.model_copy(update={"schema_id": "SM-01"})
-        with pytest.raises(TransactionFailure) as exc:
+        # _resolve_id() now fails closed: SM-01 maps to entity_id but
+        # SourceRecord doesn't have that field
+        with pytest.raises(
+            (TransactionFailure, PersistenceError),
+            match="authoritative primary-ID field 'entity_id' is missing or None",
+        ):
             blank_store.store(wrong)
-        assert any(isinstance(e, ValidationFailure) for e in exc.value.errors)
 
     def test_delete_makes_tombstone(self, blank_store):
         sm = SecurityMaster(

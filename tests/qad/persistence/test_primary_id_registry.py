@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 
 import pytest
+from qad.models.family_a import SecurityMasterSecurity_type, SecurityMasterStatus
 
 # ── Paths ──────────────────────────────────────────────────────────────────
 
@@ -184,38 +185,174 @@ class TestKnownCorrections:
         )
 
 # ====================================================================
-# Item 11 — Negative tests: wrong/missing PK → FAIL
+# Item 11 — Runtime primary-ID fail-closed proofs (authoritative)
 # ====================================================================
+#
+# These tests prove the runtime fails closed when primary-ID metadata is
+# unavailable.  They use VALID canonical models — not fake BaseModel stubs.
+#
+# The complementary wrong-but-present-mapping proof is handled by the
+# independent M4A oracle tests above (test_no_missing_schemas,
+# test_all_identities_match, test_correction).
 
 
-class TestNegativePrimaryIdRejection:
-    """Item 11: wrong/missing primary-ID mapping must fail deterministically."""
+class TestItem11IdentityFailClosed:
+    """Item 11: missing/unavailable primary-ID metadata → runtime FAIL CLOSED.
 
-    def test_wrong_pk_mapping_does_not_store(self, production_registry):
-        """Injecting a record with a wrong PK field name fails closed."""
-        from qad.persistence.reference import InMemoryCanonicalRecordStore
-        from qad.persistence.errors import TransactionFailure
-        from pydantic import BaseModel
+    Division of responsibility (Founder Decision, 29 Aug 2026):
+    - wrong mapping present → independent M4A oracle FAILS
+    - mapping missing/unavailable → runtime FAILS CLOSED
+    - mapped PK field unavailable on instance → runtime FAILS CLOSED
+    """
 
-        class _WrongPkModel(BaseModel):
-            schema_id: str = "SM-01"
-            wrong_key: str = "val"
+    def test_missing_mapping_fails_closed_not_fk(self):
+        """Missing registry mapping must raise PersistenceError, not return FK.
+
+        Uses valid EV-01 (PK=evidence_id, FK=source_id).
+        Monkeypatches schema identity lookup to simulate registry corruption.
+        """
+        from qad.persistence.reference import (
+            InMemoryCanonicalRecordStore, _schema_identity_field,
+        )
+        from qad.persistence.errors import PersistenceError
+        from qad.models.family_b import (
+            EvidenceRecord, EvidenceRecordEvidence_type,
+            EvidenceRecordValidation_status,
+        )
+
+        import qad.persistence.reference as ref_mod
+        orig_field = ref_mod._schema_identity_field
+
+        def _missing(sid: str) -> None:
+            return None
+        ref_mod._schema_identity_field = _missing
+
+        ev = EvidenceRecord(
+            evidence_id="EV-FC-01",
+            source_id="SRC-BASE",
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="test",
+            admitting_role="analyst",
+            as_of="2024-01-01",
+            extractor="v1",
+            source_tier="L1",
+        )
+        store = InMemoryCanonicalRecordStore()
+        try:
+            with pytest.raises(
+                PersistenceError,
+                match="authoritative primary-ID mapping unavailable",
+            ):
+                store.store(ev)
+            # Prove it did NOT use FK source_id as identity
+            assert not store.contains("EV-01", "SRC-BASE"), \
+                "Must NOT have used source_id (FK) as identity"
+        finally:
+            ref_mod._schema_identity_field = orig_field
+
+    def test_record_id_missing_mapping_fails_closed(self):
+        """Transaction._record_id() must fail closed when mapping is missing."""
+        from qad.persistence.reference import _schema_identity_field
+        import qad.persistence.reference as ref_mod
+        from qad.persistence.errors import PersistenceError
+        from qad.models.family_b import (
+            EvidenceRecord, EvidenceRecordEvidence_type,
+            EvidenceRecordValidation_status,
+        )
+
+        orig_field = ref_mod._schema_identity_field
+
+        def _missing(sid: str) -> None:
+            return None
+        ref_mod._schema_identity_field = _missing
+
+        ev = EvidenceRecord(
+            evidence_id="EV-FC-02",
+            source_id="SRC-BASE2",
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="test",
+            admitting_role="analyst",
+            as_of="2024-01-01",
+            extractor="v1",
+            source_tier="L1",
+        )
+        from qad.persistence.transaction import _record_id
+        try:
+            with pytest.raises(
+                PersistenceError,
+                match="authoritative primary-ID mapping unavailable",
+            ):
+                _record_id(ev)
+        finally:
+            ref_mod._schema_identity_field = orig_field
+
+    def test_missing_pk_field_value_fails_closed(self):
+        """A canonical model whose mapped PK field is None must fail closed."""
+        from qad.persistence.reference import (
+            InMemoryCanonicalRecordStore, _schema_identity_field,
+        )
+        from qad.persistence.errors import PersistenceError
+        from qad.models.family_b import (
+            EvidenceRecord, EvidenceRecordEvidence_type,
+            EvidenceRecordValidation_status,
+        )
+
+        ev = EvidenceRecord(
+            evidence_id="EV-FC-03",
+            source_id="SRC-BASE3",
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            validation_status=EvidenceRecordValidation_status.RAW,
+            content="test",
+            admitting_role="analyst",
+            as_of="2024-01-01",
+            extractor="v1",
+            source_tier="L1",
+        )
+        # Strip the PK field via model_copy (bypasses construction validation)
+        malformed = ev.model_copy(update={"evidence_id": None})
 
         store = InMemoryCanonicalRecordStore()
-        with pytest.raises((ValueError, TypeError, TransactionFailure)):
-            store.store(_WrongPkModel())
+        with pytest.raises(
+            PersistenceError,
+            match="authoritative primary-ID field 'evidence_id' is missing or None",
+        ):
+            store.store(malformed)
 
-    def test_missing_pk_field_raises(self):
-        """An instance with unresolvable schema_id must be rejected."""
-        from qad.persistence.reference import InMemoryCanonicalRecordStore
-        from qad.persistence.errors import TransactionFailure
-        from pydantic import BaseModel
+    def test_registry_unavailable_fails_closed(self):
+        """Registry file unreadable condition — must fail closed.
 
+        Uses controlled monkeypatch of _schema_identity_field to return None
+        (simulating corrupt/missing registry).  Does NOT physically tamper
+        with the registry file.
+        """
+        from qad.persistence.reference import (
+            InMemoryCanonicalRecordStore, _schema_identity_field,
+        )
+        from qad.persistence.errors import PersistenceError
+        from qad.models.family_a import SecurityMaster
+
+        import qad.persistence.reference as ref_mod
+        orig_field = ref_mod._schema_identity_field
+
+        def _corrupt(sid: str) -> None:
+            return None
+        ref_mod._schema_identity_field = _corrupt
+
+        sm = SecurityMaster(
+                    entity_id="E-FC-REG",
+                    cik="9999", exchange="NYSE",
+                    name="RegCorrupt", primary_ticker="REG",
+                    security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+                    status=SecurityMasterStatus.ACTIVE,
+                )
         store = InMemoryCanonicalRecordStore()
-
-        class _UnknownSchemaModel(BaseModel):
-            schema_id: str = "UNKNOWN-99"
-            data: str = "test"
-
-        with pytest.raises((ValueError, TypeError, TransactionFailure)):
-            store.store(_UnknownSchemaModel())
+        try:
+            with pytest.raises(
+                PersistenceError,
+                match="authoritative primary-ID mapping unavailable",
+            ):
+                store.store(sm)
+        finally:
+            ref_mod._schema_identity_field = orig_field
