@@ -21,8 +21,9 @@ technical statements.
 
 **Governance update (29 Aug 2026):**
 - M5.2 = CORRECTION IN PROGRESS
-  - Items 1–11 CLOSED (Item 11 FOUNDER APPROVED 29 Aug 2026)
-  - Items 12–14 pending
+  - Items 1-11 FOUNDER APPROVED / CLOSED (Item 11 FOUNDER APPROVED 29 Aug 2026)
+  - Item 12 = READY FOR FOUNDER APPROVAL / NOT CLOSED
+  - Items 13-14 pending
 - M5.3 = HOLD
 
 ### Superseded sections — reconcile as follows
@@ -34,14 +35,14 @@ technical statements.
 | §8 Serialization | schema_id first, alphabetical fields, enum values → string, dict sorted keys, **list sorted** elements, **None excluded**, compact JSON, SHA-256 | **list order PRESERVED** (no sort); **explicit None → JSON null** (do not omit for normalisation); fail closed on unsupported types; **no default=str**; NaN/+Infinity/-Infinity rejected. Source content_hash distinction belongs to Boundary Contract reconciliation (§10), not the historical closeout §8 claim. |
 | §9 Reference adapter | InMemoryBlobStore + NonCanonicalResearchArtifactStore listed; anchor adapters not yet listed | Current anchor adapter inventory: **InMemoryRawSourceArchive, InMemoryEvidenceRegistry, InMemoryFinancialFactStore, InMemoryRunManifestStore, InMemoryPITContextStore** plus generic infrastructure. Historical §9 is preserved as-is above. |
 | §11 Test results | **401/401** (historical at original closeout) | **589/589 LOCAL pytest PASS** (after Item 11, 29 Aug 2026; NOT independent CI). Prior: 577/577 after Item 8 (28 Aug). |
-| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1–11 CLOSED; Items 12–14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
+| Governance | M5.2 = FINAL / CANONICAL-PERSISTENCE-CONFORMANT; M5.3 = PROCEED | **M5.2 = CORRECTION IN PROGRESS**; Items 1-11 CLOSED; Item 12 READY FOR FOUNDER APPROVAL / NOT CLOSED; Items 13-14 pending; **M5.3 = HOLD**. Production Release / Live Autonomous QAD remains NOT AUTHORIZED. |
 
 ### Historical preservation
 
 The original test counts below are **HISTORICAL AT ORIGINAL CLOSEOUT (24 AUG 2026).**
 Do NOT replace with current counts as if the latter existed during the original closeout.
 
-**Current (29 Aug 2026):** 589/589 LOCAL pytest PASS after Item 11. Prior: 577/577 after Item 8 (28 Aug). Not independent CI.
+**Current (29 Aug 2026):** 589/589 LOCAL pytest PASS after Items 1-11. Item 12 = documentation-only closure (no test delta). Prior: 577/577 after Item 8 (28 Aug). Not independent CI.
 
 ---
 
@@ -263,7 +264,8 @@ Limitations:
 | **Full pytest** | **401/401 QAD+M5.2+core (1 pre-existing unrelated Live Office failure)** | |
 | | | |
 | **Historical at original closeout (24 Aug 2026).** | | |
-| *Current (28 Aug 2026):* | *577/577 LOCAL pytest PASS (after Item 8)* | *Not independent CI* |
+| *Current (28 Aug 2026, Items 1-8):* | *577/577 LOCAL pytest PASS* | *Not independent CI* |
+| *Current (29 Aug 2026, Items 1-11):* | *589/589 LOCAL pytest PASS (Item 12 = documentation-only closure)* | *Not independent CI* |
 
 ---
 
@@ -295,8 +297,9 @@ atomic transactions, FK integrity) but does not implement the policy layer.
 M5.1 = FINAL / CONTRACT-CONFORMANT — CLOSED
 
 M5.2 = CORRECTION IN PROGRESS
-  Items 1–11 FOUNDER APPROVED / CLOSED (Item 11 29 Aug 2026)
-  Items 12–14 pending
+  Items 1-11 FOUNDER APPROVED / CLOSED (Item 11 29 Aug 2026)
+  Item 12 = READY FOR FOUNDER APPROVAL / NOT CLOSED
+  Items 13-14 pending
 
 M5.3 = HOLD
 
@@ -325,4 +328,4 @@ Item-11 runtime fail-closed truth (Founder 29 Aug 2026):
   38/38 Item-11 negative requirements covered.
 ```
 
-<!-- 2026-08-24 -->
+<!-- 2026-08-29 -->
