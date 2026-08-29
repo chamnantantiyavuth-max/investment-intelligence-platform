@@ -336,13 +336,16 @@ Item-13 cross-contract test closure (29 Aug 2026):
   Item 13 = CROSS-CONTRACT TEST CLOSURE COMPLETE /
             READY FOR FOUNDER APPROVAL /
             NOT CLOSED.
-  8 structural bridge tests created (tests/qad/test_cross_contract_validation.py).
+  7 structural bridge tests created (tests/qad/test_cross_contract_validation.py).
   No production code, M4A/M4B, or M5.3 policy changed.
-  Tests cover M4B PIT-mode vocabulary, evaluation types, fixture identities,
-  source-hash carrier, evidence references, AS_OF_DATE structural bridge,
-  evaluation-label enum counterparts, and M5.3-deferred boundary verification.
+  All tests read the actual frozen M4B contract artifact as upstream authority.
+  Tests cover: M4B SEALED evaluation mode, Type A/B evaluation types,
+  fixture identities, source seal concepts (including publication_date),
+  evidence references, AS_OF_DATE structural bridge, and evaluation-label
+  enum counterparts (exact equality via ==, not issubset).
+  M5.3-deferred boundary is DOCUMENTATION ONLY (no executable test).
   No cross-contract contradiction found.
-  Full LOCAL regression: 597/597 PASS (589 baseline + 8 new).
+  Full LOCAL regression: 596/596 PASS (589 baseline + 7 new).
 
 Item-10 waiver (Founder 28 Aug 2026):
   Historical Live Office failure provenance was unrecoverable.
