@@ -313,4 +313,118 @@ No regression. This baseline is unchanged by Verify-First.
 **Final verdict:** ITEM 11 — READY FOR IMPLEMENTATION AUTHORIZATION (TEST-CLOSURE REQUIRED, 6 tests)
 
 Do NOT implement yet. Do NOT start Item 12.
-<!-- 2026-08-28 23:58 UTC+7 -->
+
+---
+
+## 9. IMPLEMENTATION / CLOSURE RESULT (post-commit `2185169` correction)
+
+> **Date:** 2026-08-29  
+> **Correction session:** Test corrections only — no production code changed  
+> **Commit:** (uncommitted — awaiting Founder approval)  
+> **Suite:** 587/587 PASS (was 584)
+
+### 38/38 Matrix — Final Status
+
+| # | Requirement | Status | Test evidence |
+|---|---|---|---|
+| 1 | wrong primary-ID mapping → FAIL | ⚠️ **SEE PRIMARY-ID FINDING** | Runtime fail-open confirmed (see Finding A) |
+| 2 | missing primary-ID metadata → FAIL | ⚠️ **SEE PRIMARY-ID FINDING** | Runtime fail-open confirmed (see Finding A) |
+| 3 | PK distinct from all FKs → correct store key | ✅ COVERED | `test_cr_01_pk_distinct_from_fk`, `test_case_01_pk_distinct_from_fk`, `test_ff_01_pk_distinct_from_fk`, `test_ev_01_pk_distinct_from_fk` |
+| 4 | commit failure after first write → ZERO committed | ✅ COVERED | `test_commit_phase_failure_rollback` |
+| 5 | commit failure after first delete → ZERO deleted | ✅ **CORRECTED** | `test_commit_phase_delete_failure_rollback` — delete A succeeds (tombstoned), delete B fails → rollback restores A, ZERO tombstoned |
+| 6 | commit failure after mixed store+delete → ZERO net change | ✅ **CORRECTED** | `test_commit_phase_mixed_store_delete_rollback` — store succeeds, delete fails → new record removed, existing restored |
+| 7 | append-only state transition → prior preserved | ✅ COVERED | 4 version-preservation tests |
+| 8 | tombstone active reads reject | ✅ COVERED | Implicit in load-after-tombstone |
+| 9 | physical hard delete on canonical forbidden | ✅ COVERED | `test_canonical_delete_is_tombstone_not_hard_remove` (now explicit) |
+| 10 | content_hash mismatch → HashMismatch | ✅ COVERED | `test_admit_requires_hash_match` |
+| 11 | same ID + different metadata → IntegrityConflict | ✅ COVERED | `test_metadata_revision_is_conflict` |
+| 12 | same ID + different raw bytes → IntegrityConflict | ✅ COVERED | `test_same_id_different_bytes_conflict` |
+| 13 | raw bytes → SRC-01.store() bypass rejected | ✅ COVERED | `test_store_raw_blob_bypass_is_rejected` |
+| 14 | raw bytes → SRC-01.store_batch() bypass rejected | ✅ COVERED | `test_store_batch_src01_rejected` |
+| 15 | raw blob overwrite rejected | ✅ COVERED | `test_store_raw_blob_overwrite_rejected_on_admitted_record` |
+| 16 | admit source with no raw bytes rejected | ✅ COVERED | `test_admit_without_raw_bytes_rejected` (Python TypeError — API-signature fail-closed, acceptable) |
+| 17 | EV-01 new direct store bypass rejected | ✅ COVERED | `test_direct_first_ev_store_rejected` |
+| 18 | EAR-01 direct store bypass rejected | ✅ COVERED | `test_direct_ear_store_rejected` |
+| 19 | SRC-01 through EvidenceRegistry rejected | ✅ **CLOSED** | `test_direct_src01_store_on_registry_rejected` (single-record) + `test_store_batch_src01_blocked_on_registry` (batch) |
+| 20 | EV-01 store_batch bypass rejected | ✅ COVERED | `test_store_batch_ev_ear_rejected` |
+| 21 | EAR-01 store_batch bypass rejected | ✅ COVERED | Same test |
+| 22 | EV-01/EAR-01 mismatch → integrity conflict | ✅ COVERED | `test_ear_evidence_id_mismatch_rejected` |
+| 23 | missing EAR provenance → rejected | ✅ **CLOSED** | `test_missing_validation_method_rejected`, `test_missing_source_tier_check_rejected` — both via `model_copy()` bypass |
+| 24 | AI method without original_source_verified → rejected | ✅ COVERED | `test_ai_extraction_rejected_for_non_true` |
+| 25 | model_copy invalid-instance bypass → rejected | ✅ COVERED | `test_ev_invalid_evidence_type_rejected_by_validator` |
+| 26 | FF-01 missing authoritative source | ✅ COVERED | `test_missing_source_rejected` |
+| 27 | NFF-01 missing parent | ✅ COVERED | `test_nff_missing_parent_fails_deterministically` |
+| 28 | CALC-01 unresolved input_fact_ids | ✅ COVERED | `test_calc_unresolved_provenance_raises` |
+| 29 | tombstoned lineage dependency → fail | ✅ COVERED | 4 tombstoned-lineage tests |
+| 30 | detached returned objects not editable | ✅ COVERED | 3 deep-copy tests |
+| 31 | set → FAIL | ✅ COVERED | `test_set_rejected` |
+| 32 | frozenset → FAIL | ✅ COVERED | `test_frozenset_rejected` |
+| 33 | Decimal → FAIL | ✅ COVERED | `test_decimal_rejected` |
+| 34 | arbitrary object → FAIL | ✅ COVERED | `test_arbitrary_object_rejected` |
+| 35 | NaN → FAIL | ✅ COVERED | `test_nan_rejected` |
+| 36 | +Infinity → FAIL | ✅ COVERED | `test_infinity_rejected` |
+| 37 | -Infinity → FAIL | ✅ COVERED | `test_neg_infinity_rejected` |
+| 38 | cross-PYTHONHASHSEED rejection | ✅ COVERED | `test_frozenset_rejected_cross_process` |
+
+### Finding A — Primary-ID Runtime Fail-Open (DEFECT)
+
+**Diagnostic performed 29 Aug 2026. Monkeypatch tests on `reference._resolve_id()` and `transaction._record_id()`:**
+
+| Scenario | What happens | Verdict |
+|---|---|---|
+| **Normal** (registry intact) | Returns correct PK (e.g. `evidence_id` for EV-01) | ✅ Correct |
+| **Missing mapping** (`_schema_identity_field` returns `None`) | Falls through to heuristic candidates — picks `source_id` (a FK) instead of `evidence_id` | ❌ **Fail-open — returns FK value** |
+| **Wrong mapping** (`_schema_identity_field` returns `source_id` for EV-01) | Silently returns FK `source_id` value | ❌ **Fail-open — returns FK value** |
+
+**Root cause:** Both `_resolve_id()` (reference.py:1765-1783) and `Transaction._record_id()` (transaction.py:337-348) contain a heuristic candidate fallback that scans FK-pattern fields (`source_id`, `financial_fact_id`, `entity_id`, etc.) when the registry returns no identity field. This fallback can return an FK value as the identity — undoing the fix from Item 1.
+
+**Impact:** If the `primary_id_registry.json` file is corrupted, missing, or loaded with wrong entries, the runtime silently falls back to heuristics instead of failing closed. Example: EV-01 with a missing registry entry would use `source_id` (`SRC-BASE`) as the identity — corrupting the store key.
+
+### Requirements ambiguity
+
+The authority states:
+
+> wrong primary-ID mapping → FAIL  
+> missing primary-ID metadata → FAIL
+
+**Existing Item-1 independent oracle** (`test_primary_id_registry.py`) verifies:
+
+- Registry count = 68, oracle count = 68, no missing, no extra
+- Every PK mapping === independently parsed M4A
+
+This oracle **proves registry integrity at test time**. If the registry is corrupted (extra/missing/wrong entry), the oracle fails. **This satisfies oracle-level requirements.**
+
+The runtime fail-open is a **separate defect**: the runtime does NOT fail closed when the registry is corrupted at runtime. Whether this requires a runtime patch is a **Founder decision** — see Final Verdict.
+
+### admit_source-without-raw-bytes classification
+
+`test_admit_without_raw_bytes_rejected` catches `TypeError` because `raw_bytes` is a required positional parameter. The Verify-First artifact wording has been corrected — it is now classified as:
+
+> **Required API parameter makes source admission impossible without raw bytes.**
+> This is an API-signature fail-closed proof, not a domain-level rejection.
+> The API must NOT be weakened by making raw_bytes optional.
+
+### Final Verdict
+
+> **ITEM 11 — FOUNDER DECISION REQUIRED**
+>
+> **Test-closure corrections complete:** 587/587 PASS.
+> 2 faulty tests replaced with correct post-mutation rollback proofs.
+> 3 new tests added (SRC direct store + 2× EAR provenance).
+> 36/38 requirements fully closed by tests.
+>
+> **⚠️ Unresolved:** Primary-ID requirements #1 and #2 — runtime fail-open confirmed.
+> Found verification confirms: Item-1 oracle covers oracle-level integrity.
+> The question is whether the Founder requires oracle-level OR runtime fail-closed.
+>
+> **No production patch applied. No Item 12 started. No M5.3 unpaused.**
+>
+> **Changed files:**
+> - `tests/qad/persistence/test_persistence_core.py` — corrected 2 rollback tests
+> - `tests/qad/persistence/test_evidence_admission_gate.py` — added 3 new tests
+> - `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md` — appended closure result
+>
+> **Suite: 587/587 PASS** (was 584)
+>
+> **Primary-ID diagnostic script output available** (in session evidence — not committed)
+<!-- 2026-08-29 23:30 UTC+7 -->

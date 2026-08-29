@@ -537,3 +537,85 @@ class TestSourceAuthorityFailClosed:
         with pytest.raises(CanonicalBoundaryViolation, match="SRC-01"):
             ev_registry.store_batch([src])
         assert not ev_registry.contains("SRC-01", "SRC-BATCH-SHADOW")
+
+
+# =====================================================================
+# S. Item 11 — Direct SRC-01 → EvidenceRegistry.store() rejected
+# =====================================================================
+
+class TestItem11SrcDirectStoreRejected:
+    """Item 11: SRC-01 through EvidenceRegistry.store() must be rejected.
+
+    Store_batch is covered by test_store_batch_src01_blocked_on_registry above.
+    This test proves the single-record path is also guarded.
+    """
+
+    def test_direct_src01_store_on_registry_rejected(self):
+        """Direct store(SRC-01) on EvidenceRegistry raises CanonicalBoundaryViolation."""
+        from qad.persistence.errors import CanonicalBoundaryViolation
+        src_archive, ev_registry = _paired_store()
+        raw = b"direct src store"
+        ch = hashlib.sha256(raw).hexdigest()
+        src = SourceRecord(
+            source_id="SRC-DIRECT-REJECT",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/direct-reject",
+            content_hash=ch,
+            retrieval_date="2024-01-01",
+        )
+        with pytest.raises(CanonicalBoundaryViolation, match="SRC-01 direct store rejected"):
+            ev_registry.store(src)
+        assert not ev_registry.contains("SRC-01", "SRC-DIRECT-REJECT"), \
+            "SRC-01 must not be present in EvidenceRegistry after rejected store"
+
+
+# =====================================================================
+# T. Item 11 — Missing EAR provenance rejected (model_copy bypass)
+# =====================================================================
+
+class TestItem11MissingEARProvenance:
+    """Item 11: missing required EAR provenance fields must reject admission.
+
+    The EAR contract defines required provenance fields (validation_method,
+    source_tier_check, etc.).  A model_copy that bypasses Pydantic construction
+    and produces a malformed EAR must be rejected deterministically.
+    """
+
+    def test_missing_validation_method_rejected(self):
+        """EAR with missing validation_method via model_copy is rejected."""
+        from qad.persistence.errors import IntegrityConflict, TransactionFailure
+        src_archive, ev_registry = _paired_store()
+        raw = b"ear provenance test"
+        _admit_src(src_archive, raw, "SRC-EAR-PROV")
+
+        ev = _make_ev("SRC-EAR-PROV", "EV-EAR-PROV")
+        # Build a valid EAR then strip validation_method via model_copy
+        ear = _make_ear(ev.evidence_id, "ADM-EAR-PROV")
+        malformed_ear = ear.model_copy(update={"validation_method": None})
+
+        with pytest.raises((IntegrityConflict, TransactionFailure)):
+            ev_registry.admit_evidence(ev, malformed_ear)
+
+        # Neither committed
+        assert not ev_registry.contains("EV-01", "EV-EAR-PROV"), \
+            "EV-01 must not be committed after failed admission"
+        assert not ev_registry.contains("EAR-01", "ADM-EAR-PROV"), \
+            "EAR-01 must not be committed after failed admission"
+
+    def test_missing_source_tier_check_rejected(self):
+        """EAR with missing source_tier_check via model_copy is rejected."""
+        from qad.persistence.errors import IntegrityConflict, TransactionFailure
+        src_archive, ev_registry = _paired_store()
+        raw = b"ear tier check"
+        _admit_src(src_archive, raw, "SRC-EAR-TIER")
+
+        ev = _make_ev("SRC-EAR-TIER", "EV-EAR-TIER")
+        ear = _make_ear(ev.evidence_id, "ADM-EAR-TIER")
+        malformed_ear = ear.model_copy(update={"source_tier_check": None})
+
+        with pytest.raises((IntegrityConflict, TransactionFailure)):
+            ev_registry.admit_evidence(ev, malformed_ear)
+
+        assert not ev_registry.contains("EV-01", "EV-EAR-TIER")
+        assert not ev_registry.contains("EAR-01", "ADM-EAR-TIER")

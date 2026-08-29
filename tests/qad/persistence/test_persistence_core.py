@@ -2986,91 +2986,134 @@ class TestAppendOnlyEdgeClosure:
 # ====================================================================
 
 class TestItem11CommitDeleteRollback:
-    """Item 11: commit-phase failure after delete must restore state."""
+    """Item 11: commit-phase failure AFTER first delete must restore state.
+
+    The authority requires: "commit failure after first delete → ZERO deleted".
+    This means at least one delete must actually execute (create a tombstone)
+    BEFORE the injected commit fault, so the rollback mechanism is exercised
+    with real state to restore — not just a pre-mutation fault injection.
+    """
 
     def test_commit_phase_delete_failure_rollback(self):
-        """Delete that fails mid-commit must leave store unchanged."""
-        from qad.persistence.reference import InMemoryCanonicalRecordStore
-        from qad.persistence.errors import PersistenceError, TransactionFailure
-        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
-
-        class _FaultyDeleteStore(InMemoryCanonicalRecordStore):
-            def __init__(self):
-                super().__init__()
-                self._remove_count = 0
-                self._fail_on = 1  # fail on the 1st _remove_record call
-
-            def _remove_record(self, schema_id, record_id):
-                self._remove_count += 1
-                if self._remove_count >= self._fail_on:
-                    raise PersistenceError(
-                        "Injected delete commit failure",
-                        schema_id=schema_id,
-                        record_id=record_id,
-                    )
-                super()._remove_record(schema_id, record_id)
-
-        store = _FaultyDeleteStore()
-        sm = SecurityMaster(
-            entity_id="E-DEL-ROLL", cik="9999", exchange="NYSE",
-            name="DelRollback", primary_ticker="DRL",
-            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
-            status=SecurityMasterStatus.ACTIVE,
-            ticker_history=[],
-        )
-        store.store(sm)
-        assert store.contains("SM-01", "E-DEL-ROLL")
-        ch_before = store.get_canonical_hash("SM-01", "E-DEL-ROLL")
-
-        with pytest.raises((PersistenceError, TransactionFailure)):
-            store.delete("SM-01", "E-DEL-ROLL")
-
-        # Must be unchanged
-        assert store.contains("SM-01", "E-DEL-ROLL"), \
-            "Record should still exist after failed delete"
-        ch_after = store.get_canonical_hash("SM-01", "E-DEL-ROLL")
-        assert ch_after == ch_before, \
-            "Hash changed after failed delete"
-
-
-class TestItem11MixedStoreDeleteRollback:
-    """Item 11: mixed store+delete commit failure must leave ZERO net change."""
-
-    def test_commit_phase_mixed_store_delete_rollback(self):
-        """A mixed store+delete operation failing mid-commit must leave
-        the store in its pre-operation state."""
+        """Delete A succeeds, delete B fails → A restored, ZERO tombstoned."""
         from qad.persistence.reference import InMemoryCanonicalRecordStore
         from qad.persistence.errors import PersistenceError, TransactionFailure
         from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
 
         store = InMemoryCanonicalRecordStore()
 
-        # Pre-existing records
-        existing = [
-            SecurityMaster(entity_id="E-MIX-01", cik="MX1", exchange="NYSE",
-                           name="Mix1", primary_ticker="MX1",
-                           security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
-                           status=SecurityMasterStatus.ACTIVE),
-            SecurityMaster(entity_id="E-MIX-02", cik="MX2", exchange="NYSE",
-                           name="Mix2", primary_ticker="MX2",
-                           security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
-                           status=SecurityMasterStatus.ACTIVE),
-        ]
-        for sm in existing:
-            store.store(sm)
-        hash_01_before = store.get_canonical_hash("SM-01", "E-MIX-01")
+        # --- Arrange: two records ---
+        rec_a = SecurityMaster(
+            entity_id="E-DEL-A", cik="DA1", exchange="NYSE",
+            name="DelA", primary_ticker="DLA",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        rec_b = SecurityMaster(
+            entity_id="E-DEL-B", cik="DB1", exchange="NYSE",
+            name="DelB", primary_ticker="DLB",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(rec_a)
+        store.store(rec_b)
 
-        # Build a Transaction that adds a store AND a delete
-        # First, override to fail on the delete (2nd commit operation)
-        orig_delete = store._remove_record
+        assert store.contains("SM-01", "E-DEL-A")
+        assert store.contains("SM-01", "E-DEL-B")
+        ch_a_before = store.get_canonical_hash("SM-01", "E-DEL-A")
+        ch_b_before = store.get_canonical_hash("SM-01", "E-DEL-B")
+
+        # --- Act: Transaction with two deletes; second raises fault ---
         del_count = 0
+        orig_delete = store._remove_record
 
-        def _failing_delete(sid, rid):  # type: ignore[no-untyped-def]
+        def _failing_remove(sid, rid):  # type: ignore[no-untyped-def]
             nonlocal del_count
             del_count += 1
-            if del_count >= 1:
-                raise PersistenceError("Injected mixed failure", schema_id=sid, record_id=rid)
-            orig_delete(sid, rid)
+            if del_count == 1:
+                # First delete succeeds — record A is tombstoned
+                orig_delete(sid, rid)
+            elif del_count == 2:
+                # Second delete fails midway — record B never tombstoned
+                raise PersistenceError(
+                    "Injected delete commit failure",
+                    schema_id=sid, record_id=rid,
+                )
+
+        store._remove_record = _failing_remove  # type: ignore[assignment]
+
+        from qad.persistence.transaction import Transaction
+        tx = Transaction(
+            store_contains=store.contains,
+            commit_store=store._write_record,
+            commit_delete=store._remove_record,
+            get_existing=store._load_raw,
+            get_existing_hash=store._load_hash,
+            commit_snapshot=store._snapshot,
+            commit_restore=store._restore,
+        )
+        tx.add_delete("SM-01", "E-DEL-A")
+        tx.add_delete("SM-01", "E-DEL-B")
+
+        with pytest.raises((PersistenceError, TransactionFailure)):
+            tx.execute()
+
+        store._remove_record = orig_delete  # restore
+
+        # --- Assert: ZERO deleted ---
+        # A was tombstoned by the successful delete, then restored by rollback
+        assert store.contains("SM-01", "E-DEL-A"), \
+            "Record A must be active after rollback"
+        assert store.contains("SM-01", "E-DEL-B"), \
+            "Record B must still be active"
+
+        # Hashes unchanged
+        ch_a_after = store.get_canonical_hash("SM-01", "E-DEL-A")
+        ch_b_after = store.get_canonical_hash("SM-01", "E-DEL-B")
+        assert ch_a_after == ch_a_before, \
+            "Hash of record A changed after rollback"
+        assert ch_b_after == ch_b_before, \
+            "Hash of record B changed after rollback"
+
+        # ZERO tombstones remain from this transaction
+        assert "E-DEL-A" not in store.list_tombstoned_ids("SM-01"), \
+            "Record A must NOT be tombstoned after rollback"
+        assert "E-DEL-B" not in store.list_tombstoned_ids("SM-01"), \
+            "Record B must NOT be tombstoned after rollback"
+
+
+class TestItem11MixedStoreDeleteRollback:
+    """Item 11: mixed store+delete commit failure must leave ZERO net change.
+
+    The store operation executes first (succeeds), THEN the delete fails.
+    The rollback must restore BOTH: the new record is removed, and the
+    pre-existing record remains active.
+    """
+
+    def test_commit_phase_mixed_store_delete_rollback(self):
+        """Store succeeds, delete fails → new record removed, existing restored."""
+        from qad.persistence.reference import InMemoryCanonicalRecordStore
+        from qad.persistence.errors import PersistenceError, TransactionFailure
+        from qad.models.family_a import SecurityMaster, SecurityMasterSecurity_type, SecurityMasterStatus
+
+        store = InMemoryCanonicalRecordStore()
+
+        # Pre-existing record
+        existing = SecurityMaster(
+            entity_id="E-MIX-01", cik="MX1", exchange="NYSE",
+            name="Mix1", primary_ticker="MX1",
+            security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+            status=SecurityMasterStatus.ACTIVE,
+        )
+        store.store(existing)
+        hash_before = store.get_canonical_hash("SM-01", "E-MIX-01")
+        orig_contains_before = store.contains("SM-01", "E-MIX-01")
+
+        # Inject fault on delete (2nd commit operation) — store succeeds first
+        orig_delete = store._remove_record
+
+        def _failing_delete(sid, rid):  # type: ignore[no-untyped-def]
+            raise PersistenceError("Injected mixed failure", schema_id=sid, record_id=rid)
 
         store._remove_record = _failing_delete  # type: ignore[assignment]
 
@@ -3089,8 +3132,8 @@ class TestItem11MixedStoreDeleteRollback:
                                   name="MixNew", primary_ticker="MXN",
                                   security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
                                   status=SecurityMasterStatus.ACTIVE)
-        tx.add_store(new_rec)
-        tx.add_delete("SM-01", "E-MIX-01")
+        tx.add_store(new_rec)      # commit op 1: store (succeeds)
+        tx.add_delete("SM-01", "E-MIX-01")  # commit op 2: delete (fails)
 
         with pytest.raises((PersistenceError, TransactionFailure)):
             tx.execute()
@@ -3101,8 +3144,8 @@ class TestItem11MixedStoreDeleteRollback:
             "New record should NOT exist after failed mixed operation"
         assert store.contains("SM-01", "E-MIX-01"), \
             "Existing record should still exist after failed delete"
-        hash_01_after = store.get_canonical_hash("SM-01", "E-MIX-01")
-        assert hash_01_after == hash_01_before, \
+        hash_after = store.get_canonical_hash("SM-01", "E-MIX-01")
+        assert hash_after == hash_before, \
             "Hash changed on existing record after failed mixed operation"
 
 
