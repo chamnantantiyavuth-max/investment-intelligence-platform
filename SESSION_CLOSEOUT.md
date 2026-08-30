@@ -1,3 +1,28 @@
+# Session — 2026-08-29 (interactive, TWO sessions): Item 11 FOUNDER APPROVED after test-completeness fix → Items 1–11 CLOSED; Item 12 FOUNDER APPROVED / CLOSED / FROZEN (closeout-truth update only); Item 13 CROSS-CONTRACT TEST CLOSURE CODE COMPLETE → suite 596/596 — ▶ READY FOR FOUNDER APPROVAL (NOT CLOSED); Item 14 NOT started; HEAD `83285cd` pushed
+
+> **One-sided closeout (v1.8.0 §7c) — this entry appended by the 30 Aug cron review.** The 29 Aug interactive sessions updated PROJECT_STATE.md (commits `01ef78e`..`83285cd`) but never wrote SESSION_CLOSEOUT.md (verified: the only SESSION_CLOSEOUT touch in `8a32bea..HEAD` is the 29 Aug 12:05 cron review's own commit `9d9c6a2`). The PROJECT_STATE rows are the sessions' self-report; this log entry is the durable record.
+
+1. **Session A `20260829_115857_b35a93` (11:58–~12:31, 251 msgs) — Item 11 NOT approved initially:** Founder: *"ยังไม่ approve item 11 เนื่องจาก test ไม่ครบ"* (tests incomplete). Session closed the gap — `01ef78e` (12:10, test-correction evidence + documented primary-ID runtime defect) + `2832d8a` (12:15, **Item 11 — primary-ID runtime fail-closed fix + targeted tests**) → Item 11 FOUNDER APPROVED → **Items 1–11 CLOSED** (`12b69be` 12:31, test metric 589/589).
+2. **Session B `20260829_152540_414293` (15:24–17:41, 284 msgs) — Item 12 + Item 13:** **Item 12 — IMPLEMENTATION AUTHORIZED ✅ (Founder; Classification CLOSEOUT UPDATE ONLY — no runtime code/tests/schemas/contracts; do NOT rewrite historical closeout body — ledger-style append).** Executed: `c26482f` (15:29, closeout truth + PROJECT_STATE reconciliation), `2bb63dc` (15:42, history-preservation micro-closure), `908268c` (15:46, restored Next Founder-facing items to current truth), `384d926` (15:49, **Item 12 governance update: APPROVED / CLOSED / FROZEN**). **Item 13 (CROSS-CONTRACT TEST CLOSURE):** `7ebfa02` (16:31, cross-contract validation complete — tests anchored to frozen M4B contract) → **4 Founder findings** → `83285cd` (17:41, semantic test micro-correction; test list corrected to 7, suite 589→596/596). **Item 13 = ▶ READY FOR FOUNDER APPROVAL — NOT CLOSED. Item 14 NOT started.** M5.3 = HOLD; FD #135 unchanged.
+3. **Suite 596/596 PASS re-verified 30 Aug cron review** (hermes-agent venv, 7.29s) = 589 baseline + 7 Item-13 cross-contract tests.
+4. **HEAD `83285cd` (530 commits), tree CLEAN, push SYNCED** (`git log origin/main..HEAD` empty; both sessions pushed all 10 commits).
+5. **No new FDs (max #136, 24 Aug)** → no vault fd-register backfill.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs; Items 11–13 executed under FD #135 M5.2 authorization + session-level Founder authorizations (Item 12/13 approval recorded in session, not new register items)
+- [x] Session captured? — this entry appended by the 30 Aug cron review (one-sided closeout fix, §7c); PROJECT_STATE session row + Next-allowed-action bullet added same pass
+- [x] Verify-First? — suite re-run 596/596 (hermes-agent venv, 7.29s); HEAD/remote via `git rev-list --count origin/main..HEAD` (0 = synced); cron jobs.json read (5 jobs enabled, pins + next runs verified); market quotes re-fetched via yfinance (Sun — no new data since Fri 28 Aug EOD, levels match); Learning Loop delivery error read at job level (jobs.json `last_delivery_error`)
+- [x] Verification tags? — suite 596/596; HEAD `83285cd` 530 commits; push SYNCED; tree clean
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) committed + pushed after commit (clean-tree exception precedent)
+- [x] Working tree — clean before + after
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 13 (CROSS-CONTRACT TEST CLOSURE) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`83285cd`, 7 tests anchored to the frozen M4B contract, suite 596/596) — accept it to close Item 13; Item 14 then follows with your per-item authorization (M5.3 stays HOLD). Ops queue (unchanged): ① **Mon 31 Aug 08:00 weekly radar + 09:00 CIW = FD #110 Live Office acceptance observation TOMORROW** (jobs verified pinned + enabled; radar ledger = 2 zero-deliverable runs in last 3 evidence points; open ops items: gateway availability at 08:00 + radar run-time tool-retry death); ② **Learning Loop Telegram delivery target — 6th consecutive failing day** ("Chat not found" telegram:8964964996, verified job-level 30 Aug) — interactive delivery-target config check; ③ F5 AGENTS.md checkpoint fd-134-135 + M5.2 status (protected file).
+
+---
+
 # Session — 2026-08-29 (cron review, Sat 12:05): M5.2 Item 11 CODE COMPLETE + 7 adversarial tests → suite 584/584 — AWAITING FOUNDER APPROVAL; Nick-Weekly AM-V0-20260829-113515 ran with NaN-incident fix; HEAD `8a32bea` pushed
 
 **Review window:** 28 Aug 23:15 → 29 Aug 12:05 (this review). **What this review found (evidence-backed):**
