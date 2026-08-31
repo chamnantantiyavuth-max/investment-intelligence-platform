@@ -1,3 +1,38 @@
+# Session — 2026-08-31 (cron review, Mon 09:45): NO new sessions/commits/FDs since 30 Aug — M5.2 Item 13 still ▶ READY FOR FOUNDER APPROVAL (NOT CLOSED); ⚠⚠ weekly radar 08:00 + CIW 09:00 BOTH MISSED (FD #110 Live Office observation lost again); Learning Loop Telegram failing 7th review; suite 596/596; HEAD `6abfbfe` push SYNCED
+
+**Review window:** 30 Aug 17:00 → 31 Aug 09:45 (this review). **What this review found (evidence-backed):**
+
+1. **NO new sessions/commits/FDs since the 30 Aug review.** HEAD == origin/main == `6abfbfe` (531 commits), tree CLEAN, push SYNCED (`git rev-list --count origin/main..HEAD` = 0). Most recent sessions are 30 Aug cron jobs (Obsidian auto-save 18:08, Vault sync 17:09, Daily Learning Loop 17:08). **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) remains ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** (`83285cd`, 7 M4B-anchored tests) — no Founder action since the 29 Aug evening session. Item 14 NOT started. M5.3 = HOLD. FD #135 unchanged. No new FDs (max #136) → no vault fd-register backfill.
+
+2. **⚠⚠ CRITICAL — Mon 31 Aug 08:00 weekly radar + 09:00 CIW — BOTH MISSED, NO FIRE ATTEMPT — FD #110 Live Office acceptance observation LOST again (4th time for the weekly radar).** Job-level evidence from jobs.json at review time (09:33): radar `8ba233e88015` `last_run_at` = **24 Aug 11:40** (unchanged), `next_run_at` auto-advanced 31 Aug → **7 Sep 08:00** with NO catch-up materialized; CIW `8b1cd19aba7d` `last_run_at` = **24 Aug 11:28**, `next_run_at` → **7 Sep 09:00**. No output file today (both output dirs last = 24 Aug), no radar digest (last = `2026-08-24-radar-digest.md`), no board `[DISC]` task, no cards (kanban grep for 2026-08-31/31 Aug = 0 hits). **Weekly radar ledger (post-pin):** 17 Aug guard-blocked attempt / 24 Aug late-but-COMPLETE / **31 Aug skip-no-catchup** → **FD #110 Live Office real-world acceptance observation LOST 4×** for the weekly radar. Root-cause class unchanged: **gateway/scheduler daemon not up at 08:00** (this review session itself is the gateway coming up at ~09:15+). **Durable gateway supervision (dashboard-VBS pattern) is now the #1 open ops decision item** — 4 evidence points across the cadence (17 Aug / 20 Aug / 27 Aug / 31 Aug). CIW window now covers 24 Aug → 7 Sep (14 days) with no tick; MSFT last known 513.53 — NO TRIGGER (52wk high 553.72, −25% band 415.29). Next evidence point: **Mon 7 Sep 08:00/09:00** (auto-advanced).
+
+3. **⚠ Learning Loop Telegram delivery failing — 7th consecutive review** (`last_delivery_error` on `1f5f03f9236d` verified job-level: "live adapter delivery to telegram:8964964996 failed: Chat not found") — daily digest still not reaching the Founder; needs an interactive delivery-target config check (telegram chat id mismatch).
+
+4. **Suite 596/596 PASS re-verified this review** (hermes-agent venv interpreter, 8.97s) — unchanged from the 30 Aug baseline (589 + 7 Item-13 cross-contract tests).
+
+5. **Market Mon 31 Aug 09:33 — NO new equity data.** US markets closed Sat/Sun; Monday US session opens tonight 20:30 UTC+7. yfinance 5d history final bar (08-28) still all-NaN for all 6 equity tickers — same incident class the AM `source_adapter.py` NaN final-bar fallback (`fast_info.lastPrice`, `98a507a`) handles; `fast_info` fallback confirms **Fri 28 Aug EOD levels unchanged**: SPY 769.35 / NVDA 217.55 / MSFT 513.53 (CIW NO TRIGGER) / AAPL 319.70 / FSLR 204.46 (base break) / SLV 60.02 (ETF below ~$62 SILVER-CORR-001 anchor; observation only). **Futures Sun 30 Aug session:** CL=F 85.32 (+2.30% 1d — vs 83.40 Sat; oil firmer over the weekend, observation only), SI=F 66.64 (−0.53% 1d — vs 67.79 Sat), GC=F 4,474.70 (−0.08% 1d — vs 4,529.90 Sat; gold −1.2% over the weekend). No ±10% 1d moves → no mandatory news lookups.
+
+6. **Cron cadence:** mid-week radar **Thu 3 Sep 08:00** (`cda817d17236`, last_run 27 Aug 10:22 — no late catch-up materialized, verified this review); Nick-Weekly **Sat 5 Sep 09:00** (fresh — last run 29 Aug as-of Fri 28 Aug close, ≤7d ✅); next weekly radar + CIW **Mon 7 Sep 08:00/09:00**.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs (register max #136, 24 Aug); M5.2 Items 1–12 CLOSED / Item 13 awaiting Founder approval / Item 14 not started — unchanged since 30 Aug
+- [x] Session captured? — this entry prepended (cron review, v1.8.0 §7c); PROJECT_STATE session row + Next-allowed-action bullet + cadence items updated same pass
+- [x] Verify-First? — suite re-run 596/596 (hermes-agent venv, 8.97s); HEAD/remote via `git rev-list --count origin/main..HEAD` (0 = synced); cron jobs.json read (radar + CIW `last_run_at`/`next_run_at` job-level — proves the 31 Aug miss); radar output dirs + digests dir + kanban grep checked (no 31 Aug artifacts); market quotes re-fetched via yfinance (fast_info fallback — Fri 28 Aug EOD unchanged)
+- [x] Verification tags? — suite 596/596; HEAD `6abfbfe` 531 commits; push SYNCED; tree clean before/after
+- [x] Pushed? — docs-only review commit (PROJECT_STATE + SESSION_CLOSEOUT) committed + pushed after commit (clean-tree exception precedent)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 13 (CROSS-CONTRACT TEST CLOSURE) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`83285cd`, 7 tests anchored to the frozen M4B contract, suite 596/596) — accept it to close Item 13; Item 14 then follows with your per-item authorization (M5.3 stays HOLD).
+
+**Ops queue (escalating — decision items):**
+- ① **Durable gateway supervision (dashboard-VBS pattern) — NOW THE #1 OPS ITEM.** Today's double-miss (weekly radar 08:00 + CIW 09:00, no fire attempt) is the **4th weekly-radar loss of the FD #110 Live Office acceptance observation** (17 Aug guard / 24 Aug late-complete / 31 Aug skip-no-catchup) and the 6th radar-cadence fragility point overall (incl. 20 Aug mid-week late+zero, 27 Aug late+zero). Root cause class = scheduler daemon not up at schedule time; this review session is the gateway coming up ~09:15+. Recommend an interactive session to install the detached-start pattern (like the 14 Aug `Hermes_Dashboard.vbs` fix) so cron jobs fire on schedule.
+- ② **Learning Loop Telegram delivery target — 7th consecutive failing day** ("Chat not found" telegram:8964964996, verified job-level) — interactive delivery-target config check.
+- ③ **F5** — AGENTS.md checkpoint fd-134-135 + M5.2 status row (protected file; still reads "M5.2 = PROCEED" while the truth is Items 1–12 CLOSED / Item 13 awaiting approval).
+
+---
+
 # Session — 2026-08-29 (interactive, TWO sessions): Item 11 FOUNDER APPROVED after test-completeness fix → Items 1–11 CLOSED; Item 12 FOUNDER APPROVED / CLOSED / FROZEN (closeout-truth update only); Item 13 CROSS-CONTRACT TEST CLOSURE CODE COMPLETE → suite 596/596 — ▶ READY FOR FOUNDER APPROVAL (NOT CLOSED); Item 14 NOT started; HEAD `83285cd` pushed
 
 > **One-sided closeout (v1.8.0 §7c) — this entry appended by the 30 Aug cron review.** The 29 Aug interactive sessions updated PROJECT_STATE.md (commits `01ef78e`..`83285cd`) but never wrote SESSION_CLOSEOUT.md (verified: the only SESSION_CLOSEOUT touch in `8a32bea..HEAD` is the 29 Aug 12:05 cron review's own commit `9d9c6a2`). The PROJECT_STATE rows are the sessions' self-report; this log entry is the durable record.
