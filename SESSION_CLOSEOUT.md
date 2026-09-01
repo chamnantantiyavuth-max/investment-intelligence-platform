@@ -1,3 +1,41 @@
+# Session — 2026-09-01 (cron review, Tue 11:12): 31 Aug-afternoon world reconciled — **CORRECTION: radar + CIW FIRED LATE (not "no fire attempt")** — CIW COMPLETED NO TRIGGER (draft committed), weekly radar ZERO deliverables (tool-loop guardrail ×8) → **3rd zero-deliverable run in 4 evidence points**; 🔴 **locked-test expiry FOUND + FIXED** (FO fixture `as_of` crossed 30d bound → 9 failures → date advance → 596/596); M5.2 Item 13 still READY FOR FOUNDER APPROVAL; Learning Loop Telegram failing 8th review; market Mon 31 Aug EOD fresh
+
+**Review window:** 31 Aug 09:45 → 1 Sep 11:12 (this review). **What this review found (evidence-backed):**
+
+1. **CORRECTION to the 31 Aug review record — the radar + CIW jobs DID fire late (NOT "no fire attempt").** The 31 Aug review committed at 09:37:59, minutes before the late catch-up fired (daemon up ~09:15). Evidence: session transcripts + job records —
+   - **CIW `8b1cd19aba7d` ran 09:38–09:39 → COMPLETED** → draft `docs/ciw-pilot-msft/monitoring/2026-08-31-monitoring-draft.md` (NO TRIGGER across all Module-J conditions; MSFT **$513.53** = +6.3% vs 24 Aug tick $483.24, −7.3% from 52wk high $553.72, −25% WATCH band $415.29 NOT breached; no new filings — baseline unchanged since research-result v1). Draft committed by this review per 6c82400 precedent (Founder commits per CIW contract).
+   - **Weekly radar `8ba233e88015` ran 09:39–09:42 → execution COMPLETED but ZERO deliverables.** Died on the tool-loop guardrail (`same_tool_failure_halt` ×8): `hermes kanban list --board iip` CLI syntax error (board flag moved before the subcommand), repeated `json.load(sys.stdin)` failures, Yahoo 429. No `[DISC]` run task (board 1 Sep: triage 0 / ready 0 / running 0 / blocked 4 / done 75 — only DISC task = t_3605264d 24 Aug), no digest (dir ends 2026-08-24), no cards. **Radar ledger (post-pin):** 17 Aug guard-blocked / 20 Aug mid-week late+zero / 24 Aug late-but-COMPLETE / 27 Aug late+zero / **31 Aug late+zero** → **3rd zero-deliverable run in 4 evidence points**; failure class = late-fire + run-time tool-retry death. **Durable gateway supervision (dashboard-VBS) remains the #1 open ops decision item; FD #110 Live Office acceptance observation LOST 4× for the weekly radar.**
+
+2. **🔴 LOCKED-TEST EXPIRY FOUND + FIXED (this review).** Suite opened at **587/596** — 9 failures, ALL in `tests/locked/test_real_data_api.py`, one root cause: the locked FO fixture embeds `as_of: "2026-08-01"` which crossed the 30-day FO staleness bound today (age 31 > 30 → `stale` → 503) in `_fo_envelope()` AND the E2E producer string (lines 312/316/731/733). Mechanical date advance `2026-08-01 → 2026-08-28` (matches the last real data as-of; F1 / locked-audit-date-bump precedent, Acceptance Lock Rule noted — no expected-value semantics changed) → **596/596 re-verified (hermes-agent venv, 5.35s)**. Clock-driven expiry, NOT a code regression — the suite passed 30–31 Aug at age 29–30 days. Next expiry: as_of 2026-08-28 crosses the 30d bound on **27 Sep** (daily review will catch it).
+
+3. **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) STILL ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** (`83285cd`, 7 M4B-anchored tests, suite 596/596) — no Founder action since 29 Aug evening. Item 14 NOT started. M5.3 = HOLD. FD #135 unchanged. No new FDs (max #136) → no vault fd-register backfill. F5 (AGENTS.md checkpoint fd-134-135 + M5.2 status) still open.
+
+4. **⚠ Learning Loop Telegram delivery failing — 8th consecutive review** (`last_delivery_error` on `1f5f03f9236d` verified job-level: "live adapter delivery to telegram:8964964996 failed: Chat not found") — daily digest still not reaching the Founder; needs an interactive delivery-target config check.
+
+5. **Market Mon 31 Aug COMPLETED EOD — fresh** (first new US session since Fri 28 Aug; yfinance healthy this time, no NaN incident): ^GSPC **7,686.14** −0.33% (+0.12% 5d) / **NVDA 220.78** +1.33% (+3.63% 5d — post-earnings fade reversing) / **MSFT 507.29** −1.12% (+3.17% 5d; CIW tick 513.53 at 09:38 drifted to 507.29 by Mon close — still NO TRIGGER) / AAPL 316.85 −0.95% / FSLR 201.90 −1.70% (−2.38% 5d — base break continues) / **SLV 60.13** +0.20% (−3.51% 5d — ETF still below ~$62 SILVER-CORR-001 anchor; SI=F 67.41 above; observation only) / **GC=F 4,486.50** +0.32% (−3.87% 5d — gold pullback from 4,695) / **SI=F 67.41** +0.85% (−4.62% 5d) / CL=F 86.74 +1.94% (+2.67% 5d) / 10Y ^TNX **4.758%** (+2.57% 5d — yields re-rising) / ^VIX 14.92 +3.47% / DXY 99.51 ±0.0% / LLY 1,156.73 −6.24% 5d / ABBV 256.42 −3.53% 5d. No ±10% 1d moves → no mandatory news lookups. (Radar missed its 31 Aug pass, so these observations were not captured by the radar — noted for the digest gap.)
+
+6. **Cron cadence:** mid-week radar **Thu 3 Sep 08:00** (`cda817d17236`, last 27 Aug 10:22 late+zero); Nick-Weekly **Sat 5 Sep 09:00** (fresh — last run 29 Aug as-of Fri 28 Aug, ≤7d ✅); next weekly radar + CIW **Mon 7 Sep 08:00/09:00** (auto-advanced).
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs (register max #136); M5.2 Items 1–12 CLOSED / Item 13 awaiting Founder approval / Item 14 not started — unchanged
+- [x] Session captured? — this entry prepended (cron review, v1.8.0 §7c); PROJECT_STATE session row + build metrics + closeout row updated same pass
+- [x] Verify-First? — suite re-run **596/596** (hermes-agent venv, 5.35s; opened 587/596 → 9 failures traced to locked FO fixture staleness → date advance → green); HEAD/remote via `git rev-list --count origin/main..HEAD` (0 after push); cron `hermes cron list` read (radar `last_run` 31 Aug 09:42 = fired; CIW 31 Aug 09:39 = fired+complete; learning loop `last_delivery_error` = Telegram Chat not found); board `hermes kanban` stats read (no 31 Aug DISC task, no cards); radar digests dir read (ends 24 Aug); CIW session transcript + draft file verified; market quotes re-fetched via yfinance (Mon 31 Aug EOD)
+- [x] Verification tags? — suite 596/596 (5.35s); push SYNCED; tree clean after commit
+- [x] Pushed? — review commit (PROJECT_STATE + SESSION_CLOSEOUT + locked-test fix + CIW draft) committed + pushed (clean-tree exception precedent)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 13 (CROSS-CONTRACT TEST CLOSURE) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`83285cd`, 7 tests anchored to the frozen M4B contract, suite 596/596) — accept it to close Item 13; Item 14 then follows with your per-item authorization (M5.3 stays HOLD).
+
+**Ops queue (escalating — decision items):**
+- ① **Durable gateway supervision (dashboard-VBS pattern) — STILL THE #1 OPS ITEM.** The 31 Aug record is now corrected: both jobs fired ~1.5h late; CIW completed, weekly radar produced ZERO deliverables (tool-loop guardrail death — its own runtime failure class, distinct from late-fire). Radar ledger: **3 zero-deliverable runs in 4 evidence points** (20/27/31 Aug) → **FD #110 Live Office acceptance observation LOST 4×** for the weekly radar. Recommend an interactive session to install the detached-start pattern (like the 14 Aug `Hermes_Dashboard.vbs` fix) so cron jobs fire on schedule.
+- ② **Learning Loop Telegram delivery (8th consecutive failure)** — needs an interactive check of the delivery target (chat id 8964964996 no longer valid — "Chat not found").
+- ③ **Radar run resilience** — the 31 Aug run died on `hermes kanban --board` syntax + repeated JSON-parse retries; the radar prompt's CLI invocations should be updated to current syntax (board flag before subcommand) and the JSON-parse pattern should fail fast.
+
+**Locked-test watch:** the advanced FO fixture (`as_of 2026-08-28`) crosses the 30d staleness bound on **27 Sep** — the daily review will catch it; no action needed now.
+<!-- 2026-09-01 11:12 UTC+7 -->
+
 # Session — 2026-08-31 (cron review, Mon 09:45): NO new sessions/commits/FDs since 30 Aug — M5.2 Item 13 still ▶ READY FOR FOUNDER APPROVAL (NOT CLOSED); ⚠⚠ weekly radar 08:00 + CIW 09:00 BOTH MISSED (FD #110 Live Office observation lost again); Learning Loop Telegram failing 7th review; suite 596/596; HEAD `6abfbfe` push SYNCED
 
 **Review window:** 30 Aug 17:00 → 31 Aug 09:45 (this review). **What this review found (evidence-backed):**

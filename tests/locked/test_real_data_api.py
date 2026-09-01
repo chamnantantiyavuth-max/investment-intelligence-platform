@@ -309,11 +309,11 @@ def _fo_envelope() -> dict:
     _FO_SEQ[0] += 1  # unique run_id per test — immutable guard rejects reused ids with different bytes
     return {
         "run_id": f"FO-20260803-{_FO_SEQ[0]:06d}",
-        "provenance": {"source": "yfinance", "mode": "real", "as_of": "2026-08-01",
+        "provenance": {"source": "yfinance", "mode": "real", "as_of": "2026-08-28",
                        "coverage": "3/3", "completeness": "complete", "hybrid": False},
         "packages": [
             {
-                "id": "AAPL", "name": "Apple Inc.", "generated_at": "2026-08-01T00:00:00",
+                "id": "AAPL", "name": "Apple Inc.", "generated_at": "2026-08-28T00:00:00",
                 "spec_ref": "FUNDAMENTAL-OPPORTUNITY-INTELLIGENCE.md v0.1",
                 "thesis_summary": "s", "thesis_lifecycle": "Under Review",
                 "conviction": {"level": "High", "score": 80},
@@ -728,9 +728,9 @@ def test_e2e_subprocess_envelope_produce_and_serve():
     code = (
         "import json,sys,os,pathlib;"
         "p=pathlib.Path(sys.argv[1]);"
-        "env={'run_id':'E2E-1','provenance':{'source':'yfinance','mode':'real','as_of':'2026-08-01',"
+        "env={'run_id':'E2E-1','provenance':{'source':'yfinance','mode':'real','as_of':'2026-08-28',"
         "'coverage':'1/1','completeness':'complete','hybrid':False},"
-        "'packages':[{'id':'AAPL','name':'Apple Inc.','generated_at':'2026-08-01','spec_ref':'s',"
+        "'packages':[{'id':'AAPL','name':'Apple Inc.','generated_at':'2026-08-28','spec_ref':'s',"
         "'thesis_summary':'s','thesis_lifecycle':'Under Review','conviction':{'level':'High'},"
         "'macro_context':{},'industry_assessment':{'sector':'Tech','industry':'Hardware'},"
         "'company_assessment':{'moat':{'width':'Wide','depth':'Deep','trend':'Stable'}},"
