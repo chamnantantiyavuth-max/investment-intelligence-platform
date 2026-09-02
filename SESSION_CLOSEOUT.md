@@ -1,3 +1,41 @@
+# Session — 2026-09-02 (cron review, Wed 11:10): NO new sessions/commits/FDs since 1 Sep — M5.2 Item 13 still ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED (suite 596/596 re-verified, 10.46s); board unchanged (blocked 4 / done 75); ⚠ Learning Loop Telegram delivery failing 9th consecutive review; market Tue 1 Sep COMPLETED EOD fresh (oil CL=F +5.71% 1d / +10.08% 5d — Middle East hostilities + inflation jolt + Chevron Venezuela deal, ORG-2026-0022 thesis direction; gold −6.54% 5d, SLV below ~$62 anchor; MSFT CIW NO TRIGGER); mid-week radar Thu 3 Sep 08:00 = TOMORROW — radar prompt stale CLI syntax reproduced live again
+
+**Review window:** 1 Sep 11:14 → 2 Sep 11:10 (this review). **What this review found (evidence-backed):**
+
+1. **NO new sessions, commits, or FDs since the 1 Sep review.** `git log 29b28cf..HEAD` empty; HEAD == origin/main == `29b28cf` (533 commits), tree CLEAN, push SYNCED (`git rev-list --count origin/main..HEAD` = 0). No interactive sessions since 29 Aug (session browse: only cron jobs 31 Aug–1 Sep). FD register max = #136 (24 Aug) — unchanged, no vault backfill.
+
+2. **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) STILL ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** (`83285cd`, 7 M4B-anchored tests) — no Founder action since 29 Aug evening. Item 14 NOT started. M5.3 = HOLD. FD #135 unchanged. Suite **596/596 re-verified this review** (hermes-agent venv, 10.46s) — zero code changes since 1 Sep, so baseline intact by construction (fresh run for evidence).
+
+3. **Board unchanged:** triage 0 / ready 0 / running 0 / blocked 4 / done 75 — blocked = 2 pilot (t_1530f0fd, t_1ecfaaef) + 2 MIGRATED radar cards (ORG-2026-0016/0017). No new radar cards, no `[DISC]` run task for the 31 Aug weekly pass (zero-deliverable record stands). Radar digests dir ends 2026-08-24. CIW draft `2026-08-31-monitoring-draft.md` present (NO TRIGGER, I-12 refreshed $513.53).
+
+4. **⚠ Learning Loop Telegram delivery failing — 9th consecutive review.** Job `1f5f03f9236d` `last_delivery_error` verified job-level this review: "live adapter delivery to telegram:8964964996 failed: Chat not found" — daily digest still not reaching the Founder. Needs interactive delivery-target config check (ops item ②, escalating).
+
+5. **Radar prompt stale CLI syntax REPRODUCED LIVE.** This review ran `hermes kanban list --board iip` (the radar prompt's invocation) → `hermes: error: unrecognized arguments: --board iip`. Correct form confirmed via help: `hermes kanban --board iip list`. This is the same syntax error that killed the 31 Aug weekly radar run (tool-loop guardrail ×8). **Mid-week radar evidence point = TOMORROW Thu 3 Sep 08:00** (`cda817d17236`, last run 27 Aug late+zero) — high probability of repeating the zero-deliverable failure unless the radar prompt is fixed (ops item ③).
+
+6. **Market Tue 1 Sep COMPLETED EOD — fresh** (yfinance healthy; last completed session — no live-bar ambiguity at 11:10 UTC+7): ^GSPC **7,631.47** −0.71% (−0.28% 5d) / NVDA 217.44 −1.51% (post-earnings fade continues) / **MSFT 501.02** −1.24% 1d (**CIW NO TRIGGER** — 52wk high $553.72, −25% WATCH band $415.29 NOT breached; −2.4% vs 31 Aug tick $513.53) / AAPL 325.13 +2.61% (+4.91% 5d) / FSLR 199.65 −1.11% (base break continues, now sub-$200) / **SLV 57.92 −3.68% 1d −7.06% 5d** (ETF now well below ~$62 SILVER-CORR-001 anchor; SI=F 64.07 −3.26%) / **GC=F 4,334.90 −2.17% 1d −6.54% 5d** (gold pullback accelerating from ~4,695) / **CL=F 90.66 +5.71% 1d +10.08% 5d** — oil surging; voluntary news-driver lookup (Yahoo search JSON): Middle East hostilities + bond-selloff inflation jolt + Chevron Venezuela field deal — **direction consistent with the ORG-2026-0022 IEA OMR Hormuz dislocation thesis** (observation only, no ±10% 1d bar crossed) / ^TNX 4.80% (+1.96% 5d — yields re-rising). No mandatory news lookups triggered (no ±10% 1d moves).
+
+7. **Cron cadence:** mid-week radar **Thu 3 Sep 08:00** (TOMORROW — see finding 5); Nick-Weekly **Sat 5 Sep 09:00** (fresh — last run 29 Aug as-of Fri 28 Aug EOD ≤7d ✅); next weekly radar + CIW **Mon 7 Sep 08:00/09:00** (auto-advanced). Locked-test expiry watch: FO fixture `as_of 2026-08-28` crosses the 30d staleness bound on **27 Sep** — no action needed now, daily review will catch it.
+
+## Closeout checklist (review)
+
+- [x] FDs reconciled? — no new FDs (register max #136); M5.2 Items 1–12 CLOSED / Item 13 awaiting Founder approval / Item 14 not started — unchanged
+- [x] Session captured? — this entry prepended (cron review, v1.8.0 §7c convention); PROJECT_STATE 2 Sep update + Build Metrics + push state updated same pass; Obsidian CURRENT-STATE → MEM-IIP-082 prepended (was 4 reviews behind at MEM-IIP-081)
+- [x] Verify-First? — suite re-run **596/596** (hermes-agent venv, 10.46s); HEAD/remote via `git rev-list --count origin/main..HEAD` (0); cron `hermes cron list` read (radar last 31 Aug 09:42 zero-deliverable / CIW 31 Aug 09:39 complete / learning loop delivery error "Chat not found"); board stats read (blocked 4 / done 75, no new DISC task); radar digests dir + CIW draft verified; market quotes re-fetched via yfinance (Tue 1 Sep EOD) + Yahoo news JSON for CL driver
+- [x] Verification tags? — suite 596/596 (10.46s); push SYNCED; tree clean after commit
+- [x] Pushed? — review commit (PROJECT_STATE + SESSION_CLOSEOUT) committed + pushed (clean-tree exception precedent)
+
+## Recommended next action
+
+**(Founder-facing, one decision):** M5.2 **Item 13 (CROSS-CONTRACT TEST CLOSURE) is CODE COMPLETE + READY FOR FOUNDER APPROVAL** (`83285cd`, 7 tests anchored to the frozen M4B contract, suite 596/596) — accept it to close Item 13; Item 14 then follows with your per-item authorization (M5.3 stays HOLD).
+
+**Ops queue (escalating — decision items):**
+- ① **Durable gateway supervision (dashboard-VBS pattern) — still #1.** Weekly radar ledger: 3 zero-deliverable runs in 4 evidence points; FD #110 Live Office acceptance observation LOST 4× for the weekly radar. Next evidence points: Thu 3 Sep 08:00 (mid-week), Mon 7 Sep 08:00/09:00 (weekly + CIW).
+- ② **Learning Loop Telegram delivery (9th consecutive failure)** — interactive check of the delivery target (chat id 8964964996 "Chat not found").
+- ③ **Radar run resilience** — stale `hermes kanban list --board iip` syntax reproduced live this review; the radar prompt must be updated to `hermes kanban --board iip list` and fail fast on JSON-parse retries before Thu 3 Sep 08:00.
+
+**Locked-test watch:** FO fixture `as_of 2026-08-28` crosses the 30d staleness bound on **27 Sep** — daily review will catch it; no action needed now.
+<!-- 2026-09-02 11:10 UTC+7 -->
+
 # Session — 2026-09-01 (cron review, Tue 11:12): 31 Aug-afternoon world reconciled — **CORRECTION: radar + CIW FIRED LATE (not "no fire attempt")** — CIW COMPLETED NO TRIGGER (draft committed), weekly radar ZERO deliverables (tool-loop guardrail ×8) → **3rd zero-deliverable run in 4 evidence points**; 🔴 **locked-test expiry FOUND + FIXED** (FO fixture `as_of` crossed 30d bound → 9 failures → date advance → 596/596); M5.2 Item 13 still READY FOR FOUNDER APPROVAL; Learning Loop Telegram failing 8th review; market Mon 31 Aug EOD fresh
 
 **Review window:** 31 Aug 09:45 → 1 Sep 11:12 (this review). **What this review found (evidence-backed):**
