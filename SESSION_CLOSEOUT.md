@@ -1253,3 +1253,33 @@ PROJECT_STATE.md (Build Metrics **401/401** + push state `70b8f45`/473 + Session
 <!-- 2026-08-27 10:20 UTC+7 -->
 
 <!-- 2026-08-28 11:25 UTC+7 -->
+
+## Session — 5 Sep 2026 (cron review)
+
+> Log note: daily cron reviews 27 Aug–4 Sep were recorded in PROJECT_STATE.md only (single source of session truth per SOUL) — this entry restores the SESSION_CLOSEOUT log from 5 Sep forward.
+
+- **5 Sep world reconciled.** HEAD == origin/main == `924720d` (539 commits, tree CLEAN, push SYNCED). New since the 4 Sep review: exactly one commit — the **Nick-Weekly AM pipeline run** + the 4 Sep 23:49 Learning Loop tick ([SILENT], nothing new).
+- **Nick-Weekly AM-V0-20260905-094433 EXECUTED 09:44 + COMPLETE + PUSHED** (commit `924720d`, authored by the job). Scheduled 09:00 → fired ~44 min late but fully self-contained (SRL committed + pushed; contrast with the radar ledger's 6 evidence points). As-of **Fri 4 Sep COMPLETED EOD — fresh ≤7d ✅**; **clean fetch, NO NaN incident** (29 Aug `fast_info` fallback NOT exercised — remains untested-in-anger).
+- **First positive-median week (+2.6%)** after two stress weeks (−6.5% → −0.4%): breadth 5/9, rotation signature (prior leaders CRWD/PANW lagged, laggards INTC/SMCI led; INTC +7.1% 2nd strong week +29.7% vs 200-day; SMCI +6.8%; NVDA +5.9% to $230.36). One week of recovery evidence only.
+- **AVGO:** Sep-3 earnings print → trailingEps +30.7% ($6.02→$7.87) with NEGATIVE price reaction (−3.0% to $357.90); **closed below its 200-day for the first time in book coverage** — the 29 Aug "support test" resolved as a break; refresh must hold next run.
+- **PANW −10.3% → $333.26 — largest single-week drop in book history, NOT earnings** (next print Nov 20; EPS ~flat): extension unwind of the most-extended name (+62.4%→+43.4% vs 200-day), first close below 50-day.
+- **CRWD P/E corruption CONFIRMED DURABLE** — 2nd absurd week (4,368→5,327.5 on a falling price; $0.04 EPS field); 6th run missing/absurd overall → **FD #45 §8.1 deterministic sanity check now carries a 6-run evidence record** (Founder-gated fix).
+- **NVDA EPS refresh CONFIRMED genuine (2nd week)** — $7.90 held across +5.9%; FSLR P/E stability CONFIRMED (3rd week, implied $16.22). **MDT/AMD/SMCI batch EPS drift with NO prints in window** (calendar-first attribution; MDT calendar-consistent w/ fiscal-Q1 10-Q timing, AMD/SMCI = TTM-recomputation signature) — next-run confirmation required.
+- **Q-Conditions 10/10 Qualified, 0 exit signals — 5th clean run** (full risk-off → stabilize → first-positive arc, zero false exits).
+- **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) still ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** — 7 days no Founder action since 29 Aug evening; Item 14 NOT started; M5.3 = HOLD; FD #135 unchanged; register max #136. Suite **596/596 baseline intact by construction** (`git diff cbc06f6..HEAD --stat -- tests/` EMPTY — SRL `.md` only; no test churn since the 3 Sep morning re-verify). Board unchanged (blocked 4 / done 75).
+- **⚠ Learning Loop Telegram delivery — status CHANGED/AMBIGUOUS:** job-level `last_delivery_error` = **None** at this review (was "Chat not found" telegram:8964964996 across 11 consecutive reviews through the 4 Sep 11:45 tick). The 4 Sep 23:49 run went [SILENT] (no delivery attempted — may have cleared the error record); the 4 Sep 11:45 content digest's own delivery outcome unconfirmed → **interactive delivery-target config check still recommended (ops item ②)**.
+- **Cron cadence:** weekly radar + CIW **Mon 7 Sep 08:00/09:00** = next FD #110 Live Office observation evidence point (⚠ Mon 7 Sep = US Labor Day — equity data frozen at Fri 4 Sep close; EDGAR/FRED unaffected); mid-week radar **Thu 10 Sep 08:00**; Nick-Weekly **Sat 12 Sep 09:00**.
+- **Market Fri 4 Sep COMPLETED EOD — fresh** (independent yfinance fast_info fetch ~10:45 UTC+7; US closed Sat — no live-bar risk): ^GSPC 7,718.60 (−0.38% 1d — gave back part of Thu's new-high close 7,747.71) / **MSFT 499.70 (−1.9% — CIW NO TRIGGER: 52wk high $553.72, −25% band $415.29 NOT breached)** / AAPL 319.97 (−2.3%) / JNJ 275.23 (−1.1%) / **SLV 59.82 (−1.1% — below ~$62 SILVER-CORR-001 anchor; observation only)** / **GC=F 4,429.80 (−1.9% — gold pullback continues from ~4,695 high area)** / SI=F 66.05 (−1.7%) / **CL=F 91.48 (−0.6% — WTI holds ~$91, ORG-2026-0022 continuation zone)**. No ±10% 1d moves → no news lookups.
+- **Open (unchanged):** F5 AGENTS.md checkpoint fd-134-135 + M5.2-status row (protected file — interactive + Founder); durable gateway supervision (dashboard-VBS pattern) = #1 open ops decision item (next radar evidence Mon 7 Sep 08:00); F6 stray `dashboard_overall` PNG (cleanup flag); ORG-2026-0022 publish gate; locked-test expiry watch — FO fixture as_of 2026-08-28 → 30d bound ~27 Sep.
+
+## Verification
+
+- HEAD `924720d` == origin/main (539 commits); push SYNCED (`git log origin/main..HEAD` empty); tree clean
+- Suite **596/596 baseline intact by construction** — `git diff cbc06f6..HEAD --stat -- tests/` EMPTY (single commit = SRL markdown under `operational/self-reflection-logs/`); last full re-verify 3 Sep morning (6.65s) at the same code state
+- Market: independent yfinance fast_info fetch 5 Sep ~10:45 UTC+7 + AM run SRL (fetch 09:44, clean) — both as-of Fri 4 Sep completed EOD; no live-bar risk (US closed Sat)
+- Derived: AM artifact `alpha-momentum-v0/output/pipeline_result.json` regenerated 5 Sep 09:44 (run_id AM-V0-20260905-094433, gitignored, serves local surface) — fresh ≤7d ✅; FO bound unchanged (as_of 2026-08-28, ≤30d, expiry ~27 Sep); CS synthetic-labeled; no new FDs (max #136) → no vault fd-register backfill
+
+## Recommended next action
+**Weekly radar + CIW Mon 7 Sep 08:00/09:00 = FD #110 Live Office acceptance observation** (next evidence point for the radar cadence ledger; daemon-up-at-08:00 is the known failure class — durable gateway supervision remains the #1 open ops item). Alternatives: (a) interactive session — M5.2 Item 13 approval (7 M4B-anchored tests, READY 7 days) + AGENTS.md checkpoint fd-134-135; (b) interactive delivery-target config check for the Learning Loop Telegram digest (streak status now ambiguous — verify digests reach the Founder); (c) ORG-2026-0022 publish gate.
+
+<!-- 2026-09-05 11:58 UTC+7 -->
