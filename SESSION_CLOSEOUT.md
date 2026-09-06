@@ -1283,3 +1283,28 @@ PROJECT_STATE.md (Build Metrics **401/401** + push state `70b8f45`/473 + Session
 **Weekly radar + CIW Mon 7 Sep 08:00/09:00 = FD #110 Live Office acceptance observation** (next evidence point for the radar cadence ledger; daemon-up-at-08:00 is the known failure class — durable gateway supervision remains the #1 open ops item). Alternatives: (a) interactive session — M5.2 Item 13 approval (7 M4B-anchored tests, READY 7 days) + AGENTS.md checkpoint fd-134-135; (b) interactive delivery-target config check for the Learning Loop Telegram digest (streak status now ambiguous — verify digests reach the Founder); (c) ORG-2026-0022 publish gate.
 
 <!-- 2026-09-05 11:58 UTC+7 -->
+
+## Session — 6 Sep 2026 (cron review)
+
+> Review window: 5 Sep 11:55 → 6 Sep 13:05 (this review, Sun). Prompt: "Review recent IIP sessions, check market data, update phase status, report findings."
+
+- **NO new sessions/commits/FDs since the 5 Sep 11:55 review.** HEAD == origin/main == `f295f19` (540 commits), tree CLEAN, push SYNCED (`git log origin/main..HEAD` empty). Session browse since = only the **5 Sep 23:58 Learning Loop tick**, which self-identified the review race with the 11:55 review and went **[SILENT]** — no state change, correct behavior. FD register max #136 unchanged → no vault fd-register backfill. Board unchanged (blocked 4 / done 75).
+- **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) still ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** (`83285cd`, 7 M4B-anchored tests; **8 days** no Founder action since 29 Aug evening). Item 14 NOT started. M5.3 = HOLD. FD #135 unchanged. Suite **596/596 RE-VERIFIED this review — real full run (7.56s, hermes-agent venv)**, first actual re-run since the 3 Sep morning (the 4–5 Sep reviews used the by-construction shortcut). FO-fixture time-expiry NOT near: locked fixture as_of 2026-08-28, 30d staleness bound ~27 Sep → 21 days out (F1 precedent; next daily review advances date when crossed).
+- **⚠ Learning Loop Telegram delivery — status UNCHANGED/AMBIGUOUS.** Job-level `last_delivery_error` was None at the 5 Sep 11:55 review; the 23:58 tick went [SILENT] (no delivery attempted → no new evidence either way). Next content tick ~6 Sep 23:5x re-tests the "Chat not found" telegram:8964964996 failure. Interactive delivery-target config check remains ops item ② (needs Founder/interactive session — cron cannot fix config).
+- **Market — Sun 6 Sep, weekend + US Labor Day Mon: NO new data since Fri 4 Sep COMPLETED EOD** (independent yfinance fetch 13:03 UTC+7; levels byte-identical to the 5 Sep snapshot — no drift): ^GSPC 7,718.60 / **MSFT 499.70 — CIW NO TRIGGER** (52wk high $553.72, −25% band $415.29 far) / NVDA 230.36 / AAPL 319.97 / SLV 59.82 (below ~$62 SILVER-CORR-001 anchor) / GC=F 4,476.60 / CL=F 91.48 (ORG-2026-0022 continuation zone). No ±5% moves vs Fri close → no news lookups. Next equity EOD = **Tue 8 Sep** (Mon 7 Sep US Labor Day).
+- **Cron cadence:** weekly radar **Mon 7 Sep 08:00** + CIW **Mon 7 Sep 09:00** TOMORROW = next FD #110 Live Office evidence point (daemon-up-at-08:00 remains the known failure class; US Labor Day → equity frozen at Fri close, EDGAR/FRED unaffected); mid-week radar Thu 10 Sep 08:00; Nick-Weekly Sat 12 Sep 09:00; Learning Loop next tick ~6 Sep 23:55.
+- **Open (unchanged):** F5 AGENTS.md checkpoint fd-134-135 + M5.2-status row (protected file — interactive + Founder); durable gateway supervision (dashboard-VBS) = #1 open ops decision item (next radar evidence Mon 7 Sep 08:00); F6 stray `dashboard_overall` PNG cleanup flag; ORG-2026-0022 publish gate; locked-test expiry watch (~27 Sep).
+
+## Verification
+
+- HEAD `f295f19` == origin/main (540 commits); push SYNCED (`git log origin/main..HEAD` empty); tree clean before edits
+- Suite **596/596 REAL full re-run** (7.56s, hermes-agent venv interpreter) — first actual run since 3 Sep morning; the 4–5 Sep reviews' by-construction shortcut was sound (`git diff e6b88b5..HEAD --stat -- tests/` EMPTY — commits since 3 Sep code state = radar digest + state docs + Nick-Weekly SRL only)
+- Market: independent yfinance fast_info + 7d-history fetch 6 Sep 13:03 UTC+7 — last completed EOD bar = Fri 4 Sep (2026-09-04 row); no live-bar risk (US closed Sat + Labor Day Mon)
+- Derived: AM artifact fresh (5 Sep 09:44 run, as-of 4 Sep EOD ≤7d); FO bound unchanged (as_of 2026-08-28 ≤30d); CS synthetic-labeled; no new FDs (max #136) → no vault fd-register backfill
+- State docs updated: PROJECT_STATE.md (metric row + narrative + session-table row + EOF footer) + SESSION_CLOSEOUT.md (this entry)
+
+## Recommended next action
+
+**Mon 7 Sep 08:00/09:00 weekly radar + CIW = FD #110 Live Office acceptance observation** (next radar-cadence evidence point; durable gateway supervision = #1 open ops item). Alternatives: (a) interactive session — M5.2 Item 13 approval (7 M4B-anchored tests, READY 8 days) + AGENTS.md checkpoint fd-134-135; (b) interactive delivery-target config check for the Learning Loop Telegram digest (streak status ambiguous since 4 Sep); (c) ORG-2026-0022 publish gate.
+
+<!-- 2026-09-06 13:05 UTC+7 -->
