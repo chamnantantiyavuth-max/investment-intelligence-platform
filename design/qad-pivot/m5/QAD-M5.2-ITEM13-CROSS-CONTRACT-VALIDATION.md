@@ -1,8 +1,8 @@
 # QAD-M5.2 Item 13 — Cross-Contract Validation
 
-> **Status:** ITEM 13 — CROSS-CONTRACT TEST CLOSURE COMPLETE / READY FOR FOUNDER APPROVAL
-> **Authority:** Founder 29 Aug 2026 session (current implementation authority); historical 25 Aug 2026 label authority
-> **Date:** 2026-08-29
+> **Status:** ITEM 13 — FINAL VALUE-EXTRACTION MICRO-FIX / READY FOR FOUNDER APPROVAL
+> **Authority:** Founder 7 Sep 2026 session (value-extraction micro-fix — Test 7 now reads actual M4B artifact values, no hard-coded labels)
+> **Date:** 2026-09-07
 
 ---
 
@@ -10,8 +10,8 @@
 
 | Layer | Source | Content |
 |-------|--------|---------|
-| **Historical label authority** | Founder 25 Aug 2026 correction session | `13. Cross-contract validation` — validation of cross-contract consistency across M4A/M4B/PIT/M5.1 |
-| **Current implementation authority** | Founder 29 Aug 2026 session | Detailed execution plan with 7 structural bridge tests, upstream M4B artifact anchoring, M5.3 deferral boundary |
+| **Original design authority** | Founder 29 Aug 2026 session | Detailed execution plan with 7 structural bridge tests, upstream M4B artifact anchoring, M5.3 deferral boundary |
+| **Value-extraction micro-fix** | Founder 7 Sep 2026 session | Test 7 now extracts M4B label values from frozen §3.2 Fixture Schema artifact (no hard-coded M4B values in Python source); exact `==` against QA-01 / IA-01 / UV-01 |
 
 ---
 
@@ -25,13 +25,15 @@
 | M4B validator | **93/93 PASS** | `design/qad-pivot/m4b/validate-m4b-pack.py` | Non-production deterministic |
 | M4B synthetic PIT leakage proof | **9/9 PASS** | `design/qad-pivot/m4b/pit-leakage-proof.py` | Non-production deterministic |
 | Cross-contract validation | **7/7 PASS** | `tests/qad/test_cross_contract_validation.py` | Executable proof |
-| Full local pytest | **596/596 PASS** (589 baseline + 7 new) | `python -m pytest tests/` | Local evidence (NOT independent CI) |
+| Full local pytest | **596/596 PASS** | `python -m pytest tests/` | Local evidence (NOT independent CI) |
 
 ---
 
 ## 3. Cross-Contract Matrix
 
-Every test reads the actual frozen M4B contract artifact as upstream authority.
+> Every test reads the actual frozen M4B contract artifact as upstream authority.
+> Test 7 extracts M4B evaluation-label values from §3.2 Fixture Schema at test
+> runtime (no hard-coded M4B values in Python source).
 
 | Test | Upstream M4B Concept | Generated Authority | Persistence/Runtime Carrier | Status |
 |------|---------------------|-------------------|---------------------------|--------|
@@ -68,9 +70,8 @@ These are DEFERRED_M5.3. They are NOT Item-13 defects.
 No production code was modified under Item 13.
 
 Changed files:
-- `tests/qad/test_cross_contract_validation.py` — 7 structural bridge tests, all anchored to frozen M4B artifact
+- `tests/qad/test_cross_contract_validation.py` — Test 7 now extracts M4B label values from frozen §3.2 Fixture Schema artifact at test runtime (no hard-coded M4B values)
 - `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md` — this traceability artifact
-- `PROJECT_STATE.md` — governance update only
 
 No files modified:
 - `qad/models/*` — untouched
@@ -88,19 +89,26 @@ No files modified:
 ```
 $ python -m pytest tests/qad/test_cross_contract_validation.py -q --tb=short
 .......                                                           [100%]
-7 passed in 0.17s
+7 passed in 0.20s
 
 $ python -m pytest tests/ -q --tb=no
-596 passed, 11 warnings in 5.55s
+596 passed, 11 warnings in 5.75s
 
 $ python -m pytest tests/qad/test_contract_conformance.py -q --tb=no
-105 passed in 0.28s
+105 passed in 0.30s
 
 $ python design/qad-pivot/m4b/validate-m4b-pack.py
 Results: 93 passed, 0 failed, 0 warnings
 ```
 
-No cross-contract contradiction was found.
+Test 7 extracts M4B label values from frozen §3.2 Fixture Schema artifact at
+test runtime:
+- `expected_quality_state` → 4 values: FAILED, PROBABLE, UNRESOLVED, VERIFIED
+- `expected_impairment` → 5 values: MIXED, MOSTLY_TEMPORARY, STRUCTURAL, TEMPORARY, UNRESOLVED
+- `expected_verdict` → 6 values: NOT_QAD_QUALITY, NOT_QAD_STRUCTURAL, NOT_QAD_VALUATION, QAD_CONFIRMED, QAD_PROBABLE, QAD_UNRESOLVED
+
+All three extracted sets match their M4A enums with exact `==` equality.
+No hard-coded M4B label-value sets remain in the test file.
 
 ---
 
@@ -110,7 +118,7 @@ No cross-contract contradiction was found.
 Items 1-12 = FOUNDER APPROVED / CLOSED / FROZEN
 
 Item 13 =
-  CROSS-CONTRACT TEST CLOSURE COMPLETE /
+  FINAL VALUE-EXTRACTION MICRO-FIX COMPLETE /
   READY FOR FOUNDER APPROVAL /
   NOT CLOSED
 
@@ -122,4 +130,4 @@ Production Release / Live Autonomous QAD /
 workforce cutover / cron cutover = NOT AUTHORIZED
 ```
 
-<!-- 2026-08-29 20:15 UTC+7 -->
+<!-- 2026-09-07 23:45 UTC+7 -->

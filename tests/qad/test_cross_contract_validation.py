@@ -281,50 +281,107 @@ def test_m4b_as_of_date_maps_to_pitc01_as_of_date():
 # 7: M4B EVALUATION LABELS ↔ FROZEN M4A ENUM COUNTERPARTS
 # ===================================================================
 
+
+def _extract_m4b_label_values(label_name: str) -> set[str]:
+    """Extract M4B label values from frozen §3.2 Fixture Schema artifact.
+
+    Handles multi-line values (e.g. expected_verdict spans two lines
+    in the frozen contract).  Returns a set of uppercase enum tokens
+    extracted entirely from the artifact — no hard-coded values.
+    """
+    start_marker = "### 3.2 Fixture Schema"
+    end_marker = "### 3.3 Fixture Lifecycle"
+
+    start_idx = M4B_CONTRACT_TEXT.find(start_marker)
+    end_idx = M4B_CONTRACT_TEXT.find(end_marker)
+    assert start_idx != -1, f"M4B contract missing {start_marker}"
+    assert end_idx != -1, f"M4B contract missing {end_marker}"
+
+    section = M4B_CONTRACT_TEXT[start_idx:end_idx]
+    lines = section.split("\n")
+
+    label_prefix = f"{label_name}:"
+    value_parts: list[str] = []
+    found = False
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith(label_prefix):
+            found = True
+            value_part = stripped[len(label_prefix):].strip()
+            if value_part:
+                value_parts.append(value_part)
+            continue
+
+        if found:
+            # Continuation lines have leading whitespace and contain
+            # slash-separated tokens or enum values.
+            is_continuation = line.startswith(" ") or line.startswith("\t")
+            if is_continuation and stripped:
+                value_parts.append(stripped)
+            else:
+                # Non-continuation line → the field is complete
+                break
+
+    assert found, (
+        f"Label '{label_name}' not found in M4B §3.2 Fixture Schema"
+    )
+
+    # Join all parts, split by '/', clean each token
+    combined = " ".join(value_parts)
+    tokens = {t.strip() for t in combined.split("/") if t.strip()}
+
+    assert len(tokens) >= 1, (
+        f"Extracted zero tokens for '{label_name}' from M4B §3.2. "
+        f"Raw parts: {value_parts}"
+    )
+    return tokens
+
+
 def test_m4b_evaluation_labels_have_exact_m4a_enum_counterparts():
     """M4B expected_quality_state / expected_impairment / expected_verdict
     labels (see §3.2 Fixture Schema) have EXACT frozen M4A runtime enum
     counterparts.
 
+    The M4B-side label VALUES are extracted from the frozen artifact at
+    test runtime — they are NOT hard-coded in this test file.
+
     This proves structural bridge compatibility without M5.3 involvement.
     """
-    # 1. Verify M4B contract defines these labels
+    # 1. Verify M4B contract defines these field names
     assert "expected_quality_state" in M4B_CONTRACT_TEXT
     assert "expected_impairment" in M4B_CONTRACT_TEXT
     assert "expected_verdict" in M4B_CONTRACT_TEXT
 
-    # 2. expected_quality_state → QA-01 QualityAssessmentQuality_state
-    #    M4B values: VERIFIED / PROBABLE / UNRESOLVED / FAILED
+    # 2. Extract M4B label values from frozen artifact §3.2 Fixture Schema
+    m4b_quality = _extract_m4b_label_values("expected_quality_state")
+    m4b_impairment = _extract_m4b_label_values("expected_impairment")
+    m4b_verdict = _extract_m4b_label_values("expected_verdict")
+
+    # 3. Assert extracted sets are non-empty before comparing
+    assert len(m4b_quality) >= 1
+    assert len(m4b_impairment) >= 1
+    assert len(m4b_verdict) >= 1
+
+    # 4. expected_quality_state → QA-01 QualityAssessmentQuality_state
     m4a_qs = {v.value for v in QualityAssessmentQuality_state}
-    m4b_quality = {"VERIFIED", "PROBABLE", "UNRESOLVED", "FAILED"}
     assert m4b_quality == m4a_qs, (
         f"Quality state mismatch: M4B={m4b_quality}, M4A={m4a_qs}"
     )
 
-    # 3. expected_impairment → IA-01 ImpairmentAssessmentDiagnosis
-    #    M4B values: TEMPORARY / MOSTLY_TEMPORARY / MIXED / STRUCTURAL / UNRESOLVED
+    # 5. expected_impairment → IA-01 ImpairmentAssessmentDiagnosis
     m4a_imp = {v.value for v in ImpairmentAssessmentDiagnosis}
-    m4b_impairment = {
-        "TEMPORARY", "MOSTLY_TEMPORARY", "MIXED", "STRUCTURAL",
-        "UNRESOLVED",
-    }
     assert m4b_impairment == m4a_imp, (
         f"Impairment diagnosis mismatch: M4B={m4b_impairment}, "
         f"M4A={m4a_imp}"
     )
 
-    # 4. expected_verdict → UV-01 UnderwritingVerdictVerdict
-    #    M4B values: QAD_CONFIRMED / QAD_PROBABLE / QAD_UNRESOLVED /
-    #                NOT_QAD_STRUCTURAL / NOT_QAD_QUALITY / NOT_QAD_VALUATION
+    # 6. expected_verdict → UV-01 UnderwritingVerdictVerdict
     m4a_verdict = {v.value for v in UnderwritingVerdictVerdict}
-    m4b_verdict = {
-        "QAD_CONFIRMED", "QAD_PROBABLE", "QAD_UNRESOLVED",
-        "NOT_QAD_STRUCTURAL", "NOT_QAD_QUALITY", "NOT_QAD_VALUATION",
-    }
     assert m4b_verdict == m4a_verdict, (
         f"Verdict mismatch: M4B={m4b_verdict}, M4A={m4a_verdict}"
     )
 
     # These are evaluation-only semantics.  No M5.2 persistence binding
     # required beyond the structural bridge proven here.
-    # <!-- 2026-08-29 20:00 UTC+7 -->
+    # <!-- 2026-09-07 23:35 UTC+7 -->
