@@ -1,8 +1,8 @@
 # QAD-M5.2 Item 13 — Cross-Contract Validation
 
 > **Status:** ITEM 13 — FINAL VALUE-EXTRACTION MICRO-FIX / READY FOR FOUNDER APPROVAL
-> **Authority:** Founder 7 Sep 2026 session (value-extraction micro-fix — Test 7 now reads actual M4B artifact values, no hard-coded labels)
-> **Date:** 2026-09-07
+> **Authority:** Founder 25 Aug 2026 · 29 Aug 2026 · 7 Sep 2026 (see §1 chronology)
+> **Originally initiated:** 2026-08-29 · **Last updated:** 2026-09-07
 
 ---
 
@@ -10,8 +10,9 @@
 
 | Layer | Source | Content |
 |-------|--------|---------|
-| **Original design authority** | Founder 29 Aug 2026 session | Detailed execution plan with 7 structural bridge tests, upstream M4B artifact anchoring, M5.3 deferral boundary |
-| **Value-extraction micro-fix** | Founder 7 Sep 2026 session | Test 7 now extracts M4B label values from frozen §3.2 Fixture Schema artifact (no hard-coded M4B values in Python source); exact `==` against QA-01 / IA-01 / UV-01 |
+| **Historical label authority** | Founder 25 Aug 2026 correction session | `13. Cross-contract validation` — original M5.2 correction label covering M4A / M4B / PIT / M5.1 |
+| **Implementation authority** | Founder 29 Aug 2026 session | Detailed structural cross-contract execution plan; M4B artifact anchoring; M5.3 deferral boundary |
+| **Value-extraction micro-fix** | Founder 7 Sep 2026 session | Test 7 extracts actual M4B §3.2 label values and exact-`==` compares them to QA-01 / IA-01 / UV-01 |
 
 ---
 
@@ -72,6 +73,11 @@ No production code was modified under Item 13.
 Changed files:
 - `tests/qad/test_cross_contract_validation.py` — Test 7 now extracts M4B label values from frozen §3.2 Fixture Schema artifact at test runtime (no hard-coded M4B values)
 - `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md` — this traceability artifact
+
+Item-13 tracked scope: **clean** after commit `857c12e`.
+Repository-wide working tree: **NOT clean** — one unrelated untracked file
+`docs/ciw-pilot-msft/monitoring/2026-09-07-monitoring-draft.md` is present
+(CIW pilot draft, no relation to Item 13).
 
 No files modified:
 - `qad/models/*` — untouched
