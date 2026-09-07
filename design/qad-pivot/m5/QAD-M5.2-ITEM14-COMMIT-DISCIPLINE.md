@@ -258,7 +258,7 @@ No Git corrective action is required.
 |---|---|
 | **Historical document content rewrite** | **YES — temporarily occurred.** Within Item 12's own commit chain (`12b69be` → `c26482f` → `2bb63dc` → `908268c` → `384d926`), earlier commits inadvertently modernized historical PROJECT_STATE paragraphs (e.g., 24 Aug review paragraphs rewritten to reflect 29 Aug truth). |
 | **Patch-forward document repair** | **YES.** Commits `2bb63dc` (explicitly titled "history-preservation micro-closure") and `908268c` restored the historical chronology via patch-forward corrections, not by editing the earlier commits. |
-|| **Destructive Git history rewrite** | **NO EVIDENCE VISIBLE.** The current reachable chain is patch-forward and linear. No squash, rebase, or force-push is visible in the current reachable history. Push-method evidence is incomplete for 45/50 audited M5.2 commits (see Axis C), so this audit does not claim that no transient historical force-push could ever have occurred. |
+| **Destructive Git history rewrite** | **NO EVIDENCE VISIBLE.** The current reachable chain is patch-forward and linear. No squash, rebase, or force-push is visible in the current reachable history. Push-method evidence is incomplete for 45/50 audited M5.2 commits (see Axis C), so this audit does not claim that no transient historical force-push could ever have occurred. |
 
 **Lesson:** Historical documents are ledgers of what was known at the time. Current truth must be reconciled through later annotations / patch-forward corrections — never by modernizing historical paragraphs.
 
