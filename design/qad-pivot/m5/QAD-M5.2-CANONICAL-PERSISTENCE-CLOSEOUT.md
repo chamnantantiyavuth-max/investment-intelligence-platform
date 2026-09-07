@@ -26,6 +26,15 @@ technical statements.
   - Item 14 = pending
 - M5.3 = HOLD
 
+### Governance reconciliation — 7 Sep 2026 — M5.2 FINAL CORRECTION CLOSEOUT
+
+- **M5.2 = COMPLETE / CLOSED**
+- Items 1–14 = FOUNDER APPROVED / CLOSED / FROZEN
+- M5.3 = HOLD / requires separate Founder authorization
+- Production Release / Live Autonomous QAD / workforce cutover / cron cutover = NOT AUTHORIZED
+- Accepted regression = 596/596 LOCAL pytest PASS (NOT independent CI)
+- Item-14 audit reviewed 50 Item-1–13 correction/governance commits (Item 14 itself added 4 documentation commits on top of that baseline)
+
 ### Superseded sections — reconcile as follows
 
 | Section | Original claim | Current interpretation |
@@ -327,7 +336,9 @@ Item-12 documentation truth update (Founder 29 Aug 2026):
   Item 9 explicit closure record, Item 10 waiver, Item 11 fail-closed truth
   all documented.
   Historical test counts (401/401, 577/577) preserved as historical evidence.
-  Current test metric = 589/589 LOCAL pytest PASS (NOT independent CI).
+  Current test metric = 596/596 LOCAL pytest PASS (29 Aug baseline: 589/589;
+7 Item-13 cross-contract tests added; Items 12/14 and final closeout are
+documentation-only with no test delta; NOT independent CI).
   PROJECT_STATE temporal layers (historical vs current) correctly separated.
   No production/runtime/test/schema behavior changed under Item 12.
   4 documentation commits preserved (no squash/rewrite).
@@ -347,6 +358,31 @@ Item-13 cross-contract test closure (29 Aug 2026):
   No cross-contract contradiction found.
   Full LOCAL regression: 596/596 PASS (589 baseline + 7 new).
 
+Item-13 FINAL RECORD (7 Sep 2026):
+  Item 13 = FOUNDER APPROVED / CLOSED / FROZEN.
+  Accepted closure chain: 7ebfa02 → 83285cd → 857c12e → 07c935c.
+  Final chronology: 8 tests (A–H) → H removed, 7 durable tests →
+  actual M4B §3.2 Fixture Schema label extraction → provenance
+  chronology correction.
+  No cross-contract contradiction found.
+  M5.3 runtime PIT enforcement remains deferred.
+
+Item-14 final record (7 Sep 2026):
+  Item 14 = FOUNDER APPROVED / CLOSED / FROZEN.
+  Final accepted commit: 6779e07.
+  Reference: design/qad-pivot/m5/QAD-M5.2-ITEM14-COMMIT-DISCIPLINE.md.
+  Three-axis discipline model (audited 50 Item-1–13 correction/governance
+  commits):
+    Axis A: 50/50 NO_UNRELATED_COMMITTED_FILE_DETECTED
+    Axis B: 5 EXPLICIT_PATH / 2 BROAD_STAGING / 43 STAGING_UNKNOWN
+    Axis C: 5 NORMAL_PUSH / 45 PUSH_METHOD_NOT_RECOVERED
+  Confirmed broad-staging breaches: 7ebfa02, 83285cd (git add -A).
+  Both: process breach / no observed committed contamination.
+  Durable explicit-path staging rule adopted.
+  No Git history rewrite required.
+  Item 14 itself added 4 documentation commits on top of the 50-commit
+  audit baseline.
+
 Item-10 waiver (Founder 28 Aug 2026):
   Historical Live Office failure provenance was unrecoverable.
   Founder waived the requirement to reproduce the exact historical
@@ -365,3 +401,4 @@ Item-11 runtime fail-closed truth (Founder 29 Aug 2026):
 
 <!-- 2026-08-24 -->
 <!-- reconciliation updated 2026-08-29 -->
+<!-- M5.2 FINAL CORRECTION CLOSEOUT — 2026-09-07 -->
