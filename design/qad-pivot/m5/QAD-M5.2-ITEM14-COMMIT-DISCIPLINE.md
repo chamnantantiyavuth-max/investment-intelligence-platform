@@ -8,10 +8,32 @@
 
 ## 1. Authority Distinction
 
-| Layer | Source | Content |
-|---|---|---|
-| **Historical Item-14 authority** | Founder 25 Aug 2026 correction session (`20260825_115922_0e876f`) | `14. COMMIT DISCIPLINE — Patch forward from 70b8f45. Explicit-path staging only. No git add -A. No git add .. Inspect staged diff. Commit + push. Confirm.` |
-| **Expanded review authority** | Founder 7 Sep 2026 session | Full commit-discipline audit: 72-commit window, three-axis discipline model, mechanical file extraction, staging-command audit, push-method evidence, durable ruleset formalization |
+### Historical Item-14 authority (25 Aug 2026 correction session `20260825_115922_0e876f`)
+
+```
+14. COMMIT DISCIPLINE
+
+Patch forward from:
+
+70b8f45394e222facdf5230fda3922a17b0fdee1
+
+Explicit-path staging only.
+
+No:
+
+git add -A
+git add .
+
+Inspect staged diff.
+
+Commit + push.
+
+Confirm.
+```
+
+### Expanded review authority (7 Sep 2026 session)
+
+Full commit-discipline audit: 72-commit window, three-axis discipline model, mechanical file extraction, staging-command audit, push-method evidence, durable ruleset formalization.
 
 ---
 
@@ -46,116 +68,116 @@ Every file path below is extracted via `git show --name-only --format=` — no c
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `da9eafb` | `qad/contract/primary_id_registry.json`, `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `da9eafb` | `qad/contract/primary_id_registry.json`, `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 2 — Commit-Phase Atomicity (1 commit)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `781c0b5` | `PROJECT_STATE.md`, `qad/persistence/reference.py`, `qad/persistence/transaction.py`, `tests/qad/persistence/test_persistence_core.py` | DOCS+PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `781c0b5` | `PROJECT_STATE.md`, `qad/persistence/reference.py`, `qad/persistence/transaction.py`, `tests/qad/persistence/test_persistence_core.py` | DOCS+PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 3 — Tombstone-Only Canonical (2 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `3b947d4` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `050ff0d` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized (micro-fix) | UNKNOWN | ✅ NORMAL |
+| `3b947d4` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `050ff0d` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized (micro-fix) | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 4 — APPEND_ONLY Version Preservation (5 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `6496786` | `qad/persistence/immutability.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `48ee3dd` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `db77e04` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `3ba2382` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `5b458bc` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
+| `6496786` | `qad/persistence/immutability.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `48ee3dd` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `db77e04` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `3ba2382` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `5b458bc` | `qad/persistence/reference.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 5 — Raw Source Admission (5 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `3a1bfe4` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `9fe6d12` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `a735469` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `9987dc5` | `PROJECT_STATE.md`, `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py` | GOV+PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `68041b7` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
+| `3a1bfe4` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `9fe6d12` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `a735469` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `9987dc5` | `PROJECT_STATE.md`, `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py` | GOV+PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `68041b7` | `qad/persistence/reference.py`, `tests/qad/persistence/test_admit_source_atomicity.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 6 — Evidence Admission Gate (6 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `e999dc3` | `qad/persistence/interfaces.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `84e21f8` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `8ad7beb` | `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `182b1ff` | `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `94fbdb9` | `qad/persistence/reference.py`, `qad/validator.py`, `tests/qad/persistence/test_evidence_admission_gate.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `2c06eb1` | `tests/qad/persistence/test_evidence_admission_gate.py` | TESTS | ✅ Cleanup | UNKNOWN | ✅ NORMAL |
+| `e999dc3` | `qad/persistence/interfaces.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `84e21f8` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `8ad7beb` | `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `182b1ff` | `qad/persistence/reference.py`, `tests/qad/persistence/test_evidence_admission_gate.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `94fbdb9` | `qad/persistence/reference.py`, `qad/validator.py`, `tests/qad/persistence/test_evidence_admission_gate.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `2c06eb1` | `tests/qad/persistence/test_evidence_admission_gate.py` | TESTS | ✅ Cleanup | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 7 — Financial Fact Lineage (4 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `12ffcf0` | `PROJECT_STATE.md`, `qad/persistence/interfaces.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py`, `tests/qad/persistence/test_persistence_core.py` | GOV+PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `536a1f3` | `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `2f2ad6d` | `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `20a2f85` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `12ffcf0` | `PROJECT_STATE.md`, `qad/persistence/interfaces.py`, `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py`, `tests/qad/persistence/test_persistence_core.py` | GOV+PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `536a1f3` | `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `2f2ad6d` | `qad/persistence/reference.py`, `tests/qad/persistence/test_financial_fact_lineage.py` | PROD+TESTS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `20a2f85` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 8 — Fail-Closed Canonical Serialization (6 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `e440c2e` | `qad/persistence/serialization.py`, `tests/qad/persistence/test_canonical_serialization.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `58e59a9` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `c0ad7fb` | `tests/qad/persistence/test_canonical_serialization.py` | TESTS | ✅ Proof-only | UNKNOWN | ✅ NORMAL |
-| `e28e551` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `ba9361a` | `tests/qad/persistence/test_canonical_serialization.py` | TESTS | ✅ Proof-only | UNKNOWN | ✅ NORMAL |
-| `3449cdf` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `e440c2e` | `qad/persistence/serialization.py`, `tests/qad/persistence/test_canonical_serialization.py` | PROD+TESTS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `58e59a9` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `c0ad7fb` | `tests/qad/persistence/test_canonical_serialization.py` | TESTS | ✅ Proof-only | UNKNOWN | PUSH_UNKNOWN |
+| `e28e551` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `ba9361a` | `tests/qad/persistence/test_canonical_serialization.py` | TESTS | ✅ Proof-only | UNKNOWN | PUSH_UNKNOWN |
+| `3449cdf` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 9 — Documentation / Protocol Reconciliation (5 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `1bebe3b` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md`, `qad/persistence/interfaces.py`, `qad/persistence/reference.py` | DOCS+PROD | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `5269f4e` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md` | DOCS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `e9446af` | `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md` | DOCS | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `fd07b26` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `1dd4d89` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `1bebe3b` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md`, `qad/persistence/interfaces.py`, `qad/persistence/reference.py` | DOCS+PROD | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `5269f4e` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md` | DOCS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `e9446af` | `design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md` | DOCS | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `fd07b26` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `1dd4d89` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 10 — Full Regression Proof (3 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `518a255` | `design/qad-pivot/m5/QAD-M5.2-ITEM10-FULL-REGRESSION-PROOF.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `e2300f7` | `design/qad-pivot/m5/QAD-M5.2-ITEM10-FULL-REGRESSION-PROOF.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix | UNKNOWN | ✅ NORMAL |
-| `a3a9916` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | ✅ NORMAL |
+| `518a255` | `design/qad-pivot/m5/QAD-M5.2-ITEM10-FULL-REGRESSION-PROOF.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `e2300f7` | `design/qad-pivot/m5/QAD-M5.2-ITEM10-FULL-REGRESSION-PROOF.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix | UNKNOWN | PUSH_UNKNOWN |
+| `a3a9916` | `PROJECT_STATE.md` | GOV | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 11 — Negative-Test Closure (3 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `2185169` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | TESTS+DOCS | ✅ Authorized | UNKNOWN | ✅ NORMAL |
-| `01ef78e` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | TESTS+DOCS | ✅ Micro-fix (diagnostic evidence first) | UNKNOWN | ✅ NORMAL |
-| `2832d8a` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `qad/persistence/reference.py`, `qad/persistence/transaction.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | GOV+PROD+TESTS | ✅ Micro-fix (production correction after diagnostic) | UNKNOWN | ✅ NORMAL |
+| `2185169` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `tests/qad/persistence/test_admit_source_atomicity.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | TESTS+DOCS | ✅ Authorized | UNKNOWN | PUSH_UNKNOWN |
+| `01ef78e` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `tests/qad/persistence/test_evidence_admission_gate.py`, `tests/qad/persistence/test_persistence_core.py` | TESTS+DOCS | ✅ Micro-fix (diagnostic evidence first) | UNKNOWN | PUSH_UNKNOWN |
+| `2832d8a` | `design/qad-pivot/m5/QAD-M5.2-ITEM11-VERIFY-FIRST.md`, `qad/persistence/reference.py`, `qad/persistence/transaction.py`, `tests/qad/persistence/test_persistence_core.py`, `tests/qad/persistence/test_primary_id_registry.py` | GOV+PROD+TESTS | ✅ Micro-fix (production correction after diagnostic) | UNKNOWN | PUSH_UNKNOWN |
 
 ### Item 12 — Closeout Truth Update (5 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `12b69be` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Authorized | ✅ EXPLICIT-PATH | ✅ NORMAL |
-| `c26482f` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix | ✅ EXPLICIT-PATH | ✅ NORMAL |
-| `2bb63dc` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix (history-preservation) | ✅ EXPLICIT-PATH | ✅ NORMAL |
-| `908268c` | `PROJECT_STATE.md` | GOV | ✅ Micro-fix | ✅ EXPLICIT-PATH | ✅ NORMAL |
-| `384d926` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix (final closed state) | ✅ EXPLICIT-PATH | ✅ NORMAL |
+| `12b69be` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Authorized | ✅ EXPLICIT-PATH | ✅ NORMAL_PUSH_CONFIRMED |
+| `c26482f` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix | ✅ EXPLICIT-PATH | ✅ NORMAL_PUSH_CONFIRMED |
+| `2bb63dc` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix (history-preservation) | ✅ EXPLICIT-PATH | ✅ NORMAL_PUSH_CONFIRMED |
+| `908268c` | `PROJECT_STATE.md` | GOV | ✅ Micro-fix | ✅ EXPLICIT-PATH | ✅ NORMAL_PUSH_CONFIRMED |
+| `384d926` | `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `PROJECT_STATE.md` | DOCS+GOV | ✅ Micro-fix (final closed state) | ✅ EXPLICIT-PATH | ✅ NORMAL_PUSH_CONFIRMED |
 
 ### Item 13 — Cross-Contract Validation (4 commits)
 
 | SHA | Files | Class | Scope | Staging | Push |
 |---|---|---|---|---|---|
-| `7ebfa02` | `PROJECT_STATE.md`, `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+GOV+TESTS | ✅ Authorized (initial 8 tests A–H) | ❌ **BROAD (git add -A)** | ✅ NORMAL |
-| `83285cd` | `PROJECT_STATE.md`, `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+GOV+TESTS | ✅ Authorized (H removed → 7 tests, semantics) | ❌ **BROAD (git add -A)** | ✅ NORMAL |
-| `857c12e` | `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+TESTS | ✅ Authorized (value-extraction micro-fix) | UNKNOWN | ✅ NORMAL |
-| `07c935c` | `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md` | DOCS | ✅ Authorized (provenance chronology) | UNKNOWN | ✅ NORMAL |
+| `7ebfa02` | `PROJECT_STATE.md`, `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+GOV+TESTS | ✅ Authorized (initial 8 tests A–H) | ❌ **BROAD (git add -A)** | PUSH_UNKNOWN |
+| `83285cd` | `PROJECT_STATE.md`, `design/qad-pivot/m5/QAD-M5.2-CANONICAL-PERSISTENCE-CLOSEOUT.md`, `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+GOV+TESTS | ✅ Authorized (H removed → 7 tests, semantics) | ❌ **BROAD (git add -A)** | PUSH_UNKNOWN |
+| `857c12e` | `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md`, `tests/qad/test_cross_contract_validation.py` | DOCS+TESTS | ✅ Authorized (value-extraction micro-fix) | UNKNOWN | PUSH_UNKNOWN |
+| `07c935c` | `design/qad-pivot/m5/QAD-M5.2-ITEM13-CROSS-CONTRACT-VALIDATION.md` | DOCS | ✅ Authorized (provenance chronology) | UNKNOWN | PUSH_UNKNOWN |
 
 ---
 
@@ -199,12 +221,26 @@ Both from the `20260829_152540_414293` session transcript.
 
 Whether the commit was pushed via normal push (not force-push/rebase).
 
+Classification rule for the 50 M5.2 correction/governance commits:
+
+| Classification | Standard |
+|---|---|
+| **NORMAL_PUSH_CONFIRMED** | Recovered session evidence explicitly shows `git push origin main` or equivalent non-force push command for that commit or its push-group |
+| PUSH_METHOD_NOT_RECOVERED | Recovered evidence proves remote sync (HEAD == origin/main verified by subsequent cron review) but the actual push command/method is not recovered from session transcripts |
+
 | Value | Count |
 |---|---|
-| **NORMAL_PUSH_CONFIRMED** | **50/50** |
-| PUSH_METHOD_NOT_RECOVERED | 0/50 |
+| NORMAL_PUSH_CONFIRMED | **5** |
+| **PUSH_METHOD_NOT_RECOVERED** | **45** |
+| **Total** | **50** |
 
-**Reasoning:** All 50 M5.2 correction/governance commits are part of the linear patch-forward chain `70b8f45..07c935c`. Every intermediate cron review confirmed `HEAD == origin/main` (push SYNCED) at its timestamp. Session transcripts for all interactive correction sessions include explicit push commands or immediate post-push verification.
+**Confirmed NORMAL_PUSH commits:** The 5 Item-12 commits (`12b69be` `c26482f` `2bb63dc` `908268c` `384d926`) — recovered session transcript shows explicit `git commit` + `git push origin main` sequence with staged-diff inspection.
+
+The remaining 45 commits are part of the linear patch-forward chain `70b8f45..07c935c`, and every intermediate cron review confirmed `HEAD == origin/main` at its timestamp — proving remote sync without proving push method. A sync check proves remote state; it does not distinguish `git push` from `git push --force`.
+
+| Commits with explicit push evidence | 5 |
+|---|---|
+| Commits with sync-only evidence | 45 |
 
 **Bounded conclusion:**
 
@@ -243,19 +279,19 @@ The correction chain is preserved as audit evidence — it must NOT be squashed.
 
 ---
 
-## 7. Production/Test Separation Rule
+## 7. Production/Test Separation Patterns
 
-The M5.2 correction workflow did not follow a single rigid pattern:
+The M5.2 correction workflow used multiple valid commit shapes:
 
-- **Item 6:** 6 commits, each separating production changes from test changes (exemplary)
-- **Item 8:** `e440c2e` (production) separate from `c0ad7fb`/`ba9361a` (proof tests)
-- **Item 11:** `01ef78e` (diagnostic/test evidence first) BEFORE `2832d8a` (production correction + tests)
+- **Item 6:** Production corrections and their targeted tests frequently coexisted in narrow, reviewable commits (e.g., `e999dc3`, `8ad7beb`).
+- **Item 8:** Production serialization fix (`e440c2e`) was followed by dedicated proof-test commits (`c0ad7fb`, `ba9361a`).
+- **Item 11:** Diagnostic/test evidence (`01ef78e`) was deliberately preserved BEFORE the newly authorized production fail-closed correction (`2832d8a`).
 
 **Accepted durable rule:**
 
-> Production correction and targeted tests MAY coexist in one narrow, reviewable, authorized commit. However, when a newly discovered production defect has diagnostic evidence that must be preserved independently, commit that diagnostic evidence BEFORE the production correction.
+> Production correction and targeted tests MAY coexist in one narrow, reviewable, authorized commit. However, when a newly discovered production defect has independently material diagnostic evidence, preserve that diagnostic evidence in a preceding commit before applying the production correction.
 
-**Canonical example:** Item 11: `01ef78e` (diagnostic/test evidence documenting the primary-ID runtime defect) → `2832d8a` (fail-closed fix + targeted tests).
+**Canonical example:** Item 11: `01ef78e` (diagnostic/test evidence) → `2832d8a` (production correction + targeted tests).
 
 ---
 
@@ -307,7 +343,7 @@ Rules derived from actual M5.2 lessons (25 Aug — 7 Sep 2026):
 
 15. **Commit messages must be supported by actual diff and test evidence.**
 
-Rules 1–2, 4, 9, 11–12, 14–15 originate from pre-M5.2 governance. Rules 3, 5–8, 10, 13 are direct M5.2 correction-cycle lessons. Rule 3 is non-negotiable after the confirmed `git add -A` breaches.
+Rules 1–2, 4, 9, 11–12, 14–15 reflect conventions that predate the M5.2 correction cycle and remain in effect under the 7 Sep 2026 expanded review. Rules 3, 5–8, 10, 13 are direct M5.2 correction-cycle lessons. Rule 3 is non-negotiable after the confirmed `git add -A` breaches.
 
 ---
 
