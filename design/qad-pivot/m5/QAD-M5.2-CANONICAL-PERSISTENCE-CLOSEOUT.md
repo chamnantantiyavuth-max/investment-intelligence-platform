@@ -336,9 +336,7 @@ Item-12 documentation truth update (Founder 29 Aug 2026):
   Item 9 explicit closure record, Item 10 waiver, Item 11 fail-closed truth
   all documented.
   Historical test counts (401/401, 577/577) preserved as historical evidence.
-  Current test metric = 596/596 LOCAL pytest PASS (29 Aug baseline: 589/589;
-7 Item-13 cross-contract tests added; Items 12/14 and final closeout are
-documentation-only with no test delta; NOT independent CI).
+  Current test metric = 589/589 LOCAL pytest PASS (NOT independent CI).
   PROJECT_STATE temporal layers (historical vs current) correctly separated.
   No production/runtime/test/schema behavior changed under Item 12.
   4 documentation commits preserved (no squash/rewrite).
