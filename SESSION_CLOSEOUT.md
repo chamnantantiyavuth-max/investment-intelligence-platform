@@ -1308,3 +1308,30 @@ PROJECT_STATE.md (Build Metrics **401/401** + push state `70b8f45`/473 + Session
 **Mon 7 Sep 08:00/09:00 weekly radar + CIW = FD #110 Live Office acceptance observation** (next radar-cadence evidence point; durable gateway supervision = #1 open ops item). Alternatives: (a) interactive session — M5.2 Item 13 approval (7 M4B-anchored tests, READY 8 days) + AGENTS.md checkpoint fd-134-135; (b) interactive delivery-target config check for the Learning Loop Telegram digest (streak status ambiguous since 4 Sep); (c) ORG-2026-0022 publish gate.
 
 <!-- 2026-09-06 13:05 UTC+7 -->
+
+## Session — 7 Sep 2026 (cron review)
+
+> Review window: 6 Sep 13:05 → 7 Sep ~11:45 (this review, Mon). Prompt: "Review recent IIP sessions, check market data, update phase status, report findings."
+
+- **NO new sessions/commits/FDs since the 6 Sep 13:05 review.** HEAD == origin/main == `0df2658` (541 commits — the 6 Sep review's docs sync, already pushed), tree CLEAN (`git log origin/main..HEAD` empty). Session browse since = only this tick. FD register max #136 unchanged → no vault fd-register backfill. Board unchanged (blocked 4 / done 75).
+- **M5.2 Item 13 (CROSS-CONTRACT TEST CLOSURE) still ▶ READY FOR FOUNDER APPROVAL / NOT CLOSED** (`83285cd`, 7 M4B-anchored tests; **9 days** no Founder action since 29 Aug evening). Item 14 NOT started. M5.3 = HOLD. FD #135 unchanged. Suite **596/596 RE-VERIFIED this review — real full run (5.50s, hermes-agent venv)** (docs-only window since the 6 Sep real run). FO-fixture time-expiry NOT near: locked fixture as_of 2026-08-28, 30d bound ~27 Sep → 20 days out.
+- **⚠ Learning Loop Telegram delivery — CONFIRMED FAILING again (ambiguity resolved):** job-level `last_delivery_error` on `1f5f03f9236d` = the **6 Sep 13:06 content tick's OWN delivery failed** (`live adapter send failed: Chat not found` telegram:8964964996) — the 6 Sep daily report never reached the Founder, and this 7 Sep tick will hit the same wall. Interactive delivery-target config check = ops item ② (needs Founder/interactive session — cron cannot fix config).
+- **⚠⚠ Weekly radar (Mon 7 Sep 08:00) + CIW (09:00) — NO FIRE by review time 11:32.** Job-level evidence: both `last_run_at` still 31 Aug (radar 09:42:01 / CIW 09:39:38), both `next_run_at` auto-advanced to **14 Sep**, no fire_claim, no output file under `cron/output/<job>/`, no digest/draft. **Verdict DEFERRED, not recorded LOST** — per the review-race lesson (31 Aug + 3 Sep: catch-up fired minutes/seconds AFTER reviews declared "missed"; daemon came up ~11:26 with this tick). Next tick ~23:26 verifies HEAD advancement before recording. Weekly-radar ledger context: last weekly digest 24 Aug (complete); 31 Aug weekly fired late + zero deliverables → **durable gateway supervision (dashboard-VBS) remains the #1 open ops item; FD #110 Live Office evidence point at risk (5th weekly observation)**.
+- **Market — Mon 7 Sep = US Labor Day: US equity + CME CLOSED, no new data.** Last completed EOD = **Fri 4 Sep**; independent yfinance fetch 11:29 UTC+7 confirms levels byte-identical to the 6 Sep snapshot (^GSPC 7,718.60 / **MSFT 499.70 — CIW NO TRIGGER** (52wk high $553.72, −25% band $415.29 far) / AAPL 319.97 / SLV 59.82 below ~$62 SILVER-CORR-001 anchor / GC=F 4,476.60 / CL=F 91.48 ORG-2026-0022 zone). GC=F/CL=F carry a 9/7-dated history bar = session artifact — fast_info lastPrice equals the Fri settle (no new trading). Next equity EOD = **Tue 8 Sep**.
+- **Cron cadence:** mid-week radar Thu 10 Sep 08:00; Nick-Weekly Sat 12 Sep 09:00 (as-of Fri 4 Sep EOD — picks up Mon 7–Fri 11 Sep); Learning Loop next tick ~23:26 tonight (verifies the radar catch-up question).
+- **Open (unchanged):** F5 AGENTS.md checkpoint fd-134-135 + M5.2-status row (protected file — interactive + Founder); durable gateway supervision = #1 open ops decision item; ORG-2026-0022 publish gate; locked-test expiry watch (~27 Sep).
+
+## Verification
+
+- HEAD `0df2658` == origin/main (541 commits); push SYNCED (`git log origin/main..HEAD` empty); tree clean before edits
+- Suite **596/596 REAL full re-run** (5.50s, hermes-agent venv interpreter) — docs-only window since the 6 Sep real run (`git diff f295f19..HEAD --stat -- tests/` EMPTY trivially; no code commits since 6 Sep)
+- Market: independent yfinance fast_info + 7d-history fetch 7 Sep 11:29 UTC+7 — last completed EOD bar = Fri 4 Sep (2026-09-04) for all US equities/ETFs; GC=F/CL=F 9/7-dated bar cross-checked via fast_info == Fri settle → holiday artifact, not new trading
+- Cron: jobs.json verified at job level — radar `8ba233e88015` + CIW `8b1cd19aba7d` both last_run 31 Aug / next 14 Sep / no fire_claim at 11:32 (verdict deferred); Learning Loop `1f5f03f9236d` last_delivery_error = 6 Sep 13:06 run's own "Chat not found" failure (confirmed)
+- Derived: AM artifact fresh (5 Sep run, as-of 4 Sep EOD ≤7d); FO bound unchanged (as_of 2026-08-28 ≤30d); CS synthetic-labeled; no new FDs (max #136) → no vault fd-register backfill
+- State docs updated: PROJECT_STATE.md (7 Sep update paragraph + Python-tests row + Git-push row + Session-table row + EOF footer) + SESSION_CLOSEOUT.md (this entry); markdown-list pipe-prefix check done (`grep -c "^|-"` clean)
+
+## Recommended next action
+
+**Tonight's tick (~23:26) verifies whether the Mon 7 Sep weekly-radar + CIW catch-up fired** (deferred verdict — check HEAD advancement past `0df2658` and jobs.json last_run before recording). Alternatives: (a) interactive session — M5.2 **Item 13 approval** (7 M4B-anchored tests, READY 9 days) + AGENTS.md checkpoint fd-134-135; (b) interactive delivery-target config check for the Learning Loop Telegram digest (**confirmed failing** — the 6 Sep report never arrived); (c) ORG-2026-0022 publish gate.
+
+<!-- 2026-09-07 11:45 UTC+7 -->
