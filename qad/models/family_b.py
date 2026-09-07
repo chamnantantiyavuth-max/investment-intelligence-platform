@@ -166,12 +166,16 @@ class EvidenceAdmissionRecord(BaseModel):
     source_tier_check: str = Field(frozen=True)
     validation_method: str = Field(frozen=True)
     contradiction_check: Optional[str] = Field(default=None, frozen=True)
+    is_update: Optional[bool] = Field(default=None, frozen=True)
     original_source_verified: Optional[str] = Field(default=None, frozen=True)
     pit_verified: Optional[str] = Field(default=None, frozen=True)
     source_as_of: Optional[str] = Field(default=None, frozen=True)
+    update_pit_context_id: Optional[str] = Field(default=None, frozen=True)
+    update_provenance: Optional[str] = Field(default=None, frozen=True)
     validation_notes: Optional[str] = Field(default=None, frozen=True)
 
     # FK: evidence_id -> EV-01.evidence_id
+    # FK: update_pit_context_id -> PITC-01.pit_context_id
 
 
 class EvidenceGap(BaseModel):

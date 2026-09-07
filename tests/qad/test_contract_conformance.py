@@ -233,16 +233,39 @@ def test_provenance_fields_match():
 
 
 def test_pit_fields_frozen():
-    """PIT fields must be frozen (immutable)."""
+    """PIT fields must be frozen (immutable).
+
+    Exception: CONDITIONAL_IMMUTABLE PIT fields (Erratum-002 / FD #137) —
+    e.g. RRM-01.completion_time — are enforced at the persistence/state layer,
+    not frozen at the model level, to permit the authorized one-time
+    absent→present finalization transition.
+    """
     for sid, oc in ORACLE.items():
         cls = get_model_class(sid)
         if cls is None:
             continue
         for pf in oc["pit_fields"]:
             pf_clean = pf.replace("[]", "").replace("{}", "")
-            if pf_clean in cls.model_fields:
-                assert cls.model_fields[pf_clean].frozen, \
-                    f"{sid}.{pf_clean} (PIT) should be frozen"
+            if pf_clean not in cls.model_fields:
+                continue
+            if cls.model_fields[pf_clean].frozen:
+                continue
+            # Allow unfrozen PIT field only when the contract explicitly marks
+            # it CONDITIONAL_IMMUTABLE (never for a plain PIT field).
+            import json
+            from pathlib import Path
+            _desc_path = (Path(__file__).resolve().parent.parent.parent
+                          / "qad" / "contract" / "contract_descriptor.json")
+            with open(_desc_path) as _f:
+                _all_schemas = json.load(_f)["schemas"]
+            _desc = next((s for s in _all_schemas if s["schema_id"] == sid), None)
+            policy = next(
+                (f.get("immutable_policy") for f in (_desc or {}).get("fields", [])
+                 if f["name"] == pf_clean),
+                None,
+            )
+            assert policy == "CONDITIONAL_IMMUTABLE", \
+                f"{sid}.{pf_clean} (PIT) should be frozen, got policy {policy!r}"
 
 
 def test_fk_count():
@@ -357,7 +380,7 @@ def test_regeneration_determinism():
     assert len(sr) == 68, f"SCHEMA_REGISTRY has {len(sr)} entries, expected 68"
     from qad.contract.fk_registry import FK_REGISTRY
     fk_count = sum(len(fks) for fks in FK_REGISTRY.values())
-    assert fk_count == 87, f"FK_REGISTRY has {fk_count} entries, expected 87"
+    assert fk_count == 88, f"FK_REGISTRY has {fk_count} entries, expected 88"
     from qad.contract.canonical_boundary import CANONICAL_SCHEMAS
     assert len(CANONICAL_SCHEMAS) >= 1, "CANONICAL_SCHEMAS empty"
 

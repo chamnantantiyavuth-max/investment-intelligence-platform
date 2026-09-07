@@ -2976,9 +2976,12 @@
       ],
       "optional_fields": [
         "contradiction_check",
+        "is_update",
         "original_source_verified",
         "pit_verified",
         "source_as_of",
+        "update_pit_context_id",
+        "update_provenance",
         "validation_notes"
       ],
       "fields": [
@@ -3055,6 +3058,17 @@
           "immutable_policy": "FIELD_IMMUTABLE"
         },
         {
+          "name": "is_update",
+          "raw_name": "is_update",
+          "container": "",
+          "required": false,
+          "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": true,
+          "immutable_policy": "RECORD_IMMUTABLE"
+        },
+        {
           "name": "original_source_verified",
           "raw_name": "original_source_verified",
           "container": "",
@@ -3092,6 +3106,28 @@
           "raw_name": "source_tier_check",
           "container": "",
           "required": true,
+          "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": true,
+          "immutable_policy": "RECORD_IMMUTABLE"
+        },
+        {
+          "name": "update_pit_context_id",
+          "raw_name": "update_pit_context_id",
+          "container": "",
+          "required": false,
+          "enum_values": null,
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": true,
+          "immutable_policy": "RECORD_IMMUTABLE"
+        },
+        {
+          "name": "update_provenance",
+          "raw_name": "update_provenance",
+          "container": "",
+          "required": false,
           "enum_values": null,
           "is_pit": false,
           "is_provenance": false,
@@ -3147,6 +3183,12 @@
           "field": "evidence_id",
           "target": "EV-01",
           "target_field": "evidence_id",
+          "cardinality": "single"
+        },
+        {
+          "field": "update_pit_context_id",
+          "target": "PITC-01",
+          "target_field": "pit_context_id",
           "cardinality": "single"
         }
       ],
@@ -11141,16 +11183,17 @@
         "as_of_date",
         "case_id",
         "case_version",
-        "completion_time",
         "manifest_id",
         "models_used",
         "providers",
+        "run_state",
         "selection_policy_version",
         "start_time",
         "universe_version"
       ],
       "optional_fields": [
         "calculation_version",
+        "completion_time",
         "cost",
         "deep_research_runs",
         "failures",
@@ -11211,12 +11254,12 @@
           "name": "completion_time",
           "raw_name": "completion_time",
           "container": "",
-          "required": true,
+          "required": false,
           "enum_values": null,
           "is_pit": true,
           "is_provenance": false,
-          "immutable": true,
-          "immutable_policy": "FIELD_IMMUTABLE"
+          "immutable": false,
+          "immutable_policy": "CONDITIONAL_IMMUTABLE"
         },
         {
           "name": "cost",
@@ -11340,6 +11383,21 @@
           "immutable_policy": "MUTABLE"
         },
         {
+          "name": "run_state",
+          "raw_name": "run_state",
+          "container": "",
+          "required": true,
+          "enum_values": [
+            "RUNNING",
+            "COMPLETED",
+            "FAILED"
+          ],
+          "is_pit": false,
+          "is_provenance": false,
+          "immutable": false,
+          "immutable_policy": "APPEND_ONLY_STATE"
+        },
+        {
           "name": "selection_policy_version",
           "raw_name": "selection_policy_version",
           "container": "",
@@ -11395,8 +11453,25 @@
           "immutable_policy": "MUTABLE"
         }
       ],
-      "enums": [],
-      "enum_classifications": [],
+      "enums": [
+        {
+          "field": "run_state",
+          "values": [
+            "RUNNING",
+            "COMPLETED",
+            "FAILED"
+          ]
+        }
+      ],
+      "enum_classifications": [
+        {
+          "field": "run_state",
+          "classification": "FIELD_ENUM",
+          "bound_fields": [
+            "run_state"
+          ]
+        }
+      ],
       "fks": [
         {
           "field": "case_id",
@@ -11413,7 +11488,7 @@
       "provenance_fields": [],
       "is_canonical": true,
       "canonical_boundary": "Canonical.",
-      "immutability_rules": "Manifest immutable after run completion."
+      "immutability_rules": "Manifest immutable after COMPLETED or FAILED."
     },
     {
       "schema_id": "RSR-01",

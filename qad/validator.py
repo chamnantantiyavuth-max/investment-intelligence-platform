@@ -148,7 +148,16 @@ def validate_contract(schema_id: str, model_class: type) -> list[str]:
         if pfld is None:
             violations.append(f"{schema_id}: missing PIT field {pf_clean}")
         elif not pfld.frozen:
-            violations.append(f"{schema_id}.{pf_clean} (PIT) not frozen")
+            # CONDITIONAL_IMMUTABLE PIT fields (Erratum-002 / FD #137) are
+            # enforced at the persistence/state layer, not frozen at the model.
+            # Allow the exception only when the field policy says so.
+            policy = None
+            for fdesc in desc.get("fields", []):
+                if fdesc.get("name") == pf_clean:
+                    policy = fdesc.get("immutable_policy")
+                    break
+            if policy != "CONDITIONAL_IMMUTABLE":
+                violations.append(f"{schema_id}.{pf_clean} (PIT) not frozen")
 
     # --- provenance fields present ---
     for pf in desc.get("provenance_fields", []):

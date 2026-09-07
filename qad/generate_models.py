@@ -87,6 +87,20 @@ SCALAR_PATTERNS = {
     "adjustment_amount": "float", "fair_value": "float", "target_price": "float",
     "adr_flag": "bool", "quality_flag": "bool", "dislocation_flag": "bool",
     "is_resolved": "bool", "resolved": "bool",
+    "is_update": "bool",
+}
+
+# Conditional immutability: PIT fields that have authorized lifecycle transitions
+# (e.g., RRM-01.completion_time may transition absent→present during finalization).
+# These are NOT frozen at the model level — enforcement is at the persistence layer.
+CONDITIONAL_IMMUTABLE_FIELDS: dict[str, set[str]] = {
+    "RRM-01": {"completion_time"},
+}
+
+# Lifecycle state fields: fields that drive schema state machines and are
+# classified APPEND_ONLY_STATE (not MUTABLE, not FIELD_IMMUTABLE).
+LIFECYCLE_STATE_FIELDS: dict[str, set[str]] = {
+    "RRM-01": {"run_state"},
 }
 
 
@@ -285,7 +299,12 @@ def parse_schema_block(block: str, family: str) -> dict | None:
                         break
         imm_policy, imm_detail = classify_immutability(immutability, clean_name, schema_id)
         if clean_name in pit_fields:
-            imm_policy = "FIELD_IMMUTABLE"
+            if schema_id in CONDITIONAL_IMMUTABLE_FIELDS and clean_name in CONDITIONAL_IMMUTABLE_FIELDS[schema_id]:
+                imm_policy = "CONDITIONAL_IMMUTABLE"
+            else:
+                imm_policy = "FIELD_IMMUTABLE"
+        if schema_id in LIFECYCLE_STATE_FIELDS and clean_name in LIFECYCLE_STATE_FIELDS[schema_id]:
+            imm_policy = "APPEND_ONLY_STATE"
         is_immutable = imm_policy in ("FIELD_IMMUTABLE", "RECORD_IMMUTABLE")
         field_descs[clean_name] = {
             "raw_name": raw_field, "container": container,
@@ -641,7 +660,7 @@ def main():
     init_lines.append('SCHEMA_BUILD_IDENTITY: dict[str, object] = {')
     init_lines.append(f'    "spec_source": "QAD-M4A-CANONICAL-SCHEMAS.md",')
     init_lines.append(f'    "spec_source_sha256": "{source_hash}",')
-    init_lines.append(f'    "m4a_contract_version": "M4A-FROZEN+ERRATUM-001",')
+    init_lines.append(f'    "m4a_contract_version": "M4A-FROZEN+ERRATUM-001+ERRATUM-002",')
     init_lines.append(f'    "generator_version": "{generator_version}",')
     init_lines.append(f'    "total_schemas": {len(schemas)},')
     init_lines.append(f'    "total_models": {len(all_models)},')
@@ -673,7 +692,7 @@ def main():
     print(f"  Enum declarations: {enum_count}")
     print(f"    FIELD_ENUM: {field_enum_count}, TYPE_ALIAS_ENUM: {type_alias_enum_count}, CONTRACT_AMBIGUITY: {contract_ambiguity_count}")
     print(f"  Field count: {field_count}")
-    print(f"  Build identity version: M4A-FROZEN+ERRATUM-001")
+    print(f"  Build identity version: M4A-FROZEN+ERRATUM-001+ERRATUM-002")
     with open(OUTPUT / "__init__.py", "r") as f:
         init_content = f.read()
     build_hash = hashlib.sha256(init_content.encode('utf-8')).hexdigest() if 'SCHEMA_BUILD_IDENTITY' in init_content else "n/a"

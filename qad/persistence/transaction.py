@@ -48,6 +48,120 @@ from qad.persistence.serialization import compute_canonical_hash
 from qad.validator import validate_schema_instance
 
 # ---------------------------------------------------------------------------
+# LIVE_CASE_UPDATE carrier validation (Erratum-002 / FD #137)
+# ---------------------------------------------------------------------------
+# SM-12 / PITC-01 require post-AS_OF evidence in LIVE_CASE_UPDATE mode to be
+# explicitly tagged UPDATE with provenance.  EAR-01 now carries:
+#   is_update            — bool flag
+#   update_provenance    — free-text provenance (NOT an authorization token)
+#   update_pit_context_id → PITC-01.pit_context_id  (machine-readable link)
+# Deterministic semantics: if is_update = true, the referenced PITContext must
+# EXIST, its mode MUST equal LIVE_CASE_UPDATE, and its created_by MUST represent
+# Research Director authority (frozen SM-12).  Free-text provenance alone never
+# grants LIVE access.
+
+
+def _validate_live_update_carrier(
+    instance: BaseModel,
+    get_existing: Callable[[SchemaID, RecordID], BaseModel | None],
+) -> None:
+    """Validate EAR-01 LIVE_CASE_UPDATE provenance carrier (Erratum-002)."""
+    dump = instance.model_dump(mode="python")
+    is_update = dump.get("is_update")
+    update_provenance = dump.get("update_provenance")
+    update_pit_context_id = dump.get("update_pit_context_id")
+
+    if not is_update:
+        return  # not an update — no LIVE authorization claim
+
+    problems: list[str] = []
+
+    if not update_provenance:
+        problems.append("is_update=true requires update_provenance")
+    if not update_pit_context_id:
+        problems.append("is_update=true requires update_pit_context_id")
+        if problems:
+            raise ValidationFailure(
+                f"{instance.schema_id}: LIVE_CASE_UPDATE carrier invalid: {'; '.join(problems)}",
+                schema_id=str(instance.schema_id),
+                violations=problems,
+            )
+        return
+
+    # Machine-readable PITContext link: must exist + be LIVE_CASE_UPDATE + RD-authorized
+    pitc = get_existing("PITC-01", update_pit_context_id)
+    if pitc is None:
+        problems.append(
+            f"update_pit_context_id {update_pit_context_id!r} does not reference an existing PITC-01"
+        )
+    else:
+        pitc_dump = pitc.model_dump(mode="python")
+        mode = getattr(pitc_dump.get("mode"), "value", pitc_dump.get("mode"))
+        created_by = pitc_dump.get("created_by")
+        if mode != "LIVE_CASE_UPDATE":
+            problems.append(
+                f"referenced PITC-01 {update_pit_context_id!r} mode={mode!r} "
+                "is not LIVE_CASE_UPDATE"
+            )
+        # SM-12: LIVE_CASE_UPDATE authorized by Research Director.  The PITC
+        # created_by must name the Research Director role for the update to be
+        # authorized.  admitting_role is NOT the authority (admission vs LIVE
+        # authorization are distinct concepts).
+        if not created_by or "Research Director" not in str(created_by):
+            problems.append(
+                f"referenced PITC-01 {update_pit_context_id!r} created_by={created_by!r} "
+                "does not represent Research Director authority"
+            )
+
+    if problems:
+        raise ValidationFailure(
+            f"{instance.schema_id}: LIVE_CASE_UPDATE carrier invalid: {'; '.join(problems)}",
+            schema_id=str(instance.schema_id),
+            violations=problems,
+        )
+
+
+def _check_rrm_contract_rules(
+    instance: BaseModel,
+    schema_id: str,
+    record_id: RecordID,
+) -> None:
+    """Validate RRM-01 cross-field contract rules (Erratum-002 / FD #137).
+
+    Frozen contract (QAD-M4A-CANONICAL-SCHEMAS.md I-1):
+    * ``completion_time`` MUST be absent if ``run_state = RUNNING``
+    * ``completion_time`` REQUIRED if ``run_state = COMPLETED`` or ``FAILED``
+
+    Applies on first-write and on update (the immutability layer handles
+    lifecycle transitions separately).
+    """
+    dump = instance.model_dump(mode="python")
+    run_state = _enum_value(dump.get("run_state"))
+    run_state_s = run_state if isinstance(run_state, str) else str(run_state)
+    completion_time = dump.get("completion_time")
+
+    problems: list[str] = []
+    if run_state_s == "RUNNING" and completion_time is not None:
+        problems.append("completion_time MUST be absent if run_state = RUNNING")
+    elif run_state_s in ("COMPLETED", "FAILED") and completion_time is None:
+        problems.append(
+            f"completion_time REQUIRED if run_state = {run_state_s}"
+        )
+
+    if problems:
+        raise ValidationFailure(
+            f"{schema_id}/{record_id}: RRM-01 contract rule violation: {'; '.join(problems)}",
+            schema_id=schema_id,
+            record_id=record_id,
+            violations=problems,
+        )
+
+
+def _enum_value(v: Any) -> Any:
+    """Normalize a generated (str, Enum) member to its raw value."""
+    return getattr(v, "value", v)
+
+# ---------------------------------------------------------------------------
 # Operation types
 # ---------------------------------------------------------------------------
 
@@ -276,6 +390,16 @@ class Transaction:
             existing,
             existing_canonical_hash=existing_hash,
         )
+
+        # 5. RRM-01 cross-field contract rules (Erratum-002 / FD #137)
+        # Validated on both first-write and update — the contract rules are
+        # independent of the immutability lifecycle check.
+        if schema_id == "RRM-01":
+            _check_rrm_contract_rules(instance, schema_id, record_id)
+
+        # 6. LIVE_CASE_UPDATE carrier validation (Erratum-002 / FD #137)
+        if schema_id == "EAR-01":
+            _validate_live_update_carrier(instance, self._get_existing)
 
     # ------------------------------------------------------------------
     # Phase 2 — commit

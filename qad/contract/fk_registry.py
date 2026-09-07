@@ -53,6 +53,7 @@ FK_REGISTRY: dict[str, list[dict]] = {
     ],
     "EAR-01": [
         {"field": "evidence_id", "target": "EV-01", "target_field": "evidence_id", "cardinality": "single"},
+        {"field": "update_pit_context_id", "target": "PITC-01", "target_field": "pit_context_id", "cardinality": "single"},
     ],
     "EG-01": [
         {"field": "case_id", "target": "CASE-01", "target_field": "case_id", "cardinality": "single"},
@@ -219,4 +220,4 @@ FK_REGISTRY: dict[str, list[dict]] = {
         {"field": "permanent_loss_id", "target": "PLA-01", "target_field": "assessment_id", "cardinality": "single"},
     ],
 }
-# Total FK references: 87
+# Total FK references: 88

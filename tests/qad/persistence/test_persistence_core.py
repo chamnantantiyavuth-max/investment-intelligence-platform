@@ -1386,6 +1386,7 @@ class TestRunManifest:
             providers={"openai": "gpt-4o"},
             selection_policy_version="v2",
             start_time="2024-06-01T08:00:00",
+            run_state="COMPLETED",
             universe_version="uv1",
         )
         ch = seeded_store.store(rrm)
@@ -1406,6 +1407,7 @@ class TestRunManifest:
             providers={"openai": "gpt-4o"},
             selection_policy_version="v2",
             start_time="2024-06-01T08:00:00",
+            run_state="COMPLETED",
             universe_version="uv1",
         )
         seeded_store.store(rrm)
@@ -1414,6 +1416,280 @@ class TestRunManifest:
         with pytest.raises(TransactionFailure) as exc:
             seeded_store.store(modified)
         assert any(isinstance(e, ImmutabilityViolation) for e in exc.value.errors)
+
+
+# ====================================================================
+# Erratum-002 / FD #137 — RRM lifecycle defect-closure tests
+# ====================================================================
+
+class TestRrmLifecycle:
+    """RRM-01 lifecycle: RUNNING -> COMPLETED/FAILED (Erratum-002, FD #137)."""
+
+    def _running_manifest(self) -> RunManifestRecord:
+        return RunManifestRecord(
+            manifest_id="RRM-LIFE-001",
+            case_id="CASE-FK-001", case_version="1.0",
+            as_of_date="2024-06-01",
+            universe_version="uv1", selection_policy_version="v2",
+            models_used=["gpt-4o"], providers={"openai": "gpt-4o"},
+            start_time="2024-06-01T08:00:00",
+            run_state="RUNNING",
+        )
+
+    def _terminal_manifest(self, run_state: str) -> RunManifestRecord:
+        return RunManifestRecord(
+            manifest_id="RRM-LIFE-001",
+            case_id="CASE-FK-001", case_version="1.0",
+            as_of_date="2024-06-01",
+            universe_version="uv1", selection_policy_version="v2",
+            models_used=["gpt-4o"], providers={"openai": "gpt-4o"},
+            start_time="2024-06-01T08:00:00",
+            run_state=run_state,
+            completion_time="2024-06-01T18:00:00",
+        )
+
+    def test_running_absent_completion_time(self, seeded_store):
+        rrm = self._running_manifest()
+        ch = seeded_store.store(rrm)
+        assert ch and len(ch) == 64
+        loaded = seeded_store.load("RRM-01", "RRM-LIFE-001")
+        assert loaded.run_state == "RUNNING"
+        assert loaded.completion_time is None
+
+    def test_running_present_completion_time_fails(self, seeded_store):
+        rrm = RunManifestRecord(
+            manifest_id="RRM-LIFE-002", case_id="CASE-FK-001", case_version="1.0",
+            as_of_date="2024-06-01",
+            universe_version="uv1", selection_policy_version="v2",
+            models_used=["gpt-4o"], providers={"openai": "gpt-4o"},
+            start_time="2024-06-01T08:00:00",
+            run_state="RUNNING",
+            completion_time="2024-06-01T18:00:00",
+        )
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(rrm)
+        assert any("completion_time" in str(e) for e in exc.value.errors)
+
+    def test_running_to_completed(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        ch = seeded_store.store(self._terminal_manifest("COMPLETED"))
+        assert ch and len(ch) == 64
+        loaded = seeded_store.load("RRM-01", "RRM-LIFE-001")
+        assert loaded.run_state == "COMPLETED"
+        assert loaded.completion_time == "2024-06-01T18:00:00"
+
+    def test_running_to_failed(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        ch = seeded_store.store(self._terminal_manifest("FAILED"))
+        assert ch and len(ch) == 64
+        loaded = seeded_store.load("RRM-01", "RRM-LIFE-001")
+        assert loaded.run_state == "FAILED"
+        assert loaded.completion_time == "2024-06-01T18:00:00"
+
+    def test_completed_without_completion_time_fails(self, seeded_store):
+        rrm = RunManifestRecord(
+            manifest_id="RRM-LIFE-005", case_id="CASE-FK-001", case_version="1.0",
+            as_of_date="2024-06-01",
+            universe_version="uv1", selection_policy_version="v2",
+            models_used=["gpt-4o"], providers={"openai": "gpt-4o"},
+            start_time="2024-06-01T08:00:00",
+            run_state="COMPLETED",
+        )
+        with pytest.raises((TransactionFailure, Exception)):
+            seeded_store.store(rrm)
+
+    def test_failed_without_completion_time_fails(self, seeded_store):
+        rrm = RunManifestRecord(
+            manifest_id="RRM-LIFE-006", case_id="CASE-FK-001", case_version="1.0",
+            as_of_date="2024-06-01",
+            universe_version="uv1", selection_policy_version="v2",
+            models_used=["gpt-4o"], providers={"openai": "gpt-4o"},
+            start_time="2024-06-01T08:00:00",
+            run_state="FAILED",
+        )
+        with pytest.raises((TransactionFailure, Exception)):
+            seeded_store.store(rrm)
+
+    def test_terminal_mutation_fails(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        seeded_store.store(self._terminal_manifest("COMPLETED"))
+        # Try enrichment on terminal record (output_version is a valid mutable scalar)
+        rrm2 = self._terminal_manifest("COMPLETED")
+        rrm2 = rrm2.model_copy(update={"output_version": "v2"})
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(rrm2)
+        assert any("immutable" in str(e).lower() for e in exc.value.errors)
+
+    def test_terminal_transition_fails(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        seeded_store.store(self._terminal_manifest("COMPLETED"))
+        rrm2 = self._running_manifest()
+        rrm2 = rrm2.model_copy(update={"manifest_id": "RRM-LIFE-001"})
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(rrm2)
+        assert any("illegal" in str(e).lower() for e in exc.value.errors)
+
+    def test_anchor_mutation_during_running_fails(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        # case_version is an always-immutable anchor; changing it does NOT
+        # change the record identity (manifest_id stays), so the update hits
+        # the same record and must be rejected by the anchor check.
+        rrm2 = rrm.model_copy(update={"case_version": "2.0"})
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(rrm2)
+        assert any("anchor" in str(e).lower() for e in exc.value.errors)
+
+    def test_idempotent_terminal_payload(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        finalized = self._terminal_manifest("COMPLETED")
+        ch1 = seeded_store.store(finalized)
+        ch2 = seeded_store.store(finalized)
+        assert ch1 == ch2
+
+    def test_pre_finalization_state_recoverable(self, seeded_store):
+        rrm = self._running_manifest()
+        seeded_store.store(rrm)
+        seeded_store.store(self._terminal_manifest("COMPLETED"))
+        versions = seeded_store._versions.get("RRM-01", {})
+        assert "RRM-LIFE-001" in versions
+        prev = list(versions["RRM-LIFE-001"].values())[0]
+        assert prev.instance.completion_time is None
+        assert prev.instance.run_state == "RUNNING"
+
+
+# ====================================================================
+# Erratum-002 / FD #137 — LIVE_CASE_UPDATE carrier defect-closure tests
+# ====================================================================
+
+class TestLiveUpdateCarrier:
+    """EAR-01 LIVE_CASE_UPDATE carrier validation (Erratum-002, FD #137)."""
+
+    def _create_pitc(self, store, pitc_id: str, mode: str, created_by: str):
+        from qad.models.family_i import PITContextMode
+        pitc = PITContext(
+            pit_context_id=pitc_id, as_of_date="2024-06-01",
+            mode=mode, case_id="CASE-FK-001", created_by=created_by,
+        )
+        store.store(pitc)
+        return pitc
+
+    def _ear(self, is_update=True, update_provenance="", update_pit_context_id=""):
+        from qad.models.family_b import EvidenceAdmissionRecord, EvidenceAdmissionRecordAdmission_method
+        kv = {
+            "admission_id": "EAR-LIVE-001",
+            "evidence_id": "EV-LIVE-001",
+            "admitting_role": "Evidence Intelligence Lead",
+            "admission_timestamp": "2024-06-01T12:00:00",
+            "admission_method": "DIRECT_SOURCE",
+            "validation_method": "SOURCE_CROSS_REFERENCE",
+            "source_tier_check": "T1",
+        }
+        if is_update:
+            kv["is_update"] = True
+            if update_provenance:
+                kv["update_provenance"] = update_provenance
+            if update_pit_context_id:
+                kv["update_pit_context_id"] = update_pit_context_id
+        return EvidenceAdmissionRecord(**kv)
+
+    def _create_ev_src_fixtures(self, store):
+        from qad.models.family_b import EvidenceRecord, SourceRecord, SourceVersion
+        from qad.models.family_b import SourceRecordSource_tier, SourceRecordSource_type
+        store.store(SourceRecord(
+            source_id="SRC-LIVE-001",
+            source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/filing/001",
+            content_hash="a" * 64,
+            retrieval_date="2024-06-01",
+        ))
+        store.store(SourceVersion(
+            version_id="SRCV-LIVE-001", source_id="SRC-LIVE-001",
+            version_number="1", retrieval_date="2024-06-01",
+            content_hash="a" * 64,
+        ))
+        store.store(EvidenceRecord(
+            evidence_id="EV-LIVE-001", source_id="SRC-LIVE-001",
+            evidence_type="FACT", content="Test evidence",
+            extractor="test", validation_status="RAW",
+            as_of="2024-06-01", admitting_role="Evidence Intelligence Lead",
+            source_tier="T1",
+        ))
+
+    def test_update_without_provenance_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        self._create_pitc(seeded_store, "PITC-LIVE-001", "LIVE_CASE_UPDATE",
+                          "Research Director: test")
+        ear = self._ear(is_update=True, update_provenance="",
+                        update_pit_context_id="PITC-LIVE-001")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("update_provenance" in str(e) for e in exc.value.errors)
+
+    def test_update_without_pitc_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        ear = self._ear(is_update=True, update_provenance="test provenance",
+                        update_pit_context_id="")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("update_pit_context_id" in str(e) for e in exc.value.errors)
+
+    def test_pitc_not_found_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        ear = self._ear(is_update=True, update_provenance="test provenance",
+                        update_pit_context_id="PITC-DOES-NOT-EXIST")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("PITC" in str(e) or "not found" in str(e).lower()
+                   for e in exc.value.errors)
+
+    def test_pitc_wrong_mode_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        self._create_pitc(seeded_store, "PITC-SEALED-001", "SEALED_HISTORICAL_EVALUATION",
+                          "Research Director: test")
+        ear = self._ear(is_update=True, update_provenance="test provenance",
+                        update_pit_context_id="PITC-SEALED-001")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("LIVE_CASE_UPDATE" in str(e) for e in exc.value.errors)
+
+    def test_unauthorized_actor_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        self._create_pitc(seeded_store, "PITC-UNAUTH-001", "LIVE_CASE_UPDATE",
+                          "Evidence Intelligence Lead")
+        ear = self._ear(is_update=True, update_provenance="test provenance",
+                        update_pit_context_id="PITC-UNAUTH-001")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("Research Director" in str(e) for e in exc.value.errors)
+
+    def test_valid_live_update_passes(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        self._create_pitc(seeded_store, "PITC-VALID-001", "LIVE_CASE_UPDATE",
+                          "Research Director: test")
+        ear = self._ear(is_update=True, update_provenance="test provenance",
+                        update_pit_context_id="PITC-VALID-001")
+        ch = seeded_store.store(ear)
+        assert ch and len(ch) == 64
+        loaded = seeded_store.load("EAR-01", "EAR-LIVE-001")
+        assert loaded.is_update is True
+        assert loaded.update_provenance == "test provenance"
+        assert loaded.update_pit_context_id == "PITC-VALID-001"
+
+    def test_spoofed_provenance_fails(self, seeded_store):
+        self._create_ev_src_fixtures(seeded_store)
+        ear = self._ear(is_update=True,
+                        update_provenance="I claim LIVE authority without PITC",
+                        update_pit_context_id="")
+        with pytest.raises(TransactionFailure) as exc:
+            seeded_store.store(ear)
+        assert any("update_pit_context_id" in str(e) for e in exc.value.errors)
 
 
 # ====================================================================

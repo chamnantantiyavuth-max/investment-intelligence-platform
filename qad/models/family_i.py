@@ -56,6 +56,11 @@ class RetryRecordStatus(str, Enum):
     FAILED = "FAILED"
     ESCALATED = "ESCALATED"
 
+class RunManifestRecordRun_state(str, Enum):
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
 class ServiceInvocationStatus(str, Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
@@ -205,14 +210,15 @@ class RunManifestRecord(BaseModel):
     as_of_date: str = Field(frozen=True)
     case_id: str
     case_version: str
-    completion_time: str = Field(frozen=True)
     manifest_id: str
     models_used: list[str]
     providers: dict
+    run_state: RunManifestRecordRun_state
     selection_policy_version: str
     start_time: str = Field(frozen=True)
     universe_version: str
     calculation_version: Optional[str] = Field(default=None)
+    completion_time: Optional[str] = Field(default=None)
     cost: Optional[dict] = Field(default=None)
     deep_research_runs: Optional[list[str]] = Field(default=None)
     failures: Optional[list[str]] = Field(default=None)

@@ -54,7 +54,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from qad.persistence.errors import ImmutabilityViolation, IntegrityConflict
+from qad.persistence.errors import ImmutabilityViolation, IntegrityConflict, ValidationFailure
 from qad.persistence.serialization import (
     compute_canonical_hash,
     serialize_to_canonical_bytes,
@@ -90,6 +90,93 @@ def _get_immutability_rules(schema_id: str) -> str:
     """Return the raw immutability_rules text for a schema."""
     desc = _DESCRIPTOR_BY_ID.get(schema_id, {})
     return desc.get("immutability_rules", "")
+
+
+# ---------------------------------------------------------------------------
+# RRM-01 lifecycle enforcement (Erratum-002 / FD #137)
+# ---------------------------------------------------------------------------
+# Legal run_state transitions.  KEY: the *terminal* states (COMPLETED/FAILED)
+# freeze the entire manifest — no further field mutation is allowed.
+_RRM_TERMINAL_STATES = {"COMPLETED", "FAILED"}
+_RRM_LEGAL_TRANSITIONS: dict[str, set[str]] = {
+    "RUNNING": {"RUNNING", "COMPLETED", "FAILED"},  # RUNNING→RUNNING = pre-terminal enrichment
+    "COMPLETED": set(),                             # terminal — no transitions
+    "FAILED": set(),                                # terminal — no transitions
+}
+
+# Always-immutable RRM-01 anchors (identity + PIT + selection).
+# These are set at creation and MUST NOT change under any lifecycle state.
+_RRM_ALWAYS_IMMUTABLE_ANCHORS = {
+    "manifest_id", "case_id", "case_version",
+    "as_of_date", "start_time",
+    "universe_version", "selection_policy_version",
+    "models_used", "providers",
+}
+
+
+def _enum_value(v: Any) -> Any:
+    """Normalize a generated (str, Enum) member to its raw value."""
+    return getattr(v, "value", v)
+
+
+def _check_rrm01_lifecycle(
+    record_id: str,
+    incoming_dump: dict[str, Any],
+    existing_dump: dict[str, Any],
+) -> list[str]:
+    """Enforce RRM-01 run lifecycle per Erratum-002 / FD #137.
+
+    Rules:
+    * ``run_state`` transitions: RUNNING → {RUNNING, COMPLETED, FAILED};
+      COMPLETED/FAILED are terminal.
+    * While RUNNING: ``completion_time`` MUST be absent.
+    * Finalization (RUNNING → COMPLETED/FAILED): ``completion_time`` MUST be
+      supplied (absent → present, exactly once, real timestamp).
+    * Terminal manifest: whole record immutable (anchors + conditional fields).
+    """
+    violations: list[str] = []
+
+    old_state = _enum_value(existing_dump.get("run_state"))
+    new_state = _enum_value(incoming_dump.get("run_state"))
+    old_comp = existing_dump.get("completion_time")
+    new_comp = incoming_dump.get("completion_time")
+
+    old_state_s = old_state if isinstance(old_state, str) else str(old_state)
+    new_state_s = new_state if isinstance(new_state, str) else str(new_state)
+
+    # 0. Always-immutable anchors — identity/PIT/selection drift forbidden under
+    # ANY lifecycle state (FD #137 §2).  E.g. RUNNING manifest must not let
+    # manifest_id / as_of_date / start_time be rewritten.
+    for anchor in sorted(_RRM_ALWAYS_IMMUTABLE_ANCHORS):
+        old_val = existing_dump.get(anchor)
+        new_val = incoming_dump.get(anchor)
+        if new_val != old_val:
+            violations.append(
+                f"anchor {anchor}: always-immutable, cannot change under {old_state_s}"
+            )
+
+    # 1. run_state transition legality
+    if old_state_s not in _RRM_LEGAL_TRANSITIONS:
+        violations.append(f"run_state: unknown prior state {old_state_s!r}")
+    elif new_state_s not in _RRM_LEGAL_TRANSITIONS[old_state_s]:
+        violations.append(f"run_state: illegal transition {old_state_s} → {new_state_s}")
+
+    # 2. completion_time lifecycle
+    if old_state_s in _RRM_TERMINAL_STATES:
+        # Terminal → any field change is illegal (hash-inequality already proven)
+        violations.append("manifest: terminal (COMPLETED/FAILED) is immutable")
+    elif old_state_s == "RUNNING" and new_state_s in _RRM_TERMINAL_STATES:
+        # Finalization: completion_time MUST transition absent → present
+        if old_comp is not None:
+            violations.append("completion_time: already set before finalization")
+        if new_comp is None:
+            violations.append("completion_time: MUST be supplied on finalization (COMPLETED/FAILED)")
+    elif old_state_s == "RUNNING" and new_state_s == "RUNNING":
+        # Still running: completion_time MUST stay absent
+        if new_comp is not None:
+            violations.append("completion_time: MUST be absent while run_state = RUNNING")
+
+    return violations
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +252,14 @@ def check_immutability(
     violated_fields: list[str] = []
     incoming_dump = incoming.model_dump(mode="python")
     existing_dump = existing.model_dump(mode="python")
+
+    # RRM-01 lifecycle enforcement (Erratum-002 / FD #137)
+    if schema_id == "RRM-01":
+        lifecycle_violations = _check_rrm01_lifecycle(
+            record_id, incoming_dump, existing_dump,
+        )
+        if lifecycle_violations:
+            violated_fields.extend(lifecycle_violations)
 
     for field_name, policy in all_policies.items():
         if policy in ("FIELD_IMMUTABLE",):
