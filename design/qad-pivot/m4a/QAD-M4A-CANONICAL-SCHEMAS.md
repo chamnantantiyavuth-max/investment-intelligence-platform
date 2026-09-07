@@ -339,12 +339,12 @@ canonical_vs_noncanonical_boundary
 | **authority_source** | M3-04 §2 (Layer 2), M3-09 §3 (Audit Checklist) |
 | **owner** | Evidence Intelligence Lead (Role 2) |
 | **required_fields** | `admission_id`, `evidence_id`, `admitting_role`, `admission_timestamp`, `admission_method`, `validation_method`, `source_tier_check` |
-| **optional_fields** | `validation_notes`, `original_source_verified`, `pit_verified`, `contradiction_check` |
+| **optional_fields** | `validation_notes`, `original_source_verified`, `pit_verified`, `contradiction_check`, `is_update`, `update_provenance`, `update_pit_context_id` |
 | **enums** | `admission_method: DIRECT_SOURCE / AI_EXTRACTION / AI_SYNTHESIS / HUMAN_ANALYSIS / SCUTTLEBUTT` |
-| **IDs / foreign keys** | `admission_id: UUID v7`, `evidence_id → EV-01.evidence_id` |
+| **IDs / foreign keys** | `admission_id: UUID v7`, `evidence_id → EV-01.evidence_id`, `update_pit_context_id → PITC-01.pit_context_id` |
 | **PIT fields** | `admission_timestamp`, `source_as_of` |
 | **provenance fields** | `admitting_role`, `validation_method` |
-| **validation_rules** | AI/NotebookLM synthesis must be validated against original source. L10 cannot be admitted as sole material support. |
+| **validation_rules** | AI/NotebookLM synthesis must be validated against original source. L10 cannot be admitted as sole material support. If `is_update = true`, `update_provenance` REQUIRED and `update_pit_context_id` REQUIRED; referenced PITC must have `mode = LIVE_CASE_UPDATE` and `created_by` must represent Research Director authority. |
 | **immutability_rules** | Admission record immutable. |
 | **revision_rules** | N/A. |
 | **failure_semantics** | Validation fails → evidence quarantined. |
@@ -1280,13 +1280,14 @@ canonical_vs_noncanonical_boundary
 | **purpose** | Complete record of a research run for reproducibility. |
 | **authority_source** | M3-01 §8 (Run Manifest) |
 | **owner** | Run Manifest Service (S6) |
-| **required_fields** | `manifest_id`, `case_id`, `case_version`, `as_of_date`, `universe_version`, `selection_policy_version`, `models_used[]`, `providers{}`, `start_time`, `completion_time` |
-| **optional_fields** | `model_versions{}`, `prompts_contracts[]`, `notebook_runs[]`, `deep_research_runs[]`, `sources_added`, `calculation_version`, `token_usage{}`, `cost{}`, `retries`, `failures[]`, `output_version` |
+| **required_fields** | `manifest_id`, `case_id`, `case_version`, `as_of_date`, `universe_version`, `selection_policy_version`, `models_used[]`, `providers{}`, `start_time`, `run_state` |
+| **optional_fields** | `completion_time`, `model_versions{}`, `prompts_contracts[]`, `notebook_runs[]`, `deep_research_runs[]`, `sources_added`, `calculation_version`, `token_usage{}`, `cost{}`, `retries`, `failures[]`, `output_version` |
+| **enums** | `run_state: RUNNING / COMPLETED / FAILED` |
 | **IDs / foreign keys** | `manifest_id: UUID v7`, `case_id → CASE-01.case_id` |
 | **PIT fields** | `as_of_date`, `start_time`, `completion_time` |
 | **provenance fields** | All fields above are provenance. |
-| **validation_rules** | Run start record created even if run fails (partial manifest). |
-| **immutability_rules** | Manifest immutable after run completion. |
+| **validation_rules** | Run start record created even if run fails (partial manifest). `completion_time` MUST be absent if `run_state = RUNNING`; REQUIRED if `run_state = COMPLETED` or `FAILED`. |
+| **immutability_rules** | Manifest immutable after COMPLETED or FAILED. |
 | **revision_rules** | N/A (one per run). |
 | **failure_semantics** | Partial manifest if run fails. |
 | **canonical_boundary** | Canonical. |
