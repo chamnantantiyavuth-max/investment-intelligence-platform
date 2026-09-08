@@ -1007,20 +1007,25 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         """True when the record exists among the committed authoritative anchors.
 
         Used as the admission Transaction's ``store_contains`` so that FK
-        existence resolves across the five-anchor topology: the registry's own
-        store, the authoritative RawSourceArchive, and (for PITC-01) the
-        authoritative PITContextStore.
+        existence resolves across the five-anchor topology.
+
+        AUTHORITY-ISOLATION (Erratum-002 / FD #137): for ``PITC-01`` the
+        resolver consults the authoritative ``PITContextStore`` ONLY — the
+        registry's own local state is NEVER consulted.  PITC-01 belongs to the
+        PITContextStore anchor; a registry-local PIT shadow must never satisfy
+        the FK.  FAIL CLOSED when the authoritative store is unavailable.
+        For non-PITC schemas, preserve the existing authority behavior.
         """
+        if schema_id == "PITC-01":
+            if self._pit_context_store is None:
+                return False  # FAIL CLOSED — authoritative store unavailable
+            return self._pit_context_store.contains("PITC-01", record_id)
         if self.contains(schema_id, record_id):
             return True
         if self._source_archive is not None and self._source_archive.contains(
             schema_id, record_id
         ):
             return True
-        if schema_id == "PITC-01":
-            if self._pit_context_store is None:
-                return False  # FAIL CLOSED — authoritative store unavailable
-            return self._pit_context_store.contains("PITC-01", record_id)
         return False
 
     def _composite_get_existing(
@@ -1031,20 +1036,32 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         Used as the admission Transaction's ``get_existing`` so the LIVE
         carrier check (``_validate_live_update_carrier``) resolves
         ``EAR-01.update_pit_context_id`` against the authoritative
-        PITContextStore — never a registry-local shadow copy.  An unavailable
-        authoritative store while a PIT context is claimed → None (fail closed).
+        PITContextStore.
+
+        AUTHORITY-ISOLATION (Erratum-002 / FD #137): for ``PITC-01`` the
+        resolver uses the authoritative ``PITContextStore`` public API ONLY
+        (``load`` — never a private ``_load_raw``, which is not part of the
+        public ``PITContextStore`` Protocol).  The registry's local state is
+        NEVER consulted for PITC-01.  An unavailable authoritative store while
+        a PIT context is claimed → None (fail closed).
         """
+        if schema_id == "PITC-01":
+            if self._pit_context_store is None:
+                return None  # FAIL CLOSED — authoritative store unavailable
+            try:
+                return self._pit_context_store.load("PITC-01", record_id)
+            except KeyError:
+                return None
         rec = self._load_raw(schema_id, record_id)
         if rec is not None:
             return rec
         if self._source_archive is not None:
-            rec = self._source_archive._load_raw(schema_id, record_id)
+            try:
+                rec = self._source_archive.load(schema_id, record_id)
+            except KeyError:
+                rec = None
             if rec is not None:
                 return rec
-        if schema_id == "PITC-01":
-            if self._pit_context_store is None:
-                return None  # FAIL CLOSED — authoritative store unavailable
-            return self._pit_context_store._load_raw("PITC-01", record_id)
         return None
 
     # -- Source-existence check (bridges to RawSourceArchive, fail-closed) ---
@@ -1217,6 +1234,16 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
                 schema_id=schema_id, record_id=record_id,
             )
 
+        # Block PITC-01 store (no shadow PIT authority — Erratum-002 / FD #137)
+        # PITC-01 belongs to the authoritative PITContextStore anchor ONLY.
+        # A registry-local PIT record must never exist (Authority Isolation).
+        if schema_id == "PITC-01":
+            raise CanonicalBoundaryViolation(
+                f"PITC-01 direct store rejected: use the authoritative "
+                f"PITContextStore for PIT context storage",
+                schema_id=schema_id, record_id=record_id,
+            )
+
         # Block new EV-01 direct store
         if schema_id == "EV-01":
             existing = self._data.get("EV-01", {}).get(record_id)
@@ -1245,10 +1272,11 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         """
         for inst in instances:
             sid: str = inst.schema_id  # type: ignore[assignment]
-            if sid in ("EV-01", "EAR-01", "SRC-01"):
+            if sid in ("EV-01", "EAR-01", "SRC-01", "PITC-01"):
                 raise CanonicalBoundaryViolation(
                     f"{sid} in batch rejected: use admit_evidence() "
-                    f"for evidence admission, or RawSourceArchive for source storage",
+                    f"for evidence admission, RawSourceArchive for source "
+                    f"storage, or PITContextStore for PIT context storage",
                     schema_id=sid, record_id=_resolve_id(inst),
                 )
         return super().store_batch(instances)

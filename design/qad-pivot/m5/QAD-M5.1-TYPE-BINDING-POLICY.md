@@ -111,6 +111,7 @@ Fields with `[]`/`{}` container shapes are exempt (collection shape wins over sc
 |---|---|---|
 | `RECORD_IMMUTABLE` | Per-field `Field(frozen=True)` on all fields | "Record immutable" or "Context immutable" → whole surface frozen |
 | `FIELD_IMMUTABLE` | `Field(frozen=True)` | Individual field cannot be mutated after creation |
+| `APPEND_ONLY` | Not enforced in M5.1/model layer | Append-only history/version preservation enforced at the M5.2 persistence layer |
 | `APPEND_ONLY_STATE` | Not enforced in M5.1 | State transitions append-only (M5.2 persistence/state layer) |
 | `CONDITIONAL_IMMUTABLE` | Model level: NOT frozen | Lifecycle field — absent→present exactly once during a legal state finalization; enforced by the persistence/state layer (Erratum 002 / FD #137) |
 | `MUTABLE` | No enforcement | Field may be freely updated |
