@@ -74,3 +74,15 @@
 
 > **Do NOT implement Erratum-002 or M5.3 in this task.**
 <!-- 2026-09-07 16:02 UTC+7 -->
+
+---
+
+## Cron review addendum — 2026-09-08 (8 Sep review reconciliation)
+
+> **The closing instruction above ("Do NOT implement Erratum-002 or M5.3 in this task") was SUPERSEDED later in the same session.** After this file was corrected (16:04, `c5f5c2a`), the Founder reviewed the Erratum-002 Decision Package and **AUTHORIZED QAD-M4A-SCHEMA-ERRATUM-002 — FD #137** (register item 137, 7 Sep): Defect A = RRM-01 lifecycle (`run_state` RUNNING/COMPLETED/FAILED, conditional `completion_time`, conditional immutability); Defect B = EAR-01 LIVE_CASE_UPDATE provenance carrier (`is_update` + `update_provenance` + `update_pit_context_id` → PITC-01). Implemented, verified (suite **614/614**, M4A validator PASS, M4B validator PASS, QAD conformance 105/105) and **PUSHED in two commits `5f6f68f` (contract repair) + `6d76348` (runtime derivation)** — HEAD == origin/main == `6d76348` (555 commits), push SYNCED.
+
+- **M5.2** = COMPLETE / CLOSED / FROZEN — Items 1–14 FOUNDER APPROVED (this file's main body + the `2c36f84`→`fca11a2`→`45fda1c` chain).
+- **M5.3** = ⏳ **HOLD unchanged** — per FD #137 register: *"M5.3 remains HOLD until Erratum-002 independent acceptance"*; S7/S8 implementation explicitly NOT authorized; Production / Live Autonomous QAD / workforce / cron cutover NOT AUTHORIZED.
+- **Erratum-002 independent acceptance** = next M5.3-relevant gate (not yet scheduled / Founder call).
+- 8 Sep cron review re-verified: suite **614/614** (real full run, 7.61s, hermes-agent venv); market frozen at Fri 4 Sep EOD (US Labor Day — CME futures resumed Tue: GC=F 4,487.10 / CL=F 92.92); weekly radar + CIW 7 Sep late-fired + COMPLETE (radar 1 card NVDA; CIW NO TRIGGER MSFT 499.70); Learning Loop Telegram delivery still failing (ops item ②). Full detail in PROJECT_STATE.md 8 Sep update.
+<!-- 2026-09-08 11:30 UTC+7 -->
