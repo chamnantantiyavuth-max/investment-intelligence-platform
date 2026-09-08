@@ -21,10 +21,15 @@ from __future__ import annotations
 from qad.persistence import PITBlockError
 
 from qad.m53.pit_enforcement import PITEnforcementService, PITQueryResult, PITVerdict
+from qad.m53.retry_kernel import RetryKernel, RetryOutcome, RetryPolicy, RetryableError
 
 __all__ = [
     "PITBlockError",
     "PITEnforcementService",
     "PITQueryResult",
     "PITVerdict",
+    "RetryableError",
+    "RetryKernel",
+    "RetryOutcome",
+    "RetryPolicy",
 ]
