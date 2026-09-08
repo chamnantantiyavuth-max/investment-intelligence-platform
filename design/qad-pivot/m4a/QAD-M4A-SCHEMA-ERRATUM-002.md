@@ -1,8 +1,15 @@
 # QAD-M4A-SCHEMA-ERRATUM-002
 
-> **Status:** APPROVED / APPLIED
-> **Authority:** FD #137 (7 Sep 2026)
+> **Status:** ✅ **FOUNDER ACCEPTED / CLOSED / FROZEN** (8 Sep 2026)
+> **Authority:** FD #137 (7 Sep 2026 — approval without new FD, per Founder decision grammar)
 > **Classification:** M4A_CONTRACT_DEFECT_REPAIR — field additions + one conditional-immutability lifecycle materialization + one FK
+>
+> **Acceptance note:** On 8 Sep 2026 the independent remote audit (Founder)
+> returned **TECHNICAL / ARCHITECTURAL PASS**. Both original defects (A — RRM-01
+> lifecycle; B — LIVE_CASE_UPDATE provenance carrier) plus all subsequent
+> integration defects closed by commits C/D (`05c32a8`/`089cbe6`) and E/F
+> (`5b73fc1`/`58096cc`) were accepted. No production code or test changes from
+> this closure — final acceptance is documented here.
 >
 > **Supersession:** M4A remains FINAL / FROZEN. Two contract defects corrected by this
 > erratum: (1) RRM-01 lifecycle contradiction (required-field + PIT-immutable blocking
@@ -188,11 +195,11 @@ Cross-field invariants:
 - INV-EAR-01: `update_provenance` REQUIRED if `is_update = true`
 - INV-EAR-02: `update_pit_context_id` REQUIRED if `is_update = true`; referenced PITC must have `mode = LIVE_CASE_UPDATE`
 
-**Verification truth (2026-09-08 — Erratum-002 independent-audit correction cycle, Commit C + Commit D):**
+**Verification truth (2026-09-08 — FINAL ACCEPTED, after commit F):**
 
 | Check | Result | Class |
 |---|---|---|
-| Full pytest suite | **630/630 PASS** (LOCAL, hermes-agent venv) | LOCAL — real run, 5.35s |
+| Full pytest suite | **640/640 PASS** (LOCAL, hermes-agent venv) | LOCAL — real run |
 | QAD contract conformance | 105/105 PASS | LOCAL |
 | M4A validator (`validate-m4a-contracts.py`) | 173/173 PASS | LOCAL |
 | M4B validator (`validate-m4b-pack.py`) | 93/93 PASS | LOCAL |
@@ -200,14 +207,28 @@ Cross-field invariants:
 | RRM lifecycle targeted (`TestRrmLifecycle`) | 11/11 PASS | LOCAL |
 | LIVE carrier targeted (`TestLiveUpdateCarrier`) | 7/7 PASS | LOCAL |
 | Five-anchor live-update integration (`test_erratum002_diagnostic_five_anchor.py`) | 16/16 PASS | LOCAL |
+| Authority-isolation (`test_erratum002_authority_isolation.py`) | 10/10 PASS | LOCAL |
 
 All counts are LOCAL pytest results on the corrected implementation. GitHub/Vercel
 deploy status is NOT Python CI and proves nothing about the test suite.
 
-> **Change note vs the 596/596 claim:** this erratum's verification section
-> originally recorded the pre-Erratum-002-era full suite count "596/596". The
-> post-Erratum suite is larger (630 = 596 - 0 + 18 Erratum-002 defect-closure
-> + 16 five-anchor integration). The 596/596 claim is superseded by the exact
-> LOCAL counts above.
+**Test truth chronology (preserved — do not modernize historical snapshots):**
+596/596 (pre-Erratum) → 614/614 (post-commit B, 596 + 18 Erratum tests)
+→ 630/630 (post-commit D, +16 five-anchor) → **640/640 (post-commit F,
++10 authority-isolation; FINAL ACCEPTED LOCAL regression)**.
 
-<!-- 2026-09-07 16:20 UTC+7 (updated 2026-09-08: verification truth corrected to exact post-correction LOCAL counts) -->
+**Correction chronology (final, preserved — not squashed/rewritten):**
+`5f6f68f` (contract repair) → `6d76348` (runtime derivation) → `05c32a8`
+(diagnostic C) → `089cbe6` (correction D) → `5b73fc1` (diagnostic E) →
+`58096cc` (correction F). `6d76348` was the original functional baseline for
+Commit C analysis, with docs-only cron/state activity occurring separately.
+
+**Authority-isolation closure facts (accepted by independent audit):**
+- PITC-01 resolution is authoritative-`PITContextStore`-ONLY (never local).
+- A registry-local PITC shadow cannot satisfy the FK or the LIVE authorization lookup.
+- Direct `store(PITC-01)` and `store_batch([... PITC-01 ...])` in EvidenceRegistry are blocked (`CanonicalBoundaryViolation`).
+- PITContextStore is accessed through its public Protocol (`load()` + KeyError→None) — no private `_load_raw`.
+- Exact `Research Director` canonical role token (SM-12) is retained for LIVE authorization.
+- Missing authoritative PITContextStore → FAIL CLOSED.
+
+<!-- 2026-09-07 16:20 UTC+7 (verification truth updated 2026-09-08 16:55 UTC+7: FINAL ACCEPTED 640/640 LOCAL + authority-isolation closure facts) -->

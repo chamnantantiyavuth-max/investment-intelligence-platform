@@ -1,13 +1,15 @@
-# Session — 2026-09-08 (Erratum-002 Independent-Audit Correction Cycles: Commit C/D + E/F)
+# Session — 2026-09-08 (Erratum-002: Correction Cycles C/D + E/F → FOUNDER ACCEPTED)
 
 > **Scope of this file:** factual session record for the 8 Sep 2026 interactive
 > session (latest session closeout). Prior closeout (7 Sep) preserved in git +
 > PROJECT_STATE.md historical rows.
 >
-> **✅ NOT claimed in this file:** Erratum-002 **NOT** marked FOUNDER ACCEPTED /
-> FROZEN. M5.3 **HOLD** unchanged. S7/S8 **NOT** started. Production/Live QAD
-> **NOT** authorized. Final closeout reconciliation deferred until the Founder
-> authorizes it after independent audit (correction directive #8).
+> **✅ Final state:** Erratum-002 = **FOUNDER ACCEPTED / CLOSED / FROZEN**
+> (8 Sep 2026, authority FD #137, no new FD — accepted by the independent
+> remote audit of commits C/D + E/F with TECHNICAL / ARCHITECTURAL PASS).
+> M5.3 **HOLD** unchanged (requires separate Founder implementation
+> authorization). S7/S8 **NOT** started. Production / Live Autonomous QAD /
+> workforce / cron cutover **NOT** authorized.
 
 ## Key outcomes
 
@@ -75,28 +77,45 @@ Founder audit of 089cbe6 found three defects:
     LIVE **7/7**, Item-13 **7/7**, QAD conformance **105/105**, M4A **173/173**,
     M4B **93/93**, full suite **640/640** (596 + 18 Erratum + 16 five-anchor
     + 10 authority-isolation), LOCAL real runs, NOT independent CI.
-  - Pushed: `089cbe6..58096cc main -> main`; HEAD == origin/main == `58096cc`,
-    560 commits, worktree clean.
+  - Pushed: `089cbe6..58096cc main -> main`.
+
+### Founder independent audit — ACCEPTED ✅
+
+8 Sep 2026: remote audit of Commit E `5b73fc1` + Commit F `58096cc` returned
+**TECHNICAL / ARCHITECTURAL PASS** — no functional blocker remaining in Defect A
+or Defect B. Confirmed accepted: authoritative-only PITC lookup (no local
+fallback); registry-local shadow cannot satisfy FK or LIVE authorization;
+`store(PITC-01)` + `store_batch(…PITC-01…)` blocked; public `PITContextStore
+load()` (no private `_load_raw`); missing authoritative store → fail closed;
+exact `"Research Director"` authorization retained; RRM lifecycle no regression;
+`APPEND_ONLY` row restored; diagnostic→correction chronology E→F preserved.
+**Erratum-002 = FOUNDER ACCEPTED / CLOSED / FROZEN** (authority FD #137; no new
+FD — no new decision was taken, this is the acceptance of the already-authorized
+repair). Remaining work = docs-only closeout (this file + PROJECT_STATE + the
+authoritative erratum record). M5.3 ⛔ HOLD — requires separate Founder
+implementation authorization.
 
 ### M5.3 — ⛔ HOLD (unchanged)
 
 - **FD #137 register:** "M5.3 remains HOLD until Erratum-002 independent acceptance".
 - S7/S8 implementation **NOT** authorized; Production / Live Autonomous QAD /
   workforce cutover / cron cutover **NOT** authorized.
-- Erratum-002 = **READY FOR FOUNDER INDEPENDENT ACCEPTANCE** of Commit C+D / E+F
-  (Founder has not yet reviewed E+F on remote at session end).
+- Closing Erratum-002 does NOT auto-authorize M5.3. Working scope remains:
+  S7 PIT Runtime Enforcement + S8 Retry Kernel + minimum PIT-aware query
+  substrate. Autonomous Discovery business logic not started; M6/M7 not started.
 
 ## Recommended next action
 
-1. **Founder independent audit of Commit E `5b73fc1` + Commit F `58096cc` on
-   remote** (authority-isolation: shadow cannot override, public API only,
-   store/batch blocked, APPEND_ONLY restored).
-2. If accepted → Founder-authorize the final closeout reconciliation
-   (mark Erratum-002 FOUNDER ACCEPTED/FROZEN; update PROJECT_STATE.md /
-   SESSION_CLOSEOUT.md current-status rows; AGENTS.md checkpoint F5).
-3. Only then → M5.3 implementation authorization gate (S7 PIT Runtime + S8
-   Retry Kernel) may reopen.
-4. Alternatives: (A) direct closeout now — **not recommended** (audit first per
-   your own discipline); (B) additional hardening if remote audit finds anything.
+1. ✅ **DONE — Erratum-002 FOUNDER ACCEPTED / CLOSED / FROZEN** (8 Sep 2026,
+   independent remote audit of Commit E `5b73fc1` + Commit F `58096cc` =
+   TECHNICAL / ARCHITECTURAL PASS; authority FD #137; recorded in the
+   authoritative erratum record + PROJECT_STATE + this closeout).
+2. **Next: M5.3 Founder Implementation Gate** — the Erratum-002 acceptance
+   unblocks the gate but does NOT auto-authorize M5.3. Working scope: S7 PIT
+   Runtime Enforcement + S8 Retry Kernel + minimum PIT-aware query substrate.
+3. Do NOT create Erratum-003 or hardening work unless a new independently
+   demonstrated defect exists (per Founder directive).
+4. Alternatives: (A) proceed to the M5.3 implementation authorization decision
+   now; (B) remain on HOLD until Founder schedules the gate.
 
-<!-- 2026-09-08 23:55 UTC+7 -->
+<!-- 2026-09-08 16:43 UTC+7 -->
