@@ -1,121 +1,119 @@
-# Session — 2026-09-08 (Erratum-002: Correction Cycles C/D + E/F → FOUNDER ACCEPTED)
+# Session — 2026-09-08 (M5.3 Implementation: GO → S7 + S8 + minimum PIT-aware query substrate)
 
-> **Scope of this file:** factual session record for the 8 Sep 2026 interactive
-> session (latest session closeout). Prior closeout (7 Sep) preserved in git +
-> PROJECT_STATE.md historical rows.
+> **Scope of this file:** factual session record for the M5.3 implementation
+> portion of the 8 Sep 2026 interactive session (latest session closeout).
+> The earlier Erratum-002 correction-cycle portion (commits C/D + E/F,
+> FOUNDER ACCEPTED/FROZEN at commit `1b4756f`) is preserved in git history
+> and PROJECT_STATE.md rows; prior closeouts (7 Sep) preserved likewise.
 >
-> **✅ Final state:** Erratum-002 = **FOUNDER ACCEPTED / CLOSED / FROZEN**
-> (8 Sep 2026, authority FD #137, no new FD — accepted by the independent
-> remote audit of commits C/D + E/F with TECHNICAL / ARCHITECTURAL PASS).
-> M5.3 **HOLD** unchanged (requires separate Founder implementation
-> authorization). S7/S8 **NOT** started. Production / Live Autonomous QAD /
-> workforce / cron cutover **NOT** authorized.
+> **✅ Final state:** M5.3 = **IMPLEMENTATION COMPLETE / READY FOR FOUNDER
+> INDEPENDENT ACCEPTANCE** (NOT closed, NOT frozen — independent audit still
+> required). S7 (PIT Runtime Enforcement) + S8 (Retry Kernel) + minimum
+> PIT-aware query substrate implemented as a bounded reference implementation
+> under the Founder GO (OPTION A). Production / Live Autonomous QAD /
+> workforce / cron cutover / M6 / M7 remain NOT AUTHORIZED.
 
 ## Key outcomes
 
-### Round 1 — Five-anchor LIVE carrier + exact RD authorization (Commit C + D)
+### Founder decision — M5.3 GO (OPTION A)
 
-Founder audited remote 6d76348 implementation, found two material defects:
+Founder authorized M5.3 implementation under the frozen Master Plan after
+the Erratum-002 independent audit returned TECHNICAL / ARCHITECTURAL PASS
+and closed Erratum-002 as FOUNDER ACCEPTED / CLOSED / FROZEN. The GO is a
+**bounded reference implementation** — NOT production architecture, NOT full
+§11.3 Query API, NOT adapter selection, NOT business logic. Stop conditions
+were explicit: if implementation discovered a frozen-authority contradiction,
+a mechanically required new canonical schema, a frozen state-machine change,
+a new role/authority rule, production-adapter necessity, or full-§11.3
+necessity → STOP and return to Founder. None triggered (verified below).
 
-1. **Defect B not proven on the five-anchor topology** — `TestLiveUpdateCarrier`
-   used a monolithic `seeded_store`; `InMemoryEvidenceRegistry.admit_evidence()`
-   could not resolve `EAR-01.update_pit_context_id → PITC-01` stored in the
-   separate authoritative `PITContextStore`.
-2. **`"Research Director" in str(created_by)` substring authorization** unsafe.
+### Commit 1 `bac8bf4` — docs: implementation map + PITBlockError
+- `design/qad-pivot/m5/QAD-M5.3-IMPLEMENTATION-MAP.md` — frozen-authority
+  table, S7/S8/query-substrate files/interfaces/semantics, deferred §11.3
+  list, commit structure.
+- `qad/persistence/errors.py` — added `PITBlockError(PersistenceError)` with
+  `verdict`/`reason` (deterministic contract error; never silent-empty result).
+- `qad/persistence/__init__.py` — exported `PITBlockError`.
 
-- **Commit C = `05c32a8`** (diagnostic evidence first, explicit-path staging,
-  no production change): `tests/qad/persistence/test_erratum002_diagnostic_five_anchor.py`
-  — expected-fail proofs: `MissingForeignKey: EAR-01.update_pit_context_id: FK
-  reference 'PITC-FA-LIVE' not found in PITC-01.pit_context_id`; `"Fake Research
-  Director"` accepted (DID NOT RAISE).
-- **Commit D = `089cbe6`** (production + test + doc correction, 9 files):
-  - `reference.py`: `InMemoryEvidenceRegistry(pit_context_store=...)` + composite
-    `store_contains`/`get_existing` resolvers; FAIL CLOSED when store unavailable.
-  - `transaction.py`: `RESEARCH_DIRECTOR_ROLE_TOKEN = "Research Director"` exact
-    token check (SM-12); `update_provenance` remains human provenance only.
-  - Tests: five-anchor acceptance (16) + RRM narrow (`TransactionFailure` +
-    `ValidationFailure`, no broad `Exception`); LIVE PITC `created_by` → exact token.
-  - Docs: M5.1 Type Binding Policy (PIT exception + `is_update: bool` + FD #137
-    header); M5.2 Boundary Contract narrow RRM reconciliation note; Decision
-    Package historical resolution header; Erratum-002 verification truth
-    (exact LOCAL counts; GitHub/Vercel ≠ Python CI); RunManifestStore docstrings.
-  - Verified: full suite **630/630** (596 + 18 Erratum + 16 five-anchor), QAD
-    conformance 105/105, M4A 173/173, M4B 93/93, Item-13 **7/7** (NOT N/A).
-  - Founder review of Commit C+D: acceptable portions noted; **NOT accepted** —
-    authority-isolation defect + private `_load_raw` + APPEND_ONLY doc regression
-    required another correction round.
+### Commit 2 `ceff38d` — feat: S7 PIT Runtime Enforcement + minimum query substrate
+- `qad/m53/pit_enforcement.py` — `PITVerdict`, `PITQueryResult`,
+  `PITEnforcementService` (adjudicate / query / access). Frozen M4B
+  nine-case semantics on the canonical five-anchor topology:
+  - pre-AS_OF allowed (all modes)
+  - SEALED post-AS_OF → hard block
+  - LIVE post-AS_OF → only via Erratum-002 carrier (EAR-01 `is_update` +
+    `update_provenance` + `update_pit_context_id` → authoritative PITC-01
+    mode LIVE + exact Research Director token, SM-12)
+  - REPLAY → only exact `created_by == "FOUNDER"` + `exception_reason`
+  - canonical-hash tamper → SEAL_INVALIDATED
+  - fail closed on missing/unknown context
+  - minimum PIT-aware query substrate: `query()` (EV-01 collection,
+    PIT-filtered, excluded/blocked counts) + `access()` (explicit
+    PITBlockError — never silent-empty). No load_where / filter DSL /
+    sort-paginate / joins / ORM.
+- `tests/qad/m53/test_pit_enforcement.py` — 15 direct contract tests
+  (SEALED pre/post/tamper; LIVE carrier allow/no-carrier/wrong-chain/spoofed;
+  REPLAY no-reason/founder/unauthorized/spoofed; collection filter; explicit
+  PIT block; zero leakage; fail-closed).
 
-### Round 2 — PITC authority isolation (Commit E + F)
+### Commit 3 `f070771` — feat: S8 Retry Kernel + RRM integration
+- `qad/m53/retry_kernel.py` — `RetryableError`, `RetryPolicy` (max 3,
+  frozen M4A I-4 / M3-SERVICES S8), `RetryOutcome`, `RetryKernel.execute()`.
+  - bounded per-stage retry across DISTINCT immutable RR-01 records (own
+    retry_id per attempt); transient → RETRYING → next; success → SUCCEEDED;
+    exhaustion → FAILED (frozen rule) or ESCALATED (+escalated_to).
+  - deterministic contract failures never blindly retried (single honest
+    FAILED + re-raise); idempotent replay (terminal log → stage not re-run,
+    zero duplicates); conflict under reused retry_id → inner
+    IntegrityConflict (fail-closed); resume from last checkpoint.
+  - RRM integration: RUNNING-only — RETRYING ref → `retries`,
+    FAILED/ESCALATED ref → `failures`; terminal manifest → ImmutabilityViolation;
+    missing → MissingForeignKey; no fake completion timestamps.
+- `tests/qad/m53/test_retry_kernel.py` — 13 direct contract tests
+  (lifecycle; deterministic no-retry; duplicate/idempotent; immutable-identity
+  conflict; missing invocation; RRM honest state / terminal-immutable /
+  missing-manifest; zero unauthorized partial state).
 
-Founder audit of 089cbe6 found three defects:
+### Commit 4 `5d77c13` — docs: M5.3 closure/proof
+- `design/qad-pivot/m5/QAD-M5.3-CLOSEOUT.md` — scope delivered, frozen
+  semantics, full LOCAL verification table, commit chain, §11.3 deferred
+  list, boundaries, stop-condition check verdicts (all ❌ none).
 
-1. **Material — local PITC shadow can override authority**: resolvers consulted
-   registry-local state first (`self.contains`/`self._load_raw`); `store()`
-   blocked EV/EAR/SRC but not PITC-01 → shadow PITC planted locally satisfied FK.
-2. **Adapter contract** — `pit_context_store._load_raw(...)` private method not
-   in the public `PITContextStore` Protocol.
-3. **Doc regression** — M5.1 policy table lost the `APPEND_ONLY` row (descriptor
-   still has 9 APPEND_ONLY fields; persistence derives from both policies).
+### Verification (all LOCAL, real runs — GitHub/Vercel is NOT Python CI)
 
-- **Commit E = `5b73fc1`** (diagnostic evidence first, 1 file, explicit-path):
-  `test_erratum002_authority_isolation.py` — expected-fail proofs:
-  `Failed: DID NOT RAISE TransactionFailure` (authority inversion: authoritative
-  PITC SEALED vs local shadow LIVE+RD → LIVE update passed); store(PITC-01) not
-  boundary-gated (only FK error surfaced, not `CanonicalBoundaryViolation`).
-- **Commit F = `58096cc`** (production + test + doc correction, 3 files):
-  - `reference.py`: PITC-01 resolves authoritative PITContextStore ONLY (never
-    local); `_composite_get_existing` uses PUBLIC `load()` + KeyError→None (no
-    `_load_raw` anywhere); RawSourceArchive fallback also public; `store()` +
-    `store_batch()` block PITC-01 with `CanonicalBoundaryViolation`.
-  - Tests: 8 acceptance proofs (#1 valid no-shadow PASS; #2 wrong-mode
-    authoritative beats shadow; #3 unauthorized authoritative beats RD-shadow;
-    #4 authoritative absent fails closed; #5 direct store blocked; #6 batch
-    blocked; #7 resolver uses public-only PITContextStore API
-    (`_PublicOnlyPITCStore` has no `_load_raw`); #8 valid path creates no shadow).
-  - Docs: M5.1 `APPEND_ONLY` row restored (semantics unchanged).
-  - Verified: authority-isolation **10/10**, five-anchor **16/16**, RRM **11/11**,
-    LIVE **7/7**, Item-13 **7/7**, QAD conformance **105/105**, M4A **173/173**,
-    M4B **93/93**, full suite **640/640** (596 + 18 Erratum + 16 five-anchor
-    + 10 authority-isolation), LOCAL real runs, NOT independent CI.
-  - Pushed: `089cbe6..58096cc main -> main`.
+| Suite | Result |
+|---|---|
+| M5.3 S7 + S8 targeted | **28/28 PASS** (15 + 13) |
+| Five-anchor LIVE (Erratum-002 regression) | 16/16 PASS |
+| Authority-isolation (Erratum-002 regression) | 10/10 PASS |
+| RRM lifecycle | 11/11 PASS |
+| LIVE carrier | 7/7 PASS |
+| Item-13 cross-contract | 7/7 PASS |
+| QAD contract conformance | 105/105 PASS |
+| M4A validator | 173/173 PASS |
+| M4B validator | 93/93 PASS |
+| **Full pytest** | **668/668 PASS** (640 pre-M5.3 + 28 M5.3; +28, not forced) |
 
-### Founder independent audit — ACCEPTED ✅
+Test-truth chronology preserved: 596 → 614 → 630 → 640 (Erratum-002 final)
+→ 668 (M5.3 implementation complete).
 
-8 Sep 2026: remote audit of Commit E `5b73fc1` + Commit F `58096cc` returned
-**TECHNICAL / ARCHITECTURAL PASS** — no functional blocker remaining in Defect A
-or Defect B. Confirmed accepted: authoritative-only PITC lookup (no local
-fallback); registry-local shadow cannot satisfy FK or LIVE authorization;
-`store(PITC-01)` + `store_batch(…PITC-01…)` blocked; public `PITContextStore
-load()` (no private `_load_raw`); missing authoritative store → fail closed;
-exact `"Research Director"` authorization retained; RRM lifecycle no regression;
-`APPEND_ONLY` row restored; diagnostic→correction chronology E→F preserved.
-**Erratum-002 = FOUNDER ACCEPTED / CLOSED / FROZEN** (authority FD #137; no new
-FD — no new decision was taken, this is the acceptance of the already-authorized
-repair). Remaining work = docs-only closeout (this file + PROJECT_STATE + the
-authoritative erratum record). M5.3 ⛔ HOLD — requires separate Founder
-implementation authorization.
-
-### M5.3 — ⛔ HOLD (unchanged)
-
-- **FD #137 register:** "M5.3 remains HOLD until Erratum-002 independent acceptance".
-- S7/S8 implementation **NOT** authorized; Production / Live Autonomous QAD /
-  workforce cutover / cron cutover **NOT** authorized.
-- Closing Erratum-002 does NOT auto-authorize M5.3. Working scope remains:
-  S7 PIT Runtime Enforcement + S8 Retry Kernel + minimum PIT-aware query
-  substrate. Autonomous Discovery business logic not started; M6/M7 not started.
+### Boundaries (unchanged)
+Production Release / Live Autonomous QAD / workforce cutover / cron cutover /
+fixture sealing / cost calibration / final production stack / M6 / M7 /
+Autonomous Discovery business logic — all NOT AUTHORIZED. §11.3 full Query API
++ production adapter selection remain deferred. M5.3 working-scope state:
+S7 ✅ / S8 ✅ / minimum PIT-aware query substrate ✅ (reference, not production).
 
 ## Recommended next action
 
-1. ✅ **DONE — Erratum-002 FOUNDER ACCEPTED / CLOSED / FROZEN** (8 Sep 2026,
-   independent remote audit of Commit E `5b73fc1` + Commit F `58096cc` =
-   TECHNICAL / ARCHITECTURAL PASS; authority FD #137; recorded in the
-   authoritative erratum record + PROJECT_STATE + this closeout).
-2. **Next: M5.3 Founder Implementation Gate** — the Erratum-002 acceptance
-   unblocks the gate but does NOT auto-authorize M5.3. Working scope: S7 PIT
-   Runtime Enforcement + S8 Retry Kernel + minimum PIT-aware query substrate.
-3. Do NOT create Erratum-003 or hardening work unless a new independently
+1. **Founder independent audit** of commits `bac8bf4` / `ceff38d` / `f070771` /
+   `5d77c13` on remote (S7 semantics, S8 idempotency + RRM attachment,
+   668/668 LOCAL).
+2. On acceptance → authorize the M5.3 closure/freeze (mark M5.3
+   CLOSED/FROZEN; update authoritative state surfaces; AGENTS.md checkpoint).
+3. Then continue the rest of **M5** per the Master Plan (next milestone
+   decisions after M5.3 acceptance).
+4. Do NOT create Erratum-003 / hardening work unless a new independently
    demonstrated defect exists (per Founder directive).
-4. Alternatives: (A) proceed to the M5.3 implementation authorization decision
-   now; (B) remain on HOLD until Founder schedules the gate.
 
-<!-- 2026-09-08 16:43 UTC+7 -->
+<!-- 2026-09-08 17:37 UTC+7 -->
