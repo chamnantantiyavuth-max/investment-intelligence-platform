@@ -1,10 +1,29 @@
-"""Erratum-002 Defect B — FIVE-ANCHOR LIVE-UPDATE DIAGNOSTIC (Commit C).
+"""Erratum-002 Defect B — FIVE-ANCHOR LIVE-UPDATE PROOF (Commit C + D).
 
-NOT an acceptance suite.  This is the *diagnostic evidence* committed BEFORE the
-production fix, reproducing Defect B on the ACTUAL frozen M5.2 topology.
+Started as Commit C *diagnostic evidence*: tests asserting the CORRECT
+behaviour on the ACTUAL frozen M5.2 topology, committed BEFORE the production
+fix.  They FAILED at baseline 6d76348 — that failing result (Commit C, 05c32a8)
+proved two material defects:
 
-The real M5.2 topology is FIVE SEPARATE store anchors (not the monolithic
-generic ``InMemoryCanonicalRecordStore`` used by ``TestLiveUpdateCarrier``):
+  1. Five-anchor FK / lookup cannot resolve.  ``InMemoryEvidenceRegistry``
+     resolved FKs only against its own dict + RawSourceArchive, so a LIVE
+     update's ``EAR-01.update_pit_context_id`` could not reach a PITC-01 that
+     lives in the separate authoritative PITContextStore:
+       MissingForeignKey: EAR-01.update_pit_context_id: FK reference
+       'PITC-FA-LIVE' not found in PITC-01.pit_context_id
+  2. Substring authorization unsafe.  ``"Research Director" in str(created_by)``
+     accepted ``"Fake Research Director"`` (test DID NOT RAISE).
+
+Commit D (this file together with the production fix) wires the EvidenceRegistry
+admission transaction to the authoritative PITContextStore and requires the
+exact canonical role token ``"Research Director"``.  These tests now PASS and
+are the five-anchor LIVE-update acceptance proof:
+
+  RawSourceArchive.admit_source  (SRC-01)
+  -> PITContextStore.store       (PITC-01, separate authoritative anchor)
+  -> EvidenceRegistry.admit_evidence(EV, EAR)   (canonical path, EAR-01)
+
+Real M5.2 five-anchor topology (never the monolithic seeded_store):
 
     RawSourceArchive      — SRC-01 (content-addressed, admit_source gate)
     EvidenceRegistry      — EV-01 + EAR-01 (admit_evidence gate)
@@ -12,22 +31,8 @@ generic ``InMemoryCanonicalRecordStore`` used by ``TestLiveUpdateCarrier``):
     RunManifestStore      — RRM-01 (lifecycle)
     PITContextStore       — PITC-01 (point-in-time context)
 
-``InMemoryEvidenceRegistry`` resolves EVs through the authoritative
-RawSourceArchive, but its Transaction ``get_existing`` is ``self._load_raw`` —
-the registry's OWN dict only.  A LIVE update's ``EAR-01.update_pit_context_id``
-FK points at a ``PITC-01`` that lives in the SEPARATE authoritative
-``PITContextStore``.  Against baseline 6d76348, that FK / lookup CANNOT
-resolve, so a valid LIVE update through the canonical path fails.
-
-These tests assert the CORRECT five-anchor behaviour:
-
-  A. a valid SRC is admitted through ``RawSourceArchive.admit_source()``
-  B. a valid PITC is stored in the separate ``PITContextStore``
-  C. a valid EV + EAR LIVE update is submitted through the canonical
-     ``EvidenceRegistry.admit_evidence()`` path
-
-They are EXPECTED TO FAIL at baseline 6d76348 — that failing result is the
-diagnostic proof.  The production fix (Commit D) makes them pass.
+No ``store(EAR-01)`` bypass is used as the closure proof — every scenario runs
+through the canonical ``admit_evidence()`` path.
 """
 from __future__ import annotations
 
@@ -35,18 +40,11 @@ import hashlib
 
 import pytest
 
-from qad.persistence.errors import ValidationFailure
+from qad.persistence.errors import TransactionFailure, ValidationFailure
 from qad.persistence.reference import (
     InMemoryEvidenceRegistry,
     InMemoryPITContextStore,
     InMemoryRawSourceArchive,
-)
-from qad.models.family_b import (
-    EvidenceAdmissionRecord,
-    EvidenceRecord,
-    SourceRecord,
-    SourceRecordSource_tier,
-    SourceRecordSource_type,
 )
 from qad.models import (
     CandidateRecord,
@@ -60,6 +58,13 @@ from qad.models.family_a import (
     CandidateRecordSelection_state,
     CaseRecordCase_state,
 )
+from qad.models.family_b import (
+    EvidenceAdmissionRecord,
+    EvidenceRecord,
+    SourceRecord,
+    SourceRecordSource_tier,
+    SourceRecordSource_type,
+)
 from qad.models.family_i import PITContext
 
 
@@ -68,7 +73,7 @@ from qad.models.family_i import PITContext
 # =====================================================================
 
 def _admit_src(store, source_id: str, raw: bytes) -> SourceRecord:
-    """Scenario A — admit a valid SRC-01 through RawSourceArchive.admit_source()."""
+    """A — admit a valid SRC-01 through RawSourceArchive.admit_source()."""
     ch = hashlib.sha256(raw).hexdigest()
     src = SourceRecord(
         source_id=source_id,
@@ -96,7 +101,14 @@ def _make_ev(source_id: str, evidence_id: str) -> EvidenceRecord:
     )
 
 
-def _make_live_ear(evidence_id: str, admission_id: str, pitc_id: str) -> EvidenceAdmissionRecord:
+def _make_live_ear(
+    evidence_id: str,
+    admission_id: str,
+    pitc_id: str | None,
+    *,
+    is_update: bool = True,
+    provenance: str = "five-anchor LIVE update provenance",
+) -> EvidenceAdmissionRecord:
     return EvidenceAdmissionRecord(
         admission_id=admission_id,
         evidence_id=evidence_id,
@@ -105,24 +117,29 @@ def _make_live_ear(evidence_id: str, admission_id: str, pitc_id: str) -> Evidenc
         admission_method="DIRECT_SOURCE",
         validation_method="SOURCE_CROSS_REFERENCE",
         source_tier_check="T1",
-        is_update=True,
-        update_provenance="five-anchor LIVE update provenance",
+        is_update=is_update,
+        update_provenance=provenance,
         update_pit_context_id=pitc_id,
     )
 
 
-def _make_pitc(pitc_id: str, created_by: str, case_id: str = "CASE-FA-LIVE") -> PITContext:
-    """Scenario B — a valid PITC-01 for the separate PITContextStore."""
+def _make_pitc(
+    pitc_id: str,
+    created_by: str,
+    case_id: str = "CASE-FA-LIVE",
+    mode: str = "LIVE_CASE_UPDATE",
+) -> PITContext:
+    """B — a valid PITC-01 for the separate PITContextStore."""
     return PITContext(
         pit_context_id=pitc_id,
         as_of_date="2024-06-01",
-        mode="LIVE_CASE_UPDATE",
+        mode=mode,
         case_id=case_id,
         created_by=created_by,
     )
 
 
-def _seed_pitc_store(store: InMemoryPITContextStore, case_id: str) -> None:
+def _seed_pitc_store(store, case_id: str) -> None:
     """Seed the minimal FK chain PITC-01 depends on (CASE-01 → SM-01, CR-01)."""
     sm = SecurityMaster(
         entity_id="E-FA-LIVE",
@@ -156,101 +173,209 @@ def _seed_pitc_store(store: InMemoryPITContextStore, case_id: str) -> None:
     store.store(case)
 
 
-def _make_evidence_registry(src_archive, pitc_store=None):
-    """Wire the EvidenceRegistry to its authoritative anchors.
+def _five_anchor_topology(
+    created_by: str = "Research Director",
+    *,
+    mode: str = "LIVE_CASE_UPDATE",
+    source_id: str = "SRC-FA-LIVE",
+    pitc_id: str = "PITC-FA-LIVE",
+    case_id: str = "CASE-FA-LIVE",
+):
+    """Build the REAL five-anchor topology and return wired anchors.
 
-    Pre-fix constructor accepts only ``source_archive``.  Post-fix it also
-    accepts ``pit_context_store`` so ``EAR-01.update_pit_context_id`` can be
-    resolved against the authoritative PITContextStore (the same authority
-    pattern already used for RawSourceArchive).
+    Returns (src_archive, pitc_store, ev_registry, pitc_id, source_id).
+    The PITC lives ONLY in the authoritative PITContextStore — never in the
+    EvidenceRegistry (no shadow copy on the canonical path).
     """
-    kwargs = {"source_archive": src_archive}
-    if pitc_store is not None:
-        kwargs["pit_context_store"] = pitc_store
-    try:
-        return InMemoryEvidenceRegistry(**kwargs)
-    except TypeError:
-        # Pre-Erratum-002-fix constructor — no pit_context_store kwarg.
-        # The authoritative PITContextStore is invisible to the registry's
-        # resolver, so a LIVE update's PITC FK cannot resolve.
-        return InMemoryEvidenceRegistry(source_archive=src_archive)
+    src_archive = InMemoryRawSourceArchive()
+    _admit_src(src_archive, source_id, b"five-anchor live source bytes")
+
+    pitc_store = InMemoryPITContextStore()
+    _seed_pitc_store(pitc_store, case_id)
+    pitc_store.store(_make_pitc(pitc_id, created_by, case_id=case_id, mode=mode))
+
+    ev_registry = InMemoryEvidenceRegistry(
+        source_archive=src_archive, pit_context_store=pitc_store
+    )
+    return src_archive, pitc_store, ev_registry, pitc_id, source_id
 
 
 # =====================================================================
-# Commit C diagnostic tests (EXPECTED TO FAIL at baseline 6d76348)
+# Five-anchor LIVE-update acceptance proof (Erratum-002 / FD #137)
 # =====================================================================
 
-class TestFiveAnchorLiveUpdateDiagnostic:
-    """Erratum-002 Defect B — LIVE PITC FK resolution on the five-anchor
-    topology.  Expected to fail against baseline 6d76348 (monolithic-store
-    tests pass only because they never exercise the real separation)."""
+class TestFiveAnchorLiveUpdate:
+    """LIVE update through the canonical five-anchor admission path."""
 
-    def test_valid_live_update_resolves_authoritative_pitc(self):
-        """Scenarios A + B + C — a valid LIVE update through the canonical
-        five-anchor path MUST succeed.
-
-        A: SRC admitted via RawSourceArchive.
-        B: PITC stored in the separate authoritative PITContextStore.
-        C: EV + EAR (is_update, provenance, update_pit_context_id) submitted
-           via EvidenceRegistry.admit_evidence().
-
-        At baseline the registry's resolver cannot see PITC-01 in the
-        authoritative PITContextStore → ValidationFailure → this FAILS.
-        """
-        # A — RawSourceArchive anchor
-        src_archive = InMemoryRawSourceArchive()
-        _admit_src(src_archive, "SRC-FA-LIVE", b"five-anchor live source bytes")
-
-        # B — PITContextStore anchor (REAL separate store)
-        pitc_store = InMemoryPITContextStore()
-        _seed_pitc_store(pitc_store, "CASE-FA-LIVE")
-        pitc_store.store(_make_pitc("PITC-FA-LIVE", created_by="Research Director"))
-
-        # C — EvidenceRegistry wired to both authoritative anchors
-        ev_registry = _make_evidence_registry(src_archive, pitc_store)
-        ev = _make_ev("SRC-FA-LIVE", "EV-FA-LIVE")
-        ear = _make_live_ear("EV-FA-LIVE", "EAR-FA-LIVE", "PITC-FA-LIVE")
+    def test_valid_live_context_passes(self):
+        """Valid LIVE context (exact Research Director token) → PASS."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology()
+        ev = _make_ev(source_id, "EV-FA-LIVE")
+        ear = _make_live_ear("EV-FA-LIVE", "EAR-FA-LIVE", pitc_id)
 
         ch = ev_registry.admit_evidence(ev, ear)
         assert isinstance(ch, str) and len(ch) == 64
-        loaded_ear = ev_registry.load("EAR-01", "EAR-FA-LIVE")
-        assert loaded_ear.is_update is True
-        assert loaded_ear.update_pit_context_id == "PITC-FA-LIVE"
+        loaded = ev_registry.load("EAR-01", "EAR-FA-LIVE")
+        assert loaded.is_update is True
+        assert loaded.update_pit_context_id == pitc_id
 
-    def test_authorization_requires_exact_research_director_token(self):
-        """A ``created_by`` that merely CONTAINS the substring ``Research Director``
-        (e.g. ``"Fake Research Director"``) must NOT authorize a LIVE update.
+    def test_cross_anchor_fk_actually_resolves_through_pitc_store(self):
+        """The PITC FK is resolved from the AUTHORITATIVE PITContextStore.
 
-        Frozen SM-12 authorizes the LIVE_CASE_UPDATE carrier ONLY when the
-        referenced PITContext's ``created_by`` is the exact canonical role
-        token ``"Research Director"``.  Substring matching is unsafe:
-        ``"Not Research Director"`` / ``"Research Director impostor"`` /
-        ``"Fake Research Director"`` all pass a substring check.
-
-        The PITC is placed where the registry's resolver can see it (its own
-        store), so this test isolates the authorization check behaviourally.
+        The registry holds NO shadow copy of the PITC; admission succeeds only
+        because the composite resolver reaches the separate authoritative store.
         """
-        from qad.persistence.reference import InMemoryEvidenceRegistry
+        _, pitc_store, ev_registry, pitc_id, source_id = _five_anchor_topology()
+        # Prove the PITC exists ONLY in the separate authoritative store
+        assert pitc_store.contains("PITC-01", pitc_id) is True
+        assert ev_registry.contains("PITC-01", pitc_id) is False  # no shadow
 
-        src_archive = InMemoryRawSourceArchive()
-        _admit_src(src_archive, "SRC-FA-AUTH", b"five-anchor auth source")
+        ev = _make_ev(source_id, "EV-FK-RESOLVE")
+        ear = _make_live_ear("EV-FK-RESOLVE", "EAR-FK-RESOLVE", pitc_id)
+        ch = ev_registry.admit_evidence(ev, ear)
+        assert isinstance(ch, str) and len(ch) == 64
+        assert ev_registry.contains("EAR-01", "EAR-FK-RESOLVE")
 
-        # Seed the case chain + shadow PITC INTO the registry's own store so
-        # the LIVE-caller authorization check is actually reached.
-        ev_registry = InMemoryEvidenceRegistry(source_archive=src_archive)
-        # (registry is an InMemoryEvidenceRegistry subclass; SM/CR/CASE and
-        # PITC pass through super().store() — only EV/EAR/SRC are gated.)
-        _seed_pitc_store(ev_registry, "CASE-FA-AUTH")  # type: ignore[arg-type]
-        ev_registry.store(
-            _make_pitc("PITC-FA-AUTH", "Fake Research Director",
-                       case_id="CASE-FA-AUTH")
-        )
-
-        ev = _make_ev("SRC-FA-AUTH", "EV-FA-AUTH")
-        ear = _make_live_ear("EV-FA-AUTH", "EAR-FA-AUTH", "PITC-FA-AUTH")
-
-        with pytest.raises(
-            ValidationFailure,
-            match="does not represent Research Director authority",
-        ):
+    def test_missing_pit_context_fails(self):
+        """LIVE update referencing a NON-EXISTENT PITC → FAIL (FK not found)."""
+        _, _, ev_registry, _pitc_id, source_id = _five_anchor_topology()
+        ev = _make_ev(source_id, "EV-FA-NO-PITC")
+        ear = _make_live_ear("EV-FA-NO-PITC", "EAR-FA-NO-PITC",
+                             "PITC-DOES-NOT-EXIST")
+        with pytest.raises(TransactionFailure) as exc:
             ev_registry.admit_evidence(ev, ear)
+        joined = "\n".join(str(e) for e in exc.value.errors)
+        assert "update_pit_context_id" in joined or "PITC-01" in joined
+        # zero partial state
+        assert not ev_registry.contains("EV-01", "EV-FA-NO-PITC")
+        assert not ev_registry.contains("EAR-01", "EAR-FA-NO-PITC")
+
+    def test_wrong_mode_fails(self):
+        """A SEALED PITC must not authorize a LIVE update → FAIL."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology(
+            mode="SEALED_HISTORICAL_EVALUATION"
+        )
+        ev = _make_ev(source_id, "EV-FA-MODE")
+        ear = _make_live_ear("EV-FA-MODE", "EAR-FA-MODE", pitc_id)
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        assert any("LIVE_CASE_UPDATE" in str(e) for e in exc.value.errors)
+        assert not ev_registry.contains("EAR-01", "EAR-FA-MODE")
+
+    def test_unauthorized_actor_fails(self):
+        """PITC created_by not the Research Director token → FAIL."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology(
+            created_by="Evidence Intelligence Lead"
+        )
+        ev = _make_ev(source_id, "EV-FA-UNAUTH")
+        ear = _make_live_ear("EV-FA-UNAUTH", "EAR-FA-UNAUTH", pitc_id)
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        assert any(
+            "Research Director" in str(e) for e in exc.value.errors
+        )
+        assert not ev_registry.contains("EAR-01", "EAR-FA-UNAUTH")
+
+    def test_spoofed_actor_text_fails(self):
+        """Substring spoofs must FAIL — created_by must be the exact token.
+
+        Values like "Fake Research Director", "Not Research Director", and
+        "Research Director impostor" contain the substring but are NOT the
+        canonical role.  They must be rejected (Commit C proved the old
+        substring rule accepted them).
+        """
+        for spoof in ("Fake Research Director", "Not Research Director",
+                      "Research Director impostor", "Research Director: test"):
+            _, _, ev_registry, pitc_id, source_id = _five_anchor_topology(
+                created_by=spoof
+            )
+            ev = _make_ev(source_id, f"EV-SPOOF-{len(spoof)}")
+            ear = _make_live_ear(
+                f"EV-SPOOF-{len(spoof)}", f"EAR-SPOOF-{len(spoof)}", pitc_id
+            )
+            with pytest.raises(TransactionFailure) as exc:
+                ev_registry.admit_evidence(ev, ear)
+            assert any(
+                "does not represent Research Director authority"
+                in str(e) for e in exc.value.errors
+            )
+
+    def test_missing_provenance_fails(self):
+        """is_update=true without update_provenance → FAIL."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology()
+        ev = _make_ev(source_id, "EV-FA-NO-PROV")
+        ear = _make_live_ear("EV-FA-NO-PROV", "EAR-FA-NO-PROV", pitc_id,
+                             provenance="")
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        assert any("update_provenance" in str(e) for e in exc.value.errors)
+        assert not ev_registry.contains("EAR-01", "EAR-FA-NO-PROV")
+
+    def test_missing_pit_context_id_fails(self):
+        """is_update=true without update_pit_context_id → FAIL."""
+        _, _, ev_registry, _pitc_id, source_id = _five_anchor_topology()
+        ev = _make_ev(source_id, "EV-FA-NO-ID")
+        ear = _make_live_ear("EV-FA-NO-ID", "EAR-FA-NO-ID", None)
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        assert any("update_pit_context_id" in str(e) for e in exc.value.errors)
+        assert not ev_registry.contains("EAR-01", "EAR-FA-NO-ID")
+
+    def test_fail_closed_without_authoritative_pitc_store(self):
+        """LIVE update when the authoritative PITContextStore is UNAVAILABLE
+        → FAIL CLOSED (the PITC cannot be resolved — no shadow fallback)."""
+        src_archive = InMemoryRawSourceArchive()
+        _admit_src(src_archive, "SRC-FA-FC", b"fail-closed source")
+        # Registry constructed WITHOUT the authoritative PITContextStore
+        ev_registry = InMemoryEvidenceRegistry(source_archive=src_archive)
+        ev = _make_ev("SRC-FA-FC", "EV-FA-FC")
+        ear = _make_live_ear("EV-FA-FC", "EAR-FA-FC", "PITC-FA-FC")
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        joined = "\n".join(str(e) for e in exc.value.errors)
+        assert "PITC-01" in joined or "update_pit_context_id" in joined
+        assert not ev_registry.contains("EAR-01", "EAR-FA-FC")
+
+
+class TestExactResearchDirectorAuthorization:
+    """Exact canonical role token — machine-readable LIVE authorization.
+
+    ``created_by == "Research Director"`` (SM-12).  Substring matching is
+    forbidden; ``update_provenance`` is human provenance, NEVER authorization.
+    """
+
+    def test_exact_token_passes(self):
+        """Exact token 'Research Director' is the ONLY accepted authority."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology(
+            created_by="Research Director"
+        )
+        ev = _make_ev(source_id, "EV-EXACT-1")
+        ear = _make_live_ear("EV-EXACT-1", "EAR-EXACT-1", pitc_id)
+        ch = ev_registry.admit_evidence(ev, ear)
+        assert isinstance(ch, str) and len(ch) == 64
+
+    @pytest.mark.parametrize(
+        "spoof",
+        ["Research Director impostor",
+         "Researcher Director",
+         "Research director",
+         "research director",
+         "Research Director Extra",
+         "The Research Director"],
+    )
+    def test_substring_and_case_spoofs_fail(self, spoof):
+        """Any created_by that merely resembles / contains the token → FAIL."""
+        _, _, ev_registry, pitc_id, source_id = _five_anchor_topology(
+            created_by=spoof
+        )
+        ev = _make_ev(source_id, f"EV-CASE-{abs(hash(spoof)) % 100000}")
+        ear = _make_live_ear(
+            f"EV-CASE-{abs(hash(spoof)) % 100000}",
+            f"EAR-CASE-{abs(hash(spoof)) % 100000}", pitc_id,
+        )
+        with pytest.raises(TransactionFailure) as exc:
+            ev_registry.admit_evidence(ev, ear)
+        assert any(
+            "does not represent Research Director authority"
+            in str(e) for e in exc.value.errors
+        )

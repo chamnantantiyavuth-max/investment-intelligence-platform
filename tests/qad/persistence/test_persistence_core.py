@@ -1497,8 +1497,17 @@ class TestRrmLifecycle:
             start_time="2024-06-01T08:00:00",
             run_state="COMPLETED",
         )
-        with pytest.raises((TransactionFailure, Exception)):
+        # Exact violation path: the RRM-01 cross-field contract rule raises
+        # ValidationFailure inside the Transaction, surfaced as
+        # TransactionFailure with the contract violation as the inner error.
+        # A defect-closure test must not pass on an unrelated exception.
+        with pytest.raises(TransactionFailure) as exc:
             seeded_store.store(rrm)
+        assert any(
+            isinstance(e, ValidationFailure)
+            and "completion_time" in str(e)
+            for e in exc.value.errors
+        ), f"expected completion_time contract violation, got {exc.value.errors}"
 
     def test_failed_without_completion_time_fails(self, seeded_store):
         rrm = RunManifestRecord(
@@ -1509,8 +1518,13 @@ class TestRrmLifecycle:
             start_time="2024-06-01T08:00:00",
             run_state="FAILED",
         )
-        with pytest.raises((TransactionFailure, Exception)):
+        with pytest.raises(TransactionFailure) as exc:
             seeded_store.store(rrm)
+        assert any(
+            isinstance(e, ValidationFailure)
+            and "completion_time" in str(e)
+            for e in exc.value.errors
+        ), f"expected completion_time contract violation, got {exc.value.errors}"
 
     def test_terminal_mutation_fails(self, seeded_store):
         rrm = self._running_manifest()
@@ -1625,7 +1639,7 @@ class TestLiveUpdateCarrier:
     def test_update_without_provenance_fails(self, seeded_store):
         self._create_ev_src_fixtures(seeded_store)
         self._create_pitc(seeded_store, "PITC-LIVE-001", "LIVE_CASE_UPDATE",
-                          "Research Director: test")
+                          "Research Director")
         ear = self._ear(is_update=True, update_provenance="",
                         update_pit_context_id="PITC-LIVE-001")
         with pytest.raises(TransactionFailure) as exc:
@@ -1652,7 +1666,7 @@ class TestLiveUpdateCarrier:
     def test_pitc_wrong_mode_fails(self, seeded_store):
         self._create_ev_src_fixtures(seeded_store)
         self._create_pitc(seeded_store, "PITC-SEALED-001", "SEALED_HISTORICAL_EVALUATION",
-                          "Research Director: test")
+                          "Research Director")
         ear = self._ear(is_update=True, update_provenance="test provenance",
                         update_pit_context_id="PITC-SEALED-001")
         with pytest.raises(TransactionFailure) as exc:
@@ -1671,8 +1685,10 @@ class TestLiveUpdateCarrier:
 
     def test_valid_live_update_passes(self, seeded_store):
         self._create_ev_src_fixtures(seeded_store)
+        # Exact canonical role token per SM-12 / Erratum-002 (substring forms
+        # like "Research Director: test" are NOT the machine-readable token).
         self._create_pitc(seeded_store, "PITC-VALID-001", "LIVE_CASE_UPDATE",
-                          "Research Director: test")
+                          "Research Director")
         ear = self._ear(is_update=True, update_provenance="test provenance",
                         update_pit_context_id="PITC-VALID-001")
         ch = seeded_store.store(ear)

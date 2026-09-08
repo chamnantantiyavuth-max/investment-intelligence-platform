@@ -60,6 +60,16 @@ from qad.validator import validate_schema_instance
 # Research Director authority (frozen SM-12).  Free-text provenance alone never
 # grants LIVE access.
 
+# Exact canonical role token for the LIVE-update carrier (SM-12, Erratum-002 /
+# FD #137).  The referenced PITC-01.created_by MUST equal this token exactly —
+# the machine-readable authorization.  Substring matching is explicitly
+# forbidden: "Fake Research Director", "Not Research Director", or
+# "Research Director impostor" contain the substring but are NOT the role.
+# Human/person/rationale details belong in EAR-01.update_provenance, never in
+# created_by.  If a stronger machine-readable role authority exists in the
+# repo, this constant is the single point of substitution (documented, tested).
+RESEARCH_DIRECTOR_ROLE_TOKEN = "Research Director"
+
 
 def _validate_live_update_carrier(
     instance: BaseModel,
@@ -104,10 +114,13 @@ def _validate_live_update_carrier(
                 "is not LIVE_CASE_UPDATE"
             )
         # SM-12: LIVE_CASE_UPDATE authorized by Research Director.  The PITC
-        # created_by must name the Research Director role for the update to be
-        # authorized.  admitting_role is NOT the authority (admission vs LIVE
-        # authorization are distinct concepts).
-        if not created_by or "Research Director" not in str(created_by):
+        # created_by must be the EXACT canonical role token — the machine-
+        # readable authorization for the LIVE carrier.  Substring matching is
+        # unsafe (e.g. "Fake Research Director" / "Not Research Director" /
+        # "Research Director impostor" all CONTAIN the substring).  Free-text
+        # derived from the token is NOT the token; human provenance belongs
+        # in update_provenance, never in created_by.
+        if created_by != RESEARCH_DIRECTOR_ROLE_TOKEN:
             problems.append(
                 f"referenced PITC-01 {update_pit_context_id!r} created_by={created_by!r} "
                 "does not represent Research Director authority"

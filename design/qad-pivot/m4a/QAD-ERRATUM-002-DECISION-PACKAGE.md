@@ -1,11 +1,22 @@
 # QAD-ERRATUM-002-DECISION-PACKAGE
 
-> **Status:** DECISION PACKAGE — NOT YET AUTHORIZED
-> **Authority:** Pending Founder decision
-> **Classification:** CONTRACT DEFECT REPAIR (2 defects)
-> **Precedent:** QAD-M4A-SCHEMA-ERRATUM-001 (FD #136)
+> **Status:** RESOLVED BY FD #137 (7 Sep 2026) — historical decision package.
+> **Authority:** FD #137 (definitive); this package is the pre-decision analysis.
+>
+> **Resolution (supersession of the "NOT YET AUTHORIZED" status above):**
+> - Defect A selected = **Option A** (run_state + conditional completion_time)
+> - Defect B selected = **Option C** (EAR-01 carrier), refined by the required
+>   PITContext FK linkage (`EAR-01.update_pit_context_id → PITC-01.pit_context_id`)
+>   captured in FD #137 — this FK was the final selected repair's addition and
+>   SUPERSEDES the pre-decision "no FK changes under any option" statement.
+>
+> The original options below are preserved as historical analysis — do not
+> rewrite or delete them. See `QAD-M4A-SCHEMA-ERRATUM-002.md` for the applied
+> contract repair record.
 >
 > **Prerequisite:** M5.3 implementation authorization blocked until this package is resolved.
+> ⚠️ HISTORICAL — now resolved by FD #137. M5.3/S7/S8 remain NOT implementation-authorized
+> until Erratum-002 independent acceptance (see SESSION_CLOSEOUT / PROJECT_STATE).
 
 ---
 
@@ -143,7 +154,13 @@ This Decision Package explicitly does **NOT** propose changes to:
 - M4B evaluation methodology
 - State machine logic (SM-12 unaffected — the UPDATE semantics remain as frozen; only the carrier is added)
 - Schema count (currently 68; Option C = 68 unchanged, Option A = 68, Option B = 68)
-- FK references (no FK changes under any option)
+- FK references (no FK changes under any option) — **⚠️ PRE-DECISION PROPOSAL TRUTH,
+  SUPERSEDED by the final selected repair**: FD #137's execution of Defect B
+  (Option C) added one new FK `EAR-01.update_pit_context_id → PITC-01.pit_context_id`
+  (FK count 87 → 88). The proposal anticipated no FK change because Option C
+  as drafted carried no cross-schema link; the refinement captured in FD #137
+  required the PITContext linkage, which is part of the FINAL repair, not of
+  this historical package.
 - Retry logic (RR-01, S8 service contracts — these are M5.3 implementation, not schema repair)
 - PIT enforcement logic (S7 — this is M5.3 implementation, not schema repair)
 - Production stack, cost calibration, fixture sealing, routing (all remain post-M5.3 per FD #135)

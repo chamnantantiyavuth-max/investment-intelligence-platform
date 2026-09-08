@@ -178,7 +178,21 @@ All 68 M4A schemas are canonical. The five anchors are the stores with distinct 
 | MOD-01 | ModelInvocation | CASE-01.case_id |
 | PROV-01 | ProviderInvocation | CASE-01.case_id, MOD-01.model_invocation_id |
 
-**Purpose:** Run manifests are written once (RECORD_IMMUTABLE). Pure CR extension of CanonicalRecordStore.
+**Purpose (Erratum-002 / FD #137 reconciled):** Run manifests are written once
+(RECORD_IMMUTABLE) **except for the RRM-01 lifecycle finalization authorized by
+Erratum-002** (see reconciliation note below). Pure CR extension of
+CanonicalRecordStore.
+
+> **Reconciliation note — Erratum-002 / FD #137 (patch-forward, NOT a reopen):**
+> The original write-once statement for `RRM-01` is superseded ONLY for the
+> RRM-01 lifecycle finalization: a RUNNING manifest may be
+> version-preservingly updated/finalized once into COMPLETED or FAILED;
+> COMPLETED/FAILED is terminal immutable; the previous RUNNING version remains
+> recoverable. All other RunManifestStore schemas (SI-01, RR-01, BU-01, MOD-01,
+> PROV-01) retain their existing frozen semantics exactly as frozen at M5.2.
+> M5.2 remains FOUNDER ACCEPTED / CLOSED / FROZEN — this note reconciles
+> Erratum-002 / FD #137 against the RRM-01 write-once wording without opening
+> M5.2. See `QAD-M4A-SCHEMA-ERRATUM-002.md` (C) + `qad/persistence/immutability.py`.
 
 ### 2.5 PITContextStore (Anchor 5)
 
@@ -292,6 +306,7 @@ The policies are:
 | `FIELD_IMMUTABLE` | This specific field cannot change after initial write. Other fields may be mutable. | Adapter must reject writes that change this field. |
 | `MUTABLE` | Field can be freely updated. | No enforcement. |
 | `APPEND_ONLY_STATE` | State-transition field — only forward transitions are allowed. | Adapter must validate state transitions against the enum sequence. |
+| `CONDITIONAL_IMMUTABLE` | Lifecycle field — absent→present exactly once during a legal state finalization (Erratum-002 / FD #137). | Model level not frozen; persistence/state layer enforces the one-time transition. Current instance: `RRM-01.completion_time` (absent while RUNNING → present once at COMPLETED/FAILED finalization; terminal immutable). |
 
 ### 5.2 Versioning Rules per M4A Schema
 

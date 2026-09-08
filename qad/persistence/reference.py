@@ -967,21 +967,85 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
         ``admit_evidence()`` fails closed — no evidence may be
         admitted.  This is intentional: source authority must
         come from Item 5, not a local shadow copy.
+    pit_context_store:
+        OPTIONAL authoritative ``PITContextStore`` (Erratum-002 / FD #137).
+        ``EAR-01.update_pit_context_id`` → ``PITC-01.pit_context_id`` resolves
+        against THIS store.  A LIVE update that claims a PIT context FAILS
+        CLOSED when the store is unavailable — the PITC-01 lives in the
+        separate authoritative store, never a local shadow copy.
     """
 
-    def __init__(self, source_archive: RawSourceArchive) -> None:
-        """Initialize with an authoritative RawSourceArchive.
+    def __init__(
+        self,
+        source_archive: RawSourceArchive,
+        pit_context_store: PITContextStore | None = None,
+    ) -> None:
+        """Initialize with authoritative anchors.
 
-        Parameters
-        ----------
-        source_archive:
-            REQUIRED authoritative ``RawSourceArchive``.  Without it,
-            ``admit_evidence()`` fails closed — no evidence may be
-            admitted.  This is intentional: ''source authority must
-            come from Item 5'', not a local shadow copy.
+        ``source_archive`` is REQUIRED (evidence source authority comes from
+        Item 5, not a local shadow copy).  ``pit_context_store`` is OPTIONAL
+        and needed only for the LIVE-update carrier (``EAR-01``): without it,
+        the LIVE carrier check FAILS CLOSED — the authoritative PITContextStore
+        cannot be resolved.
         """
         super().__init__()
         self._source_archive = source_archive
+        self._pit_context_store = pit_context_store
+
+    # -- Cross-anchor resolvers (five-anchor authority) ----------------------
+    # The frozen M5.2 topology keeps the five stores SEPARATE.  The Evidence
+    # Registry admission transaction must resolve:
+    #   EV.source_id                -> authoritative RawSourceArchive
+    #   EAR.evidence_id             -> local/batch EvidenceRegistry
+    #   EAR.update_pit_context_id   -> authoritative PITContextStore
+    # No shadow PIT copy inside the EvidenceRegistry — the same authority
+    # pattern already used for RawSourceArchive (authoritative store ONLY).
+
+    def _composite_contains(
+        self, schema_id: SchemaID, record_id: RecordID,
+    ) -> bool:
+        """True when the record exists among the committed authoritative anchors.
+
+        Used as the admission Transaction's ``store_contains`` so that FK
+        existence resolves across the five-anchor topology: the registry's own
+        store, the authoritative RawSourceArchive, and (for PITC-01) the
+        authoritative PITContextStore.
+        """
+        if self.contains(schema_id, record_id):
+            return True
+        if self._source_archive is not None and self._source_archive.contains(
+            schema_id, record_id
+        ):
+            return True
+        if schema_id == "PITC-01":
+            if self._pit_context_store is None:
+                return False  # FAIL CLOSED — authoritative store unavailable
+            return self._pit_context_store.contains("PITC-01", record_id)
+        return False
+
+    def _composite_get_existing(
+        self, schema_id: SchemaID, record_id: RecordID,
+    ) -> BaseModel | None:
+        """Resolve an existing record across the committed authoritative anchors.
+
+        Used as the admission Transaction's ``get_existing`` so the LIVE
+        carrier check (``_validate_live_update_carrier``) resolves
+        ``EAR-01.update_pit_context_id`` against the authoritative
+        PITContextStore — never a registry-local shadow copy.  An unavailable
+        authoritative store while a PIT context is claimed → None (fail closed).
+        """
+        rec = self._load_raw(schema_id, record_id)
+        if rec is not None:
+            return rec
+        if self._source_archive is not None:
+            rec = self._source_archive._load_raw(schema_id, record_id)
+            if rec is not None:
+                return rec
+        if schema_id == "PITC-01":
+            if self._pit_context_store is None:
+                return None  # FAIL CLOSED — authoritative store unavailable
+            return self._pit_context_store._load_raw("PITC-01", record_id)
+        return None
 
     # -- Source-existence check (bridges to RawSourceArchive, fail-closed) ---
 
@@ -1100,22 +1164,18 @@ class InMemoryEvidenceRegistry(InMemoryCanonicalRecordStore):
                 )
 
         # ---- Atomic admission via Transaction ----
-        # Build a composite store_contains that checks both the
-        # EvidenceRegistry AND the authoritative RawSourceArchive
-        def _composite_contains(schema_id: SchemaID, record_id: RecordID) -> bool:
-            if self.contains(schema_id, record_id):
-                return True
-            if self._source_archive is not None:
-                return self._source_archive.contains(schema_id, record_id)
-            return False
-
+        # Cross-anchor resolvers (five-anchor topology, Erratum-002):
+        #   store_contains  -> FK existence (EV→SRC, EAR→EV, EAR→PITC)
+        #   get_existing    -> LIVE carrier lookup (EAR.update_pit_context_id)
+        # Both resolve EV→RawSourceArchive and EAR.update_pit_context_id→
+        # PITContextStore; neither trusts a registry-local shadow PITC.
         snapshot = self._snapshot()
         try:
             tx = Transaction(
-                store_contains=_composite_contains,
+                store_contains=self._composite_contains,
                 commit_store=self._write_record,
                 commit_delete=self._remove_record,
-                get_existing=self._load_raw,
+                get_existing=self._composite_get_existing,
                 get_existing_hash=self._load_hash,
                 commit_snapshot=self._snapshot,
                 commit_restore=self._restore,
@@ -1646,8 +1706,14 @@ class InMemoryFinancialFactStore(InMemoryCanonicalRecordStore):
 class InMemoryRunManifestStore(InMemoryCanonicalRecordStore):
     """REFERENCE / NON-PRODUCTION — run manifest store.
 
-    Manifests are write-once per contract (RECORD_IMMUTABLE enforcement
-    inherited from ``Transaction`` → ``check_immutability``).
+    Manifests are write-once per contract (RECORD_IMMUTABLE), with the
+    Erratum-002 / FD #137 lifecycle exception: RRM-01 carries an
+    append-only lifecycle (RUNNING -> COMPLETED / FAILED) where a
+    RUNNING manifest may be version-preservingly finalized once into
+    COMPLETED or FAILED.  Terminal states are immutable; the previous
+    RUNNING version remains recoverable.  Other RunManifestStore
+    schemas (SI-01, RR-01, BU-01, MOD-01, PROV-01) retain
+    write-once semantics.
     """
     pass
 

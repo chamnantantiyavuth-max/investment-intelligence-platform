@@ -1,8 +1,8 @@
 # QAD-M5.1 Implementation Type Binding Policy
 
-> **Status:** SYNCED / CURRENT (Erratum 001 applied, FD #136)
-> **Authority:** FD #135 + FD #136; M4A Canonical Schema Registry (FROZEN + Erratum 001)
-> **Date:** 2026-08-24
+> **Status:** SYNCED / CURRENT (Erratum 001 applied, FD #136; Erratum 002 applied, FD #137)
+> **Authority:** FD #135 + FD #136 + FD #137; M4A Canonical Schema Registry (FROZEN + Erratum 001 + Erratum 002)
+> **Date:** 2026-08-24 (updated 2026-09-08 for Erratum 002 / FD #137)
 >
 > **Purpose:** Document all technology binding decisions made when translating
 > technology-neutral M4A schema notation into Python runtime types. This is
@@ -97,6 +97,7 @@ reconciles policy with runtime. Current entries:
 | `recovery_rate_implied` | `float` | PIE-01, RDCF-01 |
 | `recovery_capital_needed` | `float` | PLA-01 |
 | `probability_weight` | `float` | SCEN-01 |
+| `is_update` | `bool` | EAR-01 (Erratum 002 / FD #137) — LIVE_CASE_UPDATE carrier flag; bound `bool` (not `int`, not `str`) |
 
 Fields with `[]`/`{}` container shapes are exempt (collection shape wins over scalar binding) — e.g. `RRM-01.cost` is dict-typed.
 
@@ -110,11 +111,18 @@ Fields with `[]`/`{}` container shapes are exempt (collection shape wins over sc
 |---|---|---|
 | `RECORD_IMMUTABLE` | Per-field `Field(frozen=True)` on all fields | "Record immutable" or "Context immutable" → whole surface frozen |
 | `FIELD_IMMUTABLE` | `Field(frozen=True)` | Individual field cannot be mutated after creation |
-| `APPEND_ONLY` | Not enforced in M5.1 | State transitions require new version, not mutation |
 | `APPEND_ONLY_STATE` | Not enforced in M5.1 | State transitions append-only (M5.2 persistence/state layer) |
+| `CONDITIONAL_IMMUTABLE` | Model level: NOT frozen | Lifecycle field — absent→present exactly once during a legal state finalization; enforced by the persistence/state layer (Erratum 002 / FD #137) |
 | `MUTABLE` | No enforcement | Field may be freely updated |
 
-**PIT fields** are always `FIELD_IMMUTABLE` (point-in-time data cannot change).
+**PIT fields** are normally `FIELD_IMMUTABLE` (point-in-time data cannot change).
+**One explicitly authorized lifecycle exception (Erratum 002 / FD #137):**
+`RRM-01.completion_time` is a PIT field classified `CONDITIONAL_IMMUTABLE` —
+MUST be absent while `run_state = RUNNING`, and may transition absent→present
+exactly once during the legal RUNNING→COMPLETED/FAILED finalization. Model
+level: NOT frozen. Persistence/state layer: the transition is allowed only
+as part of finalization; COMPLETED/FAILED is terminal immutable. All other
+PIT fields remain `FIELD_IMMUTABLE`.
 
 **PITContext (PITC-01):** "Context immutable" → `RECORD_IMMUTABLE`. All PITContext fields frozen (`case_id`, `created_by`, `mode`, `pit_context_id`, `exception_reason`, `evidence_count_post`, `evidence_count_pre`). Mutation test verifies failure.
 
@@ -128,7 +136,7 @@ Provenance and PIT fields are derived from the frozen M4A `provenance fields` an
 
 1. Added to the schema's expected surface (as optional unless also declared required)
 2. Marked with `is_pit` / `is_provenance` metadata
-3. PIT fields have `frozen=True`
+3. PIT fields have `frozen=True` — **with one explicitly authorized exception** (Erratum 002 / FD #137): `RRM-01.completion_time` is a PIT field that is NOT frozen at model level because it is `CONDITIONAL_IMMUTABLE` (absent→present exactly once during legal RUNNING→COMPLETED/FAILED finalization, enforced by the persistence/state layer). All other PIT fields remain `frozen=True`.
 
 **Not implemented in M5.1:** Runtime enforcement of `retrieval_timestamp` > `as_of_date` or similar cross-field validation rules.
 

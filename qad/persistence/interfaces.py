@@ -425,8 +425,14 @@ class FinancialFactStore(CanonicalRecordStore, Protocol):
 class RunManifestStore(CanonicalRecordStore, Protocol):
     """Run-manifest record store.
 
-    Manifests are written once and never updated (``RECORD_IMMUTABLE``
-    per contract descriptor for ``RRM-01``).
+    Manifests are written once and never updated (``RECORD_IMMUTABLE`` per
+    contract descriptor for ``RRM-01``) **with the Erratum-002 / FD #137
+    lifecycle exception**: ``RRM-01`` carries an append-only lifecycle
+    (``RUNNING`` → ``COMPLETED`` / ``FAILED``).  A RUNNING manifest may be
+    version-preservingly finalized once into COMPLETED or FAILED; terminal
+    states are immutable; the previous RUNNING version remains recoverable.
+    Other RunManifestStore schemas (SI-01, RR-01, BU-01, MOD-01, PROV-01)
+    retain write-once semantics unchanged.
     """
     pass
 

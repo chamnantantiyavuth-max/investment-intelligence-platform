@@ -188,7 +188,26 @@ Cross-field invariants:
 - INV-EAR-01: `update_provenance` REQUIRED if `is_update = true`
 - INV-EAR-02: `update_pit_context_id` REQUIRED if `is_update = true`; referenced PITC must have `mode = LIVE_CASE_UPDATE`
 
-Validated by contract conformance checker (105/105 PASS, 0 global violations)
-and full suite (596/596 PASS).
+**Verification truth (2026-09-08 — Erratum-002 independent-audit correction cycle, Commit C + Commit D):**
 
-<!-- 2026-09-07 16:20 UTC+7 -->
+| Check | Result | Class |
+|---|---|---|
+| Full pytest suite | **630/630 PASS** (LOCAL, hermes-agent venv) | LOCAL — real run, 5.35s |
+| QAD contract conformance | 105/105 PASS | LOCAL |
+| M4A validator (`validate-m4a-contracts.py`) | 173/173 PASS | LOCAL |
+| M4B validator (`validate-m4b-pack.py`) | 93/93 PASS | LOCAL |
+| Item-13 cross-contract (`test_cross_contract_validation.py`) | 7/7 PASS | LOCAL |
+| RRM lifecycle targeted (`TestRrmLifecycle`) | 11/11 PASS | LOCAL |
+| LIVE carrier targeted (`TestLiveUpdateCarrier`) | 7/7 PASS | LOCAL |
+| Five-anchor live-update integration (`test_erratum002_diagnostic_five_anchor.py`) | 16/16 PASS | LOCAL |
+
+All counts are LOCAL pytest results on the corrected implementation. GitHub/Vercel
+deploy status is NOT Python CI and proves nothing about the test suite.
+
+> **Change note vs the 596/596 claim:** this erratum's verification section
+> originally recorded the pre-Erratum-002-era full suite count "596/596". The
+> post-Erratum suite is larger (630 = 596 - 0 + 18 Erratum-002 defect-closure
+> + 16 five-anchor integration). The 596/596 claim is superseded by the exact
+> LOCAL counts above.
+
+<!-- 2026-09-07 16:20 UTC+7 (updated 2026-09-08: verification truth corrected to exact post-correction LOCAL counts) -->
