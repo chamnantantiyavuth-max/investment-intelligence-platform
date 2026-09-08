@@ -40,6 +40,7 @@ from qad.persistence.errors import (
     MissingForeignKey,
     NonCanonicalAdmissionRejected,
     PersistenceError,
+    PITBlockError,
     TransactionFailure,
     ValidationFailure,
 )
@@ -98,6 +99,7 @@ __all__ = [
     "MissingForeignKey",
     "NonCanonicalAdmissionRejected",
     "PersistenceError",
+    "PITBlockError",
     "TransactionFailure",
     "ValidationFailure",
     # -- Interfaces --

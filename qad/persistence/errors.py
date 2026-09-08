@@ -112,3 +112,26 @@ class NonCanonicalAdmissionRejected(PersistenceError):
     def __init__(self, message: str, *, schema_id: str | None = None,
                  record_id: str | None = None):
         super().__init__(message, schema_id=schema_id, record_id=record_id)
+
+
+class PITBlockError(PersistenceError):
+    """Raised (M5.3) when PIT enforcement forbids access to evidence.
+
+    Deterministic contract error — never a silent empty result.  Carries the
+    PIT verdict (BLOCKED / SEAL_INVALIDATED) and the machine reason so a
+    consumer can audit WHY forbidden evidence was unreachable.
+
+    Semantics (QAD-M4B pit-leakage-proof + M5.2 §11.1, preserved):
+    - post-AS_OF in SEALED_HISTORICAL_EVALUATION  -> BLOCKED (hard block)
+    - post-AS_OF in LIVE_CASE_UPDATE without the Erratum-002 carrier -> BLOCKED
+    - REPLAY_EXCEPTION without exact FOUNDER actor / provenance -> BLOCKED
+    - canonical-hash tamper on a sealed record   -> SEAL_INVALIDATED
+    """
+
+    def __init__(self, message: str, *, schema_id: str | None = None,
+                 record_id: str | None = None,
+                 verdict: str | None = None,
+                 reason: str | None = None):
+        self.verdict = verdict      # "BLOCKED" | "SEAL_INVALIDATED"
+        self.reason = reason        # machine-readable blocking reason
+        super().__init__(message, schema_id=schema_id, record_id=record_id)
