@@ -1,3 +1,56 @@
+# Session — 2026-09-09 (M5.3 RE-AUDIT FAIL → CORRECTION PASS 3 DECISION PACKAGE — READ-ONLY)
+
+> **Scope:** Interactive session ~15:45–16:30 UTC+7 — the Founder performed the
+> 2nd independent re-audit from `main @ 283a7aa` (source-level contract audit;
+> his sandbox could not independently clone to execute the suite, so the verdict
+> is source/authority-based, not an independent run of 706/706).
+> Verdict: **M5.3 — INDEPENDENT RE-AUDIT FAIL / CORRECTION REQUIRED (F1–F6)**.
+> Hermes produced a READ-ONLY Correction Pass 3 Decision Package (in-chat then
+> persisted at end-of-session as `design/qad-pivot/m5/
+> QAD-M5.3-CORRECTION-PASS-3-DECISION-PACKAGE.md`). F1 was CONFIRMED by a direct
+> read-only runtime probe against the reference persistence store.
+
+## Key outcomes
+
+- **F1 — APPEND_ONLY_STATE not enforced (CRITICAL, Class A):** M5.2 §5.4 (line 357)
+  requires forward-only transition validation; `immutability.py` ends
+  "currently treated as mutable". **Runtime probe:** direct same-stage_id RSR
+  `FAILED→COMPLETE` and `COMPLETE→FAILED` BOTH ACCEPTED by the canonical store
+  (SM-3-illegal). Version preservation ≠ transition enforcement.
+- **F2 — Cross-anchor terminal/provenance recovery missing (CRITICAL, Class A+B):**
+  RSR terminal persists before RR+RRM batch; a batch failure leaves un-reconciled
+  provenance; docstring "resume reconciles via retry_count" has no code path.
+- **F3 — SI-01 status lifecycle not honest (CRITICAL, Class C):** test helper
+  seeds immutable `status=FAILURE` before execution; kernel never updates it;
+  FD #138 sequence ("initial success → SI-01=SUCCESS") not implementable as
+  written. **Awaits Founder ruling** (3 options in package).
+- **F4 — SM-3 FAILED side-effect RFR-01 missing (HIGH, Class A):** no RFR-01
+  construction in retry_kernel.py; SM-3 mandates ResearchFailureRecord created.
+- **F5 — deterministic_uuid7 not RFC-9562 time-conformant (HIGH, Class A):**
+  48-bit timestamp field = SHA-256-derived hash, not unix-ms; is_uuid7 cannot
+  detect. **Awaits Founder ruling** on strictness (2 options in package).
+- **F6 — RRM retries lineage ambiguous (MEDIUM, Class C):** SUCCEEDED retry not
+  referenced on RRM-01; frozen text inconsistent (count vs list).
+  **Awaits Founder ruling** (3 options in package).
+- Package classifications: A ×4 (F1/F2/F4/F5), C ×2 (F3/F6). No erratum. No
+  FD #139. No frozen M3/M4A/M4B text modified. M6 branch untouched.
+- End-of-session commit: docs-only (decision package + SESSION_CLOSEOUT +
+  PROJECT_STATE markers). Functional audit baseline `283a7aa` unchanged.
+
+## Recommended next action
+
+1. **Founder rulings:** F3 (SI-01 lifecycle — options a/b/c), F5 (UUIDv7
+   strictness), F6 (retries semantics).
+2. On rulings → **GO Correction Pass 3** (F1a RSR-only transition enforcement,
+   F2 reconciliation, F4 RFR-01, F5/F6 per rulings) with diagnostic-first RED
+   tests (persistence-level for F1 — not kernel-path substitution).
+3. **M5.3 = NOT CLOSED / NOT FROZEN** until an independent re-audit of the
+   pass-3 corrections passes. Production / Live QAD / M6 / M7 NOT AUTHORIZED.
+
+---
+
+<!-- 2026-09-09 16:30 UTC+7 -->
+
 # Session — 2026-09-09 (M5.3 CORRECTION PASS 2: Founder RE-AUDIT FAIL of pass-1 → diagnosis → runtime fix)
 
 > **Scope:** Interactive session ~13:30–14:30 UTC+7 — the Founder performed the
