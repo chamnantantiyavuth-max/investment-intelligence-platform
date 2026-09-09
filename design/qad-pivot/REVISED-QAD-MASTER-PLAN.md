@@ -91,9 +91,23 @@
 - Candidate outcomes: AUTO_RESEARCH_NOW / WATCH_FOR_PRICE / WATCH_FOR_EVIDENCE / DATA_LIMITED_WATCH / REJECT
 - Priority ordering per QAD §6.3
 
-### QAD-M6 — Source Intelligence / NotebookLM Engineering
+### QAD-M6 — Source Intelligence / Gemini Notebook Engineering
+
+> **Founder direction (9 Sep 2026 — M6 planning clarification only, NOT an implementation authorization):**
+> `deep_research_provider` → **Gemini Notebook Deep Research** (primary/default); `research_corpus_provider` → **Gemini Notebook** (formerly NotebookLM).
+> The provider abstraction in frozen contracts (Evidence/Source Model §4) is RETAINED — Gemini Notebook is the M6 implementation binding, not a replacement for the abstract architecture.
+> Gemini AI / Gemini App Deep Research and standalone paid Gemini Deep Research API = **OUT of default M6 scope** (no parallel Hermes → Gemini AI DR → export → Notebook pipeline; a future Founder Decision may authorize exceptions).
+> Economic default = Founder-paid Google AI annual subscription capability; no duplicate DR runs across Gemini products; Deep Research allocated to material evidence gaps, not indiscriminately.
+> M6 remains **NOT STARTED**. Historical/frozen "NotebookLM" references are preserved (lineage kept; no mass rename).
+
 - SEC/IR/web source handling
 - NotebookLM research lifecycle integration
+- **Gemini Notebook Deep Research — evidence-gap-driven** (Full Research Protocol Stage 4 → Stage 5): each request traceable to existing anchors (case_id, case_version, research_run_id, evidence_gap_id equivalent, research question, AS_OF/PIT context, requester/role, timestamp, Notebook identity, result artifact, discovered + imported source lists, validation disposition)
+- **Web-enabled external source discovery** — Gemini Notebook Deep Research is NOT corpus-only; it may discover sources outside the existing notebook corpus
+- **Deep Research report + cited/uncited source-candidate handling → source review / selective import** (no blind "Import All" as production policy): prefer original/primary sources for material claims, preserve contradicting sources, deduplicate syndicated copies, record disposition (imported / rejected / unavailable / deferred)
+- **Non-canonical boundary preserved** (M5.2 §3 `NonCanonicalResearchArtifactStore` / Research Room): Deep Research report, Notebook chat output, and discovered sources are NON-CANONICAL until original-source validation and canonical admission — never masquerade as the Canonical Evidence Registry
+- **PIT isolation (LIVE vs SEALED/REPLAY):** dedicated PIT-isolated notebook/workspace per sealed case_version / AS_OF, or provable sealed source-snapshot mechanism — a persistent notebook must never backdoor Point-in-Time controls (upstream research-context leakage prevented, not just downstream admission)
+- **Deep Research observability / run-manifest integration** — DR runs, notebook_runs, providers, model/token telemetry on RRM-01 existing MUTABLE fields; failure/retry semantics consistent with frozen contracts (S10/S8); browser/UI automation of the subscription surface, if needed, lives behind the adapter boundary (FD #105 R4 technical blocker recorded; one-time Founder Chrome remote-debugging approval required before any leaned-on automation)
 - Source validation and deduplication
 - Discovery provenance tracking
 - Notebook → Canonical Evidence Registry admission bridge
@@ -166,3 +180,4 @@
 - Founder acceptance
 
 <!-- 2026-08-16 UTC+7 -->
+<!-- 2026-09-09 15:10 UTC+7 (M6 planning clarification — Gemini Notebook Deep Research direction; planning only, M6 NOT STARTED; patch isolated on docs/m6-gemini-notebook-dr pending M5.3 re-audit pin) -->
