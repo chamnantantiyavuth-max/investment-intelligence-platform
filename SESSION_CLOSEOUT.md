@@ -1,3 +1,75 @@
+# Session — 2026-09-09 (M5.3 CORRECTION ROUND: Founder independent audit FAIL → FD #138 → CORRECTION IMPLEMENTED)
+
+> **Scope:** Interactive session ~12:00–13:30 UTC+7 — the Founder returned the
+> independent remote audit of the 8 Sep M5.3 implementation (baseline
+> `5d77c135ebfd0dd1046c74ad46df6978e003c297`) with a FAIL verdict and the
+> correction GO in full. Executed READ-ONLY analysis → decision package →
+> FD #138 → correction implementation. **Final state: M5.3 = CORRECTION
+> IMPLEMENTED / READY FOR FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN.**
+
+## Key outcomes
+
+- **Founder independent audit verdict: M5.3 — INDEPENDENT AUDIT FAIL /**
+  CONTRACT CORRECTION REQUIRED — NOT ACCEPTED / NOT CLOSED / NOT FROZEN**
+  (10 material findings: 3-retries-vs-3-attempts drift; RR-01 used for the
+  initial attempt; retry_id not UUID v7; checkpoint replay unimplemented;
+  retried-write idempotency unproven; fail-open retry history; RR/RRM
+  partial-state window; S7 public authority bypass; silent-empty query;
+  source-timestamp ambiguity; M4B TEST-7 seal substitution). Erratum-002 =
+  FROZEN — NOT reopened.
+- **READ-ONLY correction decision package:** `design/qad-pivot/m5/
+  QAD-M5.3-CORRECTION-DECISION-PACKAGE.md` — 16-section contract/implementation
+  analysis with line-cited frozen authorities, classification (§15: 9×A,
+  2×C, 3×B), final gate "M5.3 CORRECTION — READY FOR FOUNDER DECISION", §17
+  Founder decisions (erratum: A-class count = NINE, not ten).
+- **FD #138 registered** (central register item 138, fd_count formula
+  44+16+94 = **154**; vault fd-register row added; M5.3 GO documented).
+- **Correction implemented (existing canonical surfaces only):**
+  - `qad/ids.py` — RFC-9562 UUID v7 generator + 7 direct tests.
+  - S8 `retry_kernel.py` — retry budget = INITIAL + max 3 retries (max 4
+    executions); RR-01 retry-only (clean first-run success = ZERO RR-01);
+    ESCALATED removed (`escalated_to` never set); RSR-01 checkpoint authority
+    (replay keyed (case_id, case_version, stage_name), checkpoint_ref =
+    `cp:<case_version>:<stage_id>`, output_ids preserved); fail-closed retry
+    history; RR-01 + RRM-01 single `store_batch` with manifest preflight
+    BEFORE execution; retried-write idempotency + conflict tests.
+  - S7 `pit_enforcement.py` — ID-based public `adjudicate(evidence_id,
+    pitc_id)` (object adjudicator private); fail-closed store/registry reads;
+    source-time PIT `effective = MAX(EV.as_of, authoritative source time)`
+    (SEALED requires SRC-01.publication_date → missing = PIT BLOCK; LIVE/REPLAY
+    fall back to retrieval_date; unresolvable/uninterpretable → FAIL CLOSED);
+    EV canonical-hash check relabeled defense-in-depth `record_integrity`
+    (M4B corpus-seal verification DEFERRED to fixture-sealing gate, Option B).
+- **Verification (real LOCAL runs):** M5.3 S7+S8 41/41 · ids 7/7 · QAD tests
+  449/449 · **full suite 688/688** (668 − 28 replaced + 41 new + 7 = 688
+  exact; total NOT forced) · M4A validator 173/173 · M4B validator 93/93 ·
+  locked audit register 4/4 (date anchor 7 Sep → 9 Sep 2026 per FD #138).
+- **Diagnostic-first discipline preserved:** the new contract tests were
+  demonstrated RED against the original `5d77c13` candidate (missing
+  `ExecutionContext` surface + contract violations) BEFORE any code change.
+- **Docs corrected preserving chronology:** MAP = Section F supersedes
+  Sections A–E (marked HISTORICAL, originals untouched); closeout rewritten
+  for the correction round; PROJECT_STATE + SESSION_CLOSEOUT synced.
+
+## Recommended next action
+
+1. **Founder independent RE-AUDIT** of the corrected implementation
+   (decision package §17 + MAP Section F + closeout; suite 688/688 REAL;
+   M4A 173/173; M4B 93/93). Verify against the 16 fighting points of the
+   original audit (retry budget, RR-01 role, ESCALATED, checkpoint replay,
+   retried-write idempotency, fail-closed history, RR/RRM atomicity, UUID v7,
+   S7 authority boundary, fail-closed S7, source-time PIT, seal Option B,
+   doc truth).
+2. On PASS → authorize M5.3 closure/freeze (register acceptance; update
+   authoritative state surfaces + AGENTS.md checkpoint).
+3. Do NOT auto-close M5.3 — the GO §19 requires the Founder re-audit gate.
+4. Production / Live Autonomous QAD / M6 / M7 / fixture sealing remain NOT
+   AUTHORIZED.
+
+---
+
+<!-- 2026-09-09 13:30 UTC+7 -->
+
 # Session — 2026-09-09 (cron review — daily state reconciliation)
 
 > **Scope:** 9 Sep 2026 ~11:15 UTC+7 unattended daily review (governed-scheduled-review skill).

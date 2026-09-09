@@ -5,6 +5,14 @@
 > **Governing baseline:** M5.2 = FOUNDER ACCEPTED / CLOSED / FROZEN · Erratum-002 =
 > FOUNDER ACCEPTED / CLOSED / FROZEN · accepted LOCAL regression = 640/640
 >
+> **⚠️ SUPERSEDED IN PART BY FD #138 (9 Sep 2026) — M5.3 CORRECTION ROUND.**
+> The independent Founder audit found contract drift in the ORIGINAL 8 Sep
+> implementation (S7/S8), and FD #138 issued the correction GO.  Sections A–E
+> below describe the ORIGINAL implementation and remain as HISTORICAL record;
+> **Section F (appended) is the authoritative corrected contract** for the
+> current runtime after the correction round.  Where A–E conflict with F, F
+> governs.  Chronology preserved — the original claims are NOT rewritten.
+>
 > **Scope discipline (per FD):** M5.3 is a **bounded reference implementation**.
 > This is NOT the full §11.3 Query API, NOT a production adapter selection,
 > NOT business logic. The burden of proof is on adding query surface, not on
@@ -215,4 +223,114 @@ Explicit-path staging only. No `git add -A` / `.` / `--all`. Staged diff
 inspected before every commit. Diagnostic→fix chronology not applicable here
 (FD authorized direct bounded implementation with direct contract tests).
 
-<!-- 2026-09-08 16:50 UTC+7 -->
+## F. CORRECTION ROUND (FD #138 — AUTHORITATIVE CORRECTED CONTRACT)
+
+> **Authority:** FD #138 — QAD M5.3 Correction Round GO + Founder Decisions (9 Sep 2026).
+> This section supersedes the drifted S7/S8 semantics recorded in Sections A–E.
+> Original implementation commits: `bac8bf4` `ceff38d` `f070771` `5d77c13` (HISTORICAL).
+> Correction commits: see closeout.  Chronology preserved.
+
+### F.1 Retry budget (corrects §B "max 3 attempts")
+- **INITIAL execution + max 3 RETRIES = max 4 stage executions.** The initial
+  execution is NOT retry #1 and is NOT an RR-01.
+- retry #3 fails → **FAILED** always (ESCALATED removed from M5.3; the RR-01
+  ESCALATED enum stays reserved; `escalated_to` is never populated).
+
+### F.2 SI-01 vs RR-01 lifecycle (corrects §B "one RR-01 per attempt")
+- SI-01 = initial service invocation. RR-01 = **retry attempts for a failed
+  operation** (M4A RR-01 purpose). A clean first-run success creates **ZERO
+  RR-01**.
+
+### F.3 Execution identity / checkpoint (corrects §B "resume from last recorded checkpoint")
+- Execution identity = **(case_id, authoritative case_version, stage_name)**;
+  case_version resolved from the authoritative RRM-01 run context (manifest
+  preflight, RUNNING required).
+- **RSR-01 is the checkpoint/state authority** (existing frozen schema):
+  `stage_name` / `stage_state` / `checkpoint_ref` / `output_ids[]` /
+  `retry_count`, frozen revision rule "Restart from last checkpoint preserves
+  previous output".
+- Replay triggers ONLY on a terminal COMPLETE RSR-01 **for the same
+  case_version** (encoded in `checkpoint_ref` as `cp:<case_version>:<stage_id>`).
+  Different stage OR different case_version → NOT false-idempotently replayed.
+- Resume NEVER uses `len(RR records) + 1`.
+
+### F.4 Fail-closed retry history (corrects §B idempotency)
+- `list_all("RR-01")` / `list_all("RSR-01")` failure ⇒ typed error propagates;
+  the stage MUST NOT execute. Store failure is NEVER "no retry history".
+
+### F.5 RR-01 + RRM-01 atomicity (corrects §B "RRM integration honest, minimal")
+- RR-01 + RRM-01 provenance = **ONE same-store atomic `store_batch`**
+  (RunManifestStore — M5.2 §7.1). All commit or none.
+- Manifest preflight (exists, RUNNING, case match) happens **BEFORE stage
+  execution**. Missing/terminal manifest ⇒ fail before execution, zero records.
+
+### F.6 UUID v7 — NO WAIVER (corrects §B "retry_id = RR-{inv}-{attempt}")
+- `qad/ids.py` — narrow RFC-9562 UUID v7 generator, product-generated
+  canonical IDs (retry_id, stage_id) comply. M5.3 conformance-test fixtures
+  use valid UUID v7 for schemas whose frozen contracts require it.
+- No repository-wide ID retrofit.
+
+### F.7 S7 public authority boundary (corrects §A `adjudicate(evidence, pitc, ear)`)
+- Public surface = **IDs only**: `adjudicate(evidence_id, pitc_id)`,
+  `query(pitc_id)`, `access(evidence_id, pitc_id)`. The service resolves
+  authoritative PITC-01 / EV-01 / EAR-01 from canonical stores itself.
+- Object-level adjudication is PRIVATE (`_adjudicate_object`), reached only
+  with store-resolved records. Erratum-002 authority isolation unchanged.
+
+### F.8 S7 store failure ⇒ fail closed (corrects §C "candidates = []")
+- EvidenceRegistry / PITC / source-archive read failures raise typed
+  deterministic errors (PITBlockError / typed persistence errors).
+  Infrastructure failure is NEVER a legitimate empty evidence set; "record not
+  found" (KeyError) is differentiated from "authority unavailable".
+
+### F.9 Source-time PIT (Founder decision, resolves the §A source-archive gap)
+- `effective_pit_time = MAX(EV-01.as_of, authoritative_source_available_at)`.
+- SEALED_HISTORICAL_EVALUATION: SRC-01.publication_date REQUIRED; missing ⇒
+  **PIT BLOCK** (not eligible; retrieval_date NEVER substituted).
+- LIVE_CASE_UPDATE / REPLAY_EXCEPTION: publication_date if present, else
+  SRC-01.retrieval_date (conservative availability evidence).
+- Source metadata unresolvable / timestamp uninterpretable ⇒ **FAIL CLOSED**
+  (PITBlockError). Prevents the leak: financial period pre-AS_OF but filing
+  published post-AS_OF.
+
+### F.10 Seal semantics (corrects §D "S7 integrity/seal = M4B TEST 7")
+- **Option B (FD #138 §12):** full corpus-seal verification DEFERRED to the
+  fixture-sealing POST_IMPLEMENTATION_PRE_PRODUCTION gate. The EV canonical-hash
+  check is defense-in-depth, labeled **canonical evidence-record integrity /
+  tamper detection** (`record_integrity`) — NOT the M4B TEST-7 proof.
+
+### F.11 Corrected public interfaces
+```
+# S8 (qad/m53/retry_kernel.py)
+RetryKernel(store: RunManifestStore, stage_store: CanonicalRecordStore, *,
+            policy=RetryPolicy(max_retries=3), now=..., uuid_factory=...)
+execute(invocation: ServiceInvocation,
+        stage_name: ResearchStageRecordStage_name,
+        stage: Callable[[StageContext], None], *,
+        manifest_id: str) -> RetryOutcome
+   # NO escalated_to parameter (ESCALATED removed from M5.3)
+
+# S7 (qad/m53/pit_enforcement.py)
+PITEnforcementService(*, pitc_store, evidence_registry, source_archive,
+                      rd_role_token="Research Director",
+                      founder_role_token="FOUNDER")
+adjudicate(evidence_id: str, pitc_id: str) -> PITVerdict     # IDs only
+query(pitc_id: str) -> PITQueryResult                        # fail closed
+access(evidence_id: str, pitc_id: str) -> EvidenceRecord     # PITBlockError
+
+# qad/ids.py (new utility — NOT canonical)
+generate_uuid7(ts_ms: int | None = None) -> uuid.UUID
+is_uuid7(value: str | uuid.UUID) -> bool
+```
+
+### F.12 Correction scope boundary (unchanged from GO §15)
+Authorized: S7/S8 correction, RSR-01 integration (existing surface),
+retried-write idempotency proof, same-store RR/RRM atomicity, UUID-v7
+compliance for M5.3 IDs, source-time PIT (existing SRC-01 fields), direct
+adversarial tests, map/closeout correction.
+NOT authorized: new canonical schema, frozen schema/state-machine change,
+Erratum-003, reopening Erratum-002, full §11.3 Query API, production adapter
+selection, M6, M7, Production Release, Live Autonomous QAD, workforce/cron
+cutover, full fixture sealing.
+
+<!-- 2026-09-09 13:30 UTC+7 -->
