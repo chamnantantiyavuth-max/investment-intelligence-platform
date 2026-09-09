@@ -435,35 +435,37 @@ class TestCheckpointAndIdentity:
         assert len(stage_store.list_all("RR-01")) == 1
 
     def test_rsr_output_ids_preserved_across_retries(self):
-        """FD #138 §4: previous stage output is preserved through retries —
-        output_ids carry forward into the resumed RSR records."""
+        """FD #138 §4 (re-audit §3/§4): ONE stable stage_id across the
+        execution; retry output accumulates through the RSR state and the
+        final COMPLETE record preserves the produced outputs.  Prior attempt
+        versions are recoverable via the append-only version mechanism (the
+        pre-correction 'new RSR record per attempt' lifecycle was replaced by
+        the Founder-mandated stable stage identity)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
-        produced = []
-
-        def stage(ctx: StageContext) -> None:
-            produced.append(ctx.previous_output_ids or [])
-            raise RetryableError("transient")
-
-        # initial + retry #1 fail, retry #2 succeeds
         calls = {"n": 0}
 
-        def stage2(ctx: StageContext) -> None:
+        def stage(ctx: StageContext) -> None:
             calls["n"] += 1
             if calls["n"] < 3:
                 raise RetryableError("still transient")
             ctx.produced_output_ids.append(f"out-{calls['n']}")
 
-        kernel.execute(inv, STAGE_NAME, stage2, manifest_id=manifest.manifest_id)
-        rsrs = stage_store.list_all("RSR-01")
-        assert len(rsrs) == 3  # initial + retry1 + retry2
-        # The final COMPLETE record preserves output from the successful attempt.
-        complete = [r for r in rsrs if r.stage_state.value == "COMPLETE"]
-        assert len(complete) == 1
-        assert "out-3" in (complete[0].output_ids or [])
+        kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
+        rsrs = [r for r in stage_store.list_all("RSR-01")
+                if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
+        # Corrected lifecycle: ONE stable stage identity (current record).
+        assert len(rsrs) == 1
+        current = rsrs[0]
+        assert current.stage_state.value == "COMPLETE"
+        assert "out-3" in (current.output_ids or [])
+        assert current.retry_count == 2
+        # Prior attempt versions recoverable (append-only, M5.2 mechanism).
+        versions = stage_store.list_versions("RSR-01", current.stage_id)
+        assert len(versions) >= 2, f"expected prior versions, got {versions}"
 
 
 class TestRrmAtomicity:

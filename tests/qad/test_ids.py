@@ -7,7 +7,7 @@ import uuid
 
 import pytest
 
-from qad.ids import generate_uuid7, is_uuid7
+from qad.ids import deterministic_uuid7, generate_uuid7, is_uuid7
 
 UUID7_RE = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
@@ -69,3 +69,29 @@ def test_monotonic_msec_generation():
     u = generate_uuid7()
     assert u.version == 7
     assert (u.int >> 80) > 0  # timestamp non-zero
+
+
+class TestDeterministicUuid7:
+    """Correction Pass 2 (FD #138 §5/§8): deterministic stage-owned ids."""
+
+    def test_same_seed_same_value(self):
+        a = deterministic_uuid7("exec1|cp1|gap")
+        b = deterministic_uuid7("exec1|cp1|gap")
+        assert a == b
+        assert is_uuid7(a)
+
+    def test_different_seed_different_value(self):
+        a = deterministic_uuid7("exec1|cp1|gap")
+        b = deterministic_uuid7("exec1|cp2|gap")
+        assert a != b
+
+    def test_semantic_label_scopes_identity(self):
+        gap = deterministic_uuid7("exec1|cp1|gap")
+        note = deterministic_uuid7("exec1|cp1|note")
+        assert gap != note
+
+    def test_valid_bit_layout(self):
+        u = deterministic_uuid7("any|seed")
+        assert UUID7_RE.match(str(u))
+        assert u.version == 7
+        assert u.variant == uuid.RFC_4122

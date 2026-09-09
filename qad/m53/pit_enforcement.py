@@ -131,9 +131,10 @@ class PITEnforcementService:
     def query(self, pitc_id: str) -> PITQueryResult:
         """PIT-aware collection query over EV-01 (minimum §11.3-disciplined).
 
-        Returns only PIT-valid evidence; forbidden evidence is counted in
-        ``excluded_count`` (post-AS_OF) / ``blocked_count`` (integrity).
         A store-read failure raises (fail closed) — never a silent empty.
+        In LIVE_CASE_UPDATE mode the AUTHORITATIVE EAR-01 carrier is resolved
+        for every EV so a valid post-AS_OF update appears in the collection
+        exactly as it does via ``access()``/``adjudicate()`` (re-audit §1).
         """
         pitc = self._load_pitc(pitc_id)
         try:
@@ -147,11 +148,29 @@ class PITEnforcementService:
                 reason="evidence_store_unavailable",
             ) from exc
 
+        mode = self._mode_str(pitc)
+        ear_by_evidence: dict[str, EvidenceAdmissionRecord] = {}
+        if mode == "LIVE_CASE_UPDATE":
+            # Batch-resolve the authoritative EAR carriers (Erratum-002 chain).
+            try:
+                ears = self._evidence_registry.list_all("EAR-01")
+            except Exception as exc:  # noqa: BLE001 — authority unavailable
+                raise PITBlockError(
+                    f"EAR-01 unreadable — cannot resolve the authoritative "
+                    f"LIVE carriers, fail closed: {exc}",
+                    schema_id="EAR-01",
+                    verdict="BLOCKED",
+                    reason="evidence_store_unavailable",
+                ) from exc
+            for ear in ears:
+                ear_by_evidence.setdefault(ear.evidence_id, ear)
+
         allowed: list[EvidenceRecord] = []
         excluded = 0
         blocked = 0
         for rec in candidates:
-            verdict = self._adjudicate_object(rec, pitc, None)
+            ear = ear_by_evidence.get(rec.evidence_id)
+            verdict = self._adjudicate_object(rec, pitc, ear)
             if verdict is PITVerdict.ALLOWED:
                 allowed.append(rec)
             elif verdict is PITVerdict.BLOCKED:
