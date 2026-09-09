@@ -1,44 +1,43 @@
-"""M5.3 S8 — Retry Kernel (reference implementation).
+"""M5.3 S8 — Retry Kernel (CORRECTION ROUND — FD #138).
 
-Deterministic bounded retry orchestration over the canonical RunManifestStore,
-per the frozen authorities:
+Corrected implementation per the Founder decisions recorded in FD #138:
 
-- M4A RR-01 (I-4): one immutable ``RetryRecord`` per attempt (own ``retry_id``
-  UUID v7), ``attempt_number`` 1..N, ``status`` RETRYING / SUCCEEDED / FAILED /
-  ESCALATED, ``attempted_at`` PIT field, ``invocation_id -> SI-01.invocation_id``.
-  Validation rule: **max 3 retries per stage; after 3 -> FAILED**.
-- M3-SERVICES S8: bounded retries per stage, retry from last checkpoint,
-  previous stage output preserved, same stage + same case version -> same
-  execution (idempotent).
-- M5.2 §7.4: write fails pre/mid-commit -> zero partial state, retry safe.
-- Erratum-002 / FD #137: RRM-01 lifecycle — a RUNNING manifest may be enriched
-  (RUNNING -> RUNNING); terminal (COMPLETED/FAILED) is immutable.
+- Retry budget: **INITIAL execution + max 3 retries = max 4 stage executions**.
+  The initial execution is NOT retry #1 and is NOT an RR-01 (a clean first-run
+  success creates ZERO RR-01 records).
+- SI-01 = initial service invocation (frozen purpose). RR-01 = retry attempts
+  for a failed operation (M4A RR-01 purpose).
+- ESCALATED is REMOVED from M5.3: retry #3 fails -> FAILED always.
+  ``escalated_to`` is never populated by this kernel.
+- Execution identity = (case_id, authoritative case_version, stage_name),
+  resolved from the authoritative RRM-01 (case_version) BEFORE executing.
+- Checkpoint replay uses the frozen RSR-01 (ResearchStageRecord) as stage/state
+  authority: resume from RSR-01.checkpoint_ref, preserve RSR-01.output_ids[].
+  NEVER ``len(RR records) + 1``.
+- Retry-history read failure is FAIL CLOSED (typed error propagates; the word
+  "no retry history" is never inferred from a store failure).
+- RR-01 + RRM-01 provenance update commit through ONE same-store atomic batch
+  (RunManifestStore.store_batch). The manifest is preflighted (exists, RUNNING)
+  BEFORE the stage executes. Missing/terminal manifest -> fail before execution.
+- retry_id / stage_id are RFC-9562 UUID v7 (``qad.ids.generate_uuid7``).
 
-Failure classification (deterministic):
-- ``RetryableError``            -> transient, retried (up to policy max).
-- Persistence contract errors   -> NOT retried (deterministic validation /
-  integrity / immutability / FK failures are never blindly retried).
-- Any other exception           -> NOT retried (fail closed), recorded FAILED
-  and re-raised after honest attempt record writes.
-
-Idempotency (fail closed):
-- Replay over a terminal attempt log returns the existing outcome without
-  touching ``stage`` and without creating duplicate canonical records.
-- The same immutable identity (retry_id) may NEVER be written with different
-  content: the canonical store raises ``IntegrityConflict`` and the kernel
-  does not suppress it.
-- Attempt identity is (invocation_id, attempt_number); a re-run resumes from
-  the LAST RECORDED checkpoint (retry-from-checkpoint semantics).
-
-REFERENCES / NON-PRODUCTION: in-memory store; single public dependency is the
-``RunManifestStore`` protocol surface (contains/load/store/list_all).
+Noncanonical only: ``ExecutionContext`` / ``StageContext`` / ``RetryOutcome`` /
+``RetryPolicy`` are service-layer types, not canonical schemas (GO §5 permits a
+bounded noncanonical execution-context / idempotency interface).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable
 
+from qad.ids import generate_uuid7
+from qad.models.family_c import (
+    ResearchStageRecord,
+    ResearchStageRecordStage_name,
+    ResearchStageRecordStage_state,
+)
 from qad.models.family_i import (
     RetryRecord,
     RetryRecordStatus,
@@ -51,24 +50,56 @@ from qad.persistence import (
     MissingForeignKey,
     RunManifestStore,
 )
+from qad.persistence.interfaces import CanonicalRecordStore
 
 
 class RetryableError(Exception):
     """Marker for a transient, retry-worthy failure (network, rate-limit,
     timeout, 5xx).  Deterministic contract failures (ValidationFailure,
     IntegrityConflict, ImmutabilityViolation, MissingForeignKey) are NOT
-    retryable and MUST be raised as their own typed errors."""
+    retryable and MUST be raised as their own typed errors.
+    """
 
 
 @dataclass(frozen=True)
 class RetryPolicy:
-    """Bounded retry policy (frozen: max 3 attempts per stage)."""
+    """Bounded retry policy (FD #138: max 3 RETRIES per stage — the initial
+    execution is separate, so a stage may execute at most 4 times)."""
 
-    max_attempts: int = 3
+    max_retries: int = 3
 
     def __post_init__(self) -> None:
-        if self.max_attempts < 1:
-            raise ValueError("max_attempts must be >= 1")
+        if self.max_retries < 0:
+            raise ValueError("max_retries must be >= 0")
+
+
+@dataclass(frozen=True)
+class ExecutionContext:
+    """Noncanonical logical execution identity (FD #138 §4).
+
+    case_version is resolved from the authoritative RRM-01 run context.
+    """
+
+    case_id: str
+    case_version: str
+    stage_name: ResearchStageRecordStage_name
+
+
+@dataclass
+class StageContext:
+    """Noncanonical context handed to the stage callback.
+
+    The stage receives enough deterministic context to resume from the
+    authoritative checkpoint and avoid replaying already-completed output
+    (GO §5): the execution identity, the checkpoint_ref of the last recorded
+    RSR-01, the previously preserved output_ids, and a buffer the stage
+    appends its own output ids to.
+    """
+
+    execution: ExecutionContext
+    checkpoint_ref: str | None = None
+    previous_output_ids: list[str] = field(default_factory=list)
+    produced_output_ids: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -86,65 +117,75 @@ class RetryOutcome:
 _TERMINAL = {
     RetryRecordStatus.SUCCEEDED,
     RetryRecordStatus.FAILED,
-    RetryRecordStatus.ESCALATED,
 }
+
+_CP_PREFIX = "cp"  # checkpoint ref encoding: "cp:<case_version>:<stage_id>"
 
 
 def _enum_str(value: Any) -> str:
     return value.value if hasattr(value, "value") else str(value)
 
 
+def _cp_encode(case_version: str, stage_id: str) -> str:
+    return f"{_CP_PREFIX}:{case_version}:{stage_id}"
+
+
 class RetryKernel:
-    """Bounded deterministic retry controller (M3-SERVICES S8, reference)."""
+    """Bounded deterministic retry controller (M3-SERVICES S8, FD #138).
+
+    ``store`` is the authoritative RunManifestStore (SI-01 / RR-01 / RRM-01);
+    ``stage_store`` is the canonical store that owns RSR-01 (the checkpoint /
+    stage-state authority).  Both are existing canonical protocol surfaces —
+    no new schema.
+    """
 
     def __init__(
         self,
         store: RunManifestStore,
+        stage_store: CanonicalRecordStore,
         *,
         policy: RetryPolicy | None = None,
         now: Callable[[], str] | None = None,
+        uuid_factory: Callable[[], str] | None = None,
     ) -> None:
         self._store = store
+        self._stage_store = stage_store
         self._policy = policy or RetryPolicy()
         self._now = now or (
             lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         )
+        self._uuid = uuid_factory or (lambda: str(generate_uuid7()))
 
     # -- public API ---------------------------------------------------------
 
     def execute(
         self,
         invocation: ServiceInvocation,
-        stage: Callable[[], None],
+        stage_name: ResearchStageRecordStage_name,
+        stage: Callable[[StageContext], None],
         *,
-        escalated_to: str | None = None,
-        manifest_id: str | None = None,
-        retry_id: str | None = None,
+        manifest_id: str,
     ) -> RetryOutcome:
         """Run ``stage`` under the bounded retry policy.
 
-        ``stage`` is a callable that raises on failure — ``RetryableError``
-        for transient failures (retried), any other exception for
-        deterministic/unknown failures (NOT retried; recorded then re-raised).
+        FD #138 lifecycle:
+            initial execution (SI-01)           — NOT an RR-01
+            retry #1..max_retries (RR-01)       — retry attempts only
 
-        Args:
-            invocation: SI-01 record that MUST already exist in the store
-                (RR-01.invocation_id FK dependency).  Fail closed otherwise.
-            stage: zero-arg callable performing the service work.
-            escalated_to: optional human/role reference recorded when the
-                attempt budget is exhausted and the caller chooses escalation.
-            manifest_id: optional RUNNING RRM-01 manifest to append the
-                retry refs to (fail closed on terminal manifests).
-            retry_id: optional explicit identity for the FIRST attempt record
-                (collision with different content -> IntegrityConflict).
+        Preflight (BEFORE the stage runs):
+            1. SI-01 must exist (RR-01.invocation_id FK).
+            2. RRM-01 must exist and be RUNNING (case_version authority).
+            3. Execution identity (case_id, case_version, stage_name) resolved.
+            4. RSR-01 + RR-01 history readable — otherwise fail closed.
 
         Raises:
             MissingForeignKey: invocation or manifest not present.
-            IntegrityConflict: same retry_id already stored with different
-                content (immutable identity collision — fail closed).
-            ImmutabilityViolation: manifest_id targets a terminal manifest.
+            ImmutabilityViolation: manifest is terminal (COMPLETED/FAILED).
+            RuntimeError/typed store errors: retry history or RSR state
+                unreadable (fail closed — never treated as 'no history').
             <original non-retryable error>: deterministic/unknown failure —
-                recorded honestly, then re-raised.
+                recorded honestly (RSR FAILED; RR-01 FAILED when on a retry),
+                then re-raised.
         """
         if not self._store.contains("SI-01", invocation.invocation_id):
             raise MissingForeignKey(
@@ -156,81 +197,181 @@ class RetryKernel:
                 target_ids=[invocation.invocation_id],
             )
 
-        records = self._attempts_for(invocation.invocation_id)
-
-        # Idempotent replay: a terminal log is final — return it untouched.
-        terminal = [r for r in records if r.status in _TERMINAL]
-        if terminal:
-            last = terminal[-1]
-            return RetryOutcome(
-                invocation_id=invocation.invocation_id,
-                attempt_records=records,
-                status=last.status,
-                retried=len([r for r in records if r.status is RetryRecordStatus.RETRYING]) > 0,
-                error=last.error,
-            )
-
-        # Resume from the last recorded checkpoint (retry-from-checkpoint).
-        next_attempt = len(records) + 1
-        if next_attempt > self._policy.max_attempts:
+        # -- Manifest preflight (BEFORE any stage execution / any write) ----
+        manifest = self._load_running_manifest(manifest_id)
+        if manifest.case_id != invocation.case_id:
             raise IntegrityConflict(
-                f"RR-01/{invocation.invocation_id}: attempts exhausted "
-                f"({self._policy.max_attempts}) without a terminal record — "
-                f"corrupted attempt log, fail closed",
+                f"RRM-01/{manifest_id}.case_id ({manifest.case_id}) != "
+                f"SI-01.invocation case_id ({invocation.case_id}) — "
+                f"run context mismatch (fail closed)",
+                schema_id="RRM-01",
+                record_id=manifest_id,
+            )
+        case_version = manifest.case_version
+
+        # -- Execution identity ---------------------------------------------
+        execution = ExecutionContext(
+            case_id=invocation.case_id,
+            case_version=case_version,
+            stage_name=stage_name,
+        )
+
+        # -- Checkpoint replay (RSR-01 authority, version-aware) -------------
+        rsr_records = self._rsr_history(invocation.case_id, stage_name)
+        if rsr_records:
+            last = rsr_records[-1]
+            if (
+                _enum_str(last.stage_state) == "COMPLETE"
+                and last.checkpoint_ref
+                and last.checkpoint_ref.count(":") >= 2
+                and last.checkpoint_ref.split(":")[1] == case_version
+            ):
+                # Same execution + same case version -> replay. Stage NOT
+                # re-run; zero new canonical records.
+                rr = self._rr_history(invocation.invocation_id)
+                return RetryOutcome(
+                    invocation_id=invocation.invocation_id,
+                    attempt_records=rr,
+                    status=RetryRecordStatus.SUCCEEDED,
+                    retried=any(
+                        r.status is RetryRecordStatus.RETRYING for r in rr),
+                    error=None,
+                )
+
+        # -- Retry accounting (fail closed on unreadable history) ------------
+        rr = self._rr_history(invocation.invocation_id)
+        retries_used = len(rr)
+        if retries_used > self._policy.max_retries:
+            raise IntegrityConflict(
+                f"RR-01/{invocation.invocation_id}: {retries_used} retry "
+                f"records exceed policy max {self._policy.max_retries} without "
+                f"a terminal RSR COMPLETE — corrupted attempt log, fail closed",
                 schema_id="RR-01",
                 record_id=invocation.invocation_id,
             )
-
-        for attempt_number in range(next_attempt, self._policy.max_attempts + 1):
-            last = attempt_number == self._policy.max_attempts
-            try:
-                stage()
-            except RetryableError as exc:
-                if not last:
-                    # Retry scheduled — group state = RETRYING.
-                    self._write_attempt(
-                        invocation, attempt_number, RetryRecordStatus.RETRYING,
-                        error=str(exc), retry_id=retry_id,
-                        manifest_id=manifest_id,
-                    )
-                    continue
-                # Budget exhausted — frozen rule: FAILED (ESCALATED if chosen).
-                status = (
-                    RetryRecordStatus.ESCALATED
-                    if escalated_to is not None
-                    else RetryRecordStatus.FAILED
-                )
-                self._write_attempt(
-                    invocation, attempt_number, status, error=str(exc),
-                    escalated_to=escalated_to, retry_id=retry_id,
-                    manifest_id=manifest_id,
-                )
+        if retries_used > 0:
+            # A prior retry run exists (initial already FAILED or retries
+            # started) — this is a resume.  If the retry log is already
+            # terminal (FAILED), replay it — do NOT re-execute.
+            if rr and rr[-1].status is RetryRecordStatus.FAILED:
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
-                    attempt_records=self._attempts_for(invocation.invocation_id),
-                    status=status,
+                    attempt_records=rr,
+                    status=RetryRecordStatus.FAILED,
                     retried=True,
-                    error=str(exc),
+                    error=rr[-1].error,
                 )
+            if rr and rr[-1].status is RetryRecordStatus.SUCCEEDED:
+                return RetryOutcome(
+                    invocation_id=invocation.invocation_id,
+                    attempt_records=rr,
+                    status=RetryRecordStatus.SUCCEEDED,
+                    retried=True,
+                    error=None,
+                )
+
+        last_rsr = rsr_records[-1] if rsr_records else None
+        checkpoint_ref = last_rsr.checkpoint_ref if last_rsr else None
+        preserved_outputs = list(last_rsr.output_ids or []) if last_rsr else []
+
+        # -- Attempt loop ----------------------------------------------------
+        next_retry = retries_used + 1  # RR-01 attempt numbering is retry-only
+
+        # INITIAL execution (SI-01; NOT an RR-01) — only when no retries yet.
+        if retries_used == 0:
+            ctx = StageContext(
+                execution=execution,
+                checkpoint_ref=checkpoint_ref,
+                previous_output_ids=preserved_outputs,
+            )
+            try:
+                stage(ctx)
+            except RetryableError as exc:
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.FAILED,
+                    error=str(exc), retry_count=0,
+                )
+                # fall through to retry loop
             except Exception as exc:
-                # Deterministic/unknown failure — NOT retried (fail closed).
-                self._write_attempt(
-                    invocation, attempt_number, RetryRecordStatus.FAILED,
-                    error=f"{type(exc).__name__}: {exc}",
-                    escalated_to=None, retry_id=retry_id,
-                    manifest_id=manifest_id,
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.FAILED,
+                    error=f"{type(exc).__name__}: {exc}", retry_count=0,
                 )
                 raise
             else:
-                self._write_attempt(
-                    invocation, attempt_number, RetryRecordStatus.SUCCEEDED,
-                    error=None, retry_id=retry_id, manifest_id=manifest_id,
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.COMPLETE,
+                    error=None, retry_count=0,
                 )
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
-                    attempt_records=self._attempts_for(invocation.invocation_id),
+                    attempt_records=[],
                     status=RetryRecordStatus.SUCCEEDED,
-                    retried=attempt_number > 1,
+                    retried=False,
+                    error=None,
+                )
+
+        # RETRIES #1..max_retries (RR-01 attempts)
+        for attempt_number in range(next_retry, self._policy.max_retries + 1):
+            ctx = StageContext(
+                execution=execution,
+                checkpoint_ref=checkpoint_ref,
+                previous_output_ids=preserved_outputs,
+            )
+            last = attempt_number == self._policy.max_retries
+            try:
+                stage(ctx)
+            except RetryableError as exc:
+                status = (
+                    RetryRecordStatus.RETRYING
+                    if not last
+                    else RetryRecordStatus.FAILED  # FD #138: always FAILED
+                )
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.FAILED,
+                    error=str(exc), retry_count=attempt_number,
+                )
+                self._write_attempt_and_manifest(
+                    invocation, attempt_number, status, error=str(exc),
+                    manifest=manifest,
+                )
+                if last:
+                    return RetryOutcome(
+                        invocation_id=invocation.invocation_id,
+                        attempt_records=self._rr_history(
+                            invocation.invocation_id),
+                        status=RetryRecordStatus.FAILED,
+                        retried=True,
+                        error=str(exc),
+                    )
+                continue
+            except Exception as exc:
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.FAILED,
+                    error=f"{type(exc).__name__}: {exc}",
+                    retry_count=attempt_number,
+                )
+                self._write_attempt_and_manifest(
+                    invocation, attempt_number, RetryRecordStatus.FAILED,
+                    error=f"{type(exc).__name__}: {exc}",
+                    manifest=manifest,
+                )
+                raise
+            else:
+                self._write_rsr(
+                    execution, ctx, ResearchStageRecordStage_state.COMPLETE,
+                    error=None, retry_count=attempt_number,
+                )
+                self._write_attempt_and_manifest(
+                    invocation, attempt_number, RetryRecordStatus.SUCCEEDED,
+                    error=None, manifest=manifest,
+                )
+                return RetryOutcome(
+                    invocation_id=invocation.invocation_id,
+                    attempt_records=self._rr_history(
+                        invocation.invocation_id),
+                    status=RetryRecordStatus.SUCCEEDED,
+                    retried=attempt_number > 0,
                     error=None,
                 )
 
@@ -240,14 +381,21 @@ class RetryKernel:
             record_id=invocation.invocation_id,
         )
 
-    # -- internal -----------------------------------------------------------
+    # -- internal: store reads (fail closed) --------------------------------
 
-    def _attempts_for(self, invocation_id: str) -> list[RetryRecord]:
-        """Return the immutable attempt log for an invocation, oldest first."""
+    def _rr_history(self, invocation_id: str) -> list[RetryRecord]:
+        """Immutable retry log for an invocation, oldest first.
+
+        Fail closed: an unreadable retry log is NEVER 'no retry history' —
+        typed/deterministic store errors propagate and the caller must not
+        execute the stage.
+        """
         try:
             all_records = self._store.list_all("RR-01")
-        except Exception:
-            return []
+        except Exception as exc:  # noqa: BLE001 — propagate, never swallow
+            raise type(exc)(
+                f"RR-01 retry history unreadable — fail closed: {exc}"
+            ) from exc
         attempts = [
             r for r in all_records if r.invocation_id == invocation_id
         ]
@@ -258,30 +406,86 @@ class RetryKernel:
         )
         return attempts
 
-    def _write_attempt(
+    def _rsr_history(
+        self,
+        case_id: str,
+        stage_name: ResearchStageRecordStage_name,
+    ) -> list[ResearchStageRecord]:
+        """RSR-01 records for (case_id, stage_name), attempt order.
+
+        Fail closed: an unreadable stage-state store means the kernel cannot
+        establish the authoritative RSR state -> the stage MUST NOT execute.
+        """
+        try:
+            all_records = self._stage_store.list_all("RSR-01")
+        except Exception as exc:  # noqa: BLE001 — propagate, never swallow
+            raise type(exc)(
+                f"RSR-01 stage-state unreadable — cannot establish checkpoint "
+                f"authority, fail closed: {exc}"
+            ) from exc
+        recs = [
+            r for r in all_records
+            if r.case_id == case_id and r.stage_name == stage_name
+        ]
+        recs.sort(key=lambda r: (r.started_at, r.stage_id))
+        return recs
+
+    # -- internal: store writes ---------------------------------------------
+
+    def _write_rsr(
+        self,
+        execution: ExecutionContext,
+        ctx: StageContext,
+        stage_state: ResearchStageRecordStage_state,
+        *,
+        error: str | None,
+        retry_count: int,
+    ) -> str:
+        """Write ONE immutable RSR-01 for this attempt (append-only lineage).
+
+        output_ids = previously preserved outputs + outputs produced by THIS
+        attempt (frozen revision rule: restart from last checkpoint preserves
+        previous output).  checkpoint_ref = cp:<case_version>:<stage_id>.
+        """
+        stage_id = self._uuid()
+        outputs = list(ctx.previous_output_ids) + list(ctx.produced_output_ids)
+        rec = ResearchStageRecord(
+            stage_id=stage_id,
+            case_id=execution.case_id,
+            stage_name=execution.stage_name,
+            stage_state=stage_state,
+            started_at=self._now(),
+            completed_at=self._now(),
+            responsible_role="S8",
+            checkpoint_ref=_cp_encode(execution.case_version, stage_id),
+            output_ids=outputs,
+            retry_count=retry_count,
+            failure_reason=error,
+        )
+        self._stage_store.store(rec)
+        ctx.checkpoint_ref = rec.checkpoint_ref
+        ctx.previous_output_ids = outputs
+        return stage_id
+
+    def _write_attempt_and_manifest(
         self,
         invocation: ServiceInvocation,
         attempt_number: int,
         status: RetryRecordStatus,
         *,
         error: str | None,
-        escalated_to: str | None = None,
-        retry_id: str | None = None,
-        manifest_id: str | None = None,
+        manifest: RunManifestRecord,
     ) -> RetryRecord:
-        """Write exactly ONE immutable RR-01 for this attempt.
+        """Commit the RR-01 and its RRM-01 provenance in ONE atomic batch.
 
-        The canonical store rejects the same ``retry_id`` with different
-        content (``IntegrityConflict``) — the kernel never suppresses it
-        (immutable identity -> fail closed).
-
-        RRM integration (honest, minimal):
-        - RETRYING attempt  -> appended to ``RRM-01.retries`` (retry lineage)
-        - FAILED/ESCALATED  -> appended to ``RRM-01.failures``
-        - SUCCEEDED         -> nothing appended (the RETRYING refs already
-          record that the run retried before succeeding)
+        Both schemas belong to the same RunManifestStore authority (M5.2
+        §12.2).  ``store_batch`` is the M5.2 §7.1 same-store atomic boundary:
+        all records commit or none — no partial canonical state.  Terminal
+        (FAILED) retries attach to ``failures``; scheduled retries attach to
+        ``retries``; SUCCEEDED attaches nothing (the RETRYING refs already
+        record the retry lineage).
         """
-        rid = retry_id or f"RR-{invocation.invocation_id}-{attempt_number}"
+        rid = self._uuid()
         rec = RetryRecord(
             retry_id=rid,
             invocation_id=invocation.invocation_id,
@@ -289,39 +493,32 @@ class RetryKernel:
             attempted_at=self._now(),
             status=status,
             error=error or "none",
-            escalated_to=escalated_to,
+            escalated_to=None,  # FD #138 §3: never populated in M5.3
         )
-        self._store.store(rec)
-        if manifest_id is not None:
-            if status is RetryRecordStatus.RETRYING:
-                self._attach_retry_to_manifest(manifest_id, rid)
-            elif status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
-                self._attach_failure_to_manifest(manifest_id, rid)
+        enriched = manifest
+        if status is RetryRecordStatus.RETRYING:
+            existing = manifest.retries or ""
+            refs = [x.strip() for x in existing.split(",") if x.strip()]
+            if rid not in refs:
+                refs.append(rid)
+            enriched = manifest.model_copy(update={"retries": ",".join(refs)})
+        elif status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
+            failures = list(manifest.failures or [])
+            if rid not in failures:
+                failures.append(rid)
+            enriched = manifest.model_copy(update={"failures": failures})
+        self._store.store_batch([rec, enriched])
         return rec
 
-    def _attach_retry_to_manifest(self, manifest_id: str, retry_id: str) -> None:
-        """Append a retry ref to ``RRM-01.retries`` (RUNNING only, fail closed)."""
-        manifest = self._load_running_manifest(manifest_id)
-        existing = manifest.retries or ""
-        refs = [x.strip() for x in existing.split(",") if x.strip()]
-        if retry_id not in refs:
-            refs.append(retry_id)
-        self._store.store(manifest.model_copy(update={"retries": ",".join(refs)}))
-
-    def _attach_failure_to_manifest(self, manifest_id: str, retry_id: str) -> None:
-        """Append a failure ref to ``RRM-01.failures`` (RUNNING only, fail closed)."""
-        manifest = self._load_running_manifest(manifest_id)
-        failures = list(manifest.failures or [])
-        if retry_id not in failures:
-            failures.append(retry_id)
-        self._store.store(manifest.model_copy(update={"failures": failures}))
-
     def _load_running_manifest(self, manifest_id: str) -> RunManifestRecord:
-        """Load a RUNNING manifest or fail closed (missing / terminal)."""
+        """Load a RUNNING manifest or fail closed (missing / terminal).
+
+        Called BEFORE any stage execution (FD #138 §7 preflight).
+        """
         if not self._store.contains("RRM-01", manifest_id):
             raise MissingForeignKey(
-                f"RRM-01/{manifest_id}: manifest not found — cannot attach "
-                f"retry provenance (fail closed)",
+                f"RRM-01/{manifest_id}: manifest not found — cannot resolve "
+                f"authoritative case_version (fail closed before execution)",
                 schema_id="RRM-01",
                 record_id=manifest_id,
             )
@@ -329,8 +526,9 @@ class RetryKernel:
         run_state = _enum_str(manifest.run_state)
         if run_state in ("COMPLETED", "FAILED"):
             raise ImmutabilityViolation(
-                f"RRM-01/{manifest_id}: terminal manifest ({run_state}) is "
-                f"immutable — retry provenance cannot be attached",
+                f"RRM-01/{manifest_id}: terminal manifest ({run_state}) cannot "
+                f"be the run context — provenance would be immutable (fail "
+                f"closed before execution)",
                 schema_id="RRM-01",
                 record_id=manifest_id,
             )
