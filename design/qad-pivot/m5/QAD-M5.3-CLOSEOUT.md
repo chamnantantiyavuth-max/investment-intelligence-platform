@@ -2,7 +2,8 @@
 
 > **Authority:** FOUNDER DECISION — QAD M5.3 IMPLEMENTATION (8 Sep 2026, OPTION A — GO)
 > **Correction authority:** FD #138 — QAD M5.3 Correction Round GO + Founder Decisions (9 Sep 2026)
-> **Status:** ✅ **CORRECTION IMPLEMENTED / READY FOR FOUNDER INDEPENDENT RE-AUDIT**
+> **Pass 2 (9 Sep 2026):** Founder independent RE-AUDIT of pass 1 (`36d6aac`) → FAIL (7 implementation defects, all under FD #138 semantics, NO new FD) → Correction Pass 2 IMPLEMENTED (`3341dce` diagnostic RED + `23101ba` runtime + this doc commit).
+> **Status:** ✅ **CORRECTION PASS 2 IMPLEMENTED / READY FOR FOUNDER INDEPENDENT RE-AUDIT**
 > **NOT automatically CLOSED/FROZEN** — the Founder explicitly requires a NEW
 > independent Founder audit of the corrected implementation before M5.3 closure.
 > **M5.3 remains a HOLD milestone until that re-audit.**
@@ -19,7 +20,7 @@
 
 | Finding | Class | Correction (FD #138) |
 |---|---|---|
-| "max 3 retries" implemented as 3 total attempts | A — contract drift | Initial + max 3 retries = max 4 executions |
+| "max 3 retries" implemented as 3 total attempts | A — contract drift | Initial + max 3 retries = max 4 executions (pass 1) |
 | RR-01 written for the initial execution (incl. first-run success) | A | RR-01 = retry-only; initial = SI-01 |
 | retry_id not UUID v7 (and M5.3 fixture IDs) | A | RFC-9562 UUID v7 utility + fixture conformance |
 | Checkpoint replay not materialized (resume = len(RR)+1) | A | RSR-01 checkpoint authority (existing schema) |
@@ -104,6 +105,48 @@ and addition counts are exact per-file.
 5. `qad/m53/__init__.py` — export new noncanonical types
 6. `tests/locked/test_audit_api.py` — register-tail date anchor (FD #138)
 7. docs — MAP Section F + this closeout + decision package finalization + FD #138
+## PASS 2 — CORRECTION PASS 2 (9 Sep 2026, Founder RE-AUDIT FAIL → fixed)
+
+Founder independent RE-AUDIT of `36d6aac` returned **FAIL** — 7 implementation
+defects, all within FD #138 semantics (explicitly **NO new Founder decision,
+NO FD #139**).  Diagnostic-first: `tests/qad/m53/test_correction_pass2.py`
+(14 tests) demonstrated **RED on `36d6aac` (12 failed / 2 passed)** in commit
+`3341dce`; runtime fixes in `23101ba`; this doc commit.
+
+| Re-audit defect | Fix (all existing canonical surfaces) |
+|---|---|
+| S7 §1 — LIVE collection query excluded valid updates (EAR never resolved in `query()`) | `query()` batch-resolves authoritative EAR-01 in LIVE_CASE_UPDATE; SEALED/REPLAY unchanged |
+| S8 §2 — initial-failure restart re-ran the initial execution | RSR-01 = sole execution authority; IN_PROGRESS resumes as RETRY #(retry_count+1) |
+| S8 §3 — SM-3 lifecycle bypassed; fresh stage_id per attempt; premature FAILED | ONE stable stage_id, IN_PROGRESS while retrying, COMPLETE/FAILED terminal-only, APPEND_ONLY_STATE prior versions |
+| S8 §4 — checkpoint not fed into next retry | checkpoint_ref + cumulative outputs carried forward after every RSR write |
+| S8 §5 — outputs leaked across case versions | RSR lookup scoped (case_id, stage_name, case_version) |
+| S8 §6 — RRM lineage overwritten (stale manifest object) | RRM re-loaded authoritative before every atomic batch |
+| S8 §7 — RR terminal history false-replayed other executions | RR terminal NEVER short-circuits; decisions keyed to execution identity |
+| S8 §8 — idempotency proof insufficient | EG-01 (RECORD_IMMUTABLE) + `deterministic_uuid7(execution_id|checkpoint|label)` |
+| S8 §9 — cross-anchor write order | RSR first, then RR+RRM store_batch; no cross-anchor transaction framework (documented) |
+
+**Pass-2 verification (real LOCAL runs, exact counts, nothing forced):**
+
+| Suite | Result |
+|---|---|
+| S7 LIVE collection (pass-2 diag) | 1/1 PASS |
+| S8 initial-failure restart (pass-2 diag) | 2/2 PASS |
+| SM-3 / stable stage-id (pass-2 diag) | 3/3 PASS |
+| Checkpoint propagation (pass-2 diag) | 2/2 PASS |
+| Case-version isolation (pass-2 diag) | 1/1 PASS |
+| RRM lineage (pass-2 diag) | 1/1 PASS |
+| Execution-identity RR scoping (pass-2 diag) | 2/2 PASS |
+| Retried-write idempotency (pass-2 diag) | 2/2 PASS |
+| M5.3 S7+S8 suite (`tests/qad/m53/`) | **55/55 PASS** (41 pass-1 corrected + 14 pass-2) |
+| UUID v7 utility (`tests/qad/test_ids.py`) | **11/11 PASS** (+4 deterministic_uuid7) |
+| QAD persistence + conformance (`tests/qad/`) | **470/470 PASS** |
+| **Full pytest** | **706/706 PASS** (688 pass-1 base − 1 stale-assert updated + 14 pass-2 + 4 ids = 706) |
+| M4A validator | 173/173 PASS (frozen M4A unchanged) |
+| M4B validator | 93/93 PASS (frozen M4B unchanged) |
+
+**Pass-2 commit chain:** `3341dce` (diagnostic tests, RED evidence) →
+`23101ba` (runtime S7/S8 + ids fixes) → this docs commit.
+
 
 ## 5. §11.3 items still deferred (unchanged — NOT built)
 
@@ -134,8 +177,9 @@ corpus-seal verification — DEFERRED to the fixture-sealing gate (FD #138 §12)
 ## 8. Status
 
 ```text
-M5.3 — CORRECTION IMPLEMENTED / READY FOR FOUNDER INDEPENDENT RE-AUDIT
+M5.3 — CORRECTION PASS 2 IMPLEMENTED / READY FOR FOUNDER INDEPENDENT RE-AUDIT
        NOT CLOSED / NOT FROZEN — new independent Founder audit required first
+       (PI status: pass-1 9 Sep audit FAIL fixed; awaiting 2nd independent re-audit)
 Working scope state — S7 ✅ (corrected) / S8 ✅ (corrected) / UUID v7 ✅ / source-time PIT ✅
 S7 / S8 — implemented (reference), NOT production
 Erratum-002 — FOUNDER ACCEPTED / CLOSED / FROZEN (NOT reopened)
@@ -143,4 +187,4 @@ Production / Live Autonomous QAD — NOT AUTHORIZED
 M6 / M7 — NOT STARTED
 ```
 
-<!-- 2026-09-09 13:30 UTC+7 -->
+<!-- 2026-09-09 14:30 UTC+7 -->

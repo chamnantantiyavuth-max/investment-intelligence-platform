@@ -1,3 +1,86 @@
+# Session — 2026-09-09 (M5.3 CORRECTION PASS 2: Founder RE-AUDIT FAIL of pass-1 → diagnosis → runtime fix)
+
+> **Scope:** Interactive session ~13:30–14:30 UTC+7 — the Founder performed the
+> second independent RE-AUDIT of remote M5.3 (baseline `36d6aac`) and returned
+> **RE-AUDIT FAIL** with 7 implementation defects, ALL under the existing
+> FD #138 semantics — explicitly **NO new Founder decision, NO FD #139**.
+> This pass-2 record: RED diagnostics → runtime correction → docs/state →
+> **M5.3 = CORRECTION PASS 2 IMPLEMENTED / READY FOR FOUNDER INDEPENDENT
+> RE-AUDIT — NOT CLOSED / NOT FROZEN**.
+> The 9 Sep pass-1 record and the 8 Sep M5.3 session record remain below
+> (chronology preserved).
+
+## Key outcomes
+
+- **Founder RE-AUDIT verdict: M5.3 — RE-AUDIT FAIL** (pass-1 `36d6aac`
+  audited; pass-1 retained the accepted §1–§4/§8–§13 items: retry budget,
+  clean-initial-0-RR, no ESCALATED, UUID v7, ID-based S7, source-time PIT,
+  SEALED pub-date block, fail-closed stores, RR+RRM store_batch, seal Option B).
+- **7 new implementation defects (all under FD #138):**
+  1. S7 LIVE collection query never resolved the authoritative EAR carrier —
+     valid post-AS_OF LIVE updates excluded from `query()` (inconsistent with
+     `access()`/`adjudicate()`).
+  2. Initial-failure restart re-ran the initial execution (resume keyed by RR
+     count, which is 0 after an initial transient failure).
+  3. RSR-01/SM-3 stage lifecycle bypassed — fresh stage_id per attempt +
+     premature FAILED states; FAILED is only a terminal outcome.
+  4. Checkpoint written by a failed attempt was not passed into the next retry
+     (stale outer variables).
+  5. Outputs leaked across case versions (RSR lookup keyed case+stage only).
+  6. RRM retry lineage overwritten by a stale manifest object (re-loaded per
+     batch now).
+  7. RR terminal history false-replayed other execution identities
+     (invocation_id-only keying could short-circuit a different stage/version).
+  8. Retried-write idempotency proof insufficient (RR-01 in wrong anchor +
+     hardcoded identity).
+  9. Cross-anchor write order (RSR before RR+RRM; batch failure must not leave
+     the stage falsely FAILED).
+- **Diagnostic-first (GO §12):** `tests/qad/m53/test_correction_pass2.py`
+  (14 tests, 9 clusters) demonstrated **RED on `36d6aac` — 12 failed / 2
+  passed** — committed `3341dce` (tests only + `qad.ids.deterministic_uuid7`).
+- **Runtime correction (`23101ba`):**
+  - S8: RSR-01 = SOLE execution authority; persisted IN_PROGRESS resumes as
+    RETRY #(retry_count+1); ONE stable stage_id SM-3 lifecycle via
+    APPEND_ONLY_STATE (prior versions recoverable; IN_PROGRESS while
+    retrying; COMPLETE/FAILED terminal-only; no FAILED→COMPLETE); checkpoint
+    + cumulative outputs flow into the next retry (in-call and after
+    restart); case-version isolation; RRM re-loaded authoritative before
+    every batch; RR terminal never short-circuits a different execution;
+    StageContext.execution_id stable noncanonical identity.
+  - S7: `query()` batch-resolves authoritative EAR in LIVE_CASE_UPDATE
+    (fail-closed; SEALED/REPLAY unchanged).
+  - `qad/ids.py`: `deterministic_uuid7(seed)` — RFC-9562 bit layout with
+    SHA-256-derived timestamp+random, the mechanical derivation for
+    stage-owned canonical write identities (test on EG-01, RECORD_IMMUTABLE).
+- **Verification (real LOCAL runs, exact counts):** pass-2 diagnostic
+  clusters 14/14 · M5.3 S7+S8 suite 55/55 · UUID ids 11/11 · QAD 470/470 ·
+  **full pytest 706/706** (688 − 1 stale-assert updated to the
+  stable-stage_id contract + 14 pass-2 + 4 deterministic ids = 706 exact;
+  total NOT forced) · M4A validator 173/173 · M4B validator 93/93.
+- **Final state:** M5.3 = CORRECTION PASS 2 IMPLEMENTED / READY FOR FOUNDER
+  INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN. Erratum-002 FROZEN (not
+  reopened). Production / Live QAD / M6 / M7 / fixture sealing NOT
+  AUTHORIZED. AGENTS.md checkpoint untouched (Founder: only after a real
+  independent pass).
+
+## Recommended next action
+
+1. **Founder 2nd independent RE-AUDIT** of remote commits `3341dce` +
+   `23101ba` + docs commit against the 9 audit clusters above (S7 LIVE
+   carrier, initial-failure resume, SM-3 stable stage_id, checkpoint flow,
+   case-version isolation, RRM lineage, execution-identity RR scoping,
+   retried-write idempotency proof, cross-anchor write order).
+2. On PASS → Founder authorizes M5.3 closure/freeze (register acceptance;
+   update authoritative state surfaces + AGENTS.md checkpoint then).
+3. Do NOT auto-close M5.3. Do NOT create FD #139 / a new decision package for
+   code-level defects under FD #138 semantics.
+4. Production / Live Autonomous QAD / M6 / M7 / fixture sealing remain NOT
+   AUTHORIZED.
+
+---
+
+<!-- 2026-09-09 14:30 UTC+7 -->
+
 # Session — 2026-09-09 (M5.3 CORRECTION ROUND: Founder independent audit FAIL → FD #138 → CORRECTION IMPLEMENTED)
 
 > **Scope:** Interactive session ~12:00–13:30 UTC+7 — the Founder returned the

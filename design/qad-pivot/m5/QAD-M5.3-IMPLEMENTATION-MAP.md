@@ -333,4 +333,29 @@ Erratum-003, reopening Erratum-002, full §11.3 Query API, production adapter
 selection, M6, M7, Production Release, Live Autonomous QAD, workforce/cron
 cutover, full fixture sealing.
 
+### F.13 Correction Pass 2 — RE-AUDIT fixes (9 Sep 2026, FD #138 governing)
+
+> Founder independent RE-AUDIT of pass-1 (`36d6aac`) returned FAIL with 7
+> implementation defects, all under existing FD #138 semantics (NO new Founder
+> decision, NO FD #139).  Diagnostic-first: `tests/qad/m53/
+> test_correction_pass2.py` (14 tests) was RED on `36d6aac` (12 failed), then
+> GREEN after this fix set.
+
+| Re-audit finding | Correction |
+|---|---|
+| §1 LIVE collection query excluded valid updates | `query()` batch-resolves the authoritative EAR-01 carriers in LIVE_CASE_UPDATE (fail-closed); SEALED/REPLAY unchanged |
+| §2 Initial-failure resume re-ran the initial execution | RSR-01 is the SOLE execution authority; persisted IN_PROGRESS resumes as RETRY #(retry_count+1); initial never runs twice |
+| §3 RSR/SM-3 lifecycle bypassed (new stage_id per attempt, premature FAILED) | ONE stable stage_id per execution; IN_PROGRESS while retrying; COMPLETE/FAILED only terminal; APPEND_ONLY_STATE versioning preserves prior attempts |
+| §4 Checkpoint not flowing into next retry | Execution state (checkpoint_ref + cumulative outputs) carried forward after every RSR write — inside one execute() or after restart |
+| §5 Outputs leaked across case versions | RSR lookup scoped (case_id, stage_name, case_version-from-checkpoint-prefix); new version = own chain |
+| §6 RRM lineage overwritten by stale object | Every RR/RRM atomic batch re-loads the CURRENT authoritative RRM-01 before appending |
+| §7 RR terminal history false-replayed other executions | RR-01 terminal state never short-circuits; decisions keyed to execution identity (stage/case_version scoped) |
+| §8 Idempotency proof insufficient (RR-01 in wrong anchor, hardcoded id) | EG-01 (RECORD_IMMUTABLE) stage-owned writes; gap_id = `deterministic_uuid7(execution_id|checkpoint|label)` — mechanically derived |
+| §9 Cross-anchor write order | RSR written first, then RR+RRM `store_batch`; a batch failure cannot leave the stage falsely FAILED (documented; no cross-anchor transaction framework) |
+
+Noncanonical additions: `StageContext.execution_id`
+(`case_id|case_version|stage_name|stage_id`) + `qad.ids.deterministic_uuid7`.
+Suite after pass 2: S7/S8 targeted 55/55 · ids 11/11 · QAD 470/470 · **full
+pytest 706/706** · M4A 173/173 · M4B 93/93.
+
 <!-- 2026-09-09 13:30 UTC+7 -->
