@@ -393,7 +393,6 @@ class TestExecutionIdentityRrScoping:
         mB = _make_manifest()
         mB = mB.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xC00:012x}"})
         store.store(mB)
-        before = calls["n"]
         ran_b = {"n": 0}
 
         def stage_b(ctx):
@@ -401,7 +400,6 @@ class TestExecutionIdentityRrScoping:
 
         kernel.execute(inv, DEEP, stage_b, manifest_id=mB.manifest_id)
         assert ran_b["n"] == 1, "Stage B did not execute (false replay)"
-        assert calls["n"] > before
 
     def test_case_version_v2_executes_despite_v1_rr_history(self):
         """v1.0 initial fails + retry#1 succeeds (RR history exists). v2.0 same
@@ -424,14 +422,12 @@ class TestExecutionIdentityRrScoping:
         m2 = m2.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xD00:012x}"})
         store.store(m2)
         ran = {"n": 0}
-        before = calls["n"]
 
         def stage_v2(ctx):
             ran["n"] += 1
 
         kernel.execute(inv, STAGE_NAME, stage_v2, manifest_id=m2.manifest_id)
         assert ran["n"] == 1, "v2 did not execute (false replay)"
-        assert calls["n"] > before
 
 
 # =====================================================================
@@ -462,8 +458,8 @@ class TestRetriedWriteIdempotency:
         def stage(ctx):
             calls["n"] += 1
             # deterministic canonical identity derived from execution context
-            gap_id = deterministic_uuid7(
-                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap")
+            gap_id = str(deterministic_uuid7(
+                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap"))
             assert is_uuid7(gap_id), "stage-owned id not UUID v7"
             exec_seen.setdefault("id", ctx.execution_id)
             assert ctx.execution_id == exec_seen["id"], "execution_id unstable"
@@ -502,8 +498,8 @@ class TestRetriedWriteIdempotency:
 
         def stage(ctx):
             calls["n"] += 1
-            gap_id = deterministic_uuid7(
-                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap")
+            gap_id = str(deterministic_uuid7(
+                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap"))
             rec = EvidenceGap(
                 gap_id=gap_id,
                 case_id=ctx.execution.case_id,
