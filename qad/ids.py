@@ -55,6 +55,35 @@ def generate_uuid7(ts_ms: int | None = None) -> uuid.UUID:
     return uuid.UUID(int=value)
 
 
+def deterministic_uuid7(seed: str) -> uuid.UUID:
+    """Return a DETERMINISTIC RFC-9562 UUID v7 derived from ``seed``.
+
+    Same seed -> same UUID v7, across calls and across processes.  The 48-bit
+    timestamp and the 74 random bits are both derived from SHA-256(seed), so
+    the value is stable and still satisfies the RFC-9562 bit layout (version
+    7, variant 10).
+
+    Corner-pass-2 (FD #138 §5/§8): stage-owned canonical writes key their
+    identities to the execution contract (execution_id + checkpoint + a
+    semantic label) so a retried write is a same-identity, same-payload
+    no-op at the canonical store — mechanically derived, never hard-coded.
+    """
+    import hashlib
+    digest = hashlib.sha256(seed.encode("utf-8")).digest()  # 32 bytes, 256 bits
+    ts_ms = int.from_bytes(digest[:6], "big") & (_MAX_TS - 1)  # 48 bits
+    rand74 = int.from_bytes(digest[6:20], "big") >> 74  # keep 74 bits
+    rand_a = (rand74 >> 62) & 0xFFF
+    rand_b = rand74 & _RANDB_MASK
+    value = (
+        (ts_ms << _TS_SHIFT)
+        | (_VERSION_VALUE << _VERSION_SHIFT)
+        | (rand_a << _RANDA_SHIFT)
+        | _VARIANT_BITS
+        | rand_b
+    )
+    return uuid.UUID(int=value)
+
+
 def is_uuid7(value: str | uuid.UUID) -> bool:
     """Return True iff ``value`` is a well-formed RFC-9562 UUID v7."""
     try:
