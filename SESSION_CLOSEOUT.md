@@ -1,3 +1,85 @@
+# Session — 2026-09-10 (cron review — daily state reconciliation)
+
+> **Scope:** Unattended scheduled review (09:31–09:45 UTC+7). Read-only plus state-doc sync.
+> No Founder interaction, no implementation, no push.
+
+## Findings
+
+- **No new interactive session since 9 Sep 17:13** — repo HEAD `64ed62e`
+  (576 commits, docs-only M5.3 pass-3 decision package + closeout), tree CLEAN.
+  Session browse since the 9 Sep work = cron ticks only (Obsidian Session Auto-Save).
+- **⚠ PUSH NOT SYNCED:** local `64ed62e` (576) vs `origin/main 283a7aa` (575) =
+  **1 commit AHEAD / UNPUSHED** (the 9 Sep session's end-of-session docs commit;
+  the correction-round chain `e28d548`..`283a7aa` WAS pushed). Push = Founder
+  call → decision item (0); combined ahead after this review's docs commit = 2.
+- **M5.3 status unchanged — INDEPENDENT RE-AUDIT FAIL / CORRECTION REQUIRED,
+  NOT CLOSED / NOT FROZEN.** Awaiting Founder rulings on F3 (SI-01 lifecycle —
+  3 options), F5 (UUIDv7 strictness — 2 options), F6 (RRM retries — 3 options),
+  then GO Correction Pass 3 (F1a RSR-only APPEND_ONLY_STATE enforcement + F2
+  cross-anchor reconcile + F4 RFR-01 + per-ruling) with diagnostic-first
+  persistence-level RED tests. Package:
+  `design/qad-pivot/m5/QAD-M5.3-CORRECTION-PASS-3-DECISION-PACKAGE.md`.
+  No erratum, no FD #139. Erratum-002 FROZEN.
+- **Verification — real full run:** suite **706/706 PASS (9.04s, hermes-agent
+  venv)** (M4A validator 173/173, M4B 93/93, QAD conformance 105/105 in-suite).
+  Count unchanged: only `283a7aa` (pass-2 test fix) + `64ed62e` (docs-only) since
+  the 9 Sep 706/706 run; `git diff 23101ba..HEAD -- tests/` shows only the pass-2
+  test fix. No clock-driven locked-test expiry in range (FO fixture `as_of`
+  2026-08-28, 30d bound ~27 Sep).
+- **Board:** 4 blocked (t_1530f0fd governance review; t_1ecfaaef intentional-failure
+  pilot; t_8411623f MIGRATED 0016; t_d5019196 MIGRATED 0017) / 81 done / 2 completed.
+  No new `[DISC]` run task. M6 branch `docs/m6-gemini-notebook-dr` @ `a37e92d` PARKED,
+  untouched.
+- **⚠ Mid-week radar Thu 10 Sep 08:00 — NO FIRE ATTEMPT by review time 09:32:**
+  job `cda817d17236` `last_run_at` still 3 Sep 11:38, `next_run_at` auto-advanced to
+  **17 Sep**; no output file in `cron/output/cda817d17236/` since 3 Sep; no digest
+  (`evidence/radar/digests/` ends 2026-09-07); no board task. **Verdict DEFERRED**
+  per the review-race lesson (27 Aug 10:22 / 3 Sep 11:28 / 7 Sep 11:36 catch-ups all
+  fired AFTER reviews had declared "missed"). Gateway availability at 08:00 remains
+  the #1 open ops item; FD #110 Live Office observation at risk again.
+- **⚠ Learning Loop Telegram delivery FAILING — 14th consecutive review:**
+  job `1f5f03f9236d` `last_delivery_error` verified at job level = "Chat not found"
+  telegram:8964964996 (last run 9 Sep 11:16). Ops item ② unchanged — needs an
+  interactive delivery-target config check.
+- **🔴 Vault fd-register mirror gap FOUND + BACKFILLED:** FD-138 was missing from
+  BOTH mirrors (central `AppData/Local/hermes/vault/fd-register.md` and
+  `~/.hermes/vault/fd-register.md` — both ended at FD-137). The repo register
+  (`operational/FOUNDERS-DECISIONS.md` item 138) already carried it.
+- **🔴 Obsidian memory capture gap FOUND + FIXED:** the 9 Sep sessions after the
+  11:15 review (correction round / pass 2 / re-audit FAIL) were never captured to
+  `_Hermes-Memory` → MEM-IIP-087 + session log added. (FD-HERMES-010.)
+- **Market — Wed 9 Sep 2026 COMPLETED EOD, fresh** (yfinance clean, last valid bar
+  2026-09-09; US session today opens ~20:30 UTC+7): ^GSPC 7,636.36 (−0.48% 1d,
+  +0.06% 5d) · SPY 762.40 · **MSFT 491.65 (−0.47%) — CIW NO TRIGGER** (52wk high
+  553.72, −25% band 415.29 far) · NVDA 223.67 (−0.91%) · AAPL 315.34 (−0.28%) ·
+  JNJ 267.08 (−0.76%) · GOOGL 330.65 (−2.28%) · FSLR 203.10 (−4.76%) · SMCI 38.93
+  (−3.30%) · **SLV 60.72 (+2.27%) — ETF still below the ~$62 SILVER-CORR-001
+  anchor** (SI=F 67.95 above) · pharma quartet −3.1..−4.8% 5d (ABBV 250.91 · BMY
+  64.41 · LLY 1,124.21 · VRTX 521.12) · GC=F 4,454.90 (+1.39%) · SI=F 67.95
+  (+2.49%) · **CL=F 96.46 (+3.69% 1d, +6.92% 5d) — ORG-2026-0022 oil dislocation
+  continuation, observation only**. No ±10% 1d moves → no mandatory news lookups.
+
+## State artifacts updated
+
+- `PROJECT_STATE.md` — Build Metrics (Python tests / Git push state / FDs approved),
+  Next allowed action, Session closeout row, footer. No index change.
+- `SESSION_CLOSEOUT.md` — this entry (prepended).
+- Vault fd-register mirrors (both) — FD-138 row backfilled.
+- `_Hermes-Memory` — MEM-IIP-087 + `Sessions/2026-09-09-m53-correction-passes-session-log.md`.
+
+## Recommended next action
+
+1. **Founder rulings F3 / F5 / F6** on the M5.3 pass-3 decision package → GO
+   Correction Pass 3 (F1a + F2 + F4 + per-ruling) with diagnostic-first
+   persistence-level RED tests. Do NOT auto-close M5.3.
+2. Decide the **push** for the local docs commit chain (1 pre-existing session
+   commit + this review's docs commit = 2 ahead) when convenient.
+3. Ops: fix the **Learning Loop Telegram target** (14th consecutive delivery
+   failure) and keep the **gateway up at 08:00** (radar catch-up runs late when
+   the daemon starts with a session).
+
+<!-- 2026-09-10 09:45 UTC+7 -->
+
 # Session — 2026-09-09 (M5.3 RE-AUDIT FAIL → CORRECTION PASS 3 DECISION PACKAGE — READ-ONLY)
 
 > **Scope:** Interactive session ~15:45–16:30 UTC+7 — the Founder performed the
