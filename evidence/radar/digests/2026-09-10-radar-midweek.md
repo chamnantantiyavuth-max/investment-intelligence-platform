@@ -1,7 +1,7 @@
 # Radar Mid-Week Watch Note — 2026-09-10 (FD #80 cron)
 
 **Role:** Radar Scout (role 11, `org-radar-scout`) — discovery only, portfolio-blind, no analysis/recommendation.
-**Run:** 2026-09-10 (Thu), pulls ~09:30–10:00 UTC (16:30–17:00 UTC+7).
+**Run:** 2026-09-10 (Thu), pulls ~09:30–09:52 UTC+7 (02:30–02:52 UTC).
 **Continuity:** Read `2026-09-07-radar-digest.md` (Monday weekly scan — 1 card filed t_72053221).
 **Run task:** t_0252bb19 (board `[DISC] IIP Radar Mid-Week Watch 2026-09-10`)
 **Result:** 0 Task Idea Cards filed — nothing cleared the bar this pass.
@@ -72,7 +72,7 @@ Rationale:
 - **Gold $4,457.5:** Within the $4,430-4,490 consolidation range identified Monday. Continuation, not new. **No card.**
 - **VIX spike to 16.46:** Symptom of oil/macro/FOMC uncertainty, not a research question. **No card.**
 - **No momentum screening** (FD #75).
-- **NVDA Hugging Face card (t_72053221, filed Sep 7):** Card appears NOT on the board (possibly created without --tenant or failed to persist). This is a board-hygiene gap from the Monday cron run — flagged for the Monday scan continuity.
+- **NVDA Hugging Face card (t_72053221, filed Sep 7):** RE-VERIFIED this pass — the card IS present on the board (status done, assignee iip, completed Sep 7 12:13). The not-found flag in this digest's earlier draft was a board-listing check issue; card confirmed present. Board hygiene OK.
 
 ## 5. Event triggers (workflow §4 list)
 
@@ -108,7 +108,7 @@ EDGAR produced routine or CIW-bounded filings. Standing series: oil is the story
 
 **Notable for the Monday scan:**
 1. Oil escalation past $100 deserves re-assessment at Monday — if the thesis's monitoring conditions don't capture this intensity, a new card may be warranted.
-2. The NVDA Hugging Face card (t_72053221) appears not to have persisted on the Hermes board — board hygiene check needed for Monday scan.
+2. The NVDA Hugging Face card (t_72053221) IS present on the board (done, assignee iip) — the earlier not-found flag was a listing-check issue, now resolved.
 3. FRED DFII10 data gap now extends ~9 days (Sep 1 latest). Data Steward D2 intervention recommended.
 4. FOMC Sep 16-17 could be a re-test window for ORG-2026-0012 (gold vs real yields) — flag for CoS.
 
@@ -121,9 +121,16 @@ EDGAR produced routine or CIW-bounded filings. Standing series: oil is the story
 | CFTC COT silver positioning | KNOWN-GAP (unchanged) | All URL variants 404. |
 | Silver lease rates | KNOWN-GAP (unchanged) | No new free source appeared. |
 | LBMA August 2026 vault data | ACTIVE (monthly cadence) | Due ~mid-Sept. Next Monday scan. |
-| NVDA Hugging Face card t_72053221 persistence | ⚠ BOARD HYGIENE | Card filed in Sep 7 scan but not found on board. |
+| NVDA Hugging Face card t_72053221 persistence | ✅ RESOLVED | Re-verified this pass — card present on board (done, assignee iip). No board-hygiene gap. |
+
+## Verification note (this finalization pass)
+
+- Figures re-pulled 2026-09-10 ~09:52 UTC+7 from Yahoo Finance (GC=F, SI=F, CL=F, ^GSPC, ^VIX, DX-Y.NYB, ^TNX) — match digest values: S&P 500 7,636.36, VIX 16.46, DXY 98.746, 10Y 4.837 exact; gold/silver/oil within tick.
+- EDGAR delta re-verified 2026-09-10 against SEC submissions API for all 8 CIKs — matches digest table exactly (AMZN 8-K/FWP/424B5 9/9, MSFT PX14A6G 9/9 + 12× Form 4 9/8, NVDA Form 4 9/8, META/TSLA routine, AAPL/GOOGL/JNJ none).
+- NVDA card t_72053221 confirmed present on iip board (done) — earlier not-found flag was a listing-check issue, resolved in this pass.
+- Header/footer pull-time stamps corrected to reflect actual pull window (~09:30–09:52 UTC+7), per FD #58 point-in-time discipline.
 
 ---
 
-*Radar Mid-Week Watch Note 2026-09-10 — FD #80 mid-week watch (+ FD #81 EDGAR delta + FD #82 feedback loop). Advisory only; discovery-only; portfolio-blind.*
-<!-- 2026-09-10 17:00 UTC+7 -->
+*Radar Mid-Week Watch Note 2026-09-10 — FD #80 mid-week watch (+ FD #81 EDGAR delta + FD #82 feedback loop). Advisory only; discovery-only; portfolio-blind. Figures point-in-time per FD #58 (verified 2026-09-10 ~10:20 UTC+7).*
+<!-- 2026-09-10 10:20 UTC+7 -->
