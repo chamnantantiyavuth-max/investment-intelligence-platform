@@ -18,7 +18,7 @@
   possible ORG-2026-0012 re-test window), plus a finalization/correction commit
   `f90ef10` (pull-time stamps + NVDA card-presence re-verify per FD #58).
   **Radar ledger post-pin → 3 consecutive complete runs (3 Sep mid-week · 7 Sep
-  weekly · 10 Sep mid-week).** This is **review-race occurrence #5** — a review that
+  weekly · 10 Sep mid-week).** This is **review-race occurrence #4** — a review that
   runs at ~09:3x and declares the 08:00 job "missed" is racing the catch-up.
 - **⚠ PUSH NOT SYNCED — 4 commits ahead.** Local HEAD `f90ef10` (579 commits) vs
   `origin/main 283a7aa` (575): 10 Sep review docs `89677e8` + radar deliverables
