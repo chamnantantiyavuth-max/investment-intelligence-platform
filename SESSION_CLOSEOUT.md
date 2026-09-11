@@ -23,9 +23,9 @@
 - **⚠ PUSH NOT SYNCED — 4 commits ahead.** Local HEAD `f90ef10` (579 commits) vs
   `origin/main 283a7aa` (575): 10 Sep review docs `89677e8` + radar deliverables
   `e4e0e8f` + radar finalization `f90ef10`, plus the pre-existing 9 Sep docs commit
-  `64ed62e`. Push = Founder call → decision item (0); after this review's docs commit
-  = **7 ahead** at close (4 pre-review + 3 docs commits from this review; re-derive
-  with `git log --oneline origin/main..HEAD` — exact SHAs live in git, not in this log).
+  `64ed62e`. Push = Founder call → decision item (0); the ahead count is 4 pre-review
+  plus this review's docs commits — re-derive with
+  `git rev-list --count origin/main..HEAD` (never trust a number embedded in this log).
 - **M5.3 status unchanged — INDEPENDENT RE-AUDIT FAIL / CORRECTION REQUIRED,
   NOT CLOSED / NOT FROZEN.** Awaiting Founder rulings F3 (SI-01 lifecycle, 3 options),
   F5 (UUIDv7 strictness, 2 options), F6 (RRM retries, 3 options) → then GO Correction
