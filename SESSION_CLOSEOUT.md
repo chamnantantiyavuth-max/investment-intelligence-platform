@@ -1,3 +1,113 @@
+# Session — 2026-09-12 (cron review — daily state reconciliation)
+
+> **Scope:** Unattended scheduled review (10:35–10:50 UTC+7). Read-only plus state-doc sync.
+> No Founder interaction, no implementation, no push.
+
+## Findings
+
+- **No new interactive session since 9 Sep 17:13** (`20260909_113936_74874e`). Session browse
+  since = cron ticks only: 10 Sep Learning Loop + mid-week radar (09:36–09:49), the 11 Sep
+  Learning Loop review (11:21–11:26), and **today's Nick-Weekly AM pipeline run**
+  (`cron_73e611584447_20260912_103046`, 10:30:45–10:35:26).
+- **✅ Nick-Weekly AM pipeline COMPLETE — `AM-V0-20260912-103203`, commit `03ff15d`, NOT pushed
+  by the job (deliberate).** Fired ~90 min late (slot 09:00). As-of **Fri 11 Sep COMPLETED EOD —
+  fresh ≤7d**; coverage 9/9, 0 NaN, single uniform as-of (2nd consecutive clean fetch — the
+  `fast_info` NaN fallback was again not exercised).
+  - Week 09-04→09-11: median **+1.14%** (2nd consecutive positive), breadth 5/9, spread 13.3 pts
+    (was 17.4). Extremes both inside one complex → **AMD +8.1% (top) vs NVDA −5.2% (largest
+    decliner)** = intra-semis rotation, not a uniform bid.
+  - **Resolutions:** AVGO eps refresh CONFIRMED durable (2nd week, $7.87→$7.83) → the 5 Sep
+    standing question is CLOSED; NVDA eps $7.90 durable (3rd week, held across a −5.2% price
+    week); **the 5 Sep MDT/AMD "batch EPS drift" RETRACTED** (4.11→4.06 / 4.11→4.03 = bidirectional
+    field recomputation, NOT a fundamental refresh → corrected rule: no print in window ⇒
+    provisional noise until a second week holds).
+  - **🔴 CRWD P/E corruption — 3rd consecutive absurd week** (5,327.5 → 5,168.5 on a falling
+    price; 7th run missing-or-absurd). FD #45 §8.1 deterministic sanity check still Founder-gated.
+  - AMD is now the book's most-extended name (+49.5% vs 200-day, P/E 128.07); AVGO 2nd week below
+    its 200-day; **Q-Conditions 10/10 Qualified, 0 exit signals — 6th consecutive clean run**.
+  - **First in-run news check** (closes the 5 Sep §7 process note): AMD = CFO ~$3T TAM claim
+    (Sep 7–9); NVDA = DOJ/Groq-probe headline (Sep 11, **single low-tier source → primary-source
+    verification flagged before any research claim**).
+  - **Push withheld deliberately** — the job's own report: pushing would sweep the 9-commit review
+    chain the Founder reserved as decision item (0).
+- **M5.3 status unchanged — INDEPENDENT RE-AUDIT FAIL / CORRECTION REQUIRED, NOT CLOSED / NOT
+  FROZEN.** Awaiting Founder rulings F3 (SI-01 lifecycle) / F5 (UUIDv7 strictness) / F6 (RRM
+  retries) → then GO Correction Pass 3 (F1a RSR-only APPEND_ONLY_STATE enforcement + F2 cross-anchor
+  reconcile + F4 RFR-01 + per-ruling) with diagnostic-first persistence-level RED tests. Package:
+  `design/qad-pivot/m5/QAD-M5.3-CORRECTION-PASS-3-DECISION-PACKAGE.md`. No erratum, no FD #139;
+  register max **#138** (fd_count 154); Erratum-002 FROZEN. Production / Live Autonomous QAD /
+  workforce / cron cutover / M6 / M7 / fixture sealing = NOT AUTHORIZED.
+- **Verification — real full run:** suite **706/706 PASS (5.72s, hermes-agent venv)** (M4A validator
+  173/173, M4B 93/93, QAD conformance 105/105 in-suite). `git diff 283a7aa..HEAD -- tests/`
+  **EMPTY** — no test churn. No clock-driven locked-test expiry in range (FO fixture `as_of`
+  2026-08-28, 30d bound ~27 Sep — 15 days out).
+- **Repo:** HEAD `03ff15d` (**584 commits**, tree CLEAN) vs `origin/main 283a7aa` (575) = **9 commits
+  AHEAD / UNPUSHED** — 8 pre-existing review/radar docs (`64ed62e`, `89677e8`, `e4e0e8f`, `f90ef10`,
+  `42fc1ec`, `6991ea7`, `f7f500b`, `2b5d566`) + today's AM run `03ff15d`. Push = Founder call →
+  decision item (0); re-derive with `git rev-list --count origin/main..HEAD`.
+- **Board:** 82 done / 4 blocked / 2 completed (unchanged since 11 Sep; blocked = QAD M1 governance
+  review, intentional-failure pilot, MIGRATED ORG-2026-0016/0017). M6 branch
+  `docs/m6-gemini-notebook-dr` @ `a37e92d` PARKED, untouched.
+- **⚠ Learning Loop Telegram delivery FAILING — 16th consecutive review — plus a NEW cross-profile
+  finding:** job `1f5f03f9236d` (`deliver: origin`) fails with *"Chat not found"
+  telegram:8964964996*; the **same dead target also fails 4 more jobs in 2 OTHER profiles**
+  (antigravity-orchestrator ×2, notebooklm ×2). 8 occurrences of that id exist across the cron
+  `jobs.json` files and **all 8 are inside `last_delivery_error` strings** ⇒ the chat id is
+  configured NOWHERE — `deliver: origin` is resolving a **stale origin chat**. Fix = set an explicit
+  delivery target (or `local`) on the affected jobs — interactive only, needs the Founder's current
+  chat id. (Related low-priority observation: this job still runs on `provider: deepseek /
+  model: deepseek-v4-flash` while the three scanner/CIW jobs are pinned to
+  `openrouter / deepseek/deepseek-v4-flash` — working as-is, no spend-guard trip; recorded only.)
+- **This review's own report rides the same broken delivery target** → the daily digest may not
+  reach Telegram; the authoritative record is the repo + `_Hermes-Memory`.
+- **No vault fd-register gap this cycle:** register max #138 unchanged; FD-138 present in **both**
+  mirrors (central `AppData/Local/hermes/vault/fd-register.md` + `~/.hermes/vault/fd-register.md`)
+  — verified, no backfill needed.
+- **Cadence:** weekly radar + CIW **Mon 14 Sep 08:00/09:00** = next FD #110 Live Office evidence point
+  (radar ledger post-pin = 3 consecutive complete runs: 3 Sep / 7 Sep / 10 Sep); mid-week radar
+  **Thu 17 Sep 08:00**; Nick-Weekly **Sat 19 Sep 09:00**.
+- **Market — Fri 11 Sep 2026 COMPLETED EOD, fresh** (independent yfinance fetch 12 Sep 10:36 UTC+7;
+  US closed Sat ⇒ no live-bar risk): ^GSPC 7,656.98 (+0.86% 1d, −1.17% 5d) · **MSFT 495.63 (+0.65%
+  1d, −2.84% 5d) — CIW NO TRIGGER** (52wk high 553.72 → −10.5%; −25% WATCH band 415.29 far) ·
+  NVDA 218.29 (−0.03%, −4.45% 5d) · AAPL 332.27 (+1.75%, +1.24% 5d) · JNJ 265.58 (−0.29%) ·
+  GOOGL 338.50 (+1.77%) · FSLR 209.03 (+0.90%) · **SMCI 40.10 (+7.28%)** · **AMD 516.13 (+2.49%,
+  +13.15% 5d — most extended)** · AVGO 361.99 · PANW 330.65 (−2.32%) · CRWD 206.74 (−1.02%) ·
+  **INTC 102.94 (+2.61%, +12.29% 5d)** · MDT 90.96 · **SLV 58.12 (+1.08%, −4.01% 5d) — still below
+  the ~$62 SILVER-CORR-001 anchor** (SI=F 65.02 above) · GC=F 4,390.00 (+0.58%, −2.26% 5d) ·
+  **CL=F 99.99 (−2.43% 1d, +9.52% 5d) — oil holds ~$100, ORG-2026-0022 dislocation zone** ·
+  ^TNX 4.97% (+0.63%, +4.47% 5d) · **^VIX 15.84 (−11.2% 1d — relief session with the +0.86% SPX
+  close)** · DXY 99.10 · pharma quartet ABBV 257.12 (+0.83%) / BMY 63.64 (−0.17%, **−6.54% 5d**) /
+  LLY 1,115.70 (−0.65%) / VRTX 515.44 (+0.17%, **−7.62% 5d**). **No ±10% single-day equity moves →
+  no mandatory news lookups** (the VIX move accompanied the SPX relief close; CL=F = ORG-2026-0022
+  continuation, observation only).
+
+## State artifacts updated
+
+- `PROJECT_STATE.md` — Build Metrics (`Python tests` + `Git push state` rows), §Next allowed action
+  (12 Sep paragraph), Session table (12 Sep row), EOF review comment.
+- `SESSION_CLOSEOUT.md` — this entry.
+- `_Hermes-Memory/Projects/investment-intelligence-platform/` — `CURRENT-STATE.md` (MEM-IIP-089) +
+  `Sessions/2026-09-12-cron-review-session-log.md` (FD-HERMES-010 capture).
+- Observed, NOT fixed (cosmetic, per the Founder's no-fix-audit-loop preference): 13 Session-table
+  rows carry a pre-existing malformed `|||`/`||` prefix — recorded here only.
+- Not touched: `AGENTS.md` (protected — F5 checkpoint fd-134-135 + M5.2/Erratum-002/M5.3 status still
+  stale), `operational/FOUNDERS-DECISIONS.md` (no new FD), vault fd-register (no gap), M6 branch,
+  all QAD code.
+
+## Recommended next action
+
+1. **Push decision (item 0)** — 9 local commits (`64ed62e` … `03ff15d`) are unpushed; nothing in them
+   is unapproved work, but the push is the Founder's call and the AM job correctly withheld it.
+2. **Fix the Telegram delivery target** on `1f5f03f9236d` (+ the 4 jobs in antigravity-orchestrator /
+   notebooklm) — the daily digest has not reached Telegram for 16 consecutive reviews.
+3. **M5.3 — rule on F3 / F5 / F6** → GO Correction Pass 3 (F1a + F2 + F4 + per-ruling).
+4. **CRWD P/E sanity check (FD #45 §8.1)** — 7-run evidence record; needs Founder authorization.
+5. Optional: verify the NVDA DOJ/Groq headline against a primary source before it enters any claim.
+
+<!-- 2026-09-12 10:50 UTC+7 -->
+
+---
+
 # Session — 2026-09-11 (cron review — daily state reconciliation)
 
 > **Scope:** Unattended scheduled review (11:21–11:45 UTC+7). Read-only plus state-doc sync.
