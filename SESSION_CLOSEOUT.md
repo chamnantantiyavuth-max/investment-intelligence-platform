@@ -1,3 +1,59 @@
+# Session — 2026-09-12 EVENING (cron review tick, 22:40–23:00 UTC+7)
+
+> **Scope:** Unattended scheduled evening tick of the same review job (`1f5f03f9236d`, interval 720m).
+> Read-only plus state-doc sync. No Founder interaction, no implementation, no push.
+
+## Findings (evening tick)
+
+- **ZERO delta since the 10:39 morning review.** No new commits (HEAD `54b16b8`, 585 commits, tree CLEAN),
+  no new sessions beyond today's two cron sessions (Nick-Weekly AM pipeline `cron_73e611584447_20260912_103046`,
+  this review job `cron_1f5f03f9236d_20260912_103526`), no new FDs (register max #138 / fd_count 154,
+  FOUNDERS-DECISIONS tail unchanged at item 138), no new radar digest (`evidence/radar/digests/` still ends
+  2026-09-10 mid-week), board unchanged (82 done / 4 blocked / 2 completed; blocked = QAD M1 governance review,
+  pilot intentional-failure, ORG-2026-0016/0017). M6 branch parked @ `a37e92d` untouched.
+- **Suite re-verified REAL: 706/706 PASS (6.29s, hermes-agent venv)** — M4A validator 173/173, M4B 93/93,
+  QAD conformance 105/105 in-suite; no clock-driven locked-test expiry (FO fixture `as_of` 2026-08-28,
+  30d bound ~27 Sep = 15 days out).
+- **Push state: 10 commits AHEAD / UNPUSHED** (`git rev-list --count origin/main..HEAD` = 10; origin/main
+  `283a7aa`, 575 commits). Push = Founder call, decision item (0). The morning review's own docs commit
+  (`54b16b8`) is part of this chain.
+- **M5.3 unchanged:** INDEPENDENT RE-AUDIT FAIL / CORRECTION REQUIRED — **NOT CLOSED / NOT FROZEN**.
+  Awaiting Founder rulings **F3** (SI-01 immutable status lifecycle) / **F5** (`deterministic_uuid7` RFC-9562 time
+  conformance) / **F6** (RRM `retries` lineage) → then GO Correction Pass 3 = F1a + F2 + F4 + per-ruling, with
+  diagnostic-first persistence-level RED tests. No erratum, no FD #139; Erratum-002 stays FROZEN.
+  Production / Live Autonomous QAD / workforce / cron cutover / M6 / M7 / fixture sealing = NOT AUTHORIZED.
+- **Market:** Sat 12 Sep — US markets closed, no new session. Last completed EOD = **Fri 11 Sep**, independently
+  re-verified 22:41 UTC+7 (yfinance 1.5.1, system python 3.14.6) and identical to the 10:36 fetch. ^GSPC 7,656.98
+  (+0.86% 1d, −1.17% 5d) · **MSFT 495.63 — CIW NO TRIGGER** (52wk close-high 542.07, −25% band 406.55) ·
+  NVDA 218.29 (−4.45% 5d) · AAPL 332.27 (+1.75%) · **AMD 516.13 (+13.15% 5d, +48.8% vs 200dMA — most extended)** ·
+  AVGO 361.99 (−2.2% vs 200dMA) · SMCI 40.10 (+7.28%) · INTC 102.94 (+2.61%) · FSLR 209.03 (−9.0% vs 200dMA) ·
+  SLV 58.12 (**below the ~$62 anchor**; SI=F 64.55) · GC=F 4,366.20 (−2.79% 5d) · **CL=F 100.05 (+9.58% 5d — oil >$100,
+  ORG-2026-0022 continuation, observation only)** · ^TNX 4.97%. No ±10% 1d moves → no mandatory news lookups.
+- **⚠ Delivery still broken (17th consecutive review):** job `1f5f03f9236d` `deliver: origin` resolves the dead
+  target `telegram:8964964996` — `last_delivery_error` = "Chat not found" (job level, this tick's own report cannot
+  reach Telegram). The 10:39 cross-profile finding stands: the same dead id is the `last_delivery_error` of 4 jobs in
+  2 other profiles (antigravity-orchestrator ×2, notebooklm ×2) and is configured nowhere → `origin` itself is stale.
+  Fix requires an interactive config change (Founder decision) — recorded, not actioned.
+
+## Verification performed
+
+- `git log origin/main..HEAD` — 10 commits, list identical to the morning review; `git status --short` empty.
+- `pytest -q` (hermes-agent venv python 3.11.15) — **706 passed, 11 warnings in 6.29s**.
+- `hermes kanban --board iip list` — 82 done / 4 blocked / 2 completed.
+- Independent market fetch — system python 3.14.6 + yfinance 1.5.1 (hermes venv pandas ABI still broken).
+- Register tail check — FOUNDERS-DECISIONS ends at item 138 (no new FD this cycle).
+
+## Next
+
+1. **Founder rulings F3 / F5 / F6** → GO Correction Pass 3 (F1a + F2 + F4 + per-ruling).
+2. Push decision (decision item 0) — 10 commits pending on approval.
+3. Mon 14 Sep 08:00 weekly radar + 09:00 CIW = next FD #110 Live Office acceptance evidence point.
+4. Telegram delivery-target fix (interactive config; ops item ②).
+
+<!-- 2026-09-12 23:00 UTC+7 -->
+
+---
+
 # Session — 2026-09-12 (cron review — daily state reconciliation)
 
 > **Scope:** Unattended scheduled review (10:35–10:50 UTC+7). Read-only plus state-doc sync.
@@ -631,3 +687,5 @@ S7 ✅ / S8 ✅ / minimum PIT-aware query substrate ✅ (reference, not producti
    demonstrated defect exists (per Founder directive).
 
 <!-- 2026-09-08 17:37 UTC+7 -->
+
+<!-- 2026-09-12 23:00 UTC+7 -->
