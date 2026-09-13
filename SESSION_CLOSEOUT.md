@@ -1,5 +1,17 @@
 # Session — 2026-09-13 (cron review tick, 10:47 UTC+7)
 
+## M5.3 CORRECTION PASS 3 IMPLEMENTED — 13 Sep 2026 (afternoon session)
+
+**Session:** resumed CP3 from a mid-edit state (1 uncommitted pass3 fixture edit), worked the full FD #139 F1–F6 mandate cluster-by-cluster. Commits: `fca8b4e` (test-only corrections — R3 crash fixture authority, R3 missing-SI-01 lifecycle, R6 RRM count; corrected RED baseline 14 failed / 40 passed), `7f1580e` (F5 74-bit random field + exact-component tests), `9d79f84` (F3 anchor-before-callback + honest SI-01 + crash states A/B/C), `de4f056` (F2 deterministic retry identity + terminal reconciliation + cross-stage adversarial test), `8d5cfdd` (F4 RFR-01 exactly-once same-store atomic), `d3209db` (F6 RRM-01.retries = count from the authoritative RR ledger).
+
+**Truthful chronology:** early CP3 was NOT perfectly test-only-separated — the first F1 diagnostic correction landed with the partial F1/F5 runtime in `d2eb3f4`; from `fca8b4e` onward test-only corrections preceded each runtime cluster. `da47b97` remains the initial diagnostic commit; nothing rewritten.
+
+**Verification (real runs):** m53 78/78, CP3 diagnostics 23/23, test_ids 16/16, tests/qad/ 498/498, full pytest 733 passed / 1 failed (the single failure is the pre-existing locked-audit-date literal `9 Sep 2026` vs FD #139 `13 Sep 2026` — outside the CP3 file boundary, recorded before CP3 at `1c7d472`), M4A 173/173, M4B 93/93. No remaining old `deterministic_uuid7(seed)` callers.
+
+**State:** M5.3 = CORRECTION PASS 3 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN. F7–F10 remain under POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE; generic APPEND_ONLY_STATE under POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER; reference impl ≠ production S8; M6 branch parked; parking branch `wip/pre-m53-cp3-local-docs-20260913` preserved. 6 CP3 commits AHEAD of origin/main, UNPUSHED (push = Founder call per brief step 17).
+
+**Recommended next action:** Founder reviews the CP3 diff / this record, authorizes push of the 6-commit chain, then schedules the NEW independent re-audit. Alternatives: (B) push first, audit after; (C) hold all until after the re-audit.
+
 > **Scope:** Unattended scheduled tick of the same review job (`1f5f03f9236d`, interval 720m).
 > Read-only verification + state-doc sync. No Founder interaction, no implementation, no push,
 > no locked-test edit. This tick lands ~1 minute after the interactive CP3 session closed (10:42:30).
