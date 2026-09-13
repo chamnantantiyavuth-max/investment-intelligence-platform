@@ -116,3 +116,40 @@ class TestDeterministicUuid7:
         """No silent hash-derived fallback: ts_ms is a required keyword."""
         with pytest.raises(TypeError):
             deterministic_uuid7("any|seed")  # type: ignore[call-arg]
+
+    def test_exact_deterministic_rand74_bits(self):
+        """FD #139 R5 exact-component test: reconstruct rand74 from the
+        decoded UUID and compare to the exact expected SHA-256 derivation.
+
+        This prevents a future regression where fewer than 74 random bits
+        are used (the pre-fix implementation kept only 38 bits via
+        digest[6:20] >> 74, silently zeroing rand_a) while superficial
+        UUID-shape tests stay green."""
+        import hashlib
+
+        seed = "exec1|cp1|gap"
+        ts_ms = self._TS
+        expected_rand74 = (
+            int.from_bytes(hashlib.sha256(seed.encode("utf-8")).digest(), "big")
+            & ((1 << 74) - 1)
+        )
+        u = deterministic_uuid7(seed, ts_ms=ts_ms)
+        # Decode UUID components (RFC-9562 §5.7 layout).
+        unix_ts_ms = u.int >> 80
+        rand_a = (u.int >> 64) & 0xFFF          # top 12 of the 74 rand bits
+        rand_b = u.int & ((1 << 62) - 1)        # lower 62 rand bits
+        actual_rand74 = (rand_a << 62) | rand_b
+        assert unix_ts_ms == ts_ms, "timestamp field must be the real anchor"
+        assert actual_rand74 == expected_rand74, (
+            f"rand74 mismatch: got {actual_rand74}, expected {expected_rand74}"
+        )
+        # rand_a must be non-trivial (the pre-fix defect zeroed it).
+        assert rand_a != 0, "rand_a must carry deterministic entropy"
+        assert rand_a.bit_length() <= 12 and rand_b.bit_length() <= 62
+
+    def test_rand74_differs_across_semantic_labels(self):
+        """Distinct semantic labels must yield distinct full random fields
+        (not merely distinct timestamps)."""
+        gap = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
+        note = deterministic_uuid7("exec1|cp1|note", ts_ms=self._TS)
+        assert (gap.int & ((1 << 62) - 1)) != (note.int & ((1 << 62) - 1))

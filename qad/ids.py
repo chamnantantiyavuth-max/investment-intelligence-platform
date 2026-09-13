@@ -84,7 +84,13 @@ def deterministic_uuid7(seed: str, *, ts_ms: int) -> uuid.UUID:
             f"deterministic ts_ms out of UUID v7 48-bit range: {ts_ms}"
         )
     digest = hashlib.sha256(seed.encode("utf-8")).digest()  # 32 bytes, 256 bits
-    rand74 = int.from_bytes(digest[6:20], "big") >> 74  # keep 74 bits
+    # Deterministic 74-bit rand material for rand_a (12) + rand_b (62).
+    # CP3 F5 fix (FD #139 R5): MASK to exactly 74 bits from the full digest.
+    # The pre-fix implementation (digest[6:20] >> 74) kept only
+    # 112-74 = 38 bits, silently zeroing rand_a and collapsing the claimed
+    # deterministic randomness to 2^38 — an implementation defect caught by
+    # the exact rand74 test (tests/qad/test_ids.py).
+    rand74 = int.from_bytes(digest, "big") & ((1 << 74) - 1)
     rand_a = (rand74 >> 62) & 0xFFF
     rand_b = rand74 & _RANDB_MASK
     value = (
