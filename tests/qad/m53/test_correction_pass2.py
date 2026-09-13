@@ -35,7 +35,7 @@ from qad.models.family_c import (
     ResearchStageRecordStage_name,
     ResearchStageRecordStage_state,
 )
-from qad.models.family_i import RetryRecordStatus
+from qad.models.family_i import RetryRecordStatus, ServiceInvocationStatus
 from qad.persistence import IntegrityConflict
 from qad.persistence.errors import TransactionFailure
 
@@ -145,10 +145,14 @@ class TestInitialFailureResume:
         assert calls["n"] == 1  # ran once as retry #1, not initial again
 
     def test_never_executed_still_runs_initial(self):
-        """No RSR chain -> initial execution still runs (zero RR-01)."""
+        """No RSR chain -> initial execution still runs (zero RR-01).
+
+        CP4-1: the kernel persists the AUTHORITATIVE SI-01 (actual SUCCESS).
+        Pre-storing a FAILURE-default request stub would now correctly FAIL
+        CLOSED (pre-existing FAILURE vs actual SUCCESS) — removed.
+        """
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -159,6 +163,8 @@ class TestInitialFailureResume:
                        manifest_id=store.list_all("RRM-01")[0].manifest_id)
         assert calls["n"] == 1
         assert _attempts(store, inv.invocation_id) == []
+        si01 = store.load("SI-01", inv.invocation_id)
+        assert si01.status is ServiceInvocationStatus.SUCCESS
 
 
 # =====================================================================
@@ -324,7 +330,9 @@ class TestCaseVersionIsolation:
                 raise RetryableError("t1")
 
         kernel.execute(inv, STAGE_NAME, stage, manifest_id=m1.manifest_id)
-        # v2.0
+        # v2.0 — same invocation SI-01 already authoritatively records
+        # FAILURE (v1's actual initial outcome).  v2's initial must be exactly
+        # consistent with that record (fail retryably), then succeed on retry.
         m2 = _make_manifest(case_version="2.0")
         m2 = m2.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xB00:012x}"})
         store.store(m2)
@@ -334,9 +342,11 @@ class TestCaseVersionIsolation:
         def stage2(ctx):
             seen2["prev"] = list(ctx.previous_output_ids)
             calls["n"] += 1
+            if calls["n"] == before + 1:  # v2 initial — SI-consistent retryable
+                raise RetryableError("v2-1")
 
         kernel.execute(inv, STAGE_NAME, stage2, manifest_id=m2.manifest_id)
-        assert calls["n"] > before, "v2 false-replayed (did not execute)"
+        assert calls["n"] > before + 1, "v2 false-replayed (did not execute)"
         assert "OLD" not in (seen2["prev"] or []), "v2 inherited v1 outputs"
 
 
@@ -401,6 +411,10 @@ class TestExecutionIdentityRrScoping:
         rr = _attempts(store, inv.invocation_id)
         assert len(rr) == 1 and rr[0].status is RetryRecordStatus.SUCCEEDED
         # Stage B — same invocation, same manifest/case_version, new stage.
+        # CP4-1: SI-01 already records Stage A's ACTUAL initial outcome
+        # (FAILURE).  Stage B's initial outcome MUST be exactly consistent
+        # with that authoritative record — a raw SUCCESS would FAIL CLOSED.
+        # Stage B therefore also fails its initial retryably, then succeeds.
         mB = _make_manifest()
         mB = mB.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xC00:012x}"})
         store.store(mB)
@@ -408,9 +422,14 @@ class TestExecutionIdentityRrScoping:
 
         def stage_b(ctx):
             ran_b["n"] += 1
+            if ran_b["n"] == 1:
+                raise RetryableError("b1")
 
         kernel.execute(inv, DEEP, stage_b, manifest_id=mB.manifest_id)
-        assert ran_b["n"] == 1, "Stage B did not execute (false replay)"
+        assert ran_b["n"] == 2, "Stage B did not execute its own initial+retry (false replay)"
+        rr_b = [r for r in _attempts(store, inv.invocation_id)
+                if r.retry_id != rr[0].retry_id]
+        assert len(rr_b) == 1 and rr_b[0].status is RetryRecordStatus.SUCCEEDED
 
     def test_case_version_v2_executes_despite_v1_rr_history(self):
         """v1.0 initial fails + retry#1 succeeds (RR history exists). v2.0 same
@@ -428,7 +447,9 @@ class TestExecutionIdentityRrScoping:
 
         kernel.execute(inv, STAGE_NAME, stage_v1, manifest_id=m1.manifest_id)
         assert len(_attempts(store, inv.invocation_id)) == 1
-        # v2.0
+        # v2.0 — same stage; the invocation SI-01 already authoritatively
+        # records FAILURE (v1's actual initial outcome).  v2's initial must be
+        # exactly consistent with that record: fail retryably, then succeed.
         m2 = _make_manifest(case_version="2.0")
         m2 = m2.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xD00:012x}"})
         store.store(m2)
@@ -436,9 +457,13 @@ class TestExecutionIdentityRrScoping:
 
         def stage_v2(ctx):
             ran["n"] += 1
+            if ran["n"] == 1:
+                raise RetryableError("v2-1")
 
         kernel.execute(inv, STAGE_NAME, stage_v2, manifest_id=m2.manifest_id)
-        assert ran["n"] == 1, "v2 did not execute (false replay)"
+        assert ran["n"] == 2, "v2 did not execute its own initial+retry (false replay)"
+        rr = _attempts(store, inv.invocation_id)
+        assert len(rr) == 2 and rr[-1].status is RetryRecordStatus.SUCCEEDED
 
 
 # =====================================================================

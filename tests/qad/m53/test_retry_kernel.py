@@ -147,7 +147,6 @@ class TestRetryBudgetFounderDecision:
         """FD #138: initial success is NOT a retry -> ZERO RR-01 records."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -261,7 +260,6 @@ class TestUuidV7Compliance:
     def test_rsr_stage_ids_are_uuid_v7(self):
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
 
@@ -280,7 +278,6 @@ class TestCheckpointAndIdentity:
         the stage executes."""
         kernel, store, _ = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -301,7 +298,6 @@ class TestCheckpointAndIdentity:
         the resume authority, and no extra canonical record is written."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -327,7 +323,6 @@ class TestCheckpointAndIdentity:
         outcome — the stage re-executes (restart from last checkpoint)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest_v1 = _make_manifest()
         store.store(manifest_v1)
         calls = {"n": 0}
