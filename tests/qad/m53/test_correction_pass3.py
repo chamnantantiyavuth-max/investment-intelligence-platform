@@ -95,13 +95,23 @@ def _seed_running_manifest(store, *, case_version="1.0"):
 
 def _rsr(stage_store, *, stage_id=None, state=IN_PROGRESS, retry_count=0,
          failure_reason=None):
-    sid = stage_id or str(uuid.uuid4())
+    sid = stage_id or f"00000000-0000-7000-8000-{0xA00:012x}"
     return ResearchStageRecord(
         stage_id=sid, case_id=CASE_ID, stage_name=STAGE_NAME,
         stage_state=state, started_at=FIXED_NOW, completed_at=FIXED_NOW,
         responsible_role="S8", checkpoint_ref=f"cp:1.0:{sid}",
         output_ids=[], retry_count=retry_count, failure_reason=failure_reason,
     )
+
+
+def _stored_stage_id(stage_store) -> str:
+    """Single current RSR-01 stage_id in the stage anchor (F1 direct-store
+    transition tests MUST re-store the SAME stage_id to exercise a state
+    transition rather than an insert)."""
+    rsrs = [r for r in stage_store.list_all("RSR-01")
+            if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
+    assert rsrs, "no RSR-01 record stored"
+    return rsrs[-1].stage_id
 
 
 # =====================================================================
@@ -115,45 +125,43 @@ class TestF1RsrSm3Transitions:
     def test_f1_failed_to_complete_rejected(self):
         store = _kernel()[2]
         _seed_case(store)
-        store.store(_rsr(store, state=FAILED_ST))
+        store.store(_rsr(store, stage_id=None, state=FAILED_ST))
+        sid = _stored_stage_id(store)
         with pytest.raises((ImmutabilityViolation, TransactionFailure)):
-            store.store(_rsr(store, stage_id=store.list_all("RSR-01")[0].stage_id,
-                             state=COMPLETE))
+            store.store(_rsr(store, stage_id=sid, state=COMPLETE))
 
     def test_f1_complete_to_failed_rejected(self):
         store = _kernel()[2]
         _seed_case(store)
-        store.store(_rsr(store, state=COMPLETE))
+        store.store(_rsr(store, stage_id=None, state=COMPLETE))
+        sid = _stored_stage_id(store)
         with pytest.raises((ImmutabilityViolation, TransactionFailure)):
-            store.store(_rsr(store, stage_id=store.list_all("RSR-01")[0].stage_id,
-                             state=FAILED_ST))
+            store.store(_rsr(store, stage_id=sid, state=FAILED_ST))
 
     def test_f1_incomplete_to_complete_rejected(self):
         store = _kernel()[2]
         _seed_case(store)
-        store.store(_rsr(store, state=INCOMPLETE))
+        store.store(_rsr(store, stage_id=None, state=INCOMPLETE))
+        sid = _stored_stage_id(store)
         with pytest.raises((ImmutabilityViolation, TransactionFailure)):
-            store.store(_rsr(store, stage_id=store.list_all("RSR-01")[0].stage_id,
-                             state=COMPLETE))
+            store.store(_rsr(store, stage_id=sid, state=COMPLETE))
 
     def test_f1_inprogress_to_complete_legal(self):
         store = _kernel()[2]
         _seed_case(store)
-        store.store(_rsr(store, state=IN_PROGRESS))
+        store.store(_rsr(store, stage_id=None, state=IN_PROGRESS))
+        sid = _stored_stage_id(store)
         # Same stage_id, IN_PROGRESS -> COMPLETE: legal forward transition.
-        store.store(_rsr(store, stage_id=store.list_all("RSR-01")[0].stage_id,
-                         state=COMPLETE))
-        assert store.load("RSR-01", store.list_all("RSR-01")[0].stage_id
-                          ).stage_state is COMPLETE
+        store.store(_rsr(store, stage_id=sid, state=COMPLETE))
+        assert store.load("RSR-01", sid).stage_state is COMPLETE
 
     def test_f1_inprogress_to_failed_legal(self):
         store = _kernel()[2]
         _seed_case(store)
-        store.store(_rsr(store, state=IN_PROGRESS))
-        store.store(_rsr(store, stage_id=store.list_all("RSR-01")[0].stage_id,
-                         state=FAILED_ST))
-        assert store.load("RSR-01", store.list_all("RSR-01")[0].stage_id
-                          ).stage_state is FAILED_ST
+        store.store(_rsr(store, stage_id=None, state=IN_PROGRESS))
+        sid = _stored_stage_id(store)
+        store.store(_rsr(store, stage_id=sid, state=FAILED_ST))
+        assert store.load("RSR-01", sid).stage_state is FAILED_ST
 
 
 # =====================================================================

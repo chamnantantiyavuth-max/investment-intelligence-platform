@@ -121,6 +121,11 @@ class StageContext:
     retries and across process restarts within one execution lifecycle, and
     is the deterministic source for stage-owned canonical write identities
     (re-audit §8).
+
+    ``anchor_ts_ms`` (FD #139 R5 — Correction Pass 3): the REAL Unix epoch
+    milliseconds of the persisted RSR-01 execution anchor (``started_at``).
+    Deterministic UUID v7 stage-owned identities MUST use this anchor as the
+    48-bit timestamp (RFC-9562 §5.7) — never hash-derived bits (F5 fix).
     """
 
     execution: ExecutionContext
@@ -128,6 +133,7 @@ class StageContext:
     checkpoint_ref: str | None = None
     previous_output_ids: list[str] = field(default_factory=list)
     produced_output_ids: list[str] = field(default_factory=list)
+    anchor_ts_ms: int = 0
 
 
 @dataclass(frozen=True)
@@ -165,6 +171,29 @@ def _enum_str(value: Any) -> str:
 
 def _cp_encode(case_version: str, stage_id: str) -> str:
     return f"{_CP_PREFIX}:{case_version}:{stage_id}"
+
+
+def _started_at_to_ms(started_at: str | None) -> int:
+    """Real Unix epoch milliseconds for the RSR-01 ``started_at`` execution
+    anchor (FD #139 R5).
+
+    The kernel mints ``started_at`` as RFC3339 second-precision
+    (``%Y-%m-%dT%H:%M:%SZ``); per ruling R5 second-level precision may map
+    to milliseconds ending in ``000``.  Deterministic UUID v7 stage-owned
+    identities use this anchor for the 48-bit timestamp.  If the anchor is
+    missing or unparseable, return 0 so the caller fails closed rather than
+    silently deriving a fake timestamp.
+    """
+    if not started_at:
+        return 0
+    text = str(started_at).strip()
+    try:
+        # RFC3339 second precision (kernel now() format) — parse UTC.
+        from datetime import datetime, timezone
+        dt = datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
+        return int(dt.replace(tzinfo=timezone.utc).timestamp()) * 1000
+    except (ValueError, TypeError):
+        return 0
 
 
 def _cp_version(ref: str | None) -> str | None:
@@ -496,6 +525,9 @@ class RetryKernel:
             checkpoint_ref=state.checkpoint_ref,
             previous_output_ids=list(state.previous_outputs),
             produced_output_ids=[],
+            # FD #139 R5: REAL epoch-ms of the RSR-01 anchor (started_at).
+            # Second-level precision maps to ms ending in 000 (ruling R5).
+            anchor_ts_ms=_started_at_to_ms(state.started_at),
         )
 
     def _write_rsr(

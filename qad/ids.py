@@ -55,22 +55,35 @@ def generate_uuid7(ts_ms: int | None = None) -> uuid.UUID:
     return uuid.UUID(int=value)
 
 
-def deterministic_uuid7(seed: str) -> uuid.UUID:
-    """Return a DETERMINISTIC RFC-9562 UUID v7 derived from ``seed``.
+def deterministic_uuid7(seed: str, *, ts_ms: int) -> uuid.UUID:
+    """Return a DETERMINISTIC RFC-9562 UUID v7 derived from ``seed`` with a
+    REAL Unix-epoch-ms timestamp (FD #139 R5 — Correction Pass 3).
 
-    Same seed -> same UUID v7, across calls and across processes.  The 48-bit
-    timestamp and the 74 random bits are both derived from SHA-256(seed), so
-    the value is stable and still satisfies the RFC-9562 bit layout (version
-    7, variant 10).
+    The 48-bit timestamp field MUST be a real unix epoch millisecond value
+    derived from the persisted execution anchor (``RSR-01.started_at``) —
+    NOT hash-derived bits (F5 implementation bug, fixed in CP3).  The 74
+    random bits are a deterministic cryptographic derivation from the seed
+    (execution identity + checkpoint/semantic label), so:
 
-    Corner-pass-2 (FD #138 §5/§8): stage-owned canonical writes key their
-    identities to the execution contract (execution_id + checkpoint + a
-    semantic label) so a retried write is a same-identity, same-payload
-    no-op at the canonical store — mechanically derived, never hard-coded.
+    - same seed + same anchor ts_ms -> same UUID (stable across retry/restart)
+    - distinct semantic labels in the seed -> distinct UUIDs
+    - the timestamp field decodes to the real execution anchor (ordered,
+      verifiable) — version 7 + RFC variant are intact.
+
+    ``ts_ms`` is a REQUIRED keyword (the section 5.1-5.2 RSR anchor epoch-ms).
+    The caller MUST supply it from the persisted execution anchor; there is no
+    silent hash-derived fallback.
+
+    Seed-string contract (pass-2 idempotency) unchanged: the SAME seeds
+    the stage already builds (execution_id | checkpoint | label) keep their
+    identity; adding the anchor ts does not alter the seed text.
     """
     import hashlib
+    if ts_ms < 0 or ts_ms >= _MAX_TS:
+        raise ValueError(
+            f"deterministic ts_ms out of UUID v7 48-bit range: {ts_ms}"
+        )
     digest = hashlib.sha256(seed.encode("utf-8")).digest()  # 32 bytes, 256 bits
-    ts_ms = int.from_bytes(digest[:6], "big") & (_MAX_TS - 1)  # 48 bits
     rand74 = int.from_bytes(digest[6:20], "big") >> 74  # keep 74 bits
     rand_a = (rand74 >> 62) & 0xFFF
     rand_b = rand74 & _RANDB_MASK

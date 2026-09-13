@@ -114,6 +114,48 @@ _RRM_ALWAYS_IMMUTABLE_ANCHORS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# RSR-01 / SM-3 stage-state transition enforcement (M5.3 CP3, FD #139 R1)
+# ---------------------------------------------------------------------------
+# Legal forward transitions per frozen SM-3 (QAD-M4A-STATE-MACHINES.md §SM-3).
+# Only RSR-01 is enforced here — the generic APPEND_ONLY_STATE gap for the
+# OTHER schemas (CASE-01/CR-01/RU-01/QU-01/HS-01/…) is registered as
+# POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER (NOT built in CP3).
+#
+# IN_PROGRESS -> IN_PROGRESS is the versioned retry continuation (the kernel
+# appends a new version of the SAME stage_id while retrying).  Terminal states
+# (COMPLETE/FAILED/INCOMPLETE/SKIPPED) have NO outgoing transitions — the
+# kernel never rewrites a terminal RSR-01; SM-3 ILLEGAL list is enforced.
+_RSR01_SM3_LEGAL_TRANSITIONS: dict[str, set[str]] = {
+    "NOT_STARTED": {"IN_PROGRESS"},
+    "IN_PROGRESS": {"IN_PROGRESS", "COMPLETE", "FAILED", "INCOMPLETE", "SKIPPED"},
+    "COMPLETE": set(),    # terminal — no outgoing transitions
+    "FAILED": set(),      # terminal — no outgoing transitions
+    "INCOMPLETE": set(),  # terminal — INCOMPLETE → COMPLETE ILLEGAL
+    "SKIPPED": set(),     # terminal — Founder-only skip (F7, deferred gate)
+}
+
+
+def _check_rsr01_sm3_transition(
+    existing_dump: dict[str, Any],
+    incoming_dump: dict[str, Any],
+) -> list[str]:
+    """Enforce the RSR-01 / SM-3 APPEND_ONLY_STATE stage-state transition.
+
+    Only forward transitions in ``_RSR01_SM3_LEGAL_TRANSITIONS`` are legal.
+    A terminal-state reversal (FAILED→COMPLETE, COMPLETE→FAILED,
+    INCOMPLETE→COMPLETE, …) is an ImmutabilityViolation (SM-3 ILLEGAL list).
+    """
+    old_state = _enum_value(existing_dump.get("stage_state"))
+    new_state = _enum_value(incoming_dump.get("stage_state"))
+    if new_state not in _RSR01_SM3_LEGAL_TRANSITIONS.get(old_state, set()):
+        return [
+            f"stage_state: illegal SM-3 transition {old_state} → {new_state} "
+            f"(APPEND_ONLY_STATE; RSR-01 only, FD #139 R1)"
+        ]
+    return []
+
+
 def _enum_value(v: Any) -> Any:
     """Normalize a generated (str, Enum) member to its raw value."""
     return getattr(v, "value", v)
@@ -260,6 +302,17 @@ def check_immutability(
         )
         if lifecycle_violations:
             violated_fields.extend(lifecycle_violations)
+
+    # RSR-01 / SM-3 stage-state transition enforcement (M5.3 CP3, FD #139 R1)
+    # Bounded to RSR-01 ONLY — the generic APPEND_ONLY_STATE conformance gap
+    # for OTHER schemas is a registered pre-production blocker
+    # (POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER).
+    if schema_id == "RSR-01":
+        rsr01_violations = _check_rsr01_sm3_transition(
+            existing_dump, incoming_dump,
+        )
+        if rsr01_violations:
+            violated_fields.extend(rsr01_violations)
 
     for field_name, policy in all_policies.items():
         if policy in ("FIELD_IMMUTABLE",):

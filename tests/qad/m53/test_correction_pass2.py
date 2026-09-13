@@ -459,7 +459,8 @@ class TestRetriedWriteIdempotency:
             calls["n"] += 1
             # deterministic canonical identity derived from execution context
             gap_id = str(deterministic_uuid7(
-                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap"))
+                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap",
+                ts_ms=ctx.anchor_ts_ms))
             assert is_uuid7(gap_id), "stage-owned id not UUID v7"
             exec_seen.setdefault("id", ctx.execution_id)
             assert ctx.execution_id == exec_seen["id"], "execution_id unstable"
@@ -499,7 +500,8 @@ class TestRetriedWriteIdempotency:
         def stage(ctx):
             calls["n"] += 1
             gap_id = str(deterministic_uuid7(
-                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap"))
+                f"{ctx.execution_id}|{ctx.checkpoint_ref or ''}|gap",
+                ts_ms=ctx.anchor_ts_ms))
             rec = EvidenceGap(
                 gap_id=gap_id,
                 case_id=ctx.execution.case_id,

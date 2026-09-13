@@ -72,26 +72,47 @@ def test_monotonic_msec_generation():
 
 
 class TestDeterministicUuid7:
-    """Correction Pass 2 (FD #138 §5/§8): deterministic stage-owned ids."""
+    """Correction Pass 2 (FD #138 §5/§8) + CP3 (FD #139 R5): deterministic
+    stage-owned ids with a REAL anchor timestamp (never hash-derived)."""
+
+    _TS = 1_750_000_000_000  # fixed real epoch-ms anchor for utility tests
 
     def test_same_seed_same_value(self):
-        a = deterministic_uuid7("exec1|cp1|gap")
-        b = deterministic_uuid7("exec1|cp1|gap")
+        a = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
+        b = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
         assert a == b
         assert is_uuid7(a)
 
     def test_different_seed_different_value(self):
-        a = deterministic_uuid7("exec1|cp1|gap")
-        b = deterministic_uuid7("exec1|cp2|gap")
+        a = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
+        b = deterministic_uuid7("exec1|cp2|gap", ts_ms=self._TS)
         assert a != b
 
     def test_semantic_label_scopes_identity(self):
-        gap = deterministic_uuid7("exec1|cp1|gap")
-        note = deterministic_uuid7("exec1|cp1|note")
+        gap = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
+        note = deterministic_uuid7("exec1|cp1|note", ts_ms=self._TS)
         assert gap != note
 
     def test_valid_bit_layout(self):
-        u = deterministic_uuid7("any|seed")
+        u = deterministic_uuid7("any|seed", ts_ms=self._TS)
         assert UUID7_RE.match(str(u))
         assert u.version == 7
         assert u.variant == uuid.RFC_4122
+
+    def test_timestamp_field_is_real_anchor_ms(self):
+        """FD #139 R5: the 48-bit ts field MUST be the supplied real epoch-ms
+        anchor, not hash-derived bits."""
+        u = deterministic_uuid7("any|seed", ts_ms=self._TS)
+        assert u.int >> 80 == self._TS
+
+    def test_different_anchor_different_uuid(self):
+        """Same seed but a different (later) execution anchor -> different
+        UUID (timestamp participates in the identity)."""
+        a = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS)
+        b = deterministic_uuid7("exec1|cp1|gap", ts_ms=self._TS + 1000)
+        assert a != b
+
+    def test_ts_required(self):
+        """No silent hash-derived fallback: ts_ms is a required keyword."""
+        with pytest.raises(TypeError):
+            deterministic_uuid7("any|seed")  # type: ignore[call-arg]
