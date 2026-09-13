@@ -594,19 +594,35 @@ class TestDeterministicFailure:
 
 
 class TestMissingInvocation:
-    def test_missing_invocation_fails_closed(self):
-        """RR-01.invocation_id FK requires SI-01; missing invocation ->
-        MissingForeignKey before any record."""
+    def test_initial_execution_creates_si01_before_retry_rr01(self):
+        """FD #139 R3 supersedes the old 'SI-01 must pre-exist' precondition
+        for the INITIAL attempt: the kernel persists the authoritative SI-01
+        AFTER the actual initial outcome.  The invariant that remains strict:
+        RR-01 may NEVER be created until that authoritative SI-01 exists.
+        Here: initial retryable failure -> honest SI-01 FAILURE persisted ->
+        only then retry #1 / RR-01 is created."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         manifest = _make_manifest()
-        store.store(manifest)  # manifest exists, invocation does not
+        store.store(manifest)  # manifest exists, invocation does NOT
         calls = {"n": 0}
 
         def stage(ctx: StageContext) -> None:
             calls["n"] += 1
+            if calls["n"] == 1:
+                raise RetryableError("transient initial")
 
-        with pytest.raises(MissingForeignKey):
-            kernel.execute(inv, STAGE_NAME, stage,
-                           manifest_id=manifest.manifest_id)
+        outcome = kernel.execute(inv, STAGE_NAME, stage,
+                                 manifest_id=manifest.manifest_id)
+        assert outcome.status is RetryRecordStatus.SUCCEEDED
+        # Authoritative SI-01 exists with the ACTUAL initial outcome (FAILURE),
+        # created by the kernel after the initial attempt.
+        si01 = store.load("SI-01", inv.invocation_id)
+        assert si01.status is ServiceInvocationStatus.FAILURE
+        # Retry #1 ran and its RR-01 record exists ONLY because SI-01 exists
+        # (RR-01.invocation_id FK satisfied by the kernel-created SI-01).
+        rrs = _attempts(store, inv.invocation_id)
+        assert len(rrs) == 1
+        assert rrs[0].attempt_number == "1"
+        assert rrs[0].status is RetryRecordStatus.SUCCEEDED
         assert calls["n"] == 0

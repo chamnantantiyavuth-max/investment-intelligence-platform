@@ -340,8 +340,12 @@ class TestF3HonestSi01:
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         manifest = _seed_running_manifest(store)
-        # Recorded state: RSR anchor IN_PROGRESS + SI-01 SUCCESS.
-        store.store(inv)
+        # Recorded state: RSR anchor IN_PROGRESS + SI-01 SUCCESS (the fixture
+        # default is FAILURE — override so the persisted SI-01 matches the
+        # test's documented crash state; FD #139 R3 crash-rule reconcile
+        # keys on the recorded SI-01.status).
+        store.store(inv.model_copy(
+            update={"status": ServiceInvocationStatus.SUCCESS}))
         stage_store.store(_rsr(stage_store, state=IN_PROGRESS, retry_count=0))
         calls = {"n": 0}
 

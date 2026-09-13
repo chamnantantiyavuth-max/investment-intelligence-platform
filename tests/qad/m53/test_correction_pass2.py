@@ -346,8 +346,11 @@ class TestCaseVersionIsolation:
 
 class TestRrmLineageAccumulates:
     def test_full_retry_and_failure_lineage_in_current_manifest(self):
-        """3 retries (all retryable-fail, budget exhausted -> FAILED). Final
-        current RRM must hold retries=[RR1,RR2] and failures=[RR3]."""
+        """FD #139 R6 supersedes the comma-separated retry-ID semantics:
+        RRM-01.retries is now the run-level retry COUNT summary ("3" after
+        3 retries), while RR-01 remains the authoritative detailed retry
+        ledger and RRM-01.failures keeps its independent terminal-failure
+        provenance (failures=[RR3])."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         store.store(inv)
@@ -360,10 +363,18 @@ class TestRrmLineageAccumulates:
 
         kernel.execute(inv, STAGE_NAME, stage, manifest_id=m.manifest_id)
         manifest = store.load("RRM-01", m.manifest_id)
-        retry_refs = [x for x in (manifest.retries or "").split(",") if x.strip()]
+        # R6: retries is the retry COUNT summary, never comma-separated IDs.
+        assert manifest.retries == "3", (
+            f"expected retry COUNT '3', got {manifest.retries!r}")
         failures = manifest.failures or []
-        assert len(retry_refs) == 2, f"expected 2 scheduled retry refs, got {retry_refs}"
         assert len(failures) == 1, f"expected 1 terminal failure ref, got {failures}"
+        # RR-01 remains the authoritative per-attempt ledger (NOT weakened by R6).
+        rrs = _attempts(store, inv.invocation_id)
+        assert len(rrs) == 3
+        assert [r.attempt_number for r in rrs] == ["1", "2", "3"]
+        assert len({r.retry_id for r in rrs}) == 3  # per-attempt identities distinct
+        assert rrs[-1].status is RetryRecordStatus.FAILED  # terminal attempt
+        assert rrs[0].status is RetryRecordStatus.RETRYING  # scheduled attempt
 
 
 # =====================================================================
