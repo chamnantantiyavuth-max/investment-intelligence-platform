@@ -262,6 +262,117 @@ class TestF2CrossAnchorReconcile:
         m = store.load("RRM-01", manifest.manifest_id)
         assert m.retries == "3"
 
+    def test_f2_cross_stage_rr_never_scoped_by_invocation_alone(self):
+        """Same invocation_id across TWO stages (CP3 F2 §10 adversarial):
+
+        Stage A (SOURCE_FOUNDATION) leaves retry history under the
+        invocation.  Stage B (INITIAL_ANALYSIS) — a DIFFERENT stage identity,
+        SAME invocation/case_version — goes terminal FAILED with its own
+        terminal RR batch injected-failed.
+
+        F2 MUST NOT:
+          * count Stage A's RR toward Stage B's provenance,
+          * declare Stage B complete because the invocation-wide RR count
+            happens to match,
+          * reconstruct Stage B's RR using Stage A's execution identity.
+
+        Only Stage B's missing terminal attempt is rebuilt, with Stage B's
+        OWN deterministic retry identity.  Stage A's RR is untouched.
+        """
+        kernel, store, stage_store = _kernel()
+        inv = _make_invocation()
+        manifest = _seed_running_manifest(store)
+
+        # --- Stage A (SOURCE_FOUNDATION): initial retryable-fail, retry#1
+        #     succeeds -> RR_A attempt-1 SUCCEEDED under the invocation. ---
+        calls_a = {"n": 0}
+
+        def stage_a(ctx):
+            calls_a["n"] += 1
+            if calls_a["n"] == 1:
+                raise RetryableError("A transient initial")
+
+        kernel.execute(inv, STAGE_NAME, stage_a, manifest_id=manifest.manifest_id)
+        rsr_a = [r for r in stage_store.list_all("RSR-01")
+                 if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
+        assert rsr_a[-1].stage_state is COMPLETE
+        rr_a = _attempts(store, inv.invocation_id)
+        assert len(rr_a) == 1 and rr_a[0].attempt_number == "1"
+        assert rr_a[0].status is RetryRecordStatus.SUCCEEDED
+        rr_a_id = rr_a[0].retry_id
+
+        # --- Stage B (INITIAL_ANALYSIS): always retryable-fails; the terminal
+        #     (attempt 3) RR/RRM batch is injected to fail AFTER RSR_B FAILED
+        #     is already terminal.  RSR_B retry_count = 3. ---
+        stage_b = ResearchStageRecordStage_name.INITIAL_ANALYSIS
+        calls_b = {"n": 0}
+
+        def stage_b_fn(ctx):
+            calls_b["n"] += 1
+            raise RetryableError(f"B boom {calls_b['n']}")
+
+        orig_batch = store.store_batch
+
+        def bad_batch(instances, /):
+            if any(getattr(i, "status", None) is RetryRecordStatus.FAILED
+                   for i in instances):
+                raise TransactionFailure("injected B terminal batch failure")
+            return orig_batch(instances)
+
+        store.store_batch = bad_batch
+        try:
+            with pytest.raises(TransactionFailure):
+                kernel.execute(inv, stage_b, stage_b_fn,
+                               manifest_id=manifest.manifest_id)
+        finally:
+            store.store_batch = orig_batch
+
+        rsr_b = [r for r in stage_store.list_all("RSR-01")
+                 if r.case_id == CASE_ID and r.stage_name == stage_b]
+        assert rsr_b[-1].stage_state is FAILED_ST
+        assert rsr_b[-1].retry_count == 3
+
+        # Invocation-wide ledger: A(1 SUCCEEDED) + B(1,2 RETRYING) —
+        # B's terminal attempt 3 is MISSING.
+        all_rr = _attempts(store, inv.invocation_id)
+        assert len(all_rr) == 3, f"expected A1+B1+B2, got {len(all_rr)}"
+        assert all_rr[0].retry_id == rr_a_id  # Stage A RR intact, attempt-1
+
+        # Full live attempt count: initial (1) + retries 1..3 (3) — the
+        # terminal batch (attempt 3) is where the injection fires.
+        live_b_calls = calls_b["n"]
+        assert live_b_calls == 4, f"expected 4 live calls, got {live_b_calls}"
+
+        # --- Restart Stage B: F2 must reconcile B ONLY. ---
+        kernel2 = RetryKernel(store, stage_store, policy=RetryPolicy(max_retries=3))
+        outcome = kernel2.execute(inv, stage_b, stage_b_fn,
+                                  manifest_id=manifest.manifest_id)
+        assert outcome.status is RetryRecordStatus.FAILED
+        # No stage callback on replay/reconcile — count unchanged.
+        assert calls_b["n"] == live_b_calls
+
+        after = _attempts(store, inv.invocation_id)
+        # A(1) + B(1) + B(2) + reconstructed B(3) — exactly one new RR.
+        assert len(after) == 4, f"expected 4 RR, got {len(after)}"
+        assert len({r.retry_id for r in after}) == len(after)
+        # Stage A's RR is byte-identical (same id, SUCCEEDED, attempt 1).
+        a_after = [r for r in after if r.retry_id == rr_a_id]
+        assert len(a_after) == 1
+        assert a_after[0].status is RetryRecordStatus.SUCCEEDED
+        assert a_after[0].attempt_number == "1"
+        # Stage B reconstructed terminal attempt: attempt 3, FAILED, and its
+        # identity is a valid deterministic UUIDv7 that differs from Stage A's.
+        b_terminal = [r for r in after
+                      if r.retry_id != rr_a_id and r.attempt_number == "3"]
+        assert len(b_terminal) == 1
+        assert b_terminal[0].status is RetryRecordStatus.FAILED
+        assert b_terminal[0].retry_id != rr_a_id
+        # Restart AGAIN -> fully reconciled, no new records, same ids.
+        kernel2.execute(inv, stage_b, stage_b_fn, manifest_id=manifest.manifest_id)
+        after2 = _attempts(store, inv.invocation_id)
+        assert len(after2) == 4
+        assert {r.retry_id for r in after2} == {r.retry_id for r in after}
+
 
 # =====================================================================
 # F3 (R3) — honest SI-01 initial outcome + RSR-anchor crash rule

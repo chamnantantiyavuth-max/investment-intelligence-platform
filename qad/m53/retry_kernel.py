@@ -62,7 +62,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable
 
-from qad.ids import generate_uuid7
+from qad.ids import deterministic_uuid7, generate_uuid7
 from qad.models.family_c import (
     ResearchStageRecord,
     ResearchStageRecordStage_name,
@@ -290,6 +290,15 @@ class RetryKernel:
         if chain:
             last = chain[-1]
             if _enum_str(last.stage_state) == "COMPLETE":
+                # CP3 F2 (FD #139 R2): terminal replay is permitted ONLY after
+                # retry provenance is complete or deterministically reconciled
+                # (for retry_count > 0).  retry_count == 0 is a valid INITIAL
+                # terminal execution and requires no RR provenance.
+                self._reconcile_terminal_provenance(
+                    invocation, execution, last,
+                    terminal=ResearchStageRecordStage_state.COMPLETE,
+                    manifest_id=manifest_id,
+                )
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
                     attempt_records=self._rr_ledger(invocation.invocation_id),
@@ -298,6 +307,13 @@ class RetryKernel:
                     error=None,
                 )
             if _enum_str(last.stage_state) == "FAILED":
+                self._reconcile_terminal_provenance(
+                    invocation, execution, last,
+                    terminal=ResearchStageRecordStage_state.FAILED,
+                    manifest_id=manifest_id,
+                )
+                # NOTE: F4 (RFR-01) is NOT part of this cluster — it lands in
+                # its own cluster.  FAILED replay stays RFR-free for now.
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
                     attempt_records=self._rr_ledger(invocation.invocation_id),
@@ -461,7 +477,8 @@ class RetryKernel:
                         produced=ctx.produced_output_ids,
                     )
                     self._write_attempt_and_manifest(
-                        invocation, attempt_number, RetryRecordStatus.RETRYING,
+                        invocation, execution, state, attempt_number,
+                        RetryRecordStatus.RETRYING,
                         error=str(exc), manifest_id=manifest_id,
                     )
                     continue
@@ -472,7 +489,8 @@ class RetryKernel:
                     produced=ctx.produced_output_ids,
                 )
                 self._write_attempt_and_manifest(
-                    invocation, attempt_number, RetryRecordStatus.FAILED,
+                    invocation, execution, state, attempt_number,
+                    RetryRecordStatus.FAILED,
                     error=str(exc), manifest_id=manifest_id,
                 )
                 return RetryOutcome(
@@ -490,7 +508,8 @@ class RetryKernel:
                     produced=ctx.produced_output_ids,
                 )
                 self._write_attempt_and_manifest(
-                    invocation, attempt_number, RetryRecordStatus.FAILED,
+                    invocation, execution, state, attempt_number,
+                    RetryRecordStatus.FAILED,
                     error=f"{type(exc).__name__}: {exc}",
                     manifest_id=manifest_id,
                 )
@@ -502,7 +521,8 @@ class RetryKernel:
                     produced=ctx.produced_output_ids,
                 )
                 self._write_attempt_and_manifest(
-                    invocation, attempt_number, RetryRecordStatus.SUCCEEDED,
+                    invocation, execution, state, attempt_number,
+                    RetryRecordStatus.SUCCEEDED,
                     error=None, manifest_id=manifest_id,
                 )
                 return RetryOutcome(
@@ -636,6 +656,189 @@ class RetryKernel:
         self._stage_store.store(rec)  # APPEND_ONLY_STATE -> prior version kept
         state.checkpoint_ref = _cp_encode(execution.case_version, state.stage_id)
 
+    def _reconcile_terminal_provenance(
+        self,
+        invocation: ServiceInvocation,
+        execution: ExecutionContext,
+        last: ResearchStageRecord,
+        *,
+        terminal: ResearchStageRecordStage_state,
+        manifest_id: str,
+    ) -> None:
+        """CP3 F2 (FD #139 R2) — cross-anchor terminal retry reconciliation.
+
+        Invoked BEFORE any terminal replay.  Only applies when retry
+        provenance is actually expected: ``last.retry_count > 0``.  A
+        terminal RSR with ``retry_count == 0`` is a valid INITIAL terminal
+        result and does NOT imply a missing RR.
+
+        Expected provenance for a terminal RSR with ``retry_count = N``:
+
+            RR-01 attempts 1..N, each with the DETERMINISTIC retry identity
+            derived from THIS execution (see _retry_identity) — NOT every RR
+            under the invocation.  RR records from a sibling stage sharing the
+            same invocation_id have different retry identities and are never
+            counted / cross-scoped.
+
+        Correction rule (bounded, §R2): only the MECHANICALLY PROVABLE
+        missing terminal attempt may be reconstructed — the known
+        partial-terminal window where RSR went terminal FIRST and the
+        terminal RR/RRM batch then failed.  Exactly attempt N is rebuilt,
+        with the SAME deterministic retry_id it would have had live
+        (recomputed, not a fresh random UUID — restart-stable).
+
+        If a NON-TERMINAL intermediate attempt is unexpectedly missing, its
+        historical outcome cannot be authoritatively derived -> FAIL CLOSED.
+        Fictional intermediate history is never synthesized.
+        """
+        rc = int(last.retry_count or 0)
+        if rc <= 0:
+            return  # valid initial-terminal execution — no RR required
+        ledger = self._rr_ledger(invocation.invocation_id)
+        # Execution-scoped view: reconstruct the expected identity for each
+        # attempt of THIS execution (same derivation as the live writer).
+        state_view = _ExecState(
+            stage_id=last.stage_id,
+            started_at=last.started_at,
+            completed_at=last.completed_at or last.started_at,
+            checkpoint_ref=last.checkpoint_ref,
+            previous_outputs=list(last.output_ids or []),
+            retry_count=rc,
+        )
+        expected_ids = {
+            n: self._retry_identity(execution, state_view, n)
+            for n in range(1, rc + 1)
+        }
+        ledger_ids = {r.retry_id: r for r in ledger}
+        present = {n for n, rid in expected_ids.items() if rid in ledger_ids}
+        missing = [n for n in range(1, rc + 1) if n not in present]
+
+        # Only the terminal attempt may be missing in a legitimate
+        # partial-terminal window.  Anything else = unprovable history.
+        if any(n < rc for n in missing):
+            raise IntegrityConflict(
+                f"RR-01/{invocation.invocation_id}: terminal RSR "
+                f"(retry_count={rc}) has UNPROVABLE missing intermediate "
+                f"retry history {missing} — cannot fabricate historical "
+                f"outcomes (cross-anchor reconcile FAIL CLOSED; M5.2 §7.2)",
+                schema_id="RR-01",
+                record_id=invocation.invocation_id,
+            )
+        if rc in present:
+            # Provenance already complete -> nothing to reconcile (RRM may
+            # still need its summary restored — F6 owns the summary form; F2
+            # restores required run provenance without comma-ID logic).
+            self._restore_rrm_retry_summary(
+                manifest_id, rc,
+                terminal_rid=expected_ids[rc],
+                terminal_state=terminal,
+                invocation_id=invocation.invocation_id,
+            )
+            return
+
+        # Reconstruct exactly the missing TERMINAL attempt (N) deterministically.
+        terminal_status = (
+            RetryRecordStatus.SUCCEEDED
+            if terminal is ResearchStageRecordStage_state.COMPLETE
+            else RetryRecordStatus.FAILED
+        )
+        if terminal_status is RetryRecordStatus.FAILED:
+            error_text = last.failure_reason or "terminal failure (reconciled)"
+        else:
+            error_text = None
+        rec = RetryRecord(
+            retry_id=expected_ids[rc],
+            invocation_id=invocation.invocation_id,
+            attempt_number=str(rc),
+            attempted_at=last.completed_at or last.started_at,
+            status=terminal_status,
+            error=error_text or "none",
+            escalated_to=None,
+        )
+        self._restore_rrm_retry_summary(
+            manifest_id, rc,
+            terminal_rid=expected_ids[rc],
+            terminal_state=terminal,
+            invocation_id=invocation.invocation_id,
+            reconstructed=[rec],
+        )
+
+    def _restore_rrm_retry_summary(
+        self,
+        manifest_id: str,
+        retry_count: int,
+        *,
+        terminal_rid: str,
+        terminal_state: ResearchStageRecordStage_state,
+        invocation_id: str | None = None,
+        reconstructed: list[RetryRecord] | None = None,
+    ) -> None:
+        """Restore RRM-01 run provenance (count + terminal failure ref).
+
+        FD #139 R6 owns the final ``retries = count`` summary refactor; this
+        F2 helper restores the REQUIRED run provenance WITHOUT introducing any
+        new comma-separated retry-ID logic.  When the run summary is still
+        using the pre-R6 form, the authoritative count is derived from the
+        execution-scoped RR ledger and written as the summary count.
+        """
+        manifest = self._load_running_manifest(manifest_id)
+        recs = reconstructed or []
+        if recs:
+            # Atomic same-store batch: reconstructed RR + RRM (M5.2 §7.1).
+            self._store.store_batch([*recs, manifest])
+            # reload authoritative manifest after RR landed
+            manifest = self._load_running_manifest(manifest_id)
+        # F6 owns the exact count form for the LIVE writer; F2 restores the
+        # authoritative count of retry attempts for THIS execution (never
+        # comma-separated IDs).  Replay stays a no-op when the summary is
+        # already reconciled (no stale overwrite, no write-churn on replay).
+        updates: dict = {}
+        if str(retry_count) != str(manifest.retries or ""):
+            updates["retries"] = str(retry_count)
+        if terminal_state is ResearchStageRecordStage_state.FAILED:
+            failures = list(manifest.failures or [])
+            if terminal_rid not in failures:
+                failures.append(terminal_rid)
+                updates["failures"] = failures
+        if updates:
+            enriched = manifest.model_copy(update=updates)
+            self._store.store_batch([enriched])
+
+    def _retry_identity(
+        self, execution: ExecutionContext, state: _ExecState,
+        attempt_number: int,
+    ) -> str:
+        """DETERMINISTIC RR-01 retry identity for an attempt (CP3 F2).
+
+        Derives the RR retry_id for ONE logical execution + attempt from:
+
+        * execution identity (case_id / case_version / stage_name)
+        * stable RSR stage identity (`stage_id`) + checkpoint
+          (cp:<case_version>:<stage_id>)
+        * attempt number N
+        * semantic label ``retry-record``
+
+        The 48-bit timestamp is the REAL persisted RSR-01.started_at
+        epoch-ms (FD #139 R5) — never recomputed from wall clock at
+        recovery time, so the SAME attempt after restart yields the SAME
+        retry_id.  Random bits: corrected deterministic 74-bit SHA-256
+        derivation (F5).
+
+        This is the ONLY execution-scoping mechanism on RR-01 (which has no
+        stage_name/case_version columns): two stages sharing one invocation
+        produce DIFFERENT retry identities, and F2 reconciliation recomputes
+        exactly this id to detect missing terminal provenance.
+        """
+        anchor_ms = _started_at_to_ms(state.started_at)
+        cp = state.checkpoint_ref or _cp_encode(
+            execution.case_version, state.stage_id)
+        seed = (
+            f"{execution.case_id}|{execution.case_version}|"
+            f"{_enum_str(execution.stage_name)}|{state.stage_id}|{cp}|"
+            f"retry-record|{attempt_number}"
+        )
+        return str(deterministic_uuid7(seed, ts_ms=anchor_ms))
+
     def _persist_si01_actual(
         self,
         invocation: ServiceInvocation,
@@ -670,6 +873,8 @@ class RetryKernel:
     def _write_attempt_and_manifest(
         self,
         invocation: ServiceInvocation,
+        execution: ExecutionContext,
+        state: _ExecState,
         attempt_number: int,
         status: RetryRecordStatus,
         *,
@@ -683,7 +888,18 @@ class RetryKernel:
         RRM-01 == RunManifestStore == RR-01 -> store_batch is the M5.2 §7.1
         same-store atomic boundary: all commit or none.
         """
-        rid = self._uuid()
+        # CP3 F2 (FD #139 R2): deterministic retry identity — see
+        # _retry_identity() for the execution-scoping rationale.
+        rid = self._retry_identity(execution, state, attempt_number)
+        # CP3 F2 (FD #139 R2): RR retry identity is DETERMINISTIC — derived from
+        # the execution identity + stable RSR stage identity/checkpoint +
+        # attempt number + semantic label ('retry-record') with the REAL
+        # persisted RSR.started_at anchor as the UUIDv7 timestamp.  This is
+        # the mechanism that binds an RR record to its logical execution
+        # without adding a canonical field to RR-01 (so two stages sharing an
+        # invocation are never cross-scoped, and F2 reconciliation recomputes
+        # the exact same retry_id after restart).
+        rid = self._retry_identity(execution, state, attempt_number)
         rec = RetryRecord(
             retry_id=rid,
             invocation_id=invocation.invocation_id,
