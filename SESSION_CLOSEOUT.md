@@ -1,3 +1,100 @@
+# Session — 2026-09-13 (cron review tick, 10:47 UTC+7)
+
+> **Scope:** Unattended scheduled tick of the same review job (`1f5f03f9236d`, interval 720m).
+> Read-only verification + state-doc sync. No Founder interaction, no implementation, no push,
+> no locked-test edit. This tick lands ~1 minute after the interactive CP3 session closed (10:42:30).
+
+## Findings
+
+- **BIG DELTA — an interactive session ran 10:20–10:42 UTC+7 this morning and issued FD #139**
+  (CP3 GO + rulings R1–R6; commits `da47b97` → `d2eb3f4` → `1c7d472`, 578 commits). Reconciled in full.
+- **State hygiene done correctly (FD #139 §1):** `main @ cab62fc` + its 11 docs commits → parked at
+  `wip/pre-m53-cp3-local-docs-20260913` **and pushed to origin** (verified: `git ls-remote --heads origin`
+  lists it at `cab62fc`); `main` reset to origin/main `283a7aa`, tree CLEAN. M6 branch
+  `docs/m6-gemini-notebook-dr @ a37e92d` untouched (both remote and local).
+- **Diagnostic-first RED (FD #139 §11): INDEPENDENTLY RE-VERIFIED.** Detached worktree at `283a7aa` +
+  `tests/qad/m53/test_correction_pass3.py` → **20 failed / 2 passed** — exactly the session's claim.
+  The 2 passes = F1 legal transitions already accepted by the permissive layer (consistent with the record).
+- **PARTIAL implementation `d2eb3f4` = F1 + F5 only.** F1: `qad/persistence/immutability.py` RSR-01/SM-3
+  APPEND_ONLY_STATE enforcement, bounded to RSR-01 (generic residual =
+  `POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER`). F5: `qad/ids.py` `deterministic_uuid7(seed,
+  *, ts_ms)` with a REAL epoch-ms anchor from `RSR-01.started_at` + `StageContext.anchor_ts_ms` /
+  `_started_at_to_ms()` plumbing.
+- **SCOPE CHECK PASS:** the 6 files in `d2eb3f4` (`qad/ids.py`, `qad/m53/retry_kernel.py`,
+  `qad/persistence/immutability.py`, `tests/qad/m53/test_correction_pass2.py`,
+  `tests/qad/m53/test_correction_pass3.py`, `tests/qad/test_ids.py`) sit exactly inside the FD #139 CP3
+  boundary. No frozen schema / state-machine text; no new canonical schema; no Erratum-002 reopen.
+- **PENDING (CP3 remainder):** F2 cross-anchor reconcile, F3 honest SI-01 + RSR anchor before the stage
+  callback + crash fail-closed, F4 RFR-01 exactly-once, F6 RRM retries = count. F7–F10 stay OUTSIDE CP3
+  (`POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE`).
+- **🔴 NEW FINDING (F-A) — the FD #139 §14 full gate cannot go green yet: a LOCKED test is RED for a
+  mechanical reason.** `tests/locked/test_audit_api.py::test_decisions_register_contiguous_and_parsed`
+  asserts `latest["date"] == "9 Sep 2026"`; the register's latest entry is now FD #139 dated `13 Sep 2026`.
+  The CP3 session ran only subsets (its own report: "338 passed, 0 failed") and so did not see it.
+  One-line fix `"9 Sep 2026"` → `"13 Sep 2026"` (precedent: FD #132 register-date bump; 1 Sep FO-fixture
+  date advance). **NOT fixed by this review** — `tests/locked/` is outside the FD #139 file boundary and
+  locked-test edits need Founder authorization → decision item 1.
+- **NEW FINDING (F-B) — the CP3 decision-package "Addendum" has NO durable artifact.** The package preserved
+  on the wip branch covers F1–F6 only; F7–F10 (stage ordering / budget_state→INCOMPLETE / S9 case-lock /
+  S8→S7 PIT-AS_OF binding) and the F3-enum (4 values incl. TIMEOUT) / F5 (Class A) / F6 (contract ambiguity)
+  reclassifications exist only in FD #139's register entry and in chat. Verified across all branches + history
+  (`git log --all --diff-filter=A --name-only | grep -i addendum` → empty). The rulings themselves ARE
+  durable (FD #139 + both vault mirrors); only the source artifact is missing → decision item 3.
+- **FINDING (F-C) — 13 Sep session clock labels are ~12 h ahead.** The CP3 session record and the
+  PROJECT_STATE footer carry `22:30 / 22:45 UTC+7`, but that session's own commits are stamped
+  `10:20:52 / 10:40:50 / 10:42:30 +07:00` and this review's clock read 2026-09-13 10:47 UTC+7 — i.e. the footer
+  timestamps are future-dated. Recorded here; the session's own record NOT rewritten (§23.9).
+- **✅ Vault mirror gap closed.** FD #139 was mirrored to the central register
+  (`AppData/Local/hermes/vault/fd-register.md`, row added 10:12) but was MISSING from the second mirror
+  (`~/.hermes/vault/fd-register.md`, untouched since 10 Sep) — backfilled by this review.
+- **Push state: 4 commits AHEAD / UNPUSHED** after this review's docs commit (origin/main `283a7aa`;
+  3 = CP3 session, 1 = this review). Push deliberately NOT performed — it would publish the Founder's own
+  unpushed CP3 work. Decision item (0).
+- **Market: Sat/Sun 13 Sep — no US session.** Last completed EOD = **Fri 11 Sep**, independently re-fetched
+  (yfinance, system python 3.14.6) and identical to the 12 Sep evening snapshot: ^GSPC 7,656.98
+  (+0.86% 1d, −1.17% 5d) · **MSFT 495.63 — CIW NO TRIGGER** (52-wk high 553.72, −25% band 406.55 far) ·
+  NVDA 218.29 (−4.45% 5d) · AAPL 332.27 · AMD 516.13 (+13.15% 5d) · AVGO 361.99 · SMCI 40.10 ·
+  INTC 102.94 · FSLR 209.03 · SLV 58.12 (below the ~$62 SILVER-CORR-001 anchor; SI=F 64.55) ·
+  GC=F 4,366.20 (−2.79% 5d) · **CL=F 100.05 (−2.37% 1d, +9.58% 5d — oil >$100, ORG-2026-0022 continuation,
+  observation only)** · ^TNX 4.97% · ^VIX 15.84. No ±10% 1d moves → no mandatory news lookups.
+- **⚠ Delivery still broken (18th consecutive review):** job `1f5f03f9236d` (`deliver: origin`) resolves the
+  dead target `telegram:8964964996` — job-level `last_delivery_error` = "Chat not found". Requires an
+  interactive config change (Founder decision); recorded, not actioned.
+
+## Verification performed (real, this tick)
+
+- `git log --format="%h %ad %s" --date=iso-strict` — 3 CP3 commits at 10:20:52 / 10:40:50 / 10:42:30 +07:00;
+  `git status --short` empty (tree CLEAN); `git rev-list --count HEAD` = 578;
+  `git rev-list --count origin/main..HEAD` = 3 (pre-commit); `git ls-remote --heads origin` = main `283a7aa`,
+  wip `cab62fc`, M6 `a37e92d`, harness `fa336ab`.
+- **Full pytest (hermes-agent venv, 3.11.15): 13 failed, 718 passed, 11 warnings in 4.91s** — exact node IDs
+  enumerated in the report (12 CP3 diagnostics + 1 locked audit-api date assertion).
+- **CP3 RED reproduction:** `git worktree add --detach <temp> 283a7aa` + copied
+  `test_correction_pass3.py` → `20 failed, 2 passed in 0.42s`; worktree removed afterwards
+  (`git worktree list` back to the 2 expected entries).
+- FD register tail — item 139 present on `main`; `fd_count` row updated to #1–139.
+- Vault mirrors — `grep -n "FD-139"` → central register HIT, `~/.hermes/vault/fd-register.md` MISS → backfilled.
+- Kanban board `iip` + cron list (5 jobs; next runs 14 Sep 08:00 radar, 14 Sep 09:00 CIW, 17 Sep 08:00 mid-week,
+  19 Sep 09:00 Nick-Weekly; this job next 13 Sep 22:43).
+- Market fetch (independent, yfinance `fast_info` + 10d daily history).
+
+## Next
+
+1. **Decision 1 — authorize the locked-audit-date bump** `"9 Sep 2026"` → `"13 Sep 2026"` in
+   `tests/locked/test_audit_api.py` (one line; without it the FD #139 §14 full gate stays RED for a reason
+   that is not CP3-related).
+2. **Continue CP3** on `main` (tree clean): implement F2 / F3 / F4 / F6 in `qad/m53/retry_kernel.py` to green
+   the remaining 12 diagnostics, then run the full gate per FD #139 §14 and STOP at
+   `CORRECTION PASS 3 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT` — NOT CLOSED / NOT FROZEN.
+3. **Decision 3 — capture the CP3 Addendum (F7–F10) verbatim** into
+   `design/qad-pivot/m5/QAD-M5.3-CORRECTION-PASS-3-DECISION-PACKAGE-ADDENDUM.md` (lineage of the artifact the
+   rulings rest on).
+4. **Decision (0) — push** the 4 pending commits (or leave local).
+5. **Mon 14 Sep 08:00 weekly radar + 09:00 CIW** = next FD #110 Live Office acceptance evidence point.
+
+<!-- 2026-09-13 10:47 UTC+7 -->
+
+---
 # Session — 2026-09-13 (M5.3 CORRECTION PASS 3 GO: FD #139 rulings → RED diagnostics → partial implementation F1+F5)
 
 > **Scope:** Interactive session ~22:00–22:45 UTC+7 — the Founder issued the
@@ -378,3 +475,5 @@ S7 ✅ / S8 ✅ / minimum PIT-aware query substrate ✅ (reference, not producti
    demonstrated defect exists (per Founder directive).
 
 <!-- 2026-09-08 17:37 UTC+7 -->
+
+<!-- 2026-09-13 10:47 UTC+7 -->
