@@ -1,7 +1,9 @@
-"""M5.3 S8 — Retry Kernel (CORRECTION PASS 2 — FD #138, RE-AUDIT FAIL 2 corrections).
+"""M5.3 S8 — Retry Kernel (CORRECTION PASS 4 — FD #139, bounded re-audit fixes).
 
-Corrected implementation per the Founder independent RE-AUDIT (9 Sep 2026),
-remaining under FD #138 as the governing authority (NO new Founder decision):
+CP3 (FD #139 GO, 13 Sep 2026) implemented F1–F6; CP4 (bounded re-audit
+FAIL, 13 Sep 2026) corrected F3/F4/F5/F6 per the audited findings while
+keeping F1/F2 semantics closed.  No new Founder decision was required —
+CP4 remains under FD #139.
 
 - **RSR-01 is the SOLE execution authority.**  Execution identity =
   (case_id, case_version, stage_name); case_version resolved from the
@@ -28,9 +30,11 @@ remaining under FD #138 as the governing authority (NO new Founder decision):
 - **Execution-identity scoping of RR terminal replay.**  RR-01 terminal state
   by invocation_id alone is NEVER used to short-circuit an execution.  A
   different stage or case_version under the same invocation executes fresh.
-- **RRM lineage keeps accumulating.**  Every RR/RRM atomic batch re-loads the
-  CURRENT authoritative RRM-01, appends the new retry_id, and store_batches
-  (RR-01 + RRM-01 are same-store — M5.2 §7.1).  No stale-object overwrite.
+- **RRM-01.retries is a COUNT summary (FD #139 R6).**  Every RR/RRM atomic
+  batch re-loads the CURRENT authoritative RRM-01 and writes the retry
+  COUNT derived from the execution-scoped deterministic retry identities
+  (CP4-5/CP4-6) — RR-01 remains the authoritative detailed retry ledger.
+  No stale-object overwrite, no comma-separated retry-ID summary (removed).
 - **Fixed retry budget (FD #138 §1):** INITIAL + max 3 retries = max 4 stage
   executions.  ESCALATED never produced; `escalated_to` never populated.
 - **Fail-closed history:** unreadable RSR/RR state raises typed errors — the
@@ -45,8 +49,9 @@ Cross-anchor write order (documented honestly — NO cross-anchor transaction
 framework, per re-audit §9): RSR (stage authority) is written FIRST, then the
 RR-01 + RRM-01 atomic batch.  If the RR/RRM batch fails after the RSR update,
 the stage state is honest (IN_PROGRESS while retrying; COMPLETE/FAILED only
-terminal) and resume reconciles via RSR.retry_count — the missing RR record is
-rewritten with a fresh retry_id.  Within one store, RR+RRM atomicity is
+terminal) and resume reconciles via RSR.retry_count — the missing RR record
+is reconstructed with its DETERMINISTIC retry identity (F2/CP4: never a
+fresh random retry_id).  Within one store, RR+RRM atomicity is
 guaranteed by store_batch; across anchors (stage_store vs RunManifestStore)
 no atomicity exists and the RSR-first ordering keeps the execution authority
 correct under every failure mode.
@@ -259,10 +264,14 @@ class RetryKernel:
         """Run ``stage`` under the bounded retry policy.
 
         Preflight (BEFORE any stage execution):
-            1. SI-01 must exist (RR-01.invocation_id FK).
-            2. RRM-01 must exist, be RUNNING, and match the invocation's
+            1. RRM-01 must exist, be RUNNING, and match the invocation's
                case_id (authoritative case_version source).
-            3. RSR-01 history for the execution identity must be readable.
+            2. RSR-01 history for the execution identity must be readable.
+            3. SI-01 is NO LONGER required to pre-exist (CP3 F3): the kernel
+               persists the authoritative SI-01 with the ACTUAL initial
+               outcome after the initial callback.  Under CP4-1 a pre-existing
+               SI-01 with a status that CONFLICTS with that actual outcome
+               FAILS CLOSED (never silently overrides execution).
 
         Resume semantics (re-audit §2):
             no RSR chain            -> INITIAL execution

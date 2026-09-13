@@ -489,3 +489,16 @@ S7 ✅ / S8 ✅ / minimum PIT-aware query substrate ✅ (reference, not producti
 <!-- 2026-09-08 17:37 UTC+7 -->
 
 <!-- 2026-09-13 10:47 UTC+7 -->
+
+## M5.3 — CP4 (13 Sep 2026) — bounded re-audit corrections COMPLETE (FD #139)
+
+- Verdict: FAIL / BOUNDED CORRECTION REQUIRED (audit baseline 4fa14cd).
+- Diagnostics first (d3094cc, 10 RED/2 GREEN) -> fixture alignment
+  (49cb6ee) -> runtime CP4-1..6 (45671d3) -> locked-date sync CP4-7
+  (9cf1810). CP4-8 doc yes included in this closeout.
+- FULL pytest 746/746 GREEN (genuinely, prev 733+1 RED locked literal).
+- STOP: M5.3 — CORRECTION PASS 4 IMPLEMENTED / READY FOR NEW FOUNDER
+  INDEPENDENT RE-AUDIT. NOT CLOSED / NOT FROZEN. M6 parked, no push yet.
+
+Recommended next action: verify then push the CP4 chain to origin/main,
+then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
