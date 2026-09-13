@@ -64,6 +64,9 @@ from typing import Any, Callable
 
 from qad.ids import deterministic_uuid7, generate_uuid7
 from qad.models.family_c import (
+    ResearchFailureRecord,
+    ResearchFailureRecordFailure_type,
+    ResearchFailureRecordResolution,
     ResearchStageRecord,
     ResearchStageRecordStage_name,
     ResearchStageRecordStage_state,
@@ -312,8 +315,14 @@ class RetryKernel:
                     terminal=ResearchStageRecordStage_state.FAILED,
                     manifest_id=manifest_id,
                 )
-                # NOTE: F4 (RFR-01) is NOT part of this cluster — it lands in
-                # its own cluster.  FAILED replay stays RFR-free for now.
+                # CP3 F4: restart/replay of a terminal FAILED must NOT
+                # duplicate the RFR — _ensure_rfr() is deterministic and
+                # returns None when the logical failure is already recorded.
+                # (F2 reconciliation later must also not duplicate RFR: the
+                # same deterministic failure_id guard applies.)
+                self._ensure_rfr(
+                    execution, self._exec_state_view(last), error=last.failure_reason,
+                )
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
                     attempt_records=self._rr_ledger(invocation.invocation_id),
@@ -429,9 +438,12 @@ class RetryKernel:
                 invocation, status=ServiceInvocationStatus.FAILURE,
                 error=reason,
             )
+            # CP3 F4: deterministic initial terminal failure -> exactly one
+            # RFR-01, committed atomically with the terminal RSR FAILED.
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.FAILED,
                 error=reason, produced=ctx.produced_output_ids,
+                rfr=self._ensure_rfr(execution, state, error=reason),
             )
             raise
         else:
@@ -483,10 +495,13 @@ class RetryKernel:
                     )
                     continue
                 # Budget exhausted -> terminal FAILED (ESCALATED never used).
+                # CP3 F4: retry exhaustion -> exactly one RFR-01, committed
+                # atomically with the terminal RSR FAILED (same store).
                 self._write_rsr(
                     execution, state, ResearchStageRecordStage_state.FAILED,
                     error=str(exc), attempt_number=attempt_number,
                     produced=ctx.produced_output_ids,
+                    rfr=self._ensure_rfr(execution, state, error=str(exc)),
                 )
                 self._write_attempt_and_manifest(
                     invocation, execution, state, attempt_number,
@@ -501,17 +516,17 @@ class RetryKernel:
                     error=str(exc),
                 )
             except Exception as exc:  # noqa: BLE001 — deterministic/unknown
+                reason = f"{type(exc).__name__}: {exc}"
                 self._write_rsr(
                     execution, state, ResearchStageRecordStage_state.FAILED,
-                    error=f"{type(exc).__name__}: {exc}",
-                    attempt_number=attempt_number,
+                    error=reason, attempt_number=attempt_number,
                     produced=ctx.produced_output_ids,
+                    rfr=self._ensure_rfr(execution, state, error=reason),
                 )
                 self._write_attempt_and_manifest(
                     invocation, execution, state, attempt_number,
                     RetryRecordStatus.FAILED,
-                    error=f"{type(exc).__name__}: {exc}",
-                    manifest_id=manifest_id,
+                    error=reason, manifest_id=manifest_id,
                 )
                 raise
             else:
@@ -626,6 +641,7 @@ class RetryKernel:
         error: str | None,
         attempt_number: int | None = None,
         produced: list[str] | None = None,
+        rfr: ResearchFailureRecord | None = None,
     ) -> None:
         """Persist a version of the SAME stage_id (append-only, M5.2).
 
@@ -635,6 +651,11 @@ class RetryKernel:
         so the NEXT retry resumes from this authoritative, just-persisted
         state (re-audit §4).  ``completed_at``/``started_at`` are
         FIELD_IMMUTABLE and stable across all versions.
+
+        CP3 F4 (FD #139 R4): when ``rfr`` is supplied (terminal SM-3 FAILED),
+        the RSR FAILED record and the RFR-01 record are committed in ONE
+        same-store atomic batch (both live in stage_store) — no avoidable
+        RSR-FAILED / RFR partial window.
         """
         current_outputs = list(state.previous_outputs) + list(produced or [])
         state.previous_outputs = current_outputs
@@ -653,8 +674,29 @@ class RetryKernel:
             retry_count=state.retry_count,
             failure_reason=error,
         )
-        self._stage_store.store(rec)  # APPEND_ONLY_STATE -> prior version kept
+        if rfr is not None:
+            # Same-store atomic: terminal RSR FAILED + RFR-01 together.
+            self._stage_store.store_batch([rec, rfr])
+        else:
+            # APPEND_ONLY_STATE -> prior version kept
+            self._stage_store.store(rec)
         state.checkpoint_ref = _cp_encode(execution.case_version, state.stage_id)
+
+    def _exec_state_view(self, last: ResearchStageRecord) -> _ExecState:
+        """Rebuild the execution-state view from a persisted RSR record.
+
+        Shared by F2 terminal reconciliation and F4 RFR replay so both
+        recompute the SAME deterministic identities/anchors as the live
+        writer (same stage_id / started_at / checkpoint_ref).
+        """
+        return _ExecState(
+            stage_id=last.stage_id,
+            started_at=last.started_at,
+            completed_at=last.completed_at or last.started_at,
+            checkpoint_ref=last.checkpoint_ref,
+            previous_outputs=list(last.output_ids or []),
+            retry_count=int(last.retry_count or 0),
+        )
 
     def _reconcile_terminal_provenance(
         self,
@@ -761,6 +803,50 @@ class RetryKernel:
             terminal_state=terminal,
             invocation_id=invocation.invocation_id,
             reconstructed=[rec],
+        )
+
+    def _ensure_rfr(
+        self,
+        execution: ExecutionContext,
+        state: _ExecState,
+        *,
+        error: str | None,
+    ) -> ResearchFailureRecord | None:
+        """CP3 F4 (FD #139 R4) — ResearchFailureRecord, exactly once.
+
+        Returns a NEW deterministic RFR-01 for this terminal SM-3 FAILED, or
+        None when one ALREADY exists for the same logical terminal failure
+        (restart/replay and cross-anchor reconciliation must not duplicate).
+
+        Deterministic failure_id (UUIDv7, corrected F5 derivation):
+          seed = execution_id | checkpoint | 'research-failure'
+          ts_ms = REAL persisted RSR.started_at epoch-ms.
+        Intermediate retry failures (budget remaining) never reach this
+        helper — RFR is ONLY for SM-3 terminal FAILED.
+        """
+        anchor_ms = _started_at_to_ms(state.started_at)
+        cp = state.checkpoint_ref or _cp_encode(
+            execution.case_version, state.stage_id)
+        seed = (
+            f"{execution.case_id}|{execution.case_version}|"
+            f"{_enum_str(execution.stage_name)}|{state.stage_id}|{cp}|"
+            f"research-failure"
+        )
+        fid = str(deterministic_uuid7(seed, ts_ms=anchor_ms))
+        if self._stage_store.contains("RFR-01", fid):
+            return None  # already recorded — exactly-once invariant
+        reason = error or "terminal stage failure"
+        return ResearchFailureRecord(
+            failure_id=fid,
+            case_id=execution.case_id,
+            failure_reason=reason,
+            failure_type=ResearchFailureRecordFailure_type.RETRY_LIMIT,
+            resolution=ResearchFailureRecordResolution.UNRESOLVED,
+            retry_count=state.retry_count or 0,
+            stage_name=_enum_str(execution.stage_name),
+            error_details=reason,
+            failure_timestamp=self._now(),
+            recorder="S8",
         )
 
     def _restore_rrm_retry_summary(
