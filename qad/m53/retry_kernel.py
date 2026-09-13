@@ -184,20 +184,32 @@ def _started_at_to_ms(started_at: str | None) -> int:
     The kernel mints ``started_at`` as RFC3339 second-precision
     (``%Y-%m-%dT%H:%M:%SZ``); per ruling R5 second-level precision may map
     to milliseconds ending in ``000``.  Deterministic UUID v7 stage-owned
-    identities use this anchor for the 48-bit timestamp.  If the anchor is
-    missing or unparseable, return 0 so the caller fails closed rather than
-    silently deriving a fake timestamp.
+    identities use this anchor for the 48-bit timestamp.  Missing/malformed
+    anchors raise IntegrityConflict (CP4-4 fail closed): the persisted
+    RSR.started_at is the R5 authority, and no epoch-1970 / wall-clock /
+    hash-derived timestamp may be substituted.
     """
     if not started_at:
-        return 0
+        raise IntegrityConflict(
+            f"RSR-01.started_at anchor is MISSING — cannot derive the real "
+            f"epoch-ms execution anchor (FD #139 R5; CP4-4 fail closed).  No "
+            f"UUID may be generated from a fabricated timestamp.",
+            schema_id="RSR-01",
+        )
     text = str(started_at).strip()
     try:
         # RFC3339 second precision (kernel now() format) — parse UTC.
         from datetime import datetime, timezone
         dt = datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ")
-        return int(dt.replace(tzinfo=timezone.utc).timestamp()) * 1000
     except (ValueError, TypeError):
-        return 0
+        raise IntegrityConflict(
+            f"RSR-01.started_at anchor is MALFORMED ({started_at!r}) — cannot "
+            f"derive the real epoch-ms execution anchor (FD #139 R5; CP4-4 "
+            f"fail closed).  No UUID may be generated from a fabricated "
+            f"timestamp.",
+            schema_id="RSR-01",
+        ) from None
+    return int(dt.replace(tzinfo=timezone.utc).timestamp()) * 1000
 
 
 def _cp_version(ref: str | None) -> str | None:
@@ -320,9 +332,13 @@ class RetryKernel:
                 # returns None when the logical failure is already recorded.
                 # (F2 reconciliation later must also not duplicate RFR: the
                 # same deterministic failure_id guard applies.)
-                self._ensure_rfr(
+                # CP4-3: replay must also REPAIR a MISSING RFR — persist the
+                # reconstructed deterministic record exactly once.
+                rfr_recon = self._ensure_rfr(
                     execution, self._exec_state_view(last), error=last.failure_reason,
                 )
+                if rfr_recon is not None:
+                    self._stage_store.store(rfr_recon)
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
                     attempt_records=self._rr_ledger(invocation.invocation_id),
@@ -418,8 +434,9 @@ class RetryKernel:
             # R3 D: persist the authoritative immutable SI-01 with the ACTUAL
             # initial outcome (retryable failure -> FAILURE).  NEVER trust the
             # caller object's pre-populated status.
-            self._persist_si01_actual(
-                invocation, status=ServiceInvocationStatus.FAILURE,
+            self._persist_si01_actual_closed(
+                invocation, execution, state,
+                status=ServiceInvocationStatus.FAILURE,
                 error=str(exc),
             )
             # R3 E: only AFTER authoritative SI-01 exists may retry processing
@@ -432,10 +449,29 @@ class RetryKernel:
             return self._retry_loop(
                 invocation, execution, stage, state, 1, manifest_id,
             )
+        except TimeoutError as exc:  # CP4-2 — typed timeout (FD #139 R3)
+            # FD #139 R3 allows SUCCESS / FAILURE / TIMEOUT according to the
+            # ACTUAL failure class.  A typed timeout (builtin TimeoutError) is
+            # NOT a deterministic FAILURE: persist SI-01.status = TIMEOUT, and
+            # if the timeout is retryable under the existing policy the retry
+            # lifecycle proceeds only AFTER the SI TIMEOUT record exists.
+            self._persist_si01_actual_closed(
+                invocation, execution, state,
+                status=ServiceInvocationStatus.TIMEOUT,
+                error=str(exc),
+            )
+            self._write_rsr(
+                execution, state, ResearchStageRecordStage_state.IN_PROGRESS,
+                error=str(exc), produced=ctx.produced_output_ids,
+            )
+            return self._retry_loop(
+                invocation, execution, stage, state, 1, manifest_id,
+            )
         except Exception as exc:  # noqa: BLE001 — deterministic/unknown
             reason = f"{type(exc).__name__}: {exc}"
-            self._persist_si01_actual(
-                invocation, status=ServiceInvocationStatus.FAILURE,
+            self._persist_si01_actual_closed(
+                invocation, execution, state,
+                status=ServiceInvocationStatus.FAILURE,
                 error=reason,
             )
             # CP3 F4: deterministic initial terminal failure -> exactly one
@@ -447,8 +483,9 @@ class RetryKernel:
             )
             raise
         else:
-            self._persist_si01_actual(
-                invocation, status=ServiceInvocationStatus.SUCCESS, error=None,
+            self._persist_si01_actual_closed(
+                invocation, execution, state,
+                status=ServiceInvocationStatus.SUCCESS, error=None,
             )
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.COMPLETE,
@@ -479,7 +516,7 @@ class RetryKernel:
             ctx = self._build_ctx(execution, state)
             try:
                 stage(ctx)
-            except RetryableError as exc:
+            except (RetryableError, TimeoutError) as exc:
                 if not last_attempt:
                     # Budget remains -> stay IN_PROGRESS + record scheduled retry.
                     self._write_rsr(
@@ -939,11 +976,32 @@ class RetryKernel:
         identity metadata (invocation_id/case_id/invoked_at/request_type/
         service_id); its ``.status`` is a request default and is NEVER the
         outcome authority.  SI-01 is RECORD_IMMUTABLE — on the initial attempt
-        the kernel writes the outcome record once; if SI-01 already exists the
-        record is left untouched (RR-01 FK integrity is preserved either way).
+        the kernel writes the outcome record once (CP4-1, FD #139 R3):
+
+        A. SI-01 absent            -> persist the ACTUAL outcome normally.
+        B. SI-01 present, status   -> idempotent no-op (EXACTLY consistent
+           == actual outcome         with the outcome established by run).
+        C. SI-01 present, status   -> FAIL CLOSED (IntegrityConflict).  A
+           conflicts with actual     pre-existing caller/request SI record
+           outcome                   must NEVER silently override an outcome
+                                     established by execution.  The immutable
+                                     record is never overwritten and never
+                                     silently accepted.
         """
         if self._store.contains("SI-01", invocation.invocation_id):
-            return  # caller/requester-supplied request record — leave it
+            existing = self._store.load("SI-01", invocation.invocation_id)
+            if existing.status is status:
+                return  # (B) exactly consistent — idempotent no-op
+            # (C) conflicting pre-existing SI-01 -> FAIL CLOSED.
+            raise IntegrityConflict(
+                f"SI-01/{invocation.invocation_id}: pre-existing status "
+                f"{existing.status!r} CONFLICTS with the actual initial "
+                f"outcome {status!r} — an immutable request record can never "
+                f"override an outcome established by execution (CP4-1, "
+                f"FD #139 R3; fail closed)",
+                schema_id="SI-01",
+                record_id=invocation.invocation_id,
+            )
         rec = ServiceInvocation(
             invocation_id=invocation.invocation_id,
             case_id=invocation.case_id,
@@ -955,6 +1013,33 @@ class RetryKernel:
             error=error,
         )
         self._store.store(rec)
+
+    def _persist_si01_actual_closed(
+        self,
+        invocation: ServiceInvocation,
+        execution: ExecutionContext,
+        state: _ExecState,
+        *,
+        status: ServiceInvocationStatus,
+        error: str | None,
+    ) -> None:
+        """CP4-1: persist the actual initial outcome, or FAIL CLOSED on a
+        conflicting pre-existing SI-01.
+
+        On conflict the immutable SI-01 stands (never overwritten), the RSR
+        anchor is terminalized to FAILED (legal IN_PROGRESS->FAILED), and the
+        IntegrityConflict re-raises — so the contradictory state can NEVER
+        later replay as COMPLETE on restart (CP4-1 crash rule).
+        """
+        try:
+            self._persist_si01_actual(invocation, status=status, error=error)
+        except IntegrityConflict:
+            self._write_rsr(
+                execution, state, ResearchStageRecordStage_state.FAILED,
+                error=f"SI-01 pre-existing status conflicts with actual "
+                      f"outcome — fail closed (CP4-1)",
+            )
+            raise
 
     def _write_attempt_and_manifest(
         self,
@@ -997,15 +1082,25 @@ class RetryKernel:
         )
         manifest = self._load_running_manifest(manifest_id)  # authoritative NOW
         # CP3 F6 (FD #139 R6): RRM-01.retries is the run-level retry COUNT
-        # summary, derived from the AUTHORITATIVE RR-01 ledger scoped to this
-        # invocation/execution — never comma-separated retry IDs.  This record
-        # is in the same atomic batch, so the count is ledger-before + 1.
-        # Successful retries count; a terminal failed retry counts; clean
-        # initial success keeps the summary at its initialized "0"/None.
-        # Recompute-based (not incrementing a possibly-stale prior string), so
-        # F2 reconciliation and F6 stay restart-safe together.
-        ledger_before = self._rr_ledger(invocation.invocation_id)
-        retry_count = len(ledger_before) + 1
+        # summary, never comma-separated retry IDs.  Successful retries count;
+        # a terminal failed retry counts; clean initial success keeps the
+        # summary at its initialized "0"/None.  Recompute-based (not
+        # incrementing a possibly-stale prior string), so F2 reconciliation
+        # and F6 stay restart-safe together.
+        # CP4-5/CP4-6 (re-audit): the count is EXECUTION-scoped — derived
+        # from the exact DETERMINISTIC retry identities expected for THIS
+        # execution (policy-allowed attempts), intersected with the
+        # authoritative RR ledger.  Sibling stage retries sharing the same
+        # invocation_id have DIFFERENT deterministic identities and are
+        # NEVER counted.  The current attempt lands in this same atomic
+        # batch, so the count is scoped-matches + 1.
+        expected_ids = {
+            self._retry_identity(execution, state, n)
+            for n in range(1, self._policy.max_retries + 1)
+        }
+        ledger = self._rr_ledger(invocation.invocation_id)
+        scoped_matches = sum(1 for r in ledger if r.retry_id in expected_ids)
+        retry_count = min(scoped_matches + 1, self._policy.max_retries)
         updates: dict = {"retries": str(retry_count)}
         if status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
             failures = list(manifest.failures or [])
