@@ -996,19 +996,23 @@ class RetryKernel:
             escalated_to=None,  # FD #138 §3: never populated in M5.3
         )
         manifest = self._load_running_manifest(manifest_id)  # authoritative NOW
-        if status is RetryRecordStatus.RETRYING:
-            existing = manifest.retries or ""
-            refs = [x.strip() for x in existing.split(",") if x.strip()]
-            if rid not in refs:
-                refs.append(rid)
-            enriched = manifest.model_copy(update={"retries": ",".join(refs)})
-        elif status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
+        # CP3 F6 (FD #139 R6): RRM-01.retries is the run-level retry COUNT
+        # summary, derived from the AUTHORITATIVE RR-01 ledger scoped to this
+        # invocation/execution — never comma-separated retry IDs.  This record
+        # is in the same atomic batch, so the count is ledger-before + 1.
+        # Successful retries count; a terminal failed retry counts; clean
+        # initial success keeps the summary at its initialized "0"/None.
+        # Recompute-based (not incrementing a possibly-stale prior string), so
+        # F2 reconciliation and F6 stay restart-safe together.
+        ledger_before = self._rr_ledger(invocation.invocation_id)
+        retry_count = len(ledger_before) + 1
+        updates: dict = {"retries": str(retry_count)}
+        if status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
             failures = list(manifest.failures or [])
             if rid not in failures:
                 failures.append(rid)
-            enriched = manifest.model_copy(update={"failures": failures})
-        else:  # SUCCEEDED — nothing extra (the RETRYING refs record the lineage)
-            enriched = manifest
+            updates["failures"] = failures
+        enriched = manifest.model_copy(update=updates)
         self._store.store_batch([rec, enriched])
         return rec
 
