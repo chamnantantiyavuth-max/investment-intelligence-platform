@@ -1,3 +1,83 @@
+# Session — 2026-09-13 (M5.3 CORRECTION PASS 3 GO: FD #139 rulings → RED diagnostics → partial implementation F1+F5)
+
+> **Scope:** Interactive session ~22:00–22:45 UTC+7 — the Founder issued the
+> **Correction Pass 3 GO (FD #139)** with 6 rulings (R1–R6) on the F1–F6
+> decision package + addendum. This session: state hygiene, FD #139
+> registration, RED diagnostic-first evidence, and **PARTIAL CP3
+> implementation (F1 + F5)**. **M5.3 = INDEPENDENT RE-AUDIT FAIL / CORRECTION
+> REQUIRED — NOT CLOSED / NOT FROZEN.** CP3 is NOT complete; F2/F3/F4/F6
+> remain PENDING for the next session.
+
+## Key outcomes
+
+- **State hygiene FIRST (FD #139 §1):** local `main @ cab62fc` (11 docs
+  commits: cron reviews + radar digests + AM run note + decision package)
+  parked at `wip/pre-m53-cp3-local-docs-20260913` and pushed to origin
+  (verified remote exists); local main reset to origin/main `283a7aa` (clean,
+  verified `main == origin/main == 283a7aa`); M6 branch
+  `docs/m6-gemini-notebook-dr @ a37e92d` independently parked, untouched.
+- **FD #139 registered** (13 Sep): CP3 GO + R1 (F1 bounded RSR-01/SM-3
+  APPEND_ONLY_STATE enforcement; generic residual =
+  `POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER`), R2 (F2
+  cross-anchor reconcile), R3 (F3 honest SI-01 + RSR anchor before stage +
+  crash fail-closed), R4 (F4 RFR-01 exactly once), R5 (F5 real epoch-ms
+  anchor), R6 (F6 RRM retry-count). F7–F10 registered under
+  `POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE` — OUTSIDE CP3. Both registries
+  updated: `operational/FOUNDERS-DECISIONS.md` item 139 + vault fd-register
+  mirror.
+- **Diagnostic-first RED (FD #139 §11):** `tests/qad/m53/test_correction_pass3.py`
+  (F1–F6, 22 tests) demonstrated **RED on untouched `283a7aa` — 20 failed /
+  2 passed** (2 passing = F1 legal transitions already accepted by the
+  permissive layer). Committed `da47b97` (diagnostics + FD #139).
+- **PARTIAL CP3 implementation (commit `d2eb3f4`):**
+  - **F1 (R1):** `qad/persistence/immutability.py` — `_RSR01_SM3_LEGAL_
+    TRANSITIONS` + `_check_rsr01_sm3_transition` wired into
+    `check_immutability` for **RSR-01 ONLY**. IN_PROGRESS→COMPLETE/FAILED/
+    INCOMPLETE legal (IN_PROGRESS→IN_PROGRESS = versioned retry continuation);
+    terminal states have NO outgoing transitions → FAILED→COMPLETE,
+    COMPLETE→FAILED, INCOMPLETE→COMPLETE now REJECTED (SM-3 ILLEGAL list).
+    Generic APPEND_ONLY_STATE gap for other schemas NOT built (registered
+    blocker).
+  - **F5 (R5):** `qad/ids.py` — `deterministic_uuid7(seed, *, ts_ms)` with the
+    48-bit ts field = supplied REAL epoch-ms anchor (persisted
+    RSR-01.started_at), rand bits = deterministic SHA-256 derivation. No
+    hash-derived timestamp (F5 = A implementation bug, fixed). +
+    `qad/m53/retry_kernel.py` `StageContext.anchor_ts_ms` +
+    `_started_at_to_ms()` (second-precision → ms ending 000). Test callers
+    updated (`tests/qad/test_ids.py` + `tests/qad/m53/test_correction_pass2.py`
+    EG-01 pass `ts_ms=ctx.anchor_ts_ms`); id tests strengthened (real-anchor
+    timestamp, distinct-anchor, ts-required).
+- **Test evidence (REAL):**
+  - CP3 diagnostics on the partial tree: **10 passed / 12 failed** — F1 ×5 and
+    F5 ×5 GREEN; F2 ×2, F3 ×5, F4 ×3, F6 ×2 still RED (kernel F2/F3/F4/F6 not
+    yet implemented — expected).
+  - Regression ids/m53/persistence: **338 passed, 0 failed**.
+- **PENDING next session (CP3 remainder):** F2 cross-anchor reconcile (RRM
+  partial-terminal recovery), F3 honest SI-01 lifecycle + RSR-01 IN_PROGRESS
+  anchor before stage callback + crash fail-closed (RSR IN_PROGRESS + SI-01
+  absent), F4 RFR-01 exactly-once on terminal FAILED, F6 RRM-01.retries =
+  retry COUNT summary. Then full gate (all M5.3 + IDs + persistence + tests/qad/
+  + full pytest + M4A + M4B validators) → STOP at
+  `CORRECTION PASS 3 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT`
+  — NOT CLOSED / NOT FROZEN.
+
+## Recommended next action
+
+1. **Continue CP3 in the next session** (resume on `main`, tree clean):
+   implement F2/F3/F4/F6 in `qad/m53/retry_kernel.py` to GREEN the remaining
+   12 RED diagnostics, then run the full gate per FD #139 §14 and report exact
+   counts.
+2. Do NOT touch F7–F10 (stage ordering / budget INCOMPLETE / S9 case-lock /
+   S8→S7 PIT-AS_OF) — they live under
+   `POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE` until a separate Founder
+   decision.
+3. After full CP3 green → a NEW Founder independent re-audit is mandatory
+   before any closure. M5.3 stays NOT CLOSED / NOT FROZEN.
+
+<!-- 2026-09-13 22:45 UTC+7 -->
+
+---
+
 # Session — 2026-09-09 (M5.3 CORRECTION PASS 2: Founder RE-AUDIT FAIL of pass-1 → diagnosis → runtime fix)
 
 > **Scope:** Interactive session ~13:30–14:30 UTC+7 — the Founder performed the
