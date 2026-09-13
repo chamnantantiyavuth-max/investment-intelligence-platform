@@ -73,6 +73,7 @@ from qad.models.family_i import (
     RetryRecordStatus,
     RunManifestRecord,
     ServiceInvocation,
+    ServiceInvocationStatus,
 )
 from qad.persistence import (
     ImmutabilityViolation,
@@ -262,17 +263,11 @@ class RetryKernel:
                 recorded honestly (RSR FAILED + RR FAILED when on a retry),
                 then re-raised.
         """
-        if not self._store.contains("SI-01", invocation.invocation_id):
-            raise MissingForeignKey(
-                f"SI-01/{invocation.invocation_id}: invocation not found — "
-                f"RR-01.invocation_id FK requires it (fail closed)",
-                schema_id="RR-01",
-                field="invocation_id",
-                target_schema="SI-01",
-                target_ids=[invocation.invocation_id],
-            )
-
         # -- Manifest preflight (BEFORE any stage execution / any write) ----
+        # CP3 F3 (FD #139 R3): pre-existing SI-01 is NO LONGER required for
+        # the INITIAL attempt.  The kernel persists the authoritative SI-01
+        # with the ACTUAL outcome (never the caller object's stale status)
+        # after the initial callback, BEFORE any retry processing.
         manifest = self._load_running_manifest(manifest_id)
         if manifest.case_id != invocation.case_id:
             raise IntegrityConflict(
@@ -310,7 +305,24 @@ class RetryKernel:
                     retried=True,
                     error=last.failure_reason,
                 )
-            # IN_PROGRESS -> resume mid-flight (initial already executed).
+            # IN_PROGRESS -> F3 crash-state recovery (FD #139 R3).  The RSR
+            # anchor + the authoritative SI-01 initial outcome are the
+            # execution authority; the caller-supplied object is NOT trusted
+            # for outcome status.  Load SI-01 by invocation_id from the store.
+            si01 = self._load_si01(invocation.invocation_id)
+            if si01 is None:
+                # STATE A: RSR IN_PROGRESS anchor persisted but no
+                # authoritative SI-01 outcome -> FAIL CLOSED.  Never rerun the
+                # initial callback, never start retry #1, never invent
+                # SUCCESS/FAILURE, never mint a new stage_id.
+                raise IntegrityConflict(
+                    f"RSR-01/{last.stage_id}: IN_PROGRESS anchor without "
+                    f"authoritative SI-01 outcome — initial execution was "
+                    f"anchored but its result was never durably persisted "
+                    f"(recovery required; fail closed per FD #139 R3)",
+                    schema_id="RSR-01",
+                    record_id=last.stage_id,
+                )
             state = _ExecState(
                 stage_id=last.stage_id,
                 started_at=last.started_at,
@@ -319,6 +331,25 @@ class RetryKernel:
                 previous_outputs=list(last.output_ids or []),
                 retry_count=last.retry_count or 0,
             )
+            if si01.status is ServiceInvocationStatus.SUCCESS:
+                # STATE B: authoritative SI-01 SUCCESS -> the initial callback
+                # already succeeded; the crash happened between the SI-01 write
+                # and the RSR COMPLETE write.  Reconcile RSR forward WITHOUT
+                # re-executing the callback.
+                self._write_rsr(
+                    execution, state, ResearchStageRecordStage_state.COMPLETE,
+                    error=None,
+                )
+                return RetryOutcome(
+                    invocation_id=invocation.invocation_id,
+                    attempt_records=self._rr_ledger(invocation.invocation_id),
+                    status=RetryRecordStatus.SUCCEEDED,
+                    retried=state.retry_count > 0,
+                    error=None,
+                )
+            # STATE C: authoritative SI-01 FAILURE/TIMEOUT -> the initial
+            # outcome is a known failure.  Do NOT rerun the initial callback;
+            # enter the retry path only if the retry policy allows it.
             next_retry = state.retry_count + 1
             if next_retry > self._policy.max_retries:
                 # Corrupted/over-budget resume -> terminal FAILED, no re-exec.
@@ -337,7 +368,7 @@ class RetryKernel:
                 invocation, execution, stage, state, next_retry, manifest_id,
             )
 
-        # -- INITIAL execution (NOT an RR-01) --------------------------------
+        # -- INITIAL execution (NOT an RR-01) — CP3 F3 sequence (FD #139 R3) -
         state = _ExecState(
             stage_id=self._uuid(),
             started_at=self._now(),
@@ -347,12 +378,28 @@ class RetryKernel:
             retry_count=0,
         )
         state.checkpoint_ref = _cp_encode(case_version, state.stage_id)
+        # R3 B: persist the RSR-01 IN_PROGRESS anchor BEFORE the initial stage
+        # callback (stable stage_id / started_at / checkpoint / execution
+        # identity binding).  The anchor must precede stage-owned canonical
+        # writes.
+        self._write_rsr(
+            execution, state, ResearchStageRecordStage_state.IN_PROGRESS,
+            error=None,
+        )
         ctx = self._build_ctx(execution, state, initial=True)
         try:
             stage(ctx)
         except RetryableError as exc:
-            # Initial failed retryably -> IN_PROGRESS (NOT terminal FAILED) and
-            # the retry workflow begins (re-audit §3, SM-3).
+            # R3 D: persist the authoritative immutable SI-01 with the ACTUAL
+            # initial outcome (retryable failure -> FAILURE).  NEVER trust the
+            # caller object's pre-populated status.
+            self._persist_si01_actual(
+                invocation, status=ServiceInvocationStatus.FAILURE,
+                error=str(exc),
+            )
+            # R3 E: only AFTER authoritative SI-01 exists may retry processing
+            # begin (RR-01.invocation_id FK strict).  RSR stays IN_PROGRESS
+            # (NOT terminal FAILED) and the retry workflow begins.
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.IN_PROGRESS,
                 error=str(exc), produced=ctx.produced_output_ids,
@@ -361,13 +408,20 @@ class RetryKernel:
                 invocation, execution, stage, state, 1, manifest_id,
             )
         except Exception as exc:  # noqa: BLE001 — deterministic/unknown
+            reason = f"{type(exc).__name__}: {exc}"
+            self._persist_si01_actual(
+                invocation, status=ServiceInvocationStatus.FAILURE,
+                error=reason,
+            )
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.FAILED,
-                error=f"{type(exc).__name__}: {exc}",
-                produced=ctx.produced_output_ids,
+                error=reason, produced=ctx.produced_output_ids,
             )
             raise
         else:
+            self._persist_si01_actual(
+                invocation, status=ServiceInvocationStatus.SUCCESS, error=None,
+            )
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.COMPLETE,
                 error=None, produced=ctx.produced_output_ids,
@@ -480,6 +534,19 @@ class RetryKernel:
                       if str(r.attempt_number).isdigit() else 0)
         return attempts
 
+    def _load_si01(self, invocation_id: str) -> ServiceInvocation | None:
+        """Load the AUTHORITATIVE SI-01 by invocation_id, or None.
+
+        CP3 F3 (FD #139 R3): crash/retry recovery MUST read the persisted
+        canonical SI-01 fom the store — never trust a caller-supplied
+        ``ServiceInvocation`` object whose ``.status`` may be a stale
+        request default.  Fail-closed callers treat None as
+        'outcome not durably persisted'.
+        """
+        if not self._store.contains("SI-01", invocation_id):
+            return None
+        return self._store.load("SI-01", invocation_id)
+
     def _rsr_history(
         self, execution: ExecutionContext,
     ) -> list[ResearchStageRecord]:
@@ -568,6 +635,37 @@ class RetryKernel:
         )
         self._stage_store.store(rec)  # APPEND_ONLY_STATE -> prior version kept
         state.checkpoint_ref = _cp_encode(execution.case_version, state.stage_id)
+
+    def _persist_si01_actual(
+        self,
+        invocation: ServiceInvocation,
+        *,
+        status: ServiceInvocationStatus,
+        error: str | None,
+    ) -> None:
+        """Persist the authoritative immutable SI-01 with the ACTUAL initial
+        outcome (CP3 F3, FD #139 R3).
+
+        The caller-supplied ``ServiceInvocation`` carries only stable request
+        identity metadata (invocation_id/case_id/invoked_at/request_type/
+        service_id); its ``.status`` is a request default and is NEVER the
+        outcome authority.  SI-01 is RECORD_IMMUTABLE — on the initial attempt
+        the kernel writes the outcome record once; if SI-01 already exists the
+        record is left untouched (RR-01 FK integrity is preserved either way).
+        """
+        if self._store.contains("SI-01", invocation.invocation_id):
+            return  # caller/requester-supplied request record — leave it
+        rec = ServiceInvocation(
+            invocation_id=invocation.invocation_id,
+            case_id=invocation.case_id,
+            invoked_at=invocation.invoked_at,
+            request_type=invocation.request_type,
+            service_id=invocation.service_id,
+            status=status,
+            completed_at=self._now(),
+            error=error,
+        )
+        self._store.store(rec)
 
     def _write_attempt_and_manifest(
         self,

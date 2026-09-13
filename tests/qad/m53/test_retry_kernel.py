@@ -625,4 +625,6 @@ class TestMissingInvocation:
         assert len(rrs) == 1
         assert rrs[0].attempt_number == "1"
         assert rrs[0].status is RetryRecordStatus.SUCCEEDED
-        assert calls["n"] == 0
+        # Stage ran exactly twice: once as the initial attempt (retryable
+        # failure), once as retry #1 (success).  Never re-ran after SI-01.
+        assert calls["n"] == 2
