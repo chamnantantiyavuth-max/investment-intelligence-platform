@@ -1,10 +1,30 @@
-"""M5.3 S8 — Retry Kernel (CORRECTION PASS 4 — FD #139, bounded re-audit fixes).
+"""M5.3 S8 — Retry Kernel (CORRECTION PASS 5 — FD #140, D1-A/D2-A/F4-R).
 
 CP3 (FD #139 GO, 13 Sep 2026) implemented F1–F6; CP4 (bounded re-audit
-FAIL, 13 Sep 2026) corrected F3/F4/F5/F6 per the audited findings while
-keeping F1/F2 semantics closed.  No new Founder decision was required —
-CP4 remains under FD #139.
+FAIL, 13 Sep 2026) corrected F3/F4/F5/F6; CP5 (FD #140 GO, 14 Sep 2026)
+implements the Founder rulings D1-A / D2-A / F4-R on the CP4 independent
+re-audit contract collisions:
 
+- **D1-A — ONE SI-01 invocation_id PER LOGICAL STAGE EXECUTION (FD #140).**
+  A logical stage execution identity = (case_id, case_version, stage_name).
+  A NEW logical stage execution requires a NEW ServiceInvocation /
+  invocation_id; the same invocation_id may be reused ONLY for restart /
+  retry / replay of that SAME logical execution.  The kernel NEVER mints
+  invocation_ids — the caller supplies the ServiceInvocation and the kernel
+  VERIFIES it is valid for the requested logical execution.  The persisted
+  execution <-> invocation binding rides in the existing RSR-01
+  checkpoint_ref as `cp:<case_version>:<stage_id>:<invocation_id>` (an
+  implementation encoding inside the existing string field — NOT a canonical
+  schema change).  A legacy unbound checkpoint is
+  `LEGACY_UNBOUND_EXECUTION` and FAILS CLOSED when D1-A enforcement applies;
+  no automatic migration.
+- **D2-A — RRM-01.retries is the MAXIMUM retry depth observed in the run**
+  (FD #140).  Monotonic run-level summary, range "0".."3"; RRM-01 is the
+  authoritative run-level accumulator; F2 terminal reconciliation uses the
+  SAME monotonic rule.  RR-01 remains the authoritative detailed retry ledger.
+- **F4-R — one logical terminal FAILED -> exactly one RFR-01** (FD #140).
+  Every terminal SM-3 FAILED write site persists the RFR-01 in the same
+  same-store atomic batch.
 - **RSR-01 is the SOLE execution authority.**  Execution identity =
   (case_id, case_version, stage_name); case_version resolved from the
   authoritative RRM-01 run context.  Retry accounting and terminal replay are
@@ -28,13 +48,14 @@ CP4 remains under FD #139.
   case_version starts its OWN stage chain; it must not inherit the prior
   version's outputs/checkpoint and must not false-replay.
 - **Execution-identity scoping of RR terminal replay.**  RR-01 terminal state
-  by invocation_id alone is NEVER used to short-circuit an execution.  A
-  different stage or case_version under the same invocation executes fresh.
-- **RRM-01.retries is a COUNT summary (FD #139 R6).**  Every RR/RRM atomic
-  batch re-loads the CURRENT authoritative RRM-01 and writes the retry
-  COUNT derived from the execution-scoped deterministic retry identities
-  (CP4-5/CP4-6) — RR-01 remains the authoritative detailed retry ledger.
-  No stale-object overwrite, no comma-separated retry-ID summary (removed).
+  by invocation_id alone is NEVER used to short-circuit an execution.  Every
+  logical stage execution has its OWN invocation_id (D1-A), and RR replay
+  scope is per execution identity — never invocation-wide.
+- **RRM-01.retries is a COUNT summary (FD #139 R6, FD #140 D2-A).**  Every
+  RR/RRM atomic batch re-loads the CURRENT authoritative RRM-01 and writes
+  the retry COUNT as max(existing_run_summary, current_execution_depth) —
+  monotonic, never decreasing; malformed existing values FAIL CLOSED.
+  RR-01 remains the authoritative detailed retry ledger.
 - **Fixed retry budget (FD #138 §1):** INITIAL + max 3 retries = max 4 stage
   executions.  ESCALATED never produced; `escalated_to` never populated.
 - **Fail-closed history:** unreadable RSR/RR state raises typed errors — the
@@ -165,21 +186,61 @@ class _ExecState:
     checkpoint_ref: str
     previous_outputs: list[str] = field(default_factory=list)
     retry_count: int = 0
+    # D1-A (FD #140): the invocation_id bound to this logical execution,
+    # carried by the checkpoint encoding.
+    invocation_id: str = ""
 
 
 _TERMINAL_STATES = {
     ResearchStageRecordStage_state.COMPLETE,
     ResearchStageRecordStage_state.FAILED,
 }
-_CP_PREFIX = "cp"  # checkpoint_ref encoding: "cp:<case_version>:<stage_id>"
+# checkpoint_ref encoding (FD #140 D1-A): "cp:<case_version>:<stage_id>[:<invocation_id>]"
+_CP_PREFIX = "cp"
 
 
 def _enum_str(value: Any) -> str:
     return value.value if hasattr(value, "value") else str(value)
 
 
-def _cp_encode(case_version: str, stage_id: str) -> str:
-    return f"{_CP_PREFIX}:{case_version}:{stage_id}"
+def _cp_encode(case_version: str, stage_id: str, invocation_id: str) -> str:
+    """Encode the CP5 BOUND checkpoint: ``cp:<case_version>:<stage_id>:<invocation_id>``.
+
+    The invocation binding is the D1-A execution <-> invocation carrier
+    (FD #140) carried inside the EXISTING checkpoint_ref string field —
+    implementation encoding only, NOT a canonical schema change.
+    """
+    return f"{_CP_PREFIX}:{case_version}:{stage_id}:{invocation_id}"
+
+
+@dataclass(frozen=True)
+class _CpBinding:
+    """Parsed CP5 checkpoint binding (D1-A, FD #140)."""
+
+    case_version: str
+    stage_id: str
+    invocation_id: str | None  # None => LEGACY_UNBOUND (pre-CP5 two-field form)
+
+
+def _cp_decode(ref: str | None) -> _CpBinding | None:
+    """Parse ``cp:<case_version>:<stage_id>[:<invocation_id>]``.
+
+    Returns None when the ref is missing/malformed (not a ``cp:`` encoding).
+    ``invocation_id is None`` marks the legacy UNBOUND two-field form
+    (``LEGACY_UNBOUND_EXECUTION`` under D1-A).
+    """
+    if not ref:
+        return None
+    parts = str(ref).split(":")
+    if len(parts) < 3 or parts[0] != _CP_PREFIX:
+        return None
+    if len(parts) == 3:
+        return _CpBinding(case_version=parts[1], stage_id=parts[2],
+                          invocation_id=None)
+    if len(parts) == 4:
+        return _CpBinding(case_version=parts[1], stage_id=parts[2],
+                          invocation_id=parts[3])
+    return None  # malformed — more fields than the encoding supports
 
 
 def _started_at_to_ms(started_at: str | None) -> int:
@@ -218,7 +279,11 @@ def _started_at_to_ms(started_at: str | None) -> int:
 
 
 def _cp_version(ref: str | None) -> str | None:
-    """Extract the case_version from a checkpoint_ref (None if unparseable)."""
+    """Extract the case_version from a checkpoint_ref (None if unparseable).
+
+    Works for both the pre-CP5 two-field form and the CP5 bound
+    (invocation-carrying) form — the case_version is always the 2nd field.
+    """
     if not ref:
         return None
     parts = str(ref).split(":")
@@ -310,6 +375,34 @@ class RetryKernel:
 
         chain = self._rsr_history(execution)
 
+        # -- D1-A invocation preconditions (FD #140) ----------------------
+        if chain:
+            # EXISTING execution: the persisted checkpoint must carry the
+            # authoritative invocation binding, all chain versions must agree
+            # on it, and the supplied invocation must match it (identity +
+            # stable SI fields).  LEGACY_UNBOUND_EXECUTION -> FAIL CLOSED.
+            bound_invocation_id = self._validate_existing_execution(
+                invocation, chain)
+        elif self._store.contains("SI-01", invocation.invocation_id):
+            # FRESH logical execution: this invocation_id ALREADY exists as
+            # an SI-01 record -> illegal reuse (it belongs to another logical
+            # execution).  Fail closed BEFORE any anchor / callback / RR /
+            # mutation — never "reuse because status matches".
+            raise IntegrityConflict(
+                f"SI-01/{invocation.invocation_id}: invocation_id already "
+                f"exists for a FRESH logical execution "
+                f"({invocation.case_id}/{case_version}/"
+                f"{_enum_str(stage_name)}) — ONE invocation_id per logical "
+                f"stage execution (FD #140 D1-A): supply a NEW "
+                f"invocation_id; reuse is legal only for restart / retry / "
+                f"replay of the SAME logical execution (fail closed BEFORE "
+                f"callback)",
+                schema_id="SI-01",
+                record_id=invocation.invocation_id,
+            )
+        else:
+            bound_invocation_id = invocation.invocation_id
+
         # -- Resume / replay decision (RSR is the execution authority) ------
         if chain:
             last = chain[-1]
@@ -377,9 +470,11 @@ class RetryKernel:
                 stage_id=last.stage_id,
                 started_at=last.started_at,
                 completed_at=last.completed_at or last.started_at,
-                checkpoint_ref=last.checkpoint_ref or _cp_encode(case_version, last.stage_id),
+                checkpoint_ref=last.checkpoint_ref or _cp_encode(
+                    case_version, last.stage_id, bound_invocation_id),
                 previous_outputs=list(last.output_ids or []),
                 retry_count=last.retry_count or 0,
+                invocation_id=bound_invocation_id,
             )
             if si01.status is ServiceInvocationStatus.SUCCESS:
                 # STATE B: authoritative SI-01 SUCCESS -> the initial callback
@@ -419,6 +514,9 @@ class RetryKernel:
             )
 
         # -- INITIAL execution (NOT an RR-01) — CP3 F3 sequence (FD #139 R3) -
+        # D1-A (FD #140): the fresh-execution precondition above guarantees
+        # this invocation_id is NOT yet an SI-01 (illegal reuse); the stage
+        # anchor is bound to it via the checkpoint encoding.
         state = _ExecState(
             stage_id=self._uuid(),
             started_at=self._now(),
@@ -426,8 +524,10 @@ class RetryKernel:
             checkpoint_ref="",  # set below with the true stage_id encoding
             previous_outputs=[],
             retry_count=0,
+            invocation_id=invocation.invocation_id,
         )
-        state.checkpoint_ref = _cp_encode(case_version, state.stage_id)
+        state.checkpoint_ref = _cp_encode(
+            case_version, state.stage_id, invocation.invocation_id)
         # R3 B: persist the RSR-01 IN_PROGRESS anchor BEFORE the initial stage
         # callback (stable stage_id / started_at / checkpoint / execution
         # identity binding).  The anchor must precede stage-owned canonical
@@ -726,7 +826,10 @@ class RetryKernel:
         else:
             # APPEND_ONLY_STATE -> prior version kept
             self._stage_store.store(rec)
-        state.checkpoint_ref = _cp_encode(execution.case_version, state.stage_id)
+        # D1-A (FD #140): every version re-encodes the SAME bound checkpoint —
+        # all RSR versions of one execution agree on the invocation binding.
+        state.checkpoint_ref = _cp_encode(
+            execution.case_version, state.stage_id, state.invocation_id)
 
     def _exec_state_view(self, last: ResearchStageRecord) -> _ExecState:
         """Rebuild the execution-state view from a persisted RSR record.
@@ -734,7 +837,22 @@ class RetryKernel:
         Shared by F2 terminal reconciliation and F4 RFR replay so both
         recompute the SAME deterministic identities/anchors as the live
         writer (same stage_id / started_at / checkpoint_ref).
+
+        D1-A (FD #140): the invocation binding is parsed from the persisted
+        bound checkpoint; an unbound legacy checkpoint fails closed (the D1-A
+        chain validation already rejected it before any replay path).
         """
+        binding = _cp_decode(last.checkpoint_ref)
+        if binding is None or binding.invocation_id is None:
+            raise IntegrityConflict(
+                f"RSR-01/{last.stage_id}: LEGACY_UNBOUND_EXECUTION — "
+                f"checkpoint_ref {last.checkpoint_ref!r} carries no "
+                f"invocation binding; required "
+                f"cp:<case_version>:<stage_id>:<invocation_id> (D1-A, "
+                f"FD #140; fail closed)",
+                schema_id="RSR-01",
+                record_id=last.stage_id,
+            )
         return _ExecState(
             stage_id=last.stage_id,
             started_at=last.started_at,
@@ -742,7 +860,104 @@ class RetryKernel:
             checkpoint_ref=last.checkpoint_ref,
             previous_outputs=list(last.output_ids or []),
             retry_count=int(last.retry_count or 0),
+            invocation_id=binding.invocation_id,
         )
+
+    _SI_STABLE_IDENTITY_FIELDS = (
+        "invocation_id", "case_id", "service_id", "request_type", "invoked_at",
+    )
+
+    def _verify_si01_identity(
+        self, si01: ServiceInvocation, invocation: ServiceInvocation,
+    ) -> None:
+        """D1-A (FD #140 §5E): the persisted SI-01 must agree with the
+        supplied invocation on ALL stable request-identity fields.
+
+        Mutable/outcome fields (status, error, completed_at, ...) are NEVER
+        compared as request identity.
+        """
+        for field_name in self._SI_STABLE_IDENTITY_FIELDS:
+            stored = getattr(si01, field_name)
+            supplied = getattr(invocation, field_name)
+            if stored != supplied:
+                raise IntegrityConflict(
+                    f"SI-01/{invocation.invocation_id}: stable identity "
+                    f"field '{field_name}' differs between the persisted "
+                    f"record ({stored!r}) and the supplied invocation "
+                    f"({supplied!r}) — cannot treat this as the SAME request "
+                    f"(D1-A, FD #140 §5E; fail closed)",
+                    schema_id="SI-01",
+                    record_id=invocation.invocation_id,
+                )
+
+    def _validate_existing_execution(
+        self,
+        invocation: ServiceInvocation,
+        chain: list[ResearchStageRecord],
+    ) -> str:
+        """D1-A (FD #140 §5) — preconditions for an EXISTING execution.
+
+        A. checkpoint invocation binding exists
+        B. all RSR chain records agree on the invocation binding
+        C. supplied invocation_id equals the persisted binding
+        D. authoritative SI-01 exists when the execution state requires the
+           initial outcome to have been persisted
+        E. SI-01 stable identity fields agree with the supplied invocation
+
+        Returns the authoritative bound invocation_id; any conflict FAILS
+        CLOSED (IntegrityConflict).
+        """
+        binding_ids: list[str] = []
+        for rec in chain:
+            binding = _cp_decode(rec.checkpoint_ref)
+            if binding is None or binding.invocation_id is None:
+                raise IntegrityConflict(
+                    f"RSR-01/{rec.stage_id}: LEGACY_UNBOUND_EXECUTION — "
+                    f"checkpoint_ref {rec.checkpoint_ref!r} carries no "
+                    f"invocation binding; required "
+                    f"cp:<case_version>:<stage_id>:<invocation_id> (D1-A, "
+                    f"FD #140 §6; fail closed)",
+                    schema_id="RSR-01",
+                    record_id=rec.stage_id,
+                )
+            binding_ids.append(binding.invocation_id)
+        if len(set(binding_ids)) != 1:
+            raise IntegrityConflict(
+                f"RSR-01 chain for {invocation.case_id}: records disagree on "
+                f"the invocation binding {sorted(set(binding_ids))} — all "
+                f"versions of one execution must carry the SAME invocation "
+                f"binding (D1-A, FD #140 §5B; fail closed)",
+                schema_id="RSR-01",
+            )
+        bound_invocation_id = binding_ids[0]
+        if bound_invocation_id != invocation.invocation_id:
+            raise IntegrityConflict(
+                f"SI-01/{invocation.invocation_id}: supplied invocation_id "
+                f"does NOT match the persisted execution binding "
+                f"{bound_invocation_id!r} — invocation reuse across logical "
+                f"executions is illegal; restart / retry / replay must supply "
+                f"the SAME invocation_id (D1-A, FD #140 §5C; fail closed)",
+                schema_id="RSR-01",
+            )
+        si01 = self._load_si01(invocation.invocation_id)
+        if si01 is None:
+            # The initial outcome must already have been persisted for any
+            # execution that left the pre-outcome crash window.  The
+            # IN_PROGRESS + SI-absent crash state is reconciled by the R3 rule
+            # (STATE A) downstream; a TERMINAL chain without SI-01 is
+            # contradiction/corruption.
+            if _enum_str(chain[-1].stage_state) != "IN_PROGRESS":
+                raise IntegrityConflict(
+                    f"RSR-01/{chain[-1].stage_id}: terminal execution without "
+                    f"authoritative SI-01/{invocation.invocation_id} — the "
+                    f"initial outcome must have been persisted before any "
+                    f"terminal RSR write (D1-A, FD #140 §5D; fail closed)",
+                    schema_id="RSR-01",
+                    record_id=chain[-1].stage_id,
+                )
+        else:
+            self._verify_si01_identity(si01, invocation)
+        return bound_invocation_id
 
     def _reconcile_terminal_provenance(
         self,
@@ -872,7 +1087,7 @@ class RetryKernel:
         """
         anchor_ms = _started_at_to_ms(state.started_at)
         cp = state.checkpoint_ref or _cp_encode(
-            execution.case_version, state.stage_id)
+            execution.case_version, state.stage_id, state.invocation_id)
         seed = (
             f"{execution.case_id}|{execution.case_version}|"
             f"{_enum_str(execution.stage_name)}|{state.stage_id}|{cp}|"
@@ -963,7 +1178,7 @@ class RetryKernel:
         """
         anchor_ms = _started_at_to_ms(state.started_at)
         cp = state.checkpoint_ref or _cp_encode(
-            execution.case_version, state.stage_id)
+            execution.case_version, state.stage_id, state.invocation_id)
         seed = (
             f"{execution.case_id}|{execution.case_version}|"
             f"{_enum_str(execution.stage_name)}|{state.stage_id}|{cp}|"
@@ -999,6 +1214,9 @@ class RetryKernel:
         """
         if self._store.contains("SI-01", invocation.invocation_id):
             existing = self._store.load("SI-01", invocation.invocation_id)
+            # D1-A (FD #140): idempotency requires the STABLE request-identity
+            # fields to agree with the supplied invocation — never status alone.
+            self._verify_si01_identity(existing, invocation)
             if existing.status is status:
                 return  # (B) exactly consistent — idempotent no-op
             # (C) conflicting pre-existing SI-01 -> FAIL CLOSED.
