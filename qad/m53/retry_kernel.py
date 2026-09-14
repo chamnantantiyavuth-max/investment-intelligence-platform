@@ -527,9 +527,15 @@ class RetryKernel:
             next_retry = state.retry_count + 1
             if next_retry > self._policy.max_retries:
                 # Corrupted/over-budget resume -> terminal FAILED, no re-exec.
+                # F4-R (FD #140): exactly ONE RFR-01 atomically with the
+                # terminal RSR FAILED (same-store batch).
                 self._write_rsr(
                     execution, state, ResearchStageRecordStage_state.FAILED,
                     error="retry budget already exhausted at resume — fail closed",
+                    rfr=self._ensure_rfr(
+                        execution, state,
+                        error="retry budget already exhausted at resume — "
+                              "fail closed (FD #140 F4-R)"),
                 )
                 return RetryOutcome(
                     invocation_id=invocation.invocation_id,
@@ -1292,10 +1298,17 @@ class RetryKernel:
         try:
             self._persist_si01_actual(invocation, status=status, error=error)
         except IntegrityConflict:
+            # F4-R (FD #140): the terminal RSR FAILED and the RFR-01 land in
+            # ONE same-store atomic batch — never a FAILED RSR without its
+            # RFR (FD #139 R4, FD #140 F4-R).
             self._write_rsr(
                 execution, state, ResearchStageRecordStage_state.FAILED,
                 error=f"SI-01 pre-existing status conflicts with actual "
-                      f"outcome — fail closed (CP4-1)",
+                      f"outcome — fail closed (CP4-1/FD #140 F4-R)",
+                rfr=self._ensure_rfr(
+                    execution, state,
+                    error=f"SI-01 pre-existing status conflicts with actual "
+                          f"outcome — fail closed (CP4-1/FD #140 F4-R)"),
             )
             raise
 
