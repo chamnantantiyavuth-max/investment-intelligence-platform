@@ -250,8 +250,13 @@ inspected before every commit. Diagnostic→fix chronology not applicable here
   `retry_count`, frozen revision rule "Restart from last checkpoint preserves
   previous output".
 - Replay triggers ONLY on a terminal COMPLETE RSR-01 **for the same
-  case_version** (encoded in `checkpoint_ref` as `cp:<case_version>:<stage_id>`).
-  Different stage OR different case_version → NOT false-idempotently replayed.
+  case_version** (encoded in `checkpoint_ref` as
+  `cp:<case_version>:<stage_id>[:<invocation_id]>` — CP5 / FD #140 D1-A
+  writes the BOUND four-field form carrying the execution's invocation
+  binding).  Different stage OR different case_version → NOT
+  false-idempotently replayed; a new logical stage execution requires a NEW
+  invocation_id (D1-A); legacy unbound checkpoints → LEGACY_UNBOUND_EXECUTION
+  → FAIL CLOSED.
 - Resume NEVER uses `len(RR records) + 1`.
 
 ### F.4 Fail-closed retry history (corrects §B idempotency)
