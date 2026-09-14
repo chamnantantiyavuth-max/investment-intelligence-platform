@@ -292,6 +292,35 @@ def _cp_version(ref: str | None) -> str | None:
     return parts[1]
 
 
+def _parse_run_retry_summary(value: str | None) -> int:
+    """D2-A (FD #140): parse the AUTHORITATIVE run-level retry summary.
+
+    Valid CP5 forms: None / empty -> 0; ``\"0\"``..``\"3\"``.  Anything else
+    is an unreadable run summary -> FAIL CLOSED (IntegrityConflict) — a
+    stale or corrupted accumulator is never silently overwritten.
+    """
+    if value is None or str(value) == "":
+        return 0
+    text = str(value)
+    if text in ("0", "1", "2", "3"):
+        return int(text)
+    raise IntegrityConflict(
+        f"RRM-01.retries is malformed ({value!r}) — valid CP5 forms: None / "
+        f"empty / \"0\"..\"3\" (D2-A, FD #140; fail closed — the run summary "
+        f"is never silently overwritten)",
+        schema_id="RRM-01",
+    ) from None
+
+
+def _merge_run_retry_summary(existing: str | None, current_depth: int) -> str:
+    """D2-A (FD #140): ``max(existing_run_summary, current_execution_depth)``.
+
+    Monotonic — the run-level value NEVER decreases.  Malformed existing
+    values FAIL CLOSED via ``_parse_run_retry_summary``.
+    """
+    return str(max(_parse_run_retry_summary(existing), int(current_depth)))
+
+
 class RetryKernel:
     """Bounded deterministic retry controller (M3-SERVICES S8, FD #138).
 
@@ -1135,12 +1164,14 @@ class RetryKernel:
             self._store.store_batch([*recs, manifest])
             # reload authoritative manifest after RR landed
             manifest = self._load_running_manifest(manifest_id)
-        # F6 owns the exact count form for the LIVE writer; F2 restores the
-        # authoritative count of retry attempts for THIS execution (never
-        # comma-separated IDs).  Replay stays a no-op when the summary is
-        # already reconciled (no stale overwrite, no write-churn on replay).
+        # D2-A (FD #140): the run-level retry summary is MONOTONIC — F2
+        # reconciliation only ever RAISES it to the reconciled execution's
+        # depth, never decreases it.  Malformed existing values FAIL CLOSED.
+        # Replay stays a no-op when the summary already covers this depth
+        # (no stale overwrite, no write-churn on replay).
+        existing_level = _parse_run_retry_summary(manifest.retries)
         updates: dict = {}
-        if str(retry_count) != str(manifest.retries or ""):
+        if int(retry_count) > existing_level:
             updates["retries"] = str(retry_count)
         if terminal_state is ResearchStageRecordStage_state.FAILED:
             failures = list(manifest.failures or [])
@@ -1308,27 +1339,22 @@ class RetryKernel:
             escalated_to=None,  # FD #138 §3: never populated in M5.3
         )
         manifest = self._load_running_manifest(manifest_id)  # authoritative NOW
-        # CP3 F6 (FD #139 R6): RRM-01.retries is the run-level retry COUNT
-        # summary, never comma-separated retry IDs.  Successful retries count;
-        # a terminal failed retry counts; clean initial success keeps the
-        # summary at its initialized "0"/None.  Recompute-based (not
-        # incrementing a possibly-stale prior string), so F2 reconciliation
-        # and F6 stay restart-safe together.
-        # CP4-5/CP4-6 (re-audit): the count is EXECUTION-scoped — derived
-        # from the exact DETERMINISTIC retry identities expected for THIS
-        # execution (policy-allowed attempts), intersected with the
-        # authoritative RR ledger.  Sibling stage retries sharing the same
-        # invocation_id have DIFFERENT deterministic identities and are
-        # NEVER counted.  The current attempt lands in this same atomic
-        # batch, so the count is scoped-matches + 1.
+        # D2-A (FD #140): RRM-01.retries is the RUN-LEVEL MAXIMUM retry depth
+        # observed anywhere in this run.  The CURRENT execution depth is
+        # derived from the execution-scoped deterministic retry identities
+        # intersected with the authoritative RR ledger (CP4-5/CP4-6); the new
+        # run summary = max(existing_run_summary, current_execution_depth).
+        # The summary is MONOTONIC (never decreases) and malformed existing
+        # values FAIL CLOSED (never silently overwritten).
         expected_ids = {
             self._retry_identity(execution, state, n)
             for n in range(1, self._policy.max_retries + 1)
         }
         ledger = self._rr_ledger(invocation.invocation_id)
         scoped_matches = sum(1 for r in ledger if r.retry_id in expected_ids)
-        retry_count = min(scoped_matches + 1, self._policy.max_retries)
-        updates: dict = {"retries": str(retry_count)}
+        current_depth = min(scoped_matches + 1, self._policy.max_retries)
+        updates: dict = {"retries": _merge_run_retry_summary(
+            manifest.retries, current_depth)}
         if status in (RetryRecordStatus.FAILED, RetryRecordStatus.ESCALATED):
             failures = list(manifest.failures or [])
             if rid not in failures:
