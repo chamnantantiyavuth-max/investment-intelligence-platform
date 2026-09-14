@@ -120,7 +120,7 @@ class TestInitialFailureResume:
             stage_id=stage_id, case_id=CASE_ID,
             stage_name=STAGE_NAME, stage_state=IN_PROGRESS,
             started_at=FIXED_NOW, completed_at=FIXED_NOW,
-            responsible_role="S8", checkpoint_ref=f"cp:1.0:{stage_id}",
+            responsible_role="S8", checkpoint_ref=f"cp:1.0:{stage_id}:{inv.invocation_id}",
             output_ids=[], retry_count=0,
         ))
         calls = {"n": 0}
@@ -181,7 +181,6 @@ class TestStableStageIdLifecycle:
         intermediate state IN_PROGRESS (not FAILED); final COMPLETE on same id."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -208,7 +207,6 @@ class TestStableStageIdLifecycle:
         IN_PROGRESS, not terminally FAILED."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -230,7 +228,6 @@ class TestStableStageIdLifecycle:
         reached only via IN_PROGRESS versions."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -263,7 +260,6 @@ class TestCheckpointPropagation:
         must receive A in previous_output_ids and the NEW checkpoint_ref."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
         seen = {}
@@ -286,7 +282,6 @@ class TestCheckpointPropagation:
         """A then B accumulate across retries."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         _seed_running_manifest(store)
         calls = {"n": 0}
         seen = {}
@@ -314,41 +309,45 @@ class TestCheckpointPropagation:
 
 class TestCaseVersionIsolation:
     def test_new_case_version_does_not_inherit_old_outputs(self):
-        """v1.0 fails producing OLD; v2.0 (new manifest) same stage must start
-        fresh — no OLD output, own stage chain, no false replay."""
+        """v1.0 fails producing OLD; v2.0 (new manifest) is a NEW logical
+        execution and therefore needs a NEW invocation (FD #140 D1-A).  It
+        must start fresh — no OLD output, own stage chain, no false replay,
+        and its OWN truthful outcome (independent of v1's SI-01)."""
         kernel, store, stage_store = _kernel()
-        inv = _make_invocation()
-        store.store(inv)
+        inv_v1 = _make_invocation()
         m1 = _seed_running_manifest(store, case_version="1.0")
         calls = {"n": 0}
         seen = {}
 
-        def stage(ctx):
+        def stage_v1(ctx):
             calls["n"] += 1
             if calls["n"] == 1:
                 ctx.produced_output_ids.append("OLD")
                 raise RetryableError("t1")
 
-        kernel.execute(inv, STAGE_NAME, stage, manifest_id=m1.manifest_id)
-        # v2.0 — same invocation SI-01 already authoritatively records
-        # FAILURE (v1's actual initial outcome).  v2's initial must be exactly
-        # consistent with that record (fail retryably), then succeed on retry.
+        kernel.execute(inv_v1, STAGE_NAME, stage_v1, manifest_id=m1.manifest_id)
+        # v2.0 — NEW manifest, NEW logical execution -> NEW invocation (D1-A).
         m2 = _make_manifest(case_version="2.0")
         m2 = m2.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xB00:012x}"})
         store.store(m2)
+        inv_v2 = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xB0A:012x}")
         seen2 = {}
         before = calls["n"]
 
-        def stage2(ctx):
+        def stage_v2(ctx):
             seen2["prev"] = list(ctx.previous_output_ids)
             calls["n"] += 1
-            if calls["n"] == before + 1:  # v2 initial — SI-consistent retryable
-                raise RetryableError("v2-1")
 
-        kernel.execute(inv, STAGE_NAME, stage2, manifest_id=m2.manifest_id)
-        assert calls["n"] > before + 1, "v2 false-replayed (did not execute)"
+        kernel.execute(inv_v2, STAGE_NAME, stage_v2, manifest_id=m2.manifest_id)
+        assert calls["n"] > before, "v2 did not execute (fresh chain)"
         assert "OLD" not in (seen2["prev"] or []), "v2 inherited v1 outputs"
-
+        # v2 carries its OWN authoritative SI-01 (actual SUCCESS), fully
+        # independent of v1's initial FAILURE — no outcome manipulation.
+        assert (store.load("SI-01", inv_v2.invocation_id).status
+                is ServiceInvocationStatus.SUCCESS)
+        assert (store.load("SI-01", inv_v1.invocation_id).status
+                is ServiceInvocationStatus.FAILURE)
+        assert len(stage_store.list_all("RSR-01")) == 2  # one chain per version
 
 # =====================================================================
 # §6  RRM retry lineage accumulates (no stale-object overwrite)
@@ -363,7 +362,6 @@ class TestRrmLineageAccumulates:
         provenance (failures=[RR3])."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         m = _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -393,12 +391,13 @@ class TestRrmLineageAccumulates:
 
 class TestExecutionIdentityRrScoping:
     def test_stage_b_executes_despite_stage_a_rr_history(self):
-        """Stage A: initial fails, retry#1 succeeds -> RR SUCCEEDED exists
-        under the invocation. Stage B (different stage_name, same invocation)
-        MUST execute — Stage A's RR must not short-circuit it."""
+        """Stage A (SOURCE_FOUNDATION, invocation A): initial fails, retry#1
+        succeeds -> RR SUCCEEDED under inv_a.  Stage B (different stage_name)
+        is a DIFFERENT logical execution and therefore uses its OWN
+        invocation (FD #140 D1-A) — it executes with its own truthful
+        outcome; Stage A's RR never short-circuits it."""
         kernel, store, stage_store = _kernel()
-        inv = _make_invocation()
-        store.store(inv)
+        inv_a = _make_invocation()
         m = _seed_running_manifest(store)
         calls = {"n": 0}
 
@@ -407,17 +406,14 @@ class TestExecutionIdentityRrScoping:
             if calls["n"] == 1:
                 raise RetryableError("t1")
 
-        kernel.execute(inv, STAGE_NAME, stage_a, manifest_id=m.manifest_id)
-        rr = _attempts(store, inv.invocation_id)
-        assert len(rr) == 1 and rr[0].status is RetryRecordStatus.SUCCEEDED
-        # Stage B — same invocation, same manifest/case_version, new stage.
-        # CP4-1: SI-01 already records Stage A's ACTUAL initial outcome
-        # (FAILURE).  Stage B's initial outcome MUST be exactly consistent
-        # with that authoritative record — a raw SUCCESS would FAIL CLOSED.
-        # Stage B therefore also fails its initial retryably, then succeeds.
+        kernel.execute(inv_a, STAGE_NAME, stage_a, manifest_id=m.manifest_id)
+        rr_a = _attempts(store, inv_a.invocation_id)
+        assert len(rr_a) == 1 and rr_a[0].status is RetryRecordStatus.SUCCEEDED
+        # Stage B — OWN invocation, same run, different stage.
         mB = _make_manifest()
         mB = mB.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xC00:012x}"})
         store.store(mB)
+        inv_b = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xC0A:012x}")
         ran_b = {"n": 0}
 
         def stage_b(ctx):
@@ -425,18 +421,20 @@ class TestExecutionIdentityRrScoping:
             if ran_b["n"] == 1:
                 raise RetryableError("b1")
 
-        kernel.execute(inv, DEEP, stage_b, manifest_id=mB.manifest_id)
+        kernel.execute(inv_b, DEEP, stage_b, manifest_id=mB.manifest_id)
         assert ran_b["n"] == 2, "Stage B did not execute its own initial+retry (false replay)"
-        rr_b = [r for r in _attempts(store, inv.invocation_id)
-                if r.retry_id != rr[0].retry_id]
+        rr_b = _attempts(store, inv_b.invocation_id)
         assert len(rr_b) == 1 and rr_b[0].status is RetryRecordStatus.SUCCEEDED
+        # Distinct ledgers and distinct deterministic identities.
+        assert rr_b[0].retry_id != rr_a[0].retry_id
+        assert len(_attempts(store, inv_a.invocation_id)) == 1
 
     def test_case_version_v2_executes_despite_v1_rr_history(self):
-        """v1.0 initial fails + retry#1 succeeds (RR history exists). v2.0 same
-        stage MUST execute — v1 RR must not false-replay v2."""
+        """v1.0 initial fails + retry#1 succeeds (RR history under inv_v1).
+        v2.0 same stage is a NEW logical execution with a NEW invocation
+        (FD #140 D1-A) — it executes; v1's RR never false-replays v2."""
         kernel, store, stage_store = _kernel()
-        inv = _make_invocation()
-        store.store(inv)
+        inv_v1 = _make_invocation()
         m1 = _seed_running_manifest(store, case_version="1.0")
         calls = {"n": 0}
 
@@ -445,14 +443,13 @@ class TestExecutionIdentityRrScoping:
             if calls["n"] == 1:
                 raise RetryableError("t1")
 
-        kernel.execute(inv, STAGE_NAME, stage_v1, manifest_id=m1.manifest_id)
-        assert len(_attempts(store, inv.invocation_id)) == 1
-        # v2.0 — same stage; the invocation SI-01 already authoritatively
-        # records FAILURE (v1's actual initial outcome).  v2's initial must be
-        # exactly consistent with that record: fail retryably, then succeed.
+        kernel.execute(inv_v1, STAGE_NAME, stage_v1, manifest_id=m1.manifest_id)
+        assert len(_attempts(store, inv_v1.invocation_id)) == 1
+        # v2.0 — NEW manifest + NEW invocation (D1-A logical execution identity).
         m2 = _make_manifest(case_version="2.0")
         m2 = m2.model_copy(update={"manifest_id": f"00000000-0000-7000-8000-{0xD00:012x}"})
         store.store(m2)
+        inv_v2 = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xD0A:012x}")
         ran = {"n": 0}
 
         def stage_v2(ctx):
@@ -460,11 +457,12 @@ class TestExecutionIdentityRrScoping:
             if ran["n"] == 1:
                 raise RetryableError("v2-1")
 
-        kernel.execute(inv, STAGE_NAME, stage_v2, manifest_id=m2.manifest_id)
+        kernel.execute(inv_v2, STAGE_NAME, stage_v2, manifest_id=m2.manifest_id)
         assert ran["n"] == 2, "v2 did not execute its own initial+retry (false replay)"
-        rr = _attempts(store, inv.invocation_id)
-        assert len(rr) == 2 and rr[-1].status is RetryRecordStatus.SUCCEEDED
-
+        rr_v2 = _attempts(store, inv_v2.invocation_id)
+        assert len(rr_v2) == 1 and rr_v2[0].status is RetryRecordStatus.SUCCEEDED
+        # v1 ledger intact under its own invocation.
+        assert len(_attempts(store, inv_v1.invocation_id)) == 1
 
 # =====================================================================
 # §8  Retried-write idempotency from ExecutionContext (EG-01, faithful anchor)
@@ -486,7 +484,6 @@ class TestRetriedWriteIdempotency:
         kernel, store, stage_store = _kernel()
         self._stage_store_with_case(stage_store)
         inv = _make_invocation()
-        store.store(inv)
         m = _seed_running_manifest(store)
         calls = {"n": 0}
         exec_seen = {}
@@ -529,7 +526,6 @@ class TestRetriedWriteIdempotency:
         kernel, store, stage_store = _kernel()
         self._stage_store_with_case(stage_store)
         inv = _make_invocation()
-        store.store(inv)
         m = _seed_running_manifest(store)
         calls = {"n": 0}
 

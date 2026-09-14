@@ -76,23 +76,36 @@ TEMPORAL_STAGE_NAME = ResearchStageRecordStage_name.INITIAL_ANALYSIS
 
 
 def _rsr(stage_store, *, stage_id=None, state=FAILED_ST, retry_count=0,
-         failure_reason=None, started_at=FIXED_NOW):
+         failure_reason=None, started_at=FIXED_NOW, invocation_id=None):
+    """RSR fixture.  Under FD #140 D1-A the persisted checkpoint carries the
+    invocation binding: cp:<case_version>:<stage_id>:<invocation_id>."""
     sid = stage_id or f"00000000-0000-7000-8000-{0xB00:012x}"
+    if invocation_id is None:
+        cp = f"cp:1.0:{sid}"
+    else:
+        cp = f"cp:1.0:{sid}:{invocation_id}"
     return ResearchStageRecord(
         stage_id=sid, case_id=CASE_ID, stage_name=STAGE_NAME,
         stage_state=state, started_at=started_at, completed_at=started_at,
-        responsible_role="S8", checkpoint_ref=f"cp:1.0:{sid}",
+        responsible_role="S8", checkpoint_ref=cp,
         output_ids=[], retry_count=retry_count, failure_reason=failure_reason,
     )
 
 
 def _expected_retry_id(kernel, *, stage_id, retry_count, attempt,
-                       started_at=FIXED_NOW):
-    """The deterministic RR retry_id the kernel would derive live."""
+                       started_at=FIXED_NOW, invocation_id=None):
+    """The deterministic RR retry_id the kernel would derive live.
+
+    D1-A (FD #140): the binding is carried by the BOUND checkpoint encoding,
+    so the fixture state must use the SAME bound cp the live writer used.
+    """
+    if invocation_id is None:
+        cp = f"cp:1.0:{stage_id}"
+    else:
+        cp = f"cp:1.0:{stage_id}:{invocation_id}"
     st = _ExecState(
         stage_id=stage_id, started_at=started_at, completed_at=started_at,
-        checkpoint_ref=f"cp:1.0:{stage_id}", previous_outputs=[],
-        retry_count=retry_count,
+        checkpoint_ref=cp, previous_outputs=[], retry_count=retry_count,
     )
     ex = ExecutionContext(case_id=CASE_ID, case_version="1.0",
                           stage_name=STAGE_NAME)
@@ -104,18 +117,20 @@ def _expected_retry_id(kernel, *, stage_id, retry_count, attempt,
 # =====================================================================
 
 class TestCp41Si01ConflictFailClosed:
-    """FD #139 R3: SI-01 is the authoritative ACTUAL INITIAL OUTCOME.
+    """FD #140 D1-A + FD #139 R3: SI-01 is the authoritative ACTUAL INITIAL
+    OUTCOME and the invocation belongs to ONE logical stage execution.
 
-    A pre-existing caller/request SI record must never silently override an
-    outcome established by execution.  Consistent pre-existing record ->
-    idempotent no-op; CONFLICTING pre-existing record -> FAIL CLOSED.
+    Under D1-A a FRESH logical execution (no RSR chain) whose supplied
+    invocation_id ALREADY exists as an SI-01 record is ILLEGAL REUSE and
+    FAILS CLOSED BEFORE any anchor / callback / RR / mutation — regardless
+    of the pre-existing SI status.
     """
 
     def test_cp41_prestored_success_actual_retryable_failure_fails_closed(self):
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         manifest = _seed_running_manifest(store)
-        # Pre-existing requester SI-01 claims SUCCESS (contradicts reality).
+        # Pre-existing SI-01 (claims SUCCESS) for a FRESH logical execution.
         store.store(inv.model_copy(
             update={"status": ServiceInvocationStatus.SUCCESS}))
         calls = {"n": 0}
@@ -126,17 +141,14 @@ class TestCp41Si01ConflictFailClosed:
 
         with pytest.raises(IntegrityConflict):
             kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
-        # The actual outcome (FAILURE) must NEVER be rewritten onto the
-        # immutable pre-existing SUCCESS record.
+        # Fail closed BEFORE callback — no anchor, no RR, no mutation.
+        assert calls["n"] == 0
         si01 = store.load("SI-01", inv.invocation_id)
-        assert si01.status is ServiceInvocationStatus.SUCCESS
-        # No retry may begin from a contradictory state.
+        assert si01.status is ServiceInvocationStatus.SUCCESS  # untouched
         assert _attempts(store, inv.invocation_id) == []
-        # The RSR chain must NOT stay in a valid retry state (IN_PROGRESS) —
-        # terminal FAILED is recorded so restart can NOT replay COMPLETE.
         rsrs = [r for r in stage_store.list_all("RSR-01")
                 if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
-        assert rsrs[-1].stage_state is FAILED_ST
+        assert rsrs == [], "illegal reuse must not create an RSR anchor"
 
     def test_cp41_prestored_failure_actual_success_fails_closed(self):
         kernel, store, stage_store = _kernel()
@@ -147,20 +159,21 @@ class TestCp41Si01ConflictFailClosed:
         calls = {"n": 0}
 
         def stage(ctx):
-            calls["n"] += 1  # actual call SUCCEEDS
+            calls["n"] += 1  # would succeed if it ran
 
         with pytest.raises(IntegrityConflict):
             kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
+        assert calls["n"] == 0  # never reuses "because status would match"
         si01 = store.load("SI-01", inv.invocation_id)
         assert si01.status is ServiceInvocationStatus.FAILURE  # untouched
-        # RSR must NOT become COMPLETE while authoritative SI remains FAILURE.
         rsrs = [r for r in stage_store.list_all("RSR-01")
                 if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
-        assert rsrs[-1].stage_state is FAILED_ST
+        assert rsrs == []
 
     def test_cp41_contradictory_state_never_replays_complete(self):
-        """Critical crash-replay check: after the CP4-1 fail-closed, a NEW
-        kernel must replay FAILED (or fail), never COMPLETE."""
+        """Critical crash-replay check: the illegal-reuse fail-closed state is
+        deterministic — a NEW kernel over the same stores raises IntegrityConflict
+        again (no replay, certainly never COMPLETE)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
         manifest = _seed_running_manifest(store)
@@ -176,11 +189,13 @@ class TestCp41Si01ConflictFailClosed:
             kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
 
         kernel2 = RetryKernel(store, stage_store, policy=RetryPolicy(max_retries=3))
-        outcome = kernel2.execute(inv, STAGE_NAME, stage,
-                                  manifest_id=manifest.manifest_id)
-        assert outcome.status is RetryRecordStatus.FAILED, \
-            "contradictory state must replay FAILED, never COMPLETE"
-        assert calls["n"] == 1  # stage never re-executed
+        with pytest.raises(IntegrityConflict):
+            kernel2.execute(inv, STAGE_NAME, stage,
+                            manifest_id=manifest.manifest_id)
+        assert calls["n"] == 0  # stage never executed (neither kernel)
+        rsrs = [r for r in stage_store.list_all("RSR-01")
+                if r.case_id == CASE_ID and r.stage_name == STAGE_NAME]
+        assert rsrs == []
 
 
 # =====================================================================
@@ -251,11 +266,12 @@ class TestCp43FailedReplayRepairsMissingRfr:
         manifest = _seed_running_manifest(store)
         stage_id = f"00000000-0000-7000-8000-{0xB01:012x}"
         # Authoritative terminal FAILED RSR (rc=1) with its RR + RRM fully
-        # present — but NO RFR (the crash window F4 must repair).
+        # present — but NO RFR (the crash window F4 must repair).  D1-A: the
+        # persisted checkpoint binds the execution to its invocation.
         store.store(inv.model_copy(
             update={"status": ServiceInvocationStatus.FAILURE}))
         rid = _expected_retry_id(kernel, stage_id=stage_id, retry_count=1,
-                                 attempt=1)
+                                 attempt=1, invocation_id=inv.invocation_id)
         store.store(RetryRecord(
             retry_id=rid, invocation_id=inv.invocation_id, attempt_number="1",
             attempted_at=FIXED_NOW, status=RetryRecordStatus.FAILED,
@@ -264,7 +280,8 @@ class TestCp43FailedReplayRepairsMissingRfr:
         store.store(manifest.model_copy(
             update={"retries": "1", "failures": [rid]}))
         stage_store.store(_rsr(stage_store, stage_id=stage_id, state=FAILED_ST,
-                               retry_count=1, failure_reason="boom"))
+                               retry_count=1, failure_reason="boom",
+                               invocation_id=inv.invocation_id))
         calls = {"n": 0}
 
         def stage(ctx):
@@ -328,7 +345,8 @@ class TestCp44MalformedAnchorFailsClosed:
         store.store(inv.model_copy(
             update={"status": ServiceInvocationStatus.FAILURE}))
         stage_store.store(_rsr(stage_store, state=IN_PROGRESS, retry_count=0,
-                               started_at="garbage-anchor"))
+                               started_at="garbage-anchor",
+                               invocation_id=inv.invocation_id))
         calls = {"n": 0}
 
         def stage(ctx):
@@ -345,16 +363,18 @@ class TestCp44MalformedAnchorFailsClosed:
 # =====================================================================
 
 class TestCp46ExecutionScopedRetryCount:
-    """FD #139 R6: RRM-01.retries reflects the count of THIS execution's
-    retry records (derived from the exact deterministic retry identities),
-    NEVER the invocation-wide RR ledger (sibling stages sharing the
-    invocation_id are not counted and never deleted)."""
+    """FD #139 R6 + FD #140 D1-A/D2-A: each stage executes under its OWN
+    invocation_id (D1-A); RRM-01.retries is the RUN-LEVEL max depth (D2-A).
+    Sibling stage retries are never counted twice and the summary reflects
+    max(existing, current_depth)."""
 
     def test_cp46_sibling_stage_rr_not_counted_in_f6_summary(self):
         kernel, store, stage_store = _kernel()
-        inv = _make_invocation()
+        inv_a = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xB4A:012x}")
+        inv_b = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xB4B:012x}")
         manifest = _seed_running_manifest(store)
-        # Stage A: initial retryable fail, retry#1 succeeds.
+        # Stage A (STAGE_NAME, invocation A): initial retryable fail, retry#1
+        # succeeds -> retry depth 1.
         calls_a = {"n": 0}
 
         def stage_a(ctx):
@@ -362,14 +382,14 @@ class TestCp46ExecutionScopedRetryCount:
             if calls_a["n"] == 1:
                 raise RetryableError("A transient")
 
-        outcome_a = kernel.execute(inv, STAGE_NAME, stage_a,
+        outcome_a = kernel.execute(inv_a, STAGE_NAME, stage_a,
                                    manifest_id=manifest.manifest_id)
         assert outcome_a.status is RetryRecordStatus.SUCCEEDED
-        all_rr_a = _attempts(store, inv.invocation_id)
-        assert len(all_rr_a) == 1  # RR_A1 exists
+        rr_a = _attempts(store, inv_a.invocation_id)
+        assert len(rr_a) == 1  # RR_A1 exists
 
-        # Stage B — SAME invocation_id, DIFFERENT stage identity: initial
-        # retryable fail, retry#1 succeeds.
+        # Stage B — OWN invocation (D1-A: a different logical execution), same
+        # run: initial retryable fail, retry#1 succeeds -> retry depth 1.
         calls_b = {"n": 0}
 
         def stage_b(ctx):
@@ -377,36 +397,32 @@ class TestCp46ExecutionScopedRetryCount:
             if calls_b["n"] == 1:
                 raise RetryableError("B transient")
 
-        outcome_b = kernel.execute(inv, TEMPORAL_STAGE_NAME, stage_b,
+        outcome_b = kernel.execute(inv_b, TEMPORAL_STAGE_NAME, stage_b,
                                    manifest_id=manifest.manifest_id)
         assert outcome_b.status is RetryRecordStatus.SUCCEEDED
-        all_rr = _attempts(store, inv.invocation_id)
-        assert len(all_rr) == 2  # RR_A1 + RR_B1 both intact (nothing deleted)
+        rr_b = _attempts(store, inv_b.invocation_id)
+        assert len(rr_b) == 1  # RR_B1 exists (own ledger)
 
-        # The F6 summary is the CURRENT execution's count — ONE retry for
-        # Stage B — NOT "2" merely because Stage A has an RR under the same
-        # invocation.
+        # D2-A run summary = max(existing "1" from A, B depth 1) -> "1" —
+        # NEVER "2" merely because two stages retried once each.
         m = store.load("RRM-01", manifest.manifest_id)
         assert m.retries == "1", \
-            f"execution-scoped retry count expected '1', got {m.retries!r}"
+            f"run-level max retry depth expected '1', got {m.retries!r}"
 
-        # Distinct deterministic identities; sibling record untouched.
-        rr_b = [r for r in all_rr
-                if str(r.attempt_number) == "1"
-                and r.retry_id != all_rr_a[0].retry_id]
-        assert len(rr_b) == 1
-        assert rr_b[0].status is RetryRecordStatus.SUCCEEDED
-        assert rr_b[0].retry_id != all_rr_a[0].retry_id
-        assert all_rr_a[0].status is RetryRecordStatus.SUCCEEDED
+        # Distinct deterministic identities per execution; ledgers separate.
+        assert rr_b[0].retry_id != rr_a[0].retry_id
+        assert rr_a[0].retry_id not in {r.retry_id for r in rr_b}
 
-        # F2 (replay) still scopes by execution identity — Stage B replay
-        # must NOT reconstruct Stage A's record and must NOT duplicate B's.
+        # F2 (replay) for Stage B must NOT touch Stage A's records and must
+        # NOT duplicate B's.
         kernel2 = RetryKernel(store, stage_store, policy=RetryPolicy(max_retries=3))
-        kernel2.execute(inv, TEMPORAL_STAGE_NAME, stage_b,
+        kernel2.execute(inv_b, TEMPORAL_STAGE_NAME, stage_b,
                         manifest_id=manifest.manifest_id)
-        after = _attempts(store, inv.invocation_id)
-        assert len(after) == 2
-        assert {r.retry_id for r in after} == {r.retry_id for r in all_rr}
+        after = _attempts(store, inv_b.invocation_id)
+        assert len(after) == 1
+        assert {r.retry_id for r in after} == {r.retry_id for r in rr_b}
+        # Stage A ledger untouched by B's replay.
+        assert len(_attempts(store, inv_a.invocation_id)) == 1
 
 
 # =====================================================================
@@ -416,16 +432,17 @@ class TestCp46ExecutionScopedRetryCount:
 class TestCp45CountDerivedFromExpectedIdentities:
     def test_cp45_expected_retry_ids_are_deterministic_and_disjoint(self):
         kernel, store, stage_store = _kernel()
+        inv_id = f"00000000-0000-7000-8000-{0xB4C:012x}"
         stage_id = f"00000000-0000-7000-8000-{0xB02:012x}"
         ids = {
             _expected_retry_id(kernel, stage_id=stage_id, retry_count=0,
-                               attempt=n)
+                               attempt=n, invocation_id=inv_id)
             for n in (1, 2, 3)
         }
         assert len(ids) == 3  # distinct per attempt
         ids_b = set(
             _expected_retry_id(kernel, stage_id=stage_id, retry_count=0,
-                               attempt=n)
+                               attempt=n, invocation_id=inv_id)
             for n in (1,)
         )
         # A sibling stage (different stage identity) with the same case ids
@@ -433,6 +450,6 @@ class TestCp45CountDerivedFromExpectedIdentities:
         # count execution-scoped without canonical fields.
         id_stage_b = _expected_retry_id(
             kernel, stage_id=f"00000000-0000-7000-8000-{0xB03:012x}",
-            retry_count=0, attempt=1,
+            retry_count=0, attempt=1, invocation_id=inv_id,
         )
         assert id_stage_b not in ids_b

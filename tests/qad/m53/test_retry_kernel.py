@@ -170,7 +170,6 @@ class TestRetryBudgetFounderDecision:
         Retry #3 fails => FAILED always (ESCALATED removed)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -196,7 +195,6 @@ class TestRetryBudgetFounderDecision:
         """Initial fails; retry #1 succeeds -> RR-01 #1 = SUCCEEDED."""
         kernel, store, _ = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -221,7 +219,6 @@ class TestRetryHistoryFailClosed:
         the stage MUST NOT execute; typed error propagates."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -246,7 +243,6 @@ class TestUuidV7Compliance:
         """FD #138 §8: retry_id MUST be RFC-9562 UUID v7."""
         kernel, store, _ = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
 
@@ -272,25 +268,92 @@ class TestUuidV7Compliance:
 
 
 class TestCheckpointAndIdentity:
-    def test_same_invocation_different_stage_not_false_idempotent(self):
-        """FD #138 §4: replay requires the SAME (case_id, case_version,
-        stage_name). Same SI-01 with a different stage_name -> NOT replayed:
-        the stage executes."""
+    def test_stage_a_failure_stage_b_success_distinct_invocations(self):
+        """FD #140 section 7 test 1: Stage A initial FAILURE (retry #1
+        succeeds), Stage B initial SUCCESS — VALID when the stages use
+        DIFFERENT invocation_ids.  Each SI-01 truthfully records its own
+        stage's actual initial outcome."""
+        kernel, store, _ = _kernel()
+        inv_a = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE11:012x}")
+        inv_b = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE12:012x}")
+        manifest = _make_manifest()
+        store.store(manifest)
+        calls_a = {"n": 0}
+
+        def stage_a(ctx):
+            calls_a["n"] += 1
+            if calls_a["n"] == 1:
+                raise RetryableError("A transient")
+
+        out_a = kernel.execute(inv_a, STAGE_NAME, stage_a,
+                               manifest_id=manifest.manifest_id)
+        assert out_a.status is RetryRecordStatus.SUCCEEDED
+        assert (store.load("SI-01", inv_a.invocation_id).status
+                is ServiceInvocationStatus.FAILURE)
+        calls_b = {"n": 0}
+
+        def stage_b(ctx):
+            calls_b["n"] += 1  # actual initial SUCCESS
+
+        stage_b_name = ResearchStageRecordStage_name.DEEP_RESEARCH
+        out_b = kernel.execute(inv_b, stage_b_name, stage_b,
+                               manifest_id=manifest.manifest_id)
+        assert out_b.status is RetryRecordStatus.SUCCEEDED
+        assert calls_b["n"] == 1
+        assert (store.load("SI-01", inv_b.invocation_id).status
+                is ServiceInvocationStatus.SUCCESS)
+
+    def test_reuse_invocation_across_stage_fails_before_callback(self):
+        """FD #140 section 7 test 3: reuse of invocation A for Stage B (a
+        different logical execution) fails BEFORE the callback — no anchor,
+        no RR, no mutation."""
         kernel, store, _ = _kernel()
         inv = _make_invocation()
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
 
-        def stage(ctx: StageContext) -> None:
+        def stage(ctx):
             calls["n"] += 1
 
         kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
         assert calls["n"] == 1
-        # Same invocation, DIFFERENT stage -> must NOT reuse the terminal outcome.
-        other_stage = ResearchStageRecordStage_name.DEEP_RESEARCH
-        kernel.execute(inv, other_stage, stage, manifest_id=manifest.manifest_id)
-        assert calls["n"] == 2
+        with pytest.raises(IntegrityConflict):
+            kernel.execute(inv, ResearchStageRecordStage_name.DEEP_RESEARCH,
+                           stage, manifest_id=manifest.manifest_id)
+        assert calls["n"] == 1  # fail closed — Stage B never ran
+
+    def test_stage_a_success_stage_b_failure_distinct_invocations(self):
+        """FD #140 section 7 test 2: Stage A initial SUCCESS, Stage B initial
+        FAILURE (retry #1 succeeds) — valid when invocation IDs differ."""
+        kernel, store, _ = _kernel()
+        inv_a = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE13:012x}")
+        inv_b = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE14:012x}")
+        manifest = _make_manifest()
+        store.store(manifest)
+        calls_a = {"n": 0}
+
+        def stage_a(ctx):
+            calls_a["n"] += 1
+
+        out_a = kernel.execute(inv_a, STAGE_NAME, stage_a,
+                               manifest_id=manifest.manifest_id)
+        assert out_a.status is RetryRecordStatus.SUCCEEDED
+        assert (store.load("SI-01", inv_a.invocation_id).status
+                is ServiceInvocationStatus.SUCCESS)
+        calls_b = {"n": 0}
+
+        def stage_b(ctx):
+            calls_b["n"] += 1
+            if calls_b["n"] == 1:
+                raise RetryableError("B transient")
+
+        out_b = kernel.execute(inv_b, ResearchStageRecordStage_name.DEEP_RESEARCH,
+                               stage_b, manifest_id=manifest.manifest_id)
+        assert out_b.status is RetryRecordStatus.SUCCEEDED
+        assert (store.load("SI-01", inv_b.invocation_id).status
+                is ServiceInvocationStatus.FAILURE)
+        assert len(_attempts(store, inv_b.invocation_id)) == 1
 
     def test_checkpoint_replay_returns_without_reexecution(self):
         """FD #138 §4: re-running the same execution identity after a COMPLETE
@@ -310,38 +373,78 @@ class TestCheckpointAndIdentity:
         rsrs = stage_store.list_all("RSR-01")
         assert len(rsrs) == 1
         first = rsrs[0]
-        # checkpoint_ref encodes cp:<case_version>:<stage_id> (resume authority).
-        assert first.checkpoint_ref == f"cp:1.0:{first.stage_id}"
+        # checkpoint_ref encodes cp:<case_version>:<stage_id>:<invocation_id>
+        # (bound execution<->invocation authority, FD #140 D1-A).
+        assert first.checkpoint_ref == f"cp:1.0:{first.stage_id}:{inv.invocation_id}"
         # Same execution identity -> replay without re-execution.
         kernel.execute(inv, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
         assert calls["n"] == 1  # replay — no re-execution
         assert len(stage_store.list_all("RSR-01")) == 1  # zero new records
 
-    def test_new_case_version_not_false_idempotent(self):
-        """FD #138 §4: replay requires the SAME case_version. A new manifest
-        with a different case_version MUST NOT reuse the prior terminal
-        outcome — the stage re-executes (restart from last checkpoint)."""
-        kernel, store, stage_store = _kernel()
+    def test_reuse_invocation_across_case_version_fails_before_callback(self):
+        """FD #140 section 7 test 4: reuse of invocation A for a NEW
+        case_version fails BEFORE the callback (new logical execution needs
+        a new invocation_id)."""
+        kernel, store, _ = _kernel()
         inv = _make_invocation()
-        manifest_v1 = _make_manifest()
-        store.store(manifest_v1)
+        m1 = _make_manifest(case_version="1.0")
+        store.store(m1)
         calls = {"n": 0}
 
-        def stage(ctx: StageContext) -> None:
+        def stage(ctx):
             calls["n"] += 1
 
-        kernel.execute(inv, STAGE_NAME, stage,
-                       manifest_id=manifest_v1.manifest_id)
+        kernel.execute(inv, STAGE_NAME, stage, manifest_id=m1.manifest_id)
         assert calls["n"] == 1
-        # New run context, new case_version (v2.0) — same case, same stage.
-        manifest_v2 = _make_manifest(case_version="2.0")
-        manifest_v2 = manifest_v2.model_copy(
-            update={"manifest_id": _u7(0x31)})
-        store.store(manifest_v2)
-        kernel.execute(inv, STAGE_NAME, stage,
-                       manifest_id=manifest_v2.manifest_id)
-        assert calls["n"] == 2  # NOT replayed — different case version
-        assert len(stage_store.list_all("RSR-01")) == 2
+        m2 = _make_manifest(case_version="2.0").model_copy(
+            update={"manifest_id": f"00000000-0000-7000-8000-{0xE30:012x}"})
+        store.store(m2)
+        with pytest.raises(IntegrityConflict):
+            kernel.execute(inv, STAGE_NAME, stage, manifest_id=m2.manifest_id)
+        assert calls["n"] == 1  # fail closed BEFORE callback
+
+    def test_new_case_version_new_invocation_executes_fresh(self):
+        """FD #140: a new case_version with a NEW invocation is a truthful
+        fresh execution — own stage chain, no inherited outputs."""
+        kernel, store, stage_store = _kernel()
+        inv_v1 = _make_invocation()
+        m1 = _make_manifest(case_version="1.0")
+        store.store(m1)
+        calls = {"n": 0}
+
+        def stage(ctx):
+            calls["n"] += 1
+
+        kernel.execute(inv_v1, STAGE_NAME, stage, manifest_id=m1.manifest_id)
+        assert calls["n"] == 1
+        m2 = _make_manifest(case_version="2.0").model_copy(
+            update={"manifest_id": f"00000000-0000-7000-8000-{0xE31:012x}"})
+        store.store(m2)
+        inv_v2 = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE32:012x}")
+        kernel.execute(inv_v2, STAGE_NAME, stage, manifest_id=m2.manifest_id)
+        assert calls["n"] == 2
+        assert len(stage_store.list_all("RSR-01")) == 2  # one chain per version
+
+    def test_restart_with_wrong_invocation_fails_closed(self):
+        """FD #140 section 7 test 6: restart of an existing stage with a
+        DIFFERENT invocation_id fails closed — the persisted binding is the
+        authority; no callback runs under a wrong invocation."""
+        kernel, store, stage_store = _kernel()
+        inv_a = _make_invocation()
+        inv_b = _make_invocation(invocation_id=f"00000000-0000-7000-8000-{0xE33:012x}")
+        manifest = _make_manifest()
+        store.store(manifest)
+        calls = {"n": 0}
+
+        def stage(ctx):
+            calls["n"] += 1
+
+        kernel.execute(inv_a, STAGE_NAME, stage, manifest_id=manifest.manifest_id)
+        assert calls["n"] == 1
+        with pytest.raises(IntegrityConflict):
+            kernel.execute(inv_b, STAGE_NAME, stage,
+                           manifest_id=manifest.manifest_id)
+        assert calls["n"] == 1  # no re-execution under a wrong invocation
 
     def test_retried_canonical_write_does_not_duplicate(self):
         """FD #138 §5 / GO §16: a canonical write performed by the stage and
@@ -351,7 +454,6 @@ class TestCheckpointAndIdentity:
         makes the retry an idempotent no-op (same id + same payload)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         stage_store.store(inv)  # stage-own RR-01 FK (SI-01) in this anchor
         manifest = _make_manifest()
         store.store(manifest)
@@ -399,7 +501,6 @@ class TestCheckpointAndIdentity:
         from qad.persistence import IntegrityConflict as _IC
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         stage_store.store(inv)  # stage-own RR-01 FK (SI-01) in this anchor
         manifest = _make_manifest()
         store.store(manifest)
@@ -438,7 +539,6 @@ class TestCheckpointAndIdentity:
         the Founder-mandated stable stage identity)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -469,7 +569,6 @@ class TestRrmAtomicity:
         partial canonical state (no RR-01, no RSR)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         calls = {"n": 0}
 
         def stage(ctx: StageContext) -> None:
@@ -487,7 +586,6 @@ class TestRrmAtomicity:
         stage runs; zero writes."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest(run_state="COMPLETED")
         store.store(manifest)
         calls = {"n": 0}
@@ -508,7 +606,6 @@ class TestRrmAtomicity:
         Verify by asserting the atomic-batch encoder is used (one commit)."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         batch_calls = {"n": 0}
@@ -540,7 +637,6 @@ class TestDeterministicFailure:
         stage state; the original typed error re-raises."""
         kernel, store, stage_store = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
@@ -565,7 +661,6 @@ class TestDeterministicFailure:
         one RR-01 FAILED (retry accounting is honest) and re-raised."""
         kernel, store, _ = _kernel()
         inv = _make_invocation()
-        store.store(inv)
         manifest = _make_manifest()
         store.store(manifest)
         calls = {"n": 0}
