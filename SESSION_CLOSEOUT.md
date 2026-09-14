@@ -1,3 +1,20 @@
+# Session — 2026-09-14 (interactive CP5 session)
+
+## M5.3 CORRECTION PASS 5 IMPLEMENTED — 14 Sep 2026 — READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT
+
+**Session:** Founder accepted the CP4 independent re-audit decision package (VERDICT: FAIL / FOUNDER DECISION REQUIRED — baseline `origin/main @ 7238c43`, suite 746/746 accepted) and issued **FD #140** (register item 140): **D1-A** (one SI-01 invocation_id per logical stage execution; binding carrier = existing RSR-01.checkpoint_ref `cp:<case_version>:<stage_id>:<invocation_id>`), **D2-A** (RRM-01.retries = maximum retry depth observed in the run; monotonic; F2 aligned), **F4-R** (every terminal SM-3 FAILED → exactly one RFR-01). CP5 GO with 7-commit cluster separation, diagnostic-first, explicit-path staging only.
+
+**Commits (7, `main` AHEAD of origin/main `dfb642b`, UNPUSHED — push = Founder call per brief step 17):**
+`49dadc9` governance (FD #140 + package APPROVED) → `bbccc00` CP5 diagnostics RED (10 RED / 4 GREEN vs untouched pre-CP5 runtime) → `f98d605` D1-A → `32ff683` D2-A → `69f013b` F4-R → `3b147d4` fixture corrections (49cb6ee fail-first adaptations REMOVED and replaced by the section-7 truthful distinct-invocation matrix; pre-stored SI stubs removed; CP4-1 reworked to D1-A preflight semantics; helpers emit bound checkpoints) → `b4d2dad` docs/state + locked authority-date sync (CP4-7 pattern: latest FD 13→14 Sep).
+
+**Verification (real runs):** CP5 diagnostics 14/14 · CP4 12/12 · CP3 23/23 · m53 108/108 · tests/qad 528/528 · locked 162/162 · **FULL pytest 764/764** (CP4 baseline 746/746) · M4A validator PASS · M4B validator PASS · gate-check.sh all gates passed (exit 0) · isolation-scan.sh 0 violations (exit 0).
+
+**State:** `M5.3 — CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT` — **NOT CLOSED / NOT FROZEN.** M6 PARKED. F7–F10 gate unchanged (`POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE`); generic APPEND_ONLY_STATE blocker unchanged (`POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER`). No new canonical schema; Erratum-002 not reopened. HEAD `b4d2dad`; origin/main `dfb642b`; working tree clean except the unrelated untracked monitoring draft `docs/ciw-pilot-msft/monitoring/2026-09-14-monitoring-draft.md` (never staged/committed/modified; explicit-path staging only — no `git add -A`).
+
+**Recommended next action:** Founder reviews the CP5 diff / this record, authorizes push of the 7-commit chain, then schedules the NEW independent re-audit. Alternatives: (B) keep local through the re-audit, push after; (C) review cluster-by-cluster before pushing.
+
+---
+
 # Session — 2026-09-13 (cron review tick, 10:47 UTC+7)
 
 ## M5.3 CORRECTION PASS 3 IMPLEMENTED — 13 Sep 2026 (afternoon session)
