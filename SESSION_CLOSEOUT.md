@@ -1,3 +1,49 @@
+# Session — 2026-09-16 (cron review tick, 11:2x UTC+7)
+
+## ZERO-DELTA TICK — M5.3 CP5 UNCHANGED; TICK-GAP ROOT CAUSE CORRECTED (HOST POWER STATE) + DUPLICATE LEGACY IIP CRON JOB FOUND
+
+> **Scope:** unattended tick of job `1f5f03f9236d` (IIP Daily Learning Loop, interval 720m). Read-only verification + state-doc sync. No implementation, no FD invention, **no push**, no locked-test edit, no cron mutation.
+
+**Delta since the 15 Sep tick: none.** HEAD == `372df94` (604 commits), tree CLEAN (`git status --short` empty); the window contains only the 15 Sep tick's own two docs commits (`2126cf4` review + `372df94` ahead-count clarification). No new interactive sessions (last = 14 Sep CP5 `20260914_113329_8d0bc3`); no new Founder Decision (register max **FD #140**; item 141 absent). **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN; M6 PARKED** (`a37e92d` untouched). F7–F10 remain under `POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE`; the generic APPEND_ONLY_STATE residual under `POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER`; Production / Live Autonomous QAD / workforce / cron cutover NOT AUTHORIZED.
+
+**Independent verification (this tick — real run, not a self-report and not by-construction):** full pytest **764/764 PASS (10.88s, hermes-agent venv)** at HEAD `372df94` (CP5 figure at `472ef6e`; CP4 baseline 746/746). `git diff 472ef6e..HEAD --stat -- tests/` **EMPTY** → no test churn in the two post-CP5 commits; the CP5 baseline is intact **and reproduced**. Scope check PASS: nothing changed outside state/docs since `dfb642b`; M6 `a37e92d` and parking branch `cab62fc` untouched.
+
+**⚠ Push is STILL DEFERRED (decision item 0):** `main` is **AHEAD of `origin/main dfb642b` by 12 commits** (8 CP5 + CIW draft + 3 review/docs) → **13** after this tick's docs sync, and **UNPUSHED**. Per the defer-push rule this tick commits **only its own docs sync** and does not publish the Founder's unapproved-to-push CP5 chain; push stays a Founder call per the FD #140 brief step 17.
+
+**🆕 N1 — tick-gap root cause CORRECTED (ops): the host was powered off, not a daemon crash.** The skipped **15 Sep 23:24** tick and the ~19.7 h gap in scheduler activity are explained by machine power state, not by a gateway defect: Windows `LastBootUpTime` = **16 Sep 2026 11:24:47** (uptime 05m30s at review time) while the scheduler heartbeat file last updates at **15 Sep 15:46:18**; this run is the interval catch-up (~12 h late). Implication: the long-standing recommendation "durable gateway supervision (dashboard-VBS)" **cannot fix this class** — a supervisor process cannot fire while the OS is off. Real options for the Founder: (A) keep the host awake (power plan / disable sleep), (B) accept late catch-up execution as normal, (C) move the 08:00 radar slots into the observed uptime window (~09:30–11:30 UTC+7). **Consequence: the mid-week radar Thu 17 Sep 08:00 is at risk again.**
+
+**🆕 N2 — DUPLICATE legacy IIP review job found in a second profile.** `profiles/antigravity-orchestrator/cron/jobs.json` contains job `642a42f8cb2e` "IIP Daily Learning Loop" (schedule `0 19 * * *`, provider `deepseek` / model **`deepseek-v4-pro`** — NOT in the FD #111/#112 frozen routing; enabled) — a duplicate of the canonical iip-profile job `1f5f03f9236d` (the job that produced this tick). Evidence: it fired (late) **15 Sep 15:44:48**, output `[SILENT]`, made **no repo writes** (kept read-only), and its prompt instructs loading `project-workflow` for an IIP review, contrary to the FD-2026-08-14 trigger scoping (research tasks must not auto-load the engineering workflow). **Founder decision required: retire or re-point.** Not modified by this tick — cron mutation is not authorized in a scheduled review.
+
+**🆕 N3 — two global (non-IIP) Hermes cron jobs failing (runtime hygiene).** `06720b5a8470` Identity Sync Watchdog: script path mangled (`/bin/bash: C:UsersAdminAppDataLocalhermesscriptsidentity-watchdog.sh: No such file or directory`, exit 127), open incident since 26 Aug, last attempt 15 Sep 15:44. `9d1e5d8a2d7a` Obsidian Session Auto-Save: provider-side failure 15 Sep 15:45 ("Our servers are currently overloaded"), incident open. Neither is an IIP project job; Vault/Obsidian capture was completed by this tick directly.
+
+**Findings carried (all re-verified unchanged this tick):** 🟡 **F2** the CP3/CP4 "Addendum" (F7–F10 + reclassifications) still has no standalone artifact. 🟡 **F3** the 10 Sep mid-week digest + 12 Sep Nick-Weekly AM run exist only on the pushed parking branch `wip/pre-m53-cp3-local-docs-20260913 @ cab62fc` — `main`'s `evidence/radar/digests/` still ends `2026-09-07`. 🔴 **F4** Learning Loop Telegram delivery failing — job-level `last_delivery_error` "Chat not found" (telegram:8964964996), **19th consecutive review** (this report will not reach Telegram either). 🟡 **F7** AGENTS.md checkpoint gap since 21 Aug (FD #131–140 unrecorded) — PROTECTED file, not modified. 🟢 vault mirrors: FD-140 present in BOTH the central `AppData/Local/hermes/vault/fd-register.md` and `~/.hermes/vault/fd-register.md` (no backfill needed). 🟢 tree clean, no stranded work, no interrupted session.
+
+**Market (Wed 16 Sep, 11:2x UTC+7 — last completed EOD = Tue 15 Sep 2026, fresh ≤7d ✅; CME futures live):**
+
+| Ticker | Close | 1d | 5d |
+|---|---|---|---|
+| ^GSPC | 7,585.73 | −0.45% | −1.14% |
+| **MSFT** | **497.12** | −1.64% | +0.64% — **CIW NO TRIGGER** (−10.2% vs 52wk high $553.72; −25% band $415.29 far) |
+| AAPL | 331.34 | −0.52% | +4.78% |
+| **NVDA** | 212.17 | +0.57% | **−6.01%** |
+| JNJ | 267.20 | +0.33% | −0.71% |
+| GOOGL | 344.98 | −1.26% | +1.96% |
+| FSLR | 202.34 | −2.27% | −5.12% |
+| **SMCI** | 35.64 | −2.99% | **−11.48%** |
+| **SLV** | **57.53** | +1.21% | −3.10% — still well below the ~$62 SILVER-CORR-001 anchor |
+| ABBV / BMY | 263.04 / 63.73 | +0.49% / −0.58% | +5.73% / −1.48% |
+| LLY / VRTX | 1,136.11 / 514.63 | −0.19% / −0.94% | +1.09% / −2.70% |
+| ^TNX | 5.00 | +0.71% | +3.95% |
+| live futures 16 Sep | **CL=F 104.69** · GC=F 4,365.30 · SI=F 65.11 | −1.08% · +0.75% · +2.96% | **+9.00%** · −2.14% · −4.17% |
+
+**Driver note (light Yahoo check; no ±10% single-day EOD move so no mandatory lookup):** the HPE-downgrade-led AI-hardware pressure is partially reversing (HPE +4%, Dell +4%, "Super Micro Holds Steady") while the wider AI-capex debate stays open ("Bank of America makes bold chip call after AI sell-off"). Oil holds above $100 (CL=F 104.69) → ORG-2026-0022 / ORG-2026-0012 lane. Observation only — no official filter, ranking, score, or threshold touched.
+
+**Cron cadence:** nothing due today (Wed 16 Sep) · mid-week radar `cda817d17236` **Thu 17 Sep 08:00** (at risk per N1) · Nick-Weekly `73e611584447` **Sat 19 Sep 09:00** (last 12 Sep 10:35) · weekly radar `8ba233e88015` + CIW `8b1cd19aba7d` **Mon 21 Sep 08:00 / 09:00** (14 Sep: CIW COMPLETE / NO TRIGGER — draft `3bac2cf`; weekly radar late + ZERO deliverables → post-pin ledger 4 zero-deliverable runs in 9 evidence points).
+
+**Recommended next action:** Founder authorizes `git push` of the 13-commit chain (decision item 0), then schedules the **NEW independent re-audit of the CP5 chain at `472ef6e`**. Alternatives: (B) keep local through the re-audit and push after; (C) decide N1/N2 first (cheap cron-hygiene decisions) before the re-audit.
+
+---
+
 # Session — 2026-09-15 (cron review tick, 11:2x UTC+7)
 
 ## ZERO-DELTA TICK — M5.3 CP5 UNCHANGED, INDEPENDENT RE-VERIFY 764/764, PUSH STILL DEFERRED
