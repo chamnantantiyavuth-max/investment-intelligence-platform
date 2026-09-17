@@ -635,3 +635,130 @@ then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
 <!-- 2026-09-14 11:45 UTC+7 -->
 
 <!-- 2026-09-15 11:25 UTC+7 -->
+
+## 15 Sep 2026 (cron review tick, 11:21–11:24 UTC+7) — ZERO-DELTA tick (reconstructed entry)
+
+*Reconstructed by the 17 Sep review tick: the 15 Sep tick wrote its PROJECT_STATE Session row + footer
+comment but left no narrative entry here (one-sided-closeout pattern, §7c class).*
+
+**Verdict:** no gate moved. **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT
+RE-AUDIT — NOT CLOSED / NOT FROZEN**; M6 PARKED; register max **FD #140**.
+
+- No new sessions / commits / FDs since the 14 Sep LATE tick; HEAD == `f03e3e8` (602 commits), tree CLEAN.
+- Suite **764/764 PASS (6.96s, hermes-agent venv)** — independent real re-run;
+  `git diff 472ef6e..HEAD --stat -- tests/` EMPTY (CP5 baseline intact **and** reproduced).
+- Push deferred: `main` ahead of `origin/main dfb642b` by 10 pre-existing commits → 11 after the tick's docs sync.
+- Findings carried: 🟡 F2 Addendum no standalone artifact · 🟡 F3 10 Sep digest + 12 Sep AM run
+  parking-branch-only · 🔴 F4 Telegram “Chat not found” **18th** consecutive · 🟡 F7 AGENTS.md
+  checkpoint gap since 21 Aug (protected).
+- Market Tue 15 Sep (last completed EOD Mon 14 Sep): MSFT 505.41 +1.97% CIW NO TRIGGER ·
+  NVDA −8.42% 5d · SMCI −8.38% 1d · SLV 56.84 (below the ~$62 SILVER-CORR-001 anchor) ·
+  CL=F 102.93 (+10.64% 5d, oil above $100 — ORG-2026-0022 lane).
+
+<!-- 2026-09-15 11:25 UTC+7 -->
+
+## 16 Sep 2026 (cron review tick, 11:27–11:33 UTC+7) — ZERO-DELTA tick + N1/N2/N3 (reconstructed entry)
+
+*Reconstructed by the 17 Sep review tick (same one-sided-closeout gap as 15 Sep).*
+
+**Verdict:** no gate moved. **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT
+RE-AUDIT — NOT CLOSED / NOT FROZEN**; M6 PARKED; register max **FD #140**.
+
+- HEAD == `372df94` (604 commits), tree CLEAN; window contained only the 15 Sep tick's own 2 docs commits.
+- Suite **764/764 PASS (10.88s, hermes-agent venv)** — independent real re-run.
+- Push deferred: `main` ahead by 12 pre-existing → 13 after the tick's docs sync.
+- **N1** host-power-state root cause for the skipped 15 Sep 23:24 tick (`LastBootUpTime` 16 Sep 11:24:47).
+- **N2** duplicate legacy IIP job `642a42f8cb2e` in the `antigravity-orchestrator` profile
+  (`0 19 * * *`, model `deepseek-v4-pro`, outside the FD #111/#112 frozen routing) — **Founder decision:
+  retire or re-point**.
+- **N3** global cron failures (Identity Sync Watchdog `06720b5a8470`, Obsidian Session Auto-Save `9d1e5d8a2d7a`).
+- Findings carried: F2 · F3 (main's digests end 2026-09-07) · 🔴 F4 Telegram **19th** consecutive · F7.
+- Market Wed 16 Sep (last completed EOD Tue 15 Sep): MSFT 497.12 −1.64% CIW NO TRIGGER ·
+  ^GSPC 7,585.73 −0.45% · SLV 57.53 (below the ~$62 anchor) · live CL=F 104.69 (5d +9.00%).
+
+<!-- 2026-09-16 11:40 UTC+7 -->
+
+## 17 Sep 2026 (cron review tick, 11:12–11:4x UTC+7) — ZERO-DELTA tick + N4 ROOT-CAUSE RESOLUTION for the skipped/late cron class
+
+**Verdict:** no gate moved. **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT
+RE-AUDIT — NOT CLOSED / NOT FROZEN.** M6 PARKED; register max **FD #140** (no item 141); Production /
+Live Autonomous QAD / workforce / cron cutover NOT AUTHORIZED.
+
+**World reconciled (16 Sep tick → 17 Sep):** no new interactive sessions (last = 14 Sep CP5
+`20260914_113329_8d0bc3`), no new commits besides the 16 Sep tick's own docs sync, no new FDs.
+HEAD == `4f061f1` (605 commits), tree CLEAN before this tick's docs-only edit.
+
+**Independent verification (this tick — real run, not a self-report):**
+
+| Check | Result |
+|---|---|
+| Full pytest @ `4f061f1` | **764/764 PASS (14.32s, hermes-agent venv)** |
+| `git diff 472ef6e..HEAD --stat -- tests/` | EMPTY → CP5 baseline intact + reproduced |
+| Scope check vs `dfb642b` | PASS — only state/docs + the CIW monitoring draft |
+| Governance sync (`diff -q` shared vs profile SOUL.md) | PASS — identical |
+| Vault fd-register FD-140 | present in BOTH mirrors (no backfill needed) |
+
+**🆕 N4 — ROOT CAUSE of the skipped/late cron class (supersedes N1's host-power theory for this window).**
+The gateway supervisor is the Windows Scheduled Task **`Hermes_Gateway_iip`** whose **only** trigger is
+**At logon** (`Delay PT30S`, Repetition EMPTY — no daily/periodic trigger); `NextRunTime` is **EMPTY**,
+`LastRunTime` = **17 Sep 11:12:24**, `LastTaskResult` 0, `RestartCount` 999 / `RestartInterval` PT1M,
+`StartWhenAvailable` True. Action = `wscript.exe //B //Nologo
+...\profiles\iip\gateway-service\Hermes_Gateway_iip.vbs` → `python -m hermes_cli.main --profile iip gateway run`.
+
+Evidence that this — not host power — explains today:
+1. Host **uptime 23.8 h** at review time (`LastBootUpTime` 16 Sep 11:24:46) but the **16 Sep 23:12** tick
+   never executed (executions.db: 16 Sep 11:27:58 completed → nothing → 17 Sep 11:12:45 claimed) and the
+   **17 Sep 08:00** mid-week radar had **no fire attempt**.
+2. The gateway process (pid 18944) started **17 Sep 11:12:24** = exactly the task's `LastRunTime` → this
+   tick (and the radar's catch-up claim at 11:12:45) exist only because that task ran.
+3. The **default-profile** cron is **2 days stalled** (`9d1e5d8a2d7a` next_run stuck 15 Sep 16:45;
+   `06720b5a8470` stuck 15 Sep 16:44) and the **antigravity-orchestrator** profile jobs likewise un-fired
+   (`236fa9f25f25` next 16 Sep 09:00, `23d3c78c74eb` next 16 Sep 09:00, `642a42f8cb2e` next 15 Sep 19:00)
+   — those profiles have no running daemon at all; last burst = 15 Sep 15:44–15:46 (a logon).
+
+**Consequence:** morning slots (radar 08:00 / CIW 09:00) can only fire if a logon or manual start happens
+first; the observed gateway-up window is ≈ **11:12–13:1x**.
+
+**Founder decision required (NOT taken — system/cron mutation is not authorized in a scheduled review):**
+**(A)** add a repeating trigger to `Hermes_Gateway_iip` (e.g. daily 07:30 start + repetition every 30 min,
+or a 15-min repetition) — the task already auto-restarts on failure (999× / 1 min) and has
+`StartWhenAvailable=True`, so this is a **trigger-only change, no code change** *(recommended)*;
+**(B)** move the 08:00/09:00 jobs into the observed uptime window (~11:15); **(C)** keep accepting late catch-up.
+
+**Cron cadence:** mid-week radar `cda817d17236` (Thu 17 Sep 08:00) was **CLAIMED at 11:12:45 — catch-up
+QUEUED behind this review tick** (`started_at` NULL, `last_run` still 10 Sep, `next_run` auto-advanced to
+24 Sep) → verdict **CLAIMED / PENDING at report time, NOT “missed”** (5th+ review-race occurrence).
+Nick-Weekly **Sat 19 Sep 09:00** (last 12 Sep 10:35, as-of Fri 11 Sep EOD) · weekly radar **Mon 21 Sep 08:00** + CIW 09:00.
+
+**Findings:** 🟡 **F2** CP3/CP4 Addendum still has no standalone artifact · 🟡 **F3** the 10 Sep digest +
+12 Sep AM run exist only on `wip/pre-m53-cp3-local-docs-20260913 @ cab62fc` (main's digests = 7 files, end
+2026-09-07) · 🔴 **F4** Telegram delivery failing (**20th** consecutive review; “Chat not found”
+telegram:8964964996) · 🟡 **F7** AGENTS.md checkpoint gap since 21 Aug (protected file, not modified) ·
+🟢 **F8 FIXED** — 24 PROJECT_STATE Session-table lines with stray `||`/`|||` prefixes normalised to a
+single `|` (docs-only) · 🟢 **F9 CLOSED** — the 15/16 Sep one-sided-closeout gap: reconstructed entries
+appended above.
+
+**⚠ Push still deferred (decision item 0):** `main` is AHEAD of `origin/main dfb642b` by **13** commits
+(8 CP5 + CIW draft + 4 review/docs) → **14** after this tick's docs sync; UNPUSHED = Founder call
+(FD #140 brief step 17). This tick commits its own docs sync only and does NOT push.
+
+**Market — last completed EOD Wed 16 Sep 2026** (US session closed 03:00 UTC+7 today; independent yfinance
+fetch 17 Sep 11:14 UTC+7, fresh ≤7d ✅; CME futures live): ^GSPC 7,551.81 (−0.45% 1d / −1.11% 5d) ·
+**MSFT 490.30 (−1.37% 1d / −0.27% 5d) — CIW NO TRIGGER** (52wk high 553.72 → −11.4%; −25% WATCH band
+415.29 far) · NVDA 213.90 (+0.82% / −4.37%) · AAPL 332.41 (+0.32% / +5.41%) · JNJ 267.28 (±0.03%) ·
+GOOGL 342.87 (−0.61% / +3.70%) · **FSLR 191.07 (−5.57% 1d / −5.92% 5d — below $200; driver: First Solar
+withdrew its Section 337 ITC patent complaint (“procedural”) after the US Section 232 action on
+polysilicon/derivatives → “recalibrates TOPCon IP enforcement strategy”; continuation of the base break
+tracked since Aug)** · SMCI 36.85 (+3.40% / −5.34%) · **SLV 57.05 (−0.83% / −6.04% — still below the ~$62
+SILVER-CORR-001 anchor)** · quartet ABBV 262.51 (−0.20% / +4.62%) · BMY 63.60 · LLY 1,137.82 · VRTX 513.26 ·
+**CL=F 102.34 (−0.09% 1d / −0.14% 5d — oil holds above $100; ORG-2026-0022 lane)** · GC=F 4,333.20 (−1.24%) ·
+SI=F 64.16 · ^TNX 5.01 (+3.49% 5d) · ^VIX 17.71 (+2.97% / +7.59% 5d).
+No ±10% single-day move → no mandatory news lookup. Observation only — no official filter/ranking/score/
+threshold changed.
+
+**Recommended next action:** Founder decision on **N4 option A** — add a repeating trigger to
+`Hermes_Gateway_iip` (trigger-only, no code change) so the radar/CIW morning slots can fire. Alternatives:
+(B) move the 08:00/09:00 slots into the observed ~11:15 uptime window; (C) accept late catch-up as normal.
+Open Founder items unchanged: **push (decision item 0)** · M5.3 independent re-audit · F2/F3/F7.
+
+<!-- 2026-09-17 11:40 UTC+7 -->
