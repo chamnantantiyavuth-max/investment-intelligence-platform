@@ -762,3 +762,92 @@ threshold changed.
 Open Founder items unchanged: **push (decision item 0)** · M5.3 independent re-audit · F2/F3/F7.
 
 <!-- 2026-09-17 11:40 UTC+7 -->
+
+## 18 Sep 2026 (cron review tick, 10:43–11:05 UTC+7) — ZERO-DELTA tick (no new sessions/commits/FDs beyond the radar's own run) + 🆕 N4 CONFIRMED DIRECTLY + 🆕 N5 routing observation
+
+**Tick identity:** job `1f5f03f9236d` "IIP Daily Learning Loop" (interval 720 m), claimed by pid 40816 at
+**10:42:29 UTC+7** — a **catch-up** occurrence (`catch_up_occurrences` = 48).
+
+**World reconciled (17 Sep 11:30 → 18 Sep 10:43):** exactly **ONE** new commit — `b9e2c85`
+("feat(radar): mid-week watch 2026-09-17 — 0 card(s) + watch note"), i.e. the 17 Sep mid-week radar's own
+run commit. No new interactive session (last = 14 Sep CP5 `20260914_113329_8d0bc3`); no new FD (register
+max = **FD #140**, item 141 absent). HEAD == `b9e2c85` (607 commits); tree CLEAN before this tick's
+docs-only edit.
+
+**Independent verification (this tick — real run, not a self-report):**
+
+| Check | Result |
+|---|---|
+| Full pytest @ `b9e2c85` | **764/764 PASS (6.14s, hermes-agent venv)** |
+| `git diff 472ef6e..HEAD --stat -- tests/` | EMPTY → CP5 baseline intact + reproduced |
+| Scope check vs `dfb642b` | PASS — CP5 code = `qad/` + `tests/` only; everything since = state/docs + CIW draft + radar digest/commit |
+| Governance sync (`diff -q` shared vs profile SOUL.md) | PASS — identical |
+| Vault fd-register FD-140 | present in BOTH mirrors (no backfill needed) |
+
+**🆕 N4 — CONFIRMED DIRECTLY, with today's own timeline (strongest evidence yet).** The Windows Scheduled
+Task **`Hermes_Gateway_iip`** ran at **09/18/2026 10:42:03** (`LastRunTime`) and **`NextRunTime` is EMPTY**;
+State Ready, LastTaskResult 0, StartWhenAvailable True, RestartCount 999 / RestartInterval PT1M; its ONLY
+trigger is **MSFT_TaskLogonTrigger (delay PT30S, Repetition EMPTY)**. Host `LastBootUpTime` =
+**16 Sep 2026 11:24:46** → **uptime 1 d 23 h 19 m** — the machine **never went off** — yet executions.db
+shows **no gateway activity at all** between the 17 Sep 11:30 radar completion and today's 10:42:29 claim,
+and tonight's 22:42 occurrence will equally not fire. **This tick exists ONLY because a logon happened at
+~10:41 today** (30 s task delay → 10:42:03 → this job claimed 10:42:29). Founder options unchanged:
+**(A)** add a repeating trigger (07:30 daily + 15–30 min repetition) — trigger-only, no code change
+*(recommended)* · **(B)** move the 08:00/09:00 slots into the observed ~10:4x–13:1x uptime window ·
+**(C)** keep accepting late catch-up. **NOT changed** — system/cron mutation is not authorized in a review.
+
+**Cron cadence:** the **17 Sep mid-week radar `cda817d17236` COMPLETED** — the 17 Sep "CLAIMED / PENDING"
+verdict is now resolved (claimed 11:12:45 → started 11:19:44 → finished 11:30:11). Digest
+`evidence/radar/digests/2026-09-17-radar-midweek.md` committed in `b9e2c85`, board run task `t_8f0ab8d4`,
+**0 Task Idea Cards — an honest zero-result pass, not a defect** (watch note: GC=F ~$4,334 intraday = new
+cycle low below the Sep-1 correction low; WTI crossed $100 on 10 Sep, peaked $105.83 on 15 Sep, ~$102 now;
+10Y 5.006%; S&P −2.2% over the 10-day window; VIX 17.71 elevated at pull time; **FRED DFII10 real-yield
+feed still gapped — all routes empty, degradation now ~2.5 weeks → the run recommends Data Steward D2
+intervention**; LBMA vault August 2026 not yet published). **Nothing due today (Fri 18 Sep).** Next:
+**Nick-Weekly Sat 19 Sep 09:00** (`73e611584447`, last 12 Sep 10:35) · **weekly radar Mon 21 Sep 08:00** +
+**CIW Mon 21 Sep 09:00** — all three at N4 risk.
+
+**🆕 N5 (new — low severity, config observation, NOT changed):** the canonical 720 m job `1f5f03f9236d`
+still carries **`provider: deepseek` / `model: deepseek-v4-flash` (DeepSeek Direct)** while the FD #112
+frozen main lane = **OpenRouter**, and the three radar/CIW jobs were re-pinned to
+`openrouter / deepseek/deepseek-v4-flash` on 18 Aug. Same underlying model, different provider route
+(Direct was reserved as *emergency* by FD #111). It runs clean (`last_status: ok`) → an **alignment
+question, not a failure**. Founder decision required; left unchanged.
+
+**Findings carried (all re-verified unchanged):** 🟡 **F2** CP3/CP4 "Addendum" still has no standalone
+artifact (`design/qad-pivot/m5/` = 17 files, none an addendum; the F7–F10 rulings live only in the
+CP3/CP4/CP5 implementation-state docs + the FD #139 register entry) · 🟡 **F3** the 10 Sep mid-week digest +
+12 Sep Nick-Weekly AM run (`03ff15d`) exist only on `wip/pre-m53-cp3-local-docs-20260913 @ cab62fc`
+(`git branch --contains 03ff15d` → parking branch only) · 🔴 **F4** Telegram delivery failing —
+**21st** consecutive review ("Chat not found" telegram:8964964996) · 🟡 **F7** AGENTS.md checkpoint gap
+since 21 Aug (protected file, not modified) · 🟡 **N2** duplicate legacy orchestrator job `642a42f8cb2e` ·
+🟡 **N3** global cron failures (Identity Sync Watchdog, Obsidian Session Auto-Save).
+
+**⚠ Push still deferred (decision item 0):** `main` is AHEAD of `origin/main dfb642b` by **15** commits
+(8 CP5 + CIW draft + 17 Sep radar run/digest + 5 review/docs) → **16** after this tick's docs sync.
+UNPUSHED = Founder call (FD #140 brief step 17). This tick commits its own docs sync only and does **NOT**
+push.
+
+**Market — last completed EOD Thu 17 Sep 2026** (US session closed 03:00 UTC+7 today; independent yfinance
+fetch 18 Sep 10:44 UTC+7, fresh ≤7d ✅): ^GSPC **7,637.76 (+1.14% 1d / +0.61% 5d)** ·
+**MSFT 497.75 (+1.52% / +1.08%) — CIW NO TRIGGER** (52wk high 553.72 → −10.1%; −25% WATCH band 415.29 far) ·
+NVDA 219.34 (+2.54%) · AAPL 337.00 (+1.38% / +3.19%) · JNJ 270.22 (+1.10%) · GOOGL 347.33 (+1.30% / +4.43%) ·
+**FSLR 201.16 (+5.28% 1d — rebound back above $200 after the 16 Sep −5.57% §337-ITC-withdrawal drop)** ·
+**SMCI 40.35 (+9.50% 1d / +7.95% 5d)** · **SLV 58.97 (+3.37% 1d) — still below the ~$62 SILVER-CORR-001
+anchor** (SI=F 66.33, +3.18%) · ABBV 264.02 · BMY 62.84 (−7.12% 10d) · LLY 1,152.44 · VRTX 516.34 (−7.26% 10d) ·
+**INTC 108.80 (+7.67% 1d / +20.82% 10d)** · CRWD 245.70 (+17.64% 5d) · PANW 375.06 (+10.80% 5d) · AVGO 347.30 ·
+**CL=F 101.13 (−1.27% 1d) — oil holds above $100; ORG-2026-0022 lane** · GC=F 4,385.10 · ^TNX 4.95 (−1.18%) ·
+**^VIX 15.44 (−12.82% 1d / −13.45% 5d)**. Market-wide driver (Yahoo search): a Fed-driven risk-on session —
+"US Equity Indexes Rise, Big Tech Perks Up After Fed's Commitment to Controlling Inflation Sinks Treasury
+Yields". **No ±10% single-day EOD move** → no mandatory lookup; the two largest movers were checked anyway:
+SMCI +9.5% = AI-server hardware bid broadening; INTC +7.7% = rumored SK Hynix talks. Gold/silver ratio
+≈ **66.1** — inside the ~66–68 band consistent with SILVER-CORR-001. Observation only — no official
+filter/ranking/score/threshold changed.
+
+**Recommended next action:** Founder decision on **N4 option A** — add a repeating trigger to
+`Hermes_Gateway_iip` (trigger-only, no code change) so the 08:00/09:00 slots can fire; alternatives
+(B) move the slots into the observed uptime window, or (C) accept late catch-up. Open Founder items
+unchanged: **push (decision item 0)** · M5.3 independent re-audit · F2/F3/F7 · N2 retire-or-re-point ·
+N5 routing alignment.
+
+<!-- 2026-09-18 11:05 UTC+7 -->
