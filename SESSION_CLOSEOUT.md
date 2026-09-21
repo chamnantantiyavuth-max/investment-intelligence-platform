@@ -852,11 +852,11 @@ N5 routing alignment.
 
 <!-- 2026-09-18 11:05 UTC+7 -->
 
-## 21 Sep 2026 (cron review tick, 11:0x–11:3x UTC+7) — FIRST LIVE TICK IN FOUR DAYS: weekly AM run LATE + 🆕 N6 catch-up claim starvation (21 Sep radar + CIW cycles LOST)
+## 21 Sep 2026 (cron review tick, 11:04–11:12 UTC+7) — FIRST LIVE TICK IN FOUR DAYS: weekly AM run LATE + 🆕 N6 catch-up claim starvation (21 Sep radar + CIW cycles LOST)
 
 **Verdict:** No gate moved. **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN.** M6 PARKED. Production / Live Autonomous QAD / workforce / cron cutover NOT AUTHORIZED.
 
-**World reconciled (18 Sep 11:05 → 21 Sep 11:0x):** exactly **ONE** new commit — `9868889`
+**World reconciled (18 Sep 11:05 → 21 Sep 11:04):** exactly **ONE** new commit — `9868889`
 ("feat: weekly AM pipeline run AM-V0-20260921-110138 — fresh real EOD (as-of 2026-09-18) + enriched SRL", 162 lines, the AM job's own run + self-reflection log). HEAD `9868889`, **609 commits**, tree CLEAN. No new Hermes sessions (last interactive = 14 Sep CP5 `20260914_113329_8d0bc3`). Register max = **FD #140** (item 141 absent) → `fd_count` row stays #1–140.
 
 ### 1. Weekly AM run — LATE, clean, first in-book sector signal
@@ -881,7 +881,7 @@ Evidence chain (read-only, this tick):
 | 10:59:43.675 | executions.db: radar `8ba233e88015` → status **`claimed`** |
 | 10:59:44 → 11:04:38 | Nick-Weekly (AM) occupies the single serial worker |
 | 11:04:38 | Learning Loop (this tick) starts |
-| 11:35 (re-check) | **both claims still `claimed`, `started_at` NULL** — never started |
+| 11:12 (re-check) | **both claims still `claimed`, `started_at` NULL** — never started |
 
 Consequences: both jobs' **`next_run_at` advanced to 28 Sep** while **`last_run_at` stays 14 Sep** ⇒ the 21 Sep occurrence was consumed without running. Loss evidence: `evidence/radar/digests/` still ends **2026-09-17** (no 21 Sep weekly digest / cards / run task) and `docs/ciw-pilot-msft/monitoring/` still ends **2026-09-14** (no 21 Sep draft). **Contrast 14 Sep:** the same catch-up class DID execute (CIW 11:13:51, radar 11:42:39) — the difference is the ~5-minute AM run sitting ahead of the two claims. **So N4 explains the missing fire attempt; N6 explains that the catch-up itself is fragile when a long job is already queued.** Impact assessment on the freshest close: MSFT **493.78** (18 Sep) = **−10.8% from the 52-wk high 553.72**, −25% WATCH band 415.29 far ⇒ **CIW NO TRIGGER** — a cadence/monitoring gap, not (on this evidence) a missed signal.
 
@@ -949,9 +949,9 @@ Independent yfinance fetch 21 Sep 11:1x UTC+7 (system python; no US session yet 
 
 **Founder decision on N6/N4 (one call): (A)** add a repeating trigger to `Hermes_Gateway_iip` (N4, trigger-only, no code change) **and** manually re-run the two missed 21 Sep jobs (`8ba233e88015` weekly radar + `8b1cd19aba7d` CIW) to restore the weekly cadence — recommended. Alternatives: **(B)** stagger the 08:00/09:00/Saturday slots so a catch-up cannot be starved by a sibling job; **(C)** accept the lost cycle and let both resume on 28 Sep. Other open Founder items unchanged: **push (decision item 0, 18 ahead)** · M5.3 independent re-audit · F2/F3/F7 · N2 retire-or-re-point · N5 routing alignment · FD #45 §8.1 valuation-corruption sanity check (now 8 runs / 2 names).
 
-<!-- 2026-09-21 11:35 UTC+7 -->
+<!-- 2026-09-21 11:12 UTC+7 -->
 
 ---
 
 
-<!-- 2026-09-21 11:35 UTC+7 -->
+<!-- 2026-09-21 11:12 UTC+7 -->
