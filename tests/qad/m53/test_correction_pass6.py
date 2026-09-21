@@ -246,17 +246,18 @@ class TestC2StageIdBindingIntegrity:
         # SI-01 present (terminal COMPLETE chain would otherwise 5D-fail).
         store.store(inv.model_copy(
             update={"status": ServiceInvocationStatus.SUCCESS}))
-        before_rsr = len(stage_store.list_all("RSR-01"))
-        before_rr = len(store.list_all("RR-01"))
-        before_rrm_hash = store.get_canonical_hash(
-            "RRM-01", manifest.manifest_id)
-        # canonical RSR.stage_id = A; checkpoint binds B.
         rec = _rsr_fix(
             stage_store, stage_id=stage_id_a, state=COMPLETE,
             retry_count=0, invocation_id=inv.invocation_id)
         rec = rec.model_copy(
             update={"checkpoint_ref": f"cp:1.0:{stage_id_b}:{inv.invocation_id}"})
         stage_store.store(rec)
+        # Baselines AFTER the seeded fixture: execute() must not write any
+        # NEW canonical / RR / RRM record.
+        before_rsr = len(stage_store.list_all("RSR-01"))
+        before_rr = len(store.list_all("RR-01"))
+        before_rrm_hash = store.get_canonical_hash(
+            "RRM-01", manifest.manifest_id)
         calls = {"n": 0}
 
         def stage(ctx):

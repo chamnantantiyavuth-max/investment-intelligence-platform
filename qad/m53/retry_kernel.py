@@ -411,7 +411,7 @@ class RetryKernel:
             # on it, and the supplied invocation must match it (identity +
             # stable SI fields).  LEGACY_UNBOUND_EXECUTION -> FAIL CLOSED.
             bound_invocation_id = self._validate_existing_execution(
-                invocation, chain)
+                invocation, execution, chain)
         elif self._store.contains("SI-01", invocation.invocation_id):
             # FRESH logical execution: this invocation_id ALREADY exists as
             # an SI-01 record -> illegal reuse (it belongs to another logical
@@ -941,9 +941,10 @@ class RetryKernel:
     def _validate_existing_execution(
         self,
         invocation: ServiceInvocation,
+        execution: ExecutionContext,
         chain: list[ResearchStageRecord],
     ) -> str:
-        """D1-A (FD #140 §5) — preconditions for an EXISTING execution.
+        """D1-A (FD #140 §5) + CP6 C2 — preconditions for an EXISTING execution.
 
         A. checkpoint invocation binding exists
         B. all RSR chain records agree on the invocation binding
@@ -951,11 +952,21 @@ class RetryKernel:
         D. authoritative SI-01 exists when the execution state requires the
            initial outcome to have been persisted
         E. SI-01 stable identity fields agree with the supplied invocation
+        F. (CP6 C2) checkpoint case_version == authoritative execution
+           case_version — for EVERY record
+        G. (CP6 C2) checkpoint stage_id == canonical RSR.stage_id — for
+           EVERY record (the checkpoint's stage binding must not diverge
+           from the record's canonical stage identity)
+        H. (CP6 C2) one logical execution chain has EXACTLY ONE stable
+           stage_id — a chain containing records with different stage_ids
+           is an ambiguous execution authority and FAILS CLOSED (no
+           arbitrary ``last`` / sort winner is ever selected)
 
         Returns the authoritative bound invocation_id; any conflict FAILS
         CLOSED (IntegrityConflict).
         """
         binding_ids: list[str] = []
+        chain_stage_ids: set[str] = set()
         for rec in chain:
             binding = _cp_decode(rec.checkpoint_ref)
             if binding is None or binding.invocation_id is None:
@@ -968,13 +979,51 @@ class RetryKernel:
                     schema_id="RSR-01",
                     record_id=rec.stage_id,
                 )
+            if binding.case_version != execution.case_version:
+                # CP6 C2 (audit §6/§7C): the checkpoint-encoded case_version
+                # must agree with the authoritative execution case_version.
+                raise IntegrityConflict(
+                    f"RSR-01/{rec.stage_id}: checkpoint case_version "
+                    f"{binding.case_version!r} != authoritative execution "
+                    f"case_version {execution.case_version!r} — the "
+                    f"checkpoint stage binding does not resolve within this "
+                    f"logical execution (CP6 C2, fail closed)",
+                    schema_id="RSR-01",
+                    record_id=rec.stage_id,
+                )
+            if binding.stage_id != rec.stage_id:
+                # CP6 C2 (audit §6/§7A): the checkpoint-encoded stage_id must
+                # equal the CANONICAL RSR.stage_id of the record carrying it.
+                raise IntegrityConflict(
+                    f"RSR-01/{rec.stage_id}: checkpoint stage_id "
+                    f"{binding.stage_id!r} != canonical RSR.stage_id "
+                    f"{rec.stage_id!r} — checkpoint/schema stage binding "
+                    f"divergence (CP6 C2, fail closed)",
+                    schema_id="RSR-01",
+                    record_id=rec.stage_id,
+                )
             binding_ids.append(binding.invocation_id)
+            chain_stage_ids.add(rec.stage_id)
         if len(set(binding_ids)) != 1:
             raise IntegrityConflict(
                 f"RSR-01 chain for {invocation.case_id}: records disagree on "
                 f"the invocation binding {sorted(set(binding_ids))} — all "
                 f"versions of one execution must carry the SAME invocation "
                 f"binding (D1-A, FD #140 §5B; fail closed)",
+                schema_id="RSR-01",
+            )
+        if len(chain_stage_ids) != 1:
+            # CP6 C2 (audit §6/§7B): one logical execution
+            # (case_id + case_version + stage_name) has exactly ONE stable
+            # stage_id.  Multiple stage_ids make the execution authority
+            # ambiguous — FAIL CLOSED, never pick a winner.
+            raise IntegrityConflict(
+                f"RSR-01 chain for {invocation.case_id} / "
+                f"{execution.case_version} / {_enum_str(execution.stage_name)}: "
+                f"records carry {len(chain_stage_ids)} DIFFERENT stage_ids "
+                f"{sorted(chain_stage_ids)} — one logical execution must "
+                f"have exactly ONE stable stage_id; the execution authority "
+                f"is ambiguous (CP6 C2, fail closed)",
                 schema_id="RSR-01",
             )
         bound_invocation_id = binding_ids[0]
