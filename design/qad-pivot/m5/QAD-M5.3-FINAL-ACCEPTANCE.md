@@ -118,7 +118,8 @@ described as fixed and are not deleted.
 QAD M5.3 — FOUNDER ACCEPTED / CLOSED / FROZEN
 PRODUCTION RELEASE — NOT AUTHORIZED
 LIVE AUTONOMOUS QAD — NOT AUTHORIZED
-M6 / M7 — NOT STARTED (M6 branch remains parked)
+M6 implementation — NOT STARTED; M6 planning/clarification branch remains PARKED at `docs/m6-gemini-notebook-dr @ a37e92d`
+M7 — NOT STARTED
 WORKFORCE / CRON CUTOVER — NOT AUTHORIZED
 ```
 
