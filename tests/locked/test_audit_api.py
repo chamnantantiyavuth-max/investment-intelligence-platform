@@ -69,10 +69,11 @@ def test_decisions_register_contiguous_and_parsed():
         assert isinstance(d["preview"], str) and d["preview"].strip()
     # Latest decisions carry a dated stamp (FD #132, 19 Aug 2026).
     # Authority-date synchronization (CP4-7, 13 Sep 2026 → CP5, 14 Sep
-    # 2026): the latest registered Founder Decision is FD #140 dated 14
-    # Sep 2026 (mechanical sync, per FD #140 register update).
+    # 2026 → M5.3 FINAL CLOSEOUT, 21 Sep 2026): the latest registered
+    # Founder Decision is FD #141 dated 21 Sep 2026 (mechanical sync, per
+    # FD #141 register update).
     latest = decisions[-1]
-    assert latest["date"] == "14 Sep 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "21 Sep 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():

@@ -5,6 +5,16 @@
 > **Governing baseline:** M5.2 = FOUNDER ACCEPTED / CLOSED / FROZEN · Erratum-002 =
 > FOUNDER ACCEPTED / CLOSED / FROZEN · accepted LOCAL regression = 640/640
 >
+> **✅ FINAL STATUS (21 Sep 2026, FD #141):** **QAD M5.3 — FOUNDER ACCEPTED /
+> CLOSED / FROZEN** — Founder independent re-audit of canonical
+> `origin/main @ 378d06f` returned PASS (FD #141). The final accepted
+> semantics, correction lineage, CP6 C1/C2 acceptance record, and retained
+> pre-production blockers are recorded in
+> `design/qad-pivot/m5/QAD-M5.3-FINAL-ACCEPTANCE.md`. M5.3 is a BOUNDED
+> REFERENCE IMPLEMENTATION — production readiness NOT declared. Sections
+> A–E below remain HISTORICAL (original 8 Sep implementation) and are not
+> rewritten; Section F remains the authoritative corrected contract.
+>
 > **⚠️ SUPERSEDED IN PART BY FD #138 (9 Sep 2026) — M5.3 CORRECTION ROUND.**
 > The independent Founder audit found contract drift in the ORIGINAL 8 Sep
 > implementation (S7/S8), and FD #138 issued the correction GO.  Sections A–E
