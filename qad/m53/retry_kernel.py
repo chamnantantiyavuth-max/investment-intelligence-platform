@@ -678,6 +678,13 @@ class RetryKernel:
                 # Budget exhausted -> terminal FAILED (ESCALATED never used).
                 # CP3 F4: retry exhaustion -> exactly one RFR-01, committed
                 # atomically with the terminal RSR FAILED (same store).
+                # CP6 C1 (Founder re-audit): establish the terminal retry
+                # count in the execution state BEFORE constructing the RFR —
+                # Python evaluates the _ensure_rfr() argument before
+                # _write_rsr() would mutate state.retry_count, so the RFR
+                # must see attempt N explicitly.  Required invariant:
+                # RFR.retry_count == RSR.retry_count == N.
+                state.retry_count = attempt_number
                 self._write_rsr(
                     execution, state, ResearchStageRecordStage_state.FAILED,
                     error=str(exc), attempt_number=attempt_number,
@@ -698,6 +705,12 @@ class RetryKernel:
                 )
             except Exception as exc:  # noqa: BLE001 — deterministic/unknown
                 reason = f"{type(exc).__name__}: {exc}"
+                # CP6 C1 (Founder re-audit): same ordering requirement as the
+                # budget-exhaustion branch — the terminal retry count N must
+                # be established in the execution state BEFORE the RFR is
+                # constructed, so the atomic RSR FAILED + RFR batch records
+                # RFR.retry_count == RSR.retry_count == N.
+                state.retry_count = attempt_number
                 self._write_rsr(
                     execution, state, ResearchStageRecordStage_state.FAILED,
                     error=reason, attempt_number=attempt_number,
