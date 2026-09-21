@@ -1,3 +1,31 @@
+# Session — 2026-09-21 (interactive: M5.3 CORRECTION PASS 6 — Founder re-audit of CP5 FAIL → C1/C2 bounded correction)
+
+## M5.3 CORRECTION PASS 6 IMPLEMENTED — 21 Sep 2026
+
+**Session:** Founder independent re-audit of `origin/main @ b4d2dad` returned **FAIL / BOUNDED CORRECTION REQUIRED** with two implementation defects. CP6 corrected exactly that scope; no new Founder Decision was needed and none was created.
+
+**State hygiene (audit §0/§1) — done FIRST, before any code:**
+- Root cause of the moving HEAD identified: 5 Hermes cron jobs with `workdir` = repo (Daily Learning Loop `1f5f03f9236d`, Weekly Pipeline `73e611584447`, CIW monitor `8b1cd19aba7d`, Weekly Radar `8ba233e88015`, Mid-Week Radar `cda817d17236`) — ALL PAUSED (21 Sep 11:53:16), unrelated processes untouched. HEAD stability verified across two checks 20 s apart.
+- Deferred ops backlog (13 commits) parked at `wip/deferred-ops-backlog-20260921` @ `8546fd4` and PUSHED to origin (NOT merged). Local `main` reset to `origin/main` `b4d2dad`, tree CLEAN. Monitoring drafts untouched. No `git clean`. M6 branch untouched.
+- **Process-deviation recorded (audit §2):** `STOP / FOUNDER-DECISION gates must never be auto-resolved after a timeout. A clarification timeout is NOT authorization.` — the 21 Sep push-handoff clarification timed out and Hermes self-selected Option A; the push itself was SAFE (fast-forward, exact CP5 chain) and is NOT rolled back; deviation documented in the CP6 state doc §2.3. No new FD.
+
+**CP6 fixes (qad/m53/retry_kernel.py, commits):**
+1. `60e9446` — CP6 RED diagnostics (test_correction_pass6.py): **5 RED / 3 guard-GREEN** vs untouched b4d2dad (C1-A/B RFR retry_count off-by-one confirmed; C2-A/B stage-id mismatch + multi-stage_id DID-NOT-RAISE confirmed; C2-C validator-signature RED; C1-C guards + malformed-checkpoint guard GREEN).
+2. `bfffd96` — **C1**: terminal retry count N established in execution state BEFORE RFR construction at both retry-terminal sites → `RFR.retry_count == RSR.retry_count == N`.
+3. `bb425d8` — **C2**: `_validate_existing_execution` now takes the authoritative `ExecutionContext`; per-record checkpoint case_version + stage_id equality; `len(unique stage_id) == 1` fail-closed (no arbitrary last-winner).
+
+**Verification (real runs):** CP6 8/8, m53 all 116/116, ids 16/16, persistence 292/292, qad complete 536/536, locked 162/162, FULL pytest **772/772** (764 CP5 baseline + 8), M4A 173/173, M4B 93/93, PIT 23/23, authority-isolation 10/10, evidence admission+atomicity 67/67, gate-check PASS (tag on final commit) / isolation-scan 0 violations. D2-A NOT reopened; F4 cardinality NOT reopened (content-only correction).
+
+**State:** M5.3 = CORRECTION PASS 6 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN. F7–F10 remain under `POST_M5.3_PRE_PRODUCTION_S8_INTEGRATION_GATE`; generic APPEND_ONLY_STATE under `POST_M5.3_PRE_PRODUCTION_PERSISTENCE_CONFORMANCE_BLOCKER`; M6 branch parked; deferred ops backlog parked at `wip/deferred-ops-backlog-20260921` (origin, NOT merged). CP6 chain AHEAD of origin/main `b4d2dad`, UNPUSHED (push = Founder call per audit §14 — fast-forward only; if remote advances, STOP and WAIT for Founder input; a timeout is NOT authorization).
+
+**Recommended next action:** Founder schedules the NEW independent re-audit of the exact CP6 chain (audit §14 push rule applies on approval). Alternatives: (B) Founder reviews the diff first, then authorizes push + audit; (C) hold all until after the re-audit.
+
+> **Scope:** Interactive session. Repo-writing cron jobs PAUSED during CP6 (resume = separate Founder call). No self-audit, no self-close, no M6/M7 work.
+
+<!-- 2026-09-21 12:10 UTC+7 -->
+
+---
+
 # Session — 2026-09-13 (cron review tick, 10:47 UTC+7)
 
 ## M5.3 CORRECTION PASS 3 IMPLEMENTED — 13 Sep 2026 (afternoon session)
