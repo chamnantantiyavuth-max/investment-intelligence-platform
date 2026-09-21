@@ -1,3 +1,24 @@
+# Session — 2026-09-21 (interactive: POST-M5.3 ops normalization — O1 artifact recovery + O3 design gate)
+
+## POST-M5.3 OPERATIONAL NORMALIZATION — O1 DONE + O3 DESIGN DELIVERED (21 Sep 2026)
+
+**O1 — acknowledged.** Founder accepted the read-only backlog triage (A=4/B=3/C=6/D=0) and authorized selective artifact recovery:
+- **O1-A `afba88c`** — 6 deferred PIT artifacts restored byte-identical (hash-verified) from parking commits: AM SRL 12 Sep (`03ff15d`) + 21 Sep (`9868889`), radar mid-week 17 Sep (`b9e2c85`) + weekly 21 Sep (`8546fd4`), CIW drafts 14 Sep (`3bac2cf`) + **21 Sep (untracked late cron artifact — VALIDATED vs format/precedent: pure observational refresh, NO TRIGGER, no state mutation → ADMITTED)**.
+- **O1-B `1ba9719`** — `operational/cron-operations-findings-20260914-21.md`: reconstructed N1..N6 + F8/F9 durable findings from bucket-B commits, with **N6 corrected** (21 Sep Radar/CIW cycles DELAYED/STARVED, NOT permanently lost), OBSERVATION/HYPOTHESIS/RECOMMENDATION separated, no stale M5.3 wording, open decisions recorded only.
+- Proven: AM lineage 05→12→21 Sep resolves; radar 17→21 Sep; CIW 14→21 Sep; zero Bucket-C hunks on main; FD #141/M5.3 unchanged; gate-check + isolation-scan PASS; both pushed fast-forward; five crons still paused; duplicate `642a42f8cb2e` untouched; parking + M6 unchanged.
+
+**O3 — design gate delivered (read-only, awaiting ruling).** Full C+ architecture package: ops/automation branch + second worktree model, main↔ops Direction invariant (main→ops only, conflicts FAIL CLOSED), path allowlist (radar digests / AM SRLs / CIW drafts / ops-reports) + absolute denylist (state docs, governance, qad/**, tests/**…), durability (commit→push ops→verify SHA, no main fallback), P1 batch promotion w/ manifest schema (P2 design-only), governed maintenance lock, gateway trigger recommendation (C1: single 07:30 scheduled start, validate repetition in R0), starvation recommendation (D1+D3+D2, no D4 yet), Learning Loop → observer/manifest-generator (never auto-writes state/main) + broken Telegram target flagged, rollout R0→R5 (Learning Loop last), clean-cycle criteria (2 cycles), rollback plan, file inventory. **Decision matrix A–G returned for Founder ruling. NO allocation yet.**
+
+**State:** M5.3 permanently `FOUNDER ACCEPTED / CLOSED / FROZEN` · main `1ba9719` · five repo-writing crons PAUSED · M6 parked.
+
+**Recommended next action:** Founder rules on O3 decisions A–G (one FD at that time), authorizing Phase O3 implementation (R0) + R1 CIW resume on the new architecture; M6 unlock afterward requires 2 clean live cycles. Alternatives: (B) rule in stages (A-C first, D-G later); (C) re-scope C+ to per-job branches instead of one ops branch.
+
+> **Scope:** O1 = Founder-authorized artifact recovery (executed + pushed). O3 = READ-ONLY design package (no implementation). No FD created. No cron resumed.
+
+<!-- 2026-09-21 14:45 UTC+7 -->
+
+---
+
 # Session — 2026-09-21 (interactive: M5.3 FINAL CLOSEOUT — Founder independent re-audit PASS → CLOSED / FROZEN)
 
 ## QAD M5.3 — FOUNDER ACCEPTED / CLOSED / FROZEN — 21 Sep 2026
