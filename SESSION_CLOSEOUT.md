@@ -851,3 +851,107 @@ unchanged: **push (decision item 0)** · M5.3 independent re-audit · F2/F3/F7 �
 N5 routing alignment.
 
 <!-- 2026-09-18 11:05 UTC+7 -->
+
+## 21 Sep 2026 (cron review tick, 11:0x–11:3x UTC+7) — FIRST LIVE TICK IN FOUR DAYS: weekly AM run LATE + 🆕 N6 catch-up claim starvation (21 Sep radar + CIW cycles LOST)
+
+**Verdict:** No gate moved. **M5.3 = CORRECTION PASS 5 IMPLEMENTED / READY FOR NEW FOUNDER INDEPENDENT RE-AUDIT — NOT CLOSED / NOT FROZEN.** M6 PARKED. Production / Live Autonomous QAD / workforce / cron cutover NOT AUTHORIZED.
+
+**World reconciled (18 Sep 11:05 → 21 Sep 11:0x):** exactly **ONE** new commit — `9868889`
+("feat: weekly AM pipeline run AM-V0-20260921-110138 — fresh real EOD (as-of 2026-09-18) + enriched SRL", 162 lines, the AM job's own run + self-reflection log). HEAD `9868889`, **609 commits**, tree CLEAN. No new Hermes sessions (last interactive = 14 Sep CP5 `20260914_113329_8d0bc3`). Register max = **FD #140** (item 141 absent) → `fd_count` row stays #1–140.
+
+### 1. Weekly AM run — LATE, clean, first in-book sector signal
+
+Job `73e611584447` (Nick-Weekly, `0 9 * * 6`) **produced no fire attempt at the Sat 19 Sep 09:00 slot** (N4 class) and ran **Mon 21 Sep 11:01** (claim 10:59:44 → complete 11:04:38) once the gateway came up. **Data freshness unaffected:** as-of **Fri 18 Sep 2026 EOD** = last completed US session, 3 days old, ≤7 d fresh ✅.
+
+- 9/9 real-EOD coverage, single uniform as-of 2026-09-18, 0 NaN/Inf, `messages = []`, **Q-Conditions 10/10 `Qualified` + 0 exit signals (7th consecutive clean run)**, 3rd consecutive clean fetch (no NaN incident).
+- **3rd consecutive positive median: +1.82%** (mean +3.56%; top-bottom spread widened 13.3 → **21.2 pts**); breadth 6/9 up.
+- **First in-book sector signal:** TH-030 Cybersecurity pair **CRWD +15.0% / PANW +10.0%** (pair median **+12.5%**) on an AI-safety-fears security bid — while the *same* AI-fear narrative hit AI hardware (SMCI −2.5%, NVDA +1.8%, AVGO −1.2%).
+- **🔴 NEW data-quality instance:** PANW trailing-EPS field collapsed **1.15 → 0.40 with NO print in the window** (earnings calendar queried for all 9 names) ⇒ P/E **908.95**. Confirms the corruption is a **class**, not one ticker: record now **8 runs / 2 names** (CRWD + PANW). CRWD P/E 4th consecutive absurd week (4,753.0). **FD #45 §8.1 sanity check remains Founder-gated — flag only, no code change.**
+- Resolutions: SMCI's two-week eps rise **CONFIRMED DRIFT** (3.50 → 3.26, below even the 5 Sep 3.41); 12 Sep retrace-hold test SPLIT (MDT held 4.06 / AMD kept falling 4.03 → 3.92); NVDA (4th wk, 7.90 → 7.91) and AVGO (3rd wk, 7.83) refreshes durable; **AMD now the book's most-extended name (+57.9% vs the 200-day, was +49.5%; P/E 142.81)**; FSLR worst week −6.3% → **$195.96, first sub-$200 close, below both MAs**.
+
+### 2. 🆕 N6 — NEW failure mode: catch-up CLAIM STARVATION (the 21 Sep radar + CIW cycles are LOST)
+
+Evidence chain (read-only, this tick):
+
+| Time (UTC+7) | Event |
+|---|---|
+| 21 Sep 10:59:18 | `Hermes_Gateway_iip` fires (logon) — the only way the daemon starts (N4) |
+| 10:59:43 | `agent.log`: **three** missed jobs detected — Learning Loop (18 Sep 22:46), **`IIP Weekly Radar Scan (FD #78)` (21 Sep 08:00) “Running now; next run provisionally set to: 2026-09-28T08:00”**, CIW (21 Sep 09:00) |
+| 10:59:43.487 | executions.db: CIW `8b1cd19aba7d` → status **`claimed`** |
+| 10:59:43.675 | executions.db: radar `8ba233e88015` → status **`claimed`** |
+| 10:59:44 → 11:04:38 | Nick-Weekly (AM) occupies the single serial worker |
+| 11:04:38 | Learning Loop (this tick) starts |
+| 11:35 (re-check) | **both claims still `claimed`, `started_at` NULL** — never started |
+
+Consequences: both jobs' **`next_run_at` advanced to 28 Sep** while **`last_run_at` stays 14 Sep** ⇒ the 21 Sep occurrence was consumed without running. Loss evidence: `evidence/radar/digests/` still ends **2026-09-17** (no 21 Sep weekly digest / cards / run task) and `docs/ciw-pilot-msft/monitoring/` still ends **2026-09-14** (no 21 Sep draft). **Contrast 14 Sep:** the same catch-up class DID execute (CIW 11:13:51, radar 11:42:39) — the difference is the ~5-minute AM run sitting ahead of the two claims. **So N4 explains the missing fire attempt; N6 explains that the catch-up itself is fragile when a long job is already queued.** Impact assessment on the freshest close: MSFT **493.78** (18 Sep) = **−10.8% from the 52-wk high 553.72**, −25% WATCH band 415.29 far ⇒ **CIW NO TRIGGER** — a cadence/monitoring gap, not (on this evidence) a missed signal.
+
+**Nothing was re-run, re-pointed or edited** — cron mutation is not authorized in a scheduled review.
+
+### 3. N4 re-confirmed (3rd independent confirmation)
+
+`Hermes_Gateway_iip`: **LastRunTime 9/21/2026 10:59:18**, **NextRunTime EMPTY**, State Ready, LastTaskResult 0, schedule type **At logon time** only. Host `System Boot Time` = **16 Sep 2026 11:24:46** (≈**4 d 23 h 40 m** uptime) ⇒ the machine never went off, yet executions.db shows **zero gateway activity between 18 Sep 10:42 and today's 10:59:43 claims** — every tick in this window exists only because a logon happened. `catch_up_occurrences` = **51** (was 48 on 18 Sep).
+
+### 4. Verification performed (real, this tick)
+
+| Check | Result |
+|---|---|
+| Full pytest (hermes-agent venv) | **764/764 PASS (6.47s)** at HEAD `9868889` — independent re-run, baseline reproduced |
+| Test churn | `git diff 33df7d3..HEAD --stat -- tests/` **EMPTY** |
+| Scope check | **PASS** — since `dfb642b`: `qad/` + `tests/` = the authorized CP5 chain; after = state/docs + CIW draft + 17 Sep radar digest/commit + 21 Sep AM SRL only |
+| Push state | `git rev-list --count origin/main..HEAD` = **17** (origin/main `dfb642b`) → 18 after this sync; **DEFERRED** (Founder call) |
+| Governance sync | `diff -q` shared vs profile SOUL → identical; 3 gates present ✅ |
+| Vault FD register | **FD-140 present in BOTH mirrors** (no backfill) |
+| M6 branch | `docs/m6-gemini-notebook-dr @ a37e92d` — parked, untouched |
+| FD registration | register max **FD #140**; no new FD this tick (a review must not invent one) |
+
+### 5. Findings carried (all re-verified unchanged)
+
+- 🔴 **F4** — canonical job `1f5f03f9236d` delivery still failing: `last_delivery_error` = **"Chat not found" telegram:8964964996**, log line `has deliver=origin but no origin; falling back to telegram home channel` → **22nd consecutive failing review**. This report is only readable from `profiles/iip/cron/output/`.
+- 🟡 **F2** — CP3/CP4 "Addendum" (F7–F10 + reclassifications) still has no standalone artifact.
+- 🟡 **F3** — 10 Sep mid-week digest + 12 Sep Nick-Weekly run (`03ff15d`) exist only on parking branch `wip/pre-m53-cp3-local-docs-20260913 @ cab62fc` (today's SRL independently re-confirms: main's SRL chain jumps 2026-09-05 → 2026-09-21).
+- 🟡 **F7** — AGENTS.md checkpoint gap since 21 Aug (FD #131–140 unrecorded; PROTECTED file — not modified).
+- 🟡 **N2** — duplicate legacy orchestrator job `642a42f8cb2e` (`0 19 * * *`, `deepseek-v4-pro`) — retire-or-re-point still open.
+- 🟡 **N3** — global cron failures **now 6 days stalled**: default profile `06720b5a8470` Identity Sync Watchdog (`exit 127`, malformed script path) + `9d1e5d8a2d7a` Obsidian Session Auto-Save (provider overloaded); both last marked 15 Sep 15:44–15:45 with `next_run_at` stuck 15 Sep 16:44/16:45.
+- 🟡 **N5** — unchanged: this job still runs `deepseek` **Direct** vs the FD #112 OpenRouter main lane (runs clean — alignment question, not a failure). Cron mutation not authorized → left unchanged.
+
+### 6. Market snapshot (Mon 21 Sep 2026 — last completed EOD Fri 18 Sep, 3 d old, ≤7 d fresh)
+
+Independent yfinance fetch 21 Sep 11:1x UTC+7 (system python; no US session yet today — Mon opens 20:30 UTC+7).
+
+| Ticker | Close (18 Sep) | 1d | 5d | 10d |
+|---|---|---|---|---|
+| ^GSPC | 7,650.50 | +0.17% | −0.08% | −1.25% |
+| **MSFT** | **493.78** | −0.80% | −0.37% | −3.20% (**CIW NO TRIGGER**) |
+| NVDA | 222.27 | +1.34% | +1.82% | −2.71% |
+| AAPL | 336.13 | −0.26% | +1.16% | +2.41% |
+| JNJ | 269.99 | −0.09% | +1.66% | −3.03% |
+| GOOGL | 349.54 | +0.64% | +3.26% | +2.06% |
+| FSLR | 195.96 | −2.59% | −6.25% | −5.53% |
+| SMCI | 39.09 | −3.12% | −2.52% | +3.22% |
+| SLV | 59.93 | +1.63% | +3.11% | −1.02% (below the ~$62 anchor) |
+| ABBV / BMY / LLY / VRTX | 263.96 / 63.06 / 1,152.93 / 508.34 | −0.02% / +0.35% / +0.04% / −1.55% | +2.66% / −0.91% / +3.34% / −1.38% | +1.44% / −7.39% / −0.58% / −8.89% |
+| INTC | 108.60 | −0.18% | +5.50% | **+18.47%** |
+| CRWD | 237.65 | −3.28% | **+14.95%** | +10.55% |
+| PANW | 363.58 | −3.06% | **+9.96%** | +9.53% |
+| AVGO | 357.61 | +2.97% | −1.21% | +0.13% |
+| **AMD** | **559.82** | +2.70% | **+8.46%** | **+22.72%** (most extended: +57.9% vs the 200-day) |
+| MDT | 92.13 | −0.69% | +1.29% | −1.04% |
+| GC=F / SI=F / **CL=F** | 4,424.90 / 66.56 / **100.30** | +0.57% / +1.66% / −1.58% | +0.36% / +3.10% / +0.25% | — |
+| ^TNX / ^VIX | 5.00 / 14.81 | +1.03% / −4.08% | +0.46% / −6.50% | +4.96% / +1.93% |
+
+**No ±10% single-day EOD move** → no mandatory news lookup (largest 1-day movers were all sub-3%: AVGO +2.97%, AMD +2.70%). Gold/silver ratio ≈ **66.5** (4,424.90 / 66.56) — inside the ~66–68 band consistent with SILVER-CORR-001. **Observation only — no official filter/ranking/score/threshold changed.** Oil **CL=F 100.30** holds above $100 (ORG-2026-0022 lane). The week's in-book action (CRWD +15.0% / PANW +10.0% security bid vs SMCI/NVDA/AVGO AI-hardware softness) is already fully captured in the AM SRL of this same tick.
+
+### 7. State artifacts synced by this tick
+
+`PROJECT_STATE.md` (21 Sep narrative + footer comment, Python-tests row, Git-push-state row, **two** Session rows — 21 Sep **+ a reconstructed 18 Sep row**, whose absence was found this tick) · `SESSION_CLOSEOUT.md` (this entry) · `_Hermes-Memory/.../CURRENT-STATE.md` (MEM-IIP-097) · `_Hermes-Memory/.../Sessions/2026-09-21-cron-review-session-log.md` (new). **Docs-only commit; NOT pushed** (18 ahead of `origin/main dfb642b` — publishing would carry the Founder-reserved CP5 chain).
+
+### Recommended next action
+
+**Founder decision on N6/N4 (one call): (A)** add a repeating trigger to `Hermes_Gateway_iip` (N4, trigger-only, no code change) **and** manually re-run the two missed 21 Sep jobs (`8ba233e88015` weekly radar + `8b1cd19aba7d` CIW) to restore the weekly cadence — recommended. Alternatives: **(B)** stagger the 08:00/09:00/Saturday slots so a catch-up cannot be starved by a sibling job; **(C)** accept the lost cycle and let both resume on 28 Sep. Other open Founder items unchanged: **push (decision item 0, 18 ahead)** · M5.3 independent re-audit · F2/F3/F7 · N2 retire-or-re-point · N5 routing alignment · FD #45 §8.1 valuation-corruption sanity check (now 8 runs / 2 names).
+
+<!-- 2026-09-21 11:35 UTC+7 -->
+
+---
+
+
+<!-- 2026-09-21 11:35 UTC+7 -->
