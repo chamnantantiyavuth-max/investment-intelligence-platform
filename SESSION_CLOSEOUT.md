@@ -1,3 +1,31 @@
+# Session — 2026-09-23 (interactive: POST-M5.3 O3 — FINAL FOUNDER RULING A–G + R0 IMPLEMENTATION — COMPLETE)
+
+## POST-M5.3 O3 R0 IMPLEMENTED — 23 Sep 2026 (FD #142)
+
+**Session:** O3.1 capability/compatibility probe (read-only, installed Hermes v0.21.3/@5470f260) ACCEPTED by Founder → Final Ruling A–G issued → **R0 implemented end-to-end in this session**. M5.3 remains permanently FOUNDER ACCEPTED / CLOSED / FROZEN (FD #141); C+ isolation does not modify M5.3 semantics. M6 remains PARKED until clean-cycle gate G.
+
+- **A — A1 executed:** duplicate legacy cron `642a42f8cb2e` (antigravity-orchestrator profile) **PAUSED + PRESERVED** via `hermes --profile antigravity-orchestrator cron pause 642a42f8cb2e` (supported CLI; definition, schedule, delivery and execution/incident history retained; no delete, no re-point).
+- **B — C+ bootstrapped:** branch `ops/automation` created @ origin/main + pushed; separate automation worktree `...-investment-intelligence-platform-ops` (clean, branch `ops/automation`). Hard invariant: background cron NEVER mutates governed main.
+- **C — C0 honored:** NO Windows Task Scheduler mutation (no 07:30 trigger / S4U / WakeToRun / credential change; Startup VBS + At-logon task untouched). Punctuality = separately observable;
+- **D — D-0 honored:** no Hermes scheduler patch, no `hermes update`; `cron.max_parallel_jobs = 3` set via supported config surface + verified (`hermes config get` → 3; env override unset).
+- **E — P1 tooling:** deterministic promotion-manifest generator + TOCTOU promotion helper; P2 NOT authorized.
+- **F — Learning Loop = OBSERVER/RECONCILER ONLY:** prompt rewritten with zero-write contract; delivery changed to `local` via `hermes cron edit` (stale telegram target removed from active path).
+- **G — clean-cycle gate armed:** first two artifact classes RESUMED (`cda817d17236` Thu 08:00, `73e611584447` Sat 09:00); Weekly Radar + CIW + Learning Loop remain PAUSED; main SHA may not change during the cycles.
+
+**Deliverables (commits pushed fast-forward `1ba9719→694b918→3a3c3ac→524a4b0→(closeout)`):** FD #142 governance + locked audit-register date sync (21→23 Sep); `scripts/ops/` fail-closed tooling (ops_config, ops_git, g0_check, sync_main_to_ops, validate_delta, commit_push_ops, generate_promotion_manifest, promote_batch, README) + `docs/ops/C-PLUS-RUNBOOK.md`; ops-state lives outside the repo (`<HERMES_HOME>/ops-state/ops-state.json`).
+
+**Verification (real evidence):** ops tests **23/23**; FULL pytest **795/795** (38.4s); real G0 = case A; main→ops sync fast-forward → `524a4b0` (OPS_SYNC_BASE_SHA captured); LIVE canary: deterministic manifest `ops/manifests/p1-20260923-db4e4ae-8ba233.json` (real digest `2026-08-24`, sha256 mechanical), promotion onto temp branch `wip/canary-promotion-r0` = linear single-parent commit, blob-level hash re-verified, branch + manifest cleaned up. First canary attempt correctly FAIL CLOSED (empty diff — artifact already in main → refused to fabricate an empty commit). Binary safety: deny-listed governance/contract trees can never be staged; `git add -A` never used.
+
+**State:** `main == origin/main` (R0 closeout) · `ops/automation` @ R0 closeout sha · 5 iip cron jobs: 2 ENABLED (`cda817d17236`, `73e611584447`), 3 PAUSED (`8ba233e88015`, `8b1cd19aba7d`, `1f5f03f9236d`) · ORG duplicate PAUSED · gateway untouched (running).
+
+**Recommended next action:** observe the two clean scheduled artifact cycles (Thu 24 Sep 08:00 Mid-Week Radar `cda817d17236`; Sat 26 Sep 09:00 Nick-Weekly `73e611584447`) and verify each against the runbook sequence (G0 exit 0 → sync ff → validate exit 0 → commit/push remote-verified → main SHA unchanged → worktree clean). Then resume Weekly Radar `8ba233e88015` + CIW `8b1cd19aba7d`, Learning Loop `1f5f03f9236d` LAST. After 2 clean artifact cycles: STOP and return the deterministic P1 promotion manifest for Founder approval. Alternatives: (B) resume all artifact jobs at once (deviates from §6 order); (C) hold the two resumed jobs and keep observing one more day.
+
+> **Scope:** R0 operational normalization per FD #142. No M5.3 change; no Hermes patch; no gateway mutation; no promotion to main; no M6 work.
+
+<!-- 2026-09-23 16:40 UTC+7 -->
+
+---
+
 # Session — 2026-09-21 (interactive: M5.3 FINAL CLOSEOUT — Founder independent re-audit PASS → CLOSED / FROZEN)
 
 ## QAD M5.3 — FOUNDER ACCEPTED / CLOSED / FROZEN — 21 Sep 2026

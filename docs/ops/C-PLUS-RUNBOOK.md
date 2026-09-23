@@ -104,9 +104,19 @@ on ops; no promotion; no artifact loss; state remains auditable.
 
 - Ops tooling: `python -m pytest tests/ops/test_ops_tooling.py -q --basetemp <scratch>`
   (23 tests; temp git repos only — never the real worktree/remote).
-- Full suite: `python -m pytest` (must stay green; no M5.3 semantic changes).
+- Full suite: `python -m pytest` (must stay green; no M5.3 semantic changes). R0 gate: 795 passed.
 - Pre-resume dry/canary: see SESSION_CLOSEOUT.md R0 record (G0 states, allowlist
   fixture, denylist refusal, push-failure preserve, manifest freeze, TOCTOU HOLD,
   exact-content promotion on a TEMPORARY canary branch — not governed main).
 
-<!-- 2026-09-23 15:00 UTC+7 -->
+## 10. P1 hash semantics (Windows CRLF note)
+
+- Manifest `sha256` is computed from the **git blob** (`git show <commit>:<path>`),
+  NOT from the working-tree file. On Windows `core.autocrlf`/`.gitattributes` can
+  convert LF→CRLF on checkout, so the on-disk bytes may differ from the blob — that
+  is expected and irrelevant to promotion integrity.
+- Promotion transfers the exact blob bytes and re-verifies post-commit hashes via
+  `git show HEAD:<path>`; a mismatch (altered artifact) fails closed. Blob-level
+  identity is the invariant; never compare disk-encoded bytes for verification.
+
+<!-- 2026-09-23 16:30 UTC+7 -->
