@@ -53,7 +53,7 @@ def write(cwd, rel, content="body"):
 
 @pytest.fixture
 def fx(tmp_path, monkeypatch):
-    monkeypatch.setenv("OPS_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("OPS_STATE_DIR", str(tmp_path / "state"))   # per-test state isolation
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     Path(tmp_path / "home").mkdir(parents=True, exist_ok=True)
     origin = tmp_path / "origin.git"
@@ -678,9 +678,8 @@ def test_real_p1_advances_last_promoted_and_removes_residue(fx):
     (R0.1 §13/§14; R0.2 §3 into_primary MUST imply do_push — no local-only success)."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, "evidence/radar/digests/2026-09-23-radar-digest.md", base)
-    m = _manifest_for(fx, WEEKLY, head, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))   # R0.3 §2/§3: APPROVED + digest receipt
     mp = _write_manifest(fx, m)
-    _pending_lock("p1-real")
     res = promote_batch.promote_batch(mp, "main", fx["canonical"], fx["ops"],
                                       do_push=True, into_primary=True)
     assert res["ok"] is True and res["remote_verified"] is True
@@ -702,7 +701,7 @@ def test_promotion_owner_scope_never_widened(fx):
     m["artifacts"][0]["job_id"] = AM  # tamper owner to a different job
     mp = fx["ops"] / "m.json"; mp.write_text(json.dumps(m), encoding="utf-8")
     res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
-    assert res["ok"] is False and res["stage"] == "owner"
+    assert res["ok"] is False and res["stage"] == "owner_mismatch"  # R0.3 §8: unique owner re-derived
 
 
 def test_promotion_uses_real_source_commit_blob(fx):
@@ -833,7 +832,7 @@ def test_p1f_push_failure_preserves_commit_and_state(fx, monkeypatch):
     advanced, manifest preserved — no reset/discard."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, RADAR23, base)
-    m = _manifest_for(fx, WEEKLY, head, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))   # R0.3: approval binding
     mp = _write_manifest(fx, m)
     real_run = ops_git.run_git
 
@@ -852,6 +851,12 @@ def test_p1f_push_failure_preserves_commit_and_state(fx, monkeypatch):
     assert mp.exists()                                                   # manifest preserved
     # the local promotion commit is PRESERVED (HEAD advanced once; never reset)
     assert git(fx["canonical"], "rev-parse", "HEAD").strip() == res["commit"]
+    # R0.3 §9: the push failure RECORDS the exact recovery identity — id + digest
+    # + local commit — so recovery never infers identity from HEAD alone
+    st = ops_config.load_state()
+    assert st.get("pending_p1_manifest_id") == m["manifest_id"]
+    assert st.get("pending_p1_manifest_sha256") == _manifest_digest(m)
+    assert st.get("pending_p1_local_commit_sha") == res["commit"]
 
 
 def test_p1_failure_recovery_exact_push(fx, monkeypatch):
@@ -859,7 +864,7 @@ def test_p1_failure_recovery_exact_push(fx, monkeypatch):
     artifact hashes == manifest, then retry the EXACT push. No reset."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, RADAR23, base)
-    m = _manifest_for(fx, WEEKLY, head, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))   # R0.3: approval binding
     mp = _write_manifest(fx, m)
     real_run = ops_git.run_git
     calls = {"n": 0}
@@ -878,7 +883,10 @@ def test_p1_failure_recovery_exact_push(fx, monkeypatch):
     assert rec["commit"] == res["commit"]
     assert git(fx["canonical"], "rev-parse", "origin/main").strip() == rec["commit"]
     assert ops_config.load_state()["last_promoted_ops_sha"] == m["manifest_ops_head_sha"]
-    assert "promotion_pending_manifest_id" not in ops_config.load_state()
+    st = ops_config.load_state()
+    assert "promotion_pending_manifest_id" not in st
+    assert "approved_manifest_id" not in st
+    assert "pending_p1_local_commit_sha" not in st
     assert not mp.exists()
 
 
@@ -887,9 +895,8 @@ def test_p1g_success_remote_verified_then_state_advances(fx):
     advances, THEN lock cleared + residue removed. Lock is SET during promotion."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, RADAR23, base)
-    m = _manifest_for(fx, WEEKLY, head, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))   # R0.3: approval binding
     mp = _write_manifest(fx, m)
-    _pending_lock("p1-g")
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
     assert res["ok"] is True
     assert res["remote_verified"] is True
@@ -1023,12 +1030,14 @@ def test_m18_successful_p1_clears_promotion_pending(fx):
     """M18: a successful verified REAL P1 clears promotion_pending_manifest_id."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, RADAR23, base)
-    m = _manifest_for(fx, WEEKLY, head, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))   # R0.3: approval binding
     mp = _write_manifest(fx, m)
-    _pending_lock("p1-m18")
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
     assert res["ok"] is True
-    assert "promotion_pending_manifest_id" not in ops_config.load_state()
+    st = ops_config.load_state()
+    assert "promotion_pending_manifest_id" not in st
+    assert "approved_manifest_id" not in st          # exact receipt also cleared
+    assert "pending_p1_local_commit_sha" not in st
 
 
 # =====================================================================
@@ -1170,10 +1179,11 @@ def test_a1_late_bad_hash_zero_mutation(fx):
     _make_artifact_commit(fx, RADAR23, h1)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    m = _approve(fx, generate_promotion_manifest.generate_manifest(
-        repo, expected_jobs=[WEEKLY, AM], fetch=False))
-    a0, a1 = m["artifacts"][0], m["artifacts"][1]          # AM first (sorted)
-    a1["sha256"] = "0" * 64                                 # late bad hash
+    m = generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False)
+    m["artifacts"][1]["sha256"] = "0" * 64                # late bad hash
+    _approve(fx, m)                                       # approval binds the EXACT file
+    a0 = m["artifacts"][0]                                # AM first (sorted) — the valid one
     mp = _write_manifest(fx, m)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
     assert res["ok"] is False  # stage: hash (or earlier) — zero mutation either way
@@ -1189,9 +1199,10 @@ def test_a2_late_invalid_owner_zero_mutation(fx):
     _make_artifact_commit(fx, RADAR23, h1)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    m = _approve(fx, generate_promotion_manifest.generate_manifest(
-        repo, expected_jobs=[WEEKLY, AM], fetch=False))
-    m["artifacts"][1]["job_id"] = "1f5f03f9236d"        # observer job: owns nothing
+    m = generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False)
+    m["artifacts"][1]["job_id"] = "1f5f03f9236d"          # observer job: owns nothing
+    _approve(fx, m)
     mp = _write_manifest(fx, m)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
     assert res["ok"] is False
@@ -1206,9 +1217,10 @@ def test_a3_late_invalid_source_zero_mutation(fx):
     _make_artifact_commit(fx, RADAR23, h1)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    m = _approve(fx, generate_promotion_manifest.generate_manifest(
-        repo, expected_jobs=[WEEKLY, AM], fetch=False))
-    m["artifacts"][1]["source_commit"] = base          # outside the frozen batch
+    m = generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False)
+    m["artifacts"][1]["source_commit"] = base            # outside the frozen batch
+    _approve(fx, m)
     mp = _write_manifest(fx, m)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
     assert res["ok"] is False
@@ -1227,8 +1239,9 @@ def test_a4_late_denylisted_zero_mutation(fx, monkeypatch):
     m = _approve(fx, generate_promotion_manifest.generate_manifest(
         repo, expected_jobs=[WEEKLY, AM], fetch=False))
     mp = _write_manifest(fx, m)
-    # denylist gains the radar prefix AFTER generation
-    extra = r"^evidence/radar/"
+    # denylist gains the radar-digest path AFTER generation (exact fullmatch —
+    # ops_config deny semantics are anchored fullmatch, not prefixes)
+    extra = r"^evidence/radar/digests/\d{4}-\d{2}-\d{2}-radar-digest\.md$"
     monkeypatch.setattr(ops_config, "DENYLIST_PATTERNS",
                         ops_config.DENYLIST_PATTERNS + [extra])
     monkeypatch.setattr(ops_config, "_COMPILED_DENY",
@@ -1245,17 +1258,21 @@ def test_r3h_corrupt_state_fails_closed(fx):
     st.parent.mkdir(parents=True, exist_ok=True)
     orig = ops_config.load_state()
     try:
-        st.write_text("{not valid json", encoding="utf-8")
-        res = g0_check.g0_check(fx["ops"], fx["canonical"])
-        assert res["ok"] is False and res["case"] == "STATE_CORRUPT"
+        # approval binding recorded while state is VALID (generation needs a
+        # readable state), THEN the state file is corrupted
         base = git(fx["ops"], "rev-parse", "HEAD").strip()
         head = _make_artifact_commit(fx, RADAR23, base)
-        repo = str(fx["canonical"])
-        git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-        with pytest.raises(ValueError, match="HOLD"):
-            generate_promotion_manifest.generate_manifest(repo, fetch=False)
         m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
         mp = _write_manifest(fx, m)
+        repo = str(fx["canonical"])
+        st.write_text("{not valid json", encoding="utf-8")
+        # G0 preflight FAILS CLOSED
+        res = g0_check.g0_check(fx["ops"], fx["canonical"])
+        assert res["ok"] is False and res["case"] == "STATE_CORRUPT"
+        # manifest generation HOLDS
+        with pytest.raises(ValueError, match="HOLD"):
+            generate_promotion_manifest.generate_manifest(repo, fetch=False)
+        # real P1 HOLDS before any mutation
         res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
         assert res["ok"] is False and res["stage"] == "state_corrupt"
         _assert_main_pristine(fx, m)
@@ -1318,7 +1335,8 @@ def test_r3k_recovery_rejects_extra_path(fx, monkeypatch):
         return real(cwd, *args, **kw)
     monkeypatch.setattr(ops_git, "run_git", fail_once)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
-    monkeypatch.undo()
+    monkeypatch.setattr(ops_git, "run_git", real)   # restore runner ONLY — never
+    # monkeypatch.undo(), which would also revert the fx fixture's OPS_STATE_DIR/HOME
     assert res["ok"] is False
     assert res["pending_state"] == "P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY"
     # someone amends an EXTRA file into the preserved promotion commit
@@ -1349,7 +1367,7 @@ def test_r3l_exact_recovery_succeeds(fx, monkeypatch):
         return real(cwd, *args, **kw)
     monkeypatch.setattr(ops_git, "run_git", fail_once)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
-    monkeypatch.undo()
+    monkeypatch.setattr(ops_git, "run_git", real)   # scoped restore — NEVER full undo
     assert res["ok"] is False and res["commit"]
     # recorded recovery identity (R0.3 §9) — written by the corrected impl on
     # push failure; set explicitly here so the test pins the exact contract
@@ -1387,7 +1405,7 @@ def test_r3m_post_commit_extra_path_refuses_push(fx, monkeypatch):
         return real(cwd, *args, **kw)
     monkeypatch.setattr(ops_git, "run_git", inject)
     res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
-    monkeypatch.undo()
+    monkeypatch.setattr(ops_git, "run_git", real)   # scoped restore — NEVER full undo
     assert res["ok"] is False and res["stage"] == "post_commit"
     assert git(repo, "rev-parse", "origin/main").strip() == m["manifest_main_sha"]
     assert res["commit"] and git(repo, "rev-parse", "HEAD").strip() == res["commit"]

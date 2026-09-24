@@ -35,6 +35,21 @@ def g0_check(worktree: str | Path, repo: str | Path, do_fetch: bool = True) -> d
         result["reasons"] = [f"G0-E0 worktree is on '{branch}', expected '{ops_config.OPS_BRANCH}'"]
         return result
 
+    # ops-state FAIL-CLOSED (R0.3 §6): corrupt/unreadable/structurally-malformed
+    # existing state is NEVER interpreted as 'no lock' — G0 returns STATE_CORRUPT
+    # and every governed gate holds until the state is repaired/reviewed.
+    try:
+        ops_config.load_state()
+    except ops_config.StateError as e:
+        result["case"] = "STATE_CORRUPT"
+        result["reasons"] = [
+            "G0-STATE_CORRUPT " + str(e) + " — FAIL CLOSED; ops-state carries the "
+            "promotion-pending lock, approval receipt and recovery identity, so "
+            "corrupt state must be repaired/reviewed, never silently treated as "
+            "empty. (R0.3 §6)"
+        ]
+        return result
+
     # promotion-pending lock (R0.2 §14): a Founder-review P1 manifest exists or a
     # promotion awaits recovery — artifact jobs FAIL CLOSED; cleared ONLY after a
     # verified REAL P1 promotion or explicit cancellation/disposition.

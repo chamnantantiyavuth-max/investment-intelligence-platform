@@ -57,6 +57,39 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+# Founder-approval dispositions (R0.3 §2). Promotion accepts ONLY APPROVED;
+# any other value (AWAITING_FOUNDER_APPROVAL / REJECTED / CANCELLED / missing /
+# malformed / unknown) refuses with stage 'approval'.
+DISPOSITIONS = ("AWAITING_FOUNDER_APPROVAL", "APPROVED", "REJECTED", "CANCELLED")
+
+
+def manifest_immutable_digest(m: dict) -> str:
+    """R0.3 §3: SHA-256 over a deterministic canonical serialization of the
+    IMMUTABLE promotion payload — manifest_id, batch range, exact ordered
+    artifact entries (path/job_id/source_commit/sha256) and changed_jobs.
+
+    Mutable review metadata (disposition=APPROVED, generated_at, review notes,
+    last_promoted_ops_sha…) are EXCLUDED so an untouched batch has ONE stable
+    digest and a re-stamped disposition cannot change what was approved.
+
+    Approval binds to this digest (ops-state approved_manifest_sha256); a real
+    P1 recomputes it and FAILS CLOSED on any mismatch.
+    """
+    payload = {
+        "manifest_id": m["manifest_id"],
+        "batch_base_sha": m["batch_base_sha"],
+        "manifest_main_sha": m["manifest_main_sha"],
+        "manifest_ops_head_sha": m["manifest_ops_head_sha"],
+        "artifacts": [{"path": a["path"], "job_id": a["job_id"],
+                       "source_commit": a["source_commit"], "sha256": a["sha256"]}
+                      for a in m["artifacts"]],
+        "changed_jobs": m["changed_jobs"],
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
 def _latest_source_commit(repo: str, base: str, head: str, path: str) -> str:
     """Latest commit in base..head that introduced/modified path (mechanical)."""
     out = ops_git.run_git(repo, "log", "-1", "--format=%H", f"{base}..{head}", "--", path)
@@ -119,8 +152,12 @@ def generate_manifest(repo: str | Path,
         )
 
     # R0.2 §9: last_promoted_ops_sha is provenance only — must resolve and be in
-    # the current ops lineage, but never overrides the canonical delta
-    state = ops_config.load_state()
+    # the current ops lineage, but never overrides the canonical delta.
+    # R0.3 §6: corrupt existing ops-state must HOLD generation (NEVER treated as {}).
+    try:
+        state = ops_config.load_state()
+    except ops_config.StateError as e:
+        raise ValueError(f"HOLD — cannot generate: ops-state is corrupt: {e}")
     lp = state.get("last_promoted_ops_sha", "")
     if lp:
         try:
@@ -198,6 +235,20 @@ def generate_manifest(repo: str | Path,
         "allowlist_result": "PASS",
         "denylist_result": "PASS",
         "disposition": "AWAITING_FOUNDER_APPROVAL",
+        # R0.3 §3: digest over the immutable payload — the Founder approval
+        # receipt binds to this exact value; a different/edited batch requires
+        # NEW approval. Never include the mutable approval field itself.
+        "immutable_digest": manifest_immutable_digest({
+            "manifest_id": f"p1-{_dt.datetime.now(_UTC7).strftime('%Y%m%d')}-{ops_sha[:8]}",
+            "batch_base_sha": main_sha,
+            "manifest_main_sha": main_sha,
+            "manifest_ops_head_sha": ops_sha,
+            "artifacts": [
+                {k: a[k] for k in ("path", "job_id", "source_commit", "sha256")}
+                for a in artifacts
+            ],
+            "changed_jobs": sorted(changed_jobs),
+        }),
     }
     return manifest
 
@@ -213,6 +264,28 @@ def write_manifest(manifest: dict, repo: str | Path, worktree: str | Path) -> Pa
     return out
 
 
+_MANIFEST_REQUIRED = ("manifest_id", "batch_base_sha", "manifest_main_sha",
+                      "manifest_ops_head_sha", "artifacts", "changed_jobs")
+
+
+def _load_manifest_file(path: str | Path):
+    """Load + minimum-shape-validate a manifest FILE (approve/cancel path; no
+    import cycle with promote_batch)."""
+    try:
+        m = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        raise ValueError(f"cannot read manifest {path}: {e}")
+    if not isinstance(m, dict):
+        raise ValueError(f"manifest {path} is not a JSON object")
+    for key in _MANIFEST_REQUIRED:
+        if key not in m:
+            raise ValueError(f"manifest {path} missing required key {key!r}")
+    return m
+
+
+# footer: 2026-09-24 15:30 UTC+7 (R0.3 immutable-digest + approval/cancel CLI + corrupt-state HOLD)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="deterministic multi-job P1 promotion manifest (ownership derived "
@@ -224,10 +297,62 @@ def main() -> int:
     ap.add_argument("--repo", default=ops_config.DEFAULT_REPO)
     ap.add_argument("--worktree", default=ops_config.DEFAULT_OPS_WORKTREE)
     ap.add_argument("--pit-as-of", default=None)
+    ap.add_argument("--approve", action="store_true",
+                    help="Founder approval (R0.3 §3): loads the manifest at --manifest, "
+                         "requires disposition == APPROVED, binds the immutable payload "
+                         "digest into ops-state (approved_manifest_id + "
+                         "approved_manifest_sha256). Approval applies to ONE exact batch.")
+    ap.add_argument("--cancel", action="store_true",
+                    help="explicit cancellation/disposition (R0.3 §13): clears the "
+                         "pending lock + approval receipt ONLY for the exact manifest id "
+                         "and digest at --manifest; other manifests' locks are untouched.")
+    ap.add_argument("--manifest", default=None,
+                    help="manifest file to approve or cancel")
     ap.add_argument("--no-fetch", action="store_true",
                     help="test/debug only: read origin refs without fetching "
                          "(production generation ALWAYS fetches per R0.2 §7)")
     args = ap.parse_args()
+
+    if args.approve or args.cancel:
+        if not args.manifest:
+            print("error: --approve/--cancel requires --manifest <path>", file=sys.stderr)
+            return 1
+        m = _load_manifest_file(args.manifest)
+        digest = manifest_immutable_digest(m)
+        try:
+            pending = ops_config.promotion_pending()
+        except ops_config.StateError as e:
+            print(f"error: ops-state corrupt — HOLD: {e}", file=sys.stderr)
+            return 1
+        if pending != m["manifest_id"]:
+            print(f"error: pending manifest {pending!r} != supplied {m['manifest_id']!r} "
+                  f"— cancellation/approval must name the EXACT pending manifest (R0.3 §13)",
+                  file=sys.stderr)
+            return 1
+        if args.approve:
+            if m.get("disposition") != "APPROVED":
+                print(f"error: disposition is {m.get('disposition')!r}, not APPROVED — "
+                      "the Founder-approved manifest must carry disposition=APPROVED "
+                      "before the receipt is bound (R0.3 §2)", file=sys.stderr)
+                return 1
+            ops_config.set_approval_receipt(m["manifest_id"], digest)
+            print(json.dumps({"approved_manifest_id": m["manifest_id"],
+                              "approved_manifest_sha256": digest,
+                              "pending": pending}, indent=2, sort_keys=True))
+            print("APPROVAL_RECEIPT_BOUND — real P1 now matches pending + receipt + "
+                  "recomputed digest + disposition=APPROVED")
+            return 0
+        if m.get("disposition") == "APPROVED" or ops_config.approval_receipt():
+            print("error: manifest has an approval receipt / APPROVED disposition — "
+                  "cancellation of an approved manifest requires explicit Founder "
+                  "disposition (set manifest disposition=CANCELLED first)",
+                  file=sys.stderr)
+            return 1
+        ops_config.set_promotion_pending(None)
+        print(json.dumps({"cancelled_manifest_id": m["manifest_id"],
+                          "immutable_digest": digest}, indent=2, sort_keys=True))
+        print("PROMOTION_PENDING_CLEARED — exact manifest cancelled (R0.3 §13)")
+        return 0
 
     manifest = generate_manifest(args.repo, expected_jobs=args.job,
                                  pit_as_of=args.pit_as_of, fetch=not args.no_fetch)
@@ -236,6 +361,8 @@ def main() -> int:
     print(f"MANIFEST_WRITTEN: {out}")
     print("PROMOTION_PENDING: set (artifact-cron preflight/G0 FAILS CLOSED until "
           "verified REAL P1 or explicit cancellation — R0.2 §14)")
+    print("APPROVAL REQUIRED: real P1 needs disposition=APPROVED + a digest-bound "
+          "approval receipt — use --approve after Founder approval (R0.3 §2/§3)")
     return 0
 
 
