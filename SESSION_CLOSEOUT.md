@@ -1,3 +1,111 @@
+# Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.4 FINAL P1 CRASH-CONSISTENCY/DISPOSITION CORRECTION — COMPLETE)
+
+## POST-M5.3 O3 R0.4 FINAL P1 CRASH-CONSISTENCY / DISPOSITION CORRECTION COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
+
+**Session:** Founder independent source audit of canonical
+`main @ 2d44d7e756e6ee942e3a4057b2df72b3f3bc3ff5`:
+**R0.3 is materially correct and RETAINED** (FD #142 architecture / C+ / C0 /
+D-0 / M5.3 / M6 / Hermes scheduler / Windows Gateway / P2 prohibition /
+Learning Loop authority / S0–S3 / canonical main→ops authority / multi-job
+manifest / raw-blob semantics / two-phase validation-mutation / owner
+re-derivation / digest-bound approval design / exact commit delta /
+post-commit exactness / recovery identity design / fail-closed corrupt-state
+policy DO NOT REOPEN). R0.4 = FINAL bounded correction of FIVE defects:
+(1) missing pending identity acceptance, (2) approved-manifest cancellation
+defect, (3) partial state-write safety, (4) remote-success /
+acknowledgement-loss reconciliation, (5) single atomic promotion-state
+transition.
+
+**Gate 0 — pause before mutation:** `73e611584447` + `cda817d17236` re-PAUSED
+(all 5 canonical jobs PAUSED) before any code mutation; no R0.4-time run counts
+toward gate G; no forced runs.
+
+**Gate 1 — canonical base verified:** `origin/main == origin/ops/automation ==
+2d44d7e756e6ee942e3a4057b2df72b3f3bc3ff5`; local primary clean; local ops clean;
+valid ops-state (partial tuples rejected under R0.4 §8); no manifest residue; no
+promotion_pending; no approval receipt; no pending-P1 recovery record.
+Unexpected ref advance: none.
+
+**RED first (§11):** `052d14b` R0.4 RED diagnostics on canonical `2d44d7e`:
+**15 failed / 76 passed** — R4-A missing-pending-with-valid-approval (was
+proceeding → RED), R4-B1 approved exact cancellation (no cancel API → RED),
+R4-B2/B3/B4 cancellation digest-mismatch/foreign/pending-recovery refusals,
+R4-C partial os.write corrupting state (single write → truncated → RED),
+R4-D1/D2/D3 remote-success reconciliation + unrelated-SHA fail-closed,
+R4-E recovery identity absent at push time → RED, R4-F final transition not
+single-save → RED, R4-G/H/I partial tuples accepted → RED, R4-J
+manifest-without-lock after write failure → RED.
+
+**Implementation (`815a98c`):**
+- **R4-A §2** — real P1 gate: `promotion_pending_manifest_id == manifest_id`
+  EXACT (missing OR wrong → FAIL CLOSED `pending`; fall-through removed) +
+  `promotion_pending_manifest_sha256 == digest`; canary independent; recovery
+  keeps its exact pending requirement.
+- **R4-B §3** — `promotion_pending_manifest_sha256` added; generation persists
+  pending id+digest ATOMICALLY, LOCK-FIRST (before the manifest file); approve
+  requires exact pending id+digest; `cancel_manifest()` module-level API:
+  approved cancel needs pending pair + receipt pair + disposition CANCELLED →
+  clears ONLY matching pending+approval pairs in ONE atomic transition;
+  AWAITING cancel needs exact pending pair; pending-recovery record for the
+  same manifest/digest → cancellation REFUSES (Founder recovery-disposition
+  required). `--cancel` CLI delegates; `--approve` validated digest-bound.
+- **R4-C §4** — `_write_all()` complete-write loop (zero/partial/OSError =
+  failure), fsync, THEN os.replace; best-effort temp cleanup.
+- **R4-D §5 + R4-E §6** — recovery identity persisted BEFORE the uncertain
+  push (pending id/digest + approval id/digest + pending_p1 id/digest/commit in
+  one atomic save); push-failure/fetch-failure return the pending state with
+  identities untouched; `--recover` reconciles: CASE A remote==base → exact
+  push retry → verify → finalize; CASE B remote==exact promotion commit →
+  FINALIZE ONLY (`reconciled_remote_success`, NO duplicate push); CASE C other
+  → main_moved FAIL CLOSED, no clearing.
+- **R4-F §7** — `_finalize_promotion` shared by verified success + CASE A/B
+  recovery: reload authoritative state, re-check ALL SEVEN identity fields,
+  `finalize_promotion_state()` → ONE `save_state()` (last_promoted + all seven
+  removals in a single authoritative write); generic clear helpers removed from
+  the promotion path.
+- **R4-G..I §8** — load_state rejects partial tuples: pending id XOR digest,
+  approved id XOR sha (1-of-2), recovery 1-or-2-of-3 → StateError → G0
+  STATE_CORRUPT / generation HOLD / P1 HOLD / recovery HOLD.
+- **R4-J §9** — `write_manifest` = compute digest → persist pending pair →
+  atomic manifest write (temp+complete-write+fsync+replace); write failure
+  KEEPS the lock (conservative stuck lock acceptable; manifest-without-lock
+  never).
+- **§10 truthful docs** — runbook + README: "zero PRIMARY mutation" (not "zero
+  git operations"); "finalized in ONE authoritative write"; three recovery
+  cases documented; test counts 91/91 + 863/863.
+- R3-A..D conformed to the mandatory-pending contract (same refusal invariants;
+  stage renamed per corrected gate order: absent pending → `pending`).
+
+**Full gate (§12):** ops suite **91/91 PASS (138.4s)** · FULL pytest
+**863/863 PASS (142.4s)** · gate-check **ALL GATES PASSED** (Gate 6 via
+[TEST_VERIFIED] on the closeout commit) · isolation-scan PASS (working tree +
+bounded R0.4 range). No M5.3 semantic change; no Hermes scheduler change.
+NOTE: a transient TMPDIR PermissionError on the default-basetemp FULL run was
+avoided by an explicit `--basetemp <scratch>` (documented in scripts/ops/README
+verification line).
+
+**Honest notes:** `git()` helper returns stdout WITH trailing newline — R4-D3
+needed `.strip()` on the commit-tree output (fixed; object now created in the
+bare origin and update-ref validates). R0.4 tests keep per-test OPS_STATE_DIR.
+
+**Cron states (§14/§15):** SCHEDULED (resumed): `73e611584447` Nick-Weekly
+(Sat 26 Sep 09:00) + `cda817d17236` Mid-Week Radar (Thu 01 Oct 08:00) — natural
+schedules only, no forced runs. PAUSED: `8ba233e88015` Weekly Radar ·
+`8b1cd19aba7d` CIW · `1f5f03f9236d` Learning Loop. Gateway running.
+
+**Final state (§13):** corrected main == corrected ops (see commit chain);
+G0 = case A; ops-state = `{"ops_sync_base_sha": <final>}` ONLY — no pending /
+no approval / no recovery residue; no manifest residue.
+
+**Status: `POST-M5.3 O3 — R0.4 FINAL P1 CRASH-CONSISTENCY CORRECTION COMPLETE /
+READY FOR FOUNDER FINAL SOURCE AUDIT`** — R0.4 is NOT self-accepted/closed/
+frozen; no P1 manifest until the two REAL scheduled clean artifact cycles
+complete (then the deterministic multi-job P1 manifest returns for Founder
+approval). Next: resume the two jobs at their natural schedules; observe ≥2
+REAL clean cycles from ≥2 distinct classes; then STOP for approval.
+
+---
+
 # Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.3 P1 GOVERNANCE/ATOMICITY HARDENING — COMPLETE)
 
 ## POST-M5.3 O3 R0.3 P1 GOVERNANCE/ATOMICITY HARDENING COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)

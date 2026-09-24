@@ -21,8 +21,8 @@ Hard invariants (FD #142):
 | `sync_main_to_ops.py` | S0/S1/S2/S3 main->ops lifecycle (remote-ops-first; durable baseline push; clean-merge / conflict-abort); captures `OPS_SYNC_BASE_SHA` |
 | `validate_delta.py` | Cron-delta authority: validates only `OPS_SYNC_BASE_SHA -> job-produced state` |
 | `commit_push_ops.py` | Explicit-path stage -> commit -> push ops -> fetch -> verify remote SHA |
-| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest over the CANONICAL range (origin/main → origin/ops/automation, mechanical — R0.2 §7/§8); mechanical ownership, per-artifact source_commit, raw-blob SHA-256, immutable payload digest (R0.3 §3); `--approve`/`--cancel` digest-bound receipt; corrupt-state HOLD (R0.3 §6); interactive only; write sets the promotion-pending lock |
-| `promote_batch.py` | TWO-PHASE P1 promotion (R0.3 §4): Phase V pure read-only validation of the ENTIRE batch (approval gate + owner re-derived at consumption + exact delta + hashes — zero primary mutation), Phase M write/stage/commit; exact-canonical-main contract (into_primary ⇒ main + push, clean local, local==origin==manifest), post-commit exactness before push (R0.3 §10), remote-verified-first state advance, P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY + `--recover` exact-push with recorded pending identity (R0.3 §9); R0 = temp/canary branch only |
+| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest over the CANONICAL range (origin/main → origin/ops/automation, mechanical — R0.2 §7/§8); mechanical ownership, per-artifact source_commit, raw-blob SHA-256, immutable payload digest (R0.3 §3); `--approve`/`--cancel` digest-bound receipt — approve requires the exact pending id+digest, cancel is exact-disposition + recovery-refusal (R0.4 §3); corrupt-state HOLD (R0.3 §6); interactive only; write sets the pending pair (id+digest) LOCK-FIRST — manifest-write failure keeps the conservative lock (R0.4 §9) |
+| `promote_batch.py` | TWO-PHASE P1 promotion (R0.3 §4; R0.4 crash-consistency): Phase V pure read-only validation of the ENTIRE batch (approval gate + owner re-derived at consumption + exact delta + hashes — zero primary mutation), Phase M write/stage/commit; exact-canonical-main contract (into_primary ⇒ main + push, clean local, local==origin==manifest), post-commit exactness before push (R0.3 §10), MANDATORY digest-bound pending identity (R0.4 §2), recovery identity recorded BEFORE the uncertain push (R0.4 §6), remote-success/ack-loss reconciliation CASE A/B/C (R0.4 §5), remote-verified-first, ONE atomic final state transition (R0.4 §7), P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY + `--recover` with recorded pending identity (R0.3 §9); R0 = temp/canary branch only |
 
 ## Per-job anchored artifact allowlists (fullmatch, POSIX-rel)
 
@@ -90,15 +90,24 @@ G0 sees case C and refuses a new job until the exact commit is pushed. NEVER res
    main clean → local == origin == manifest_main_sha → frozen-lineage check →
    canonical-delta revalidation (recomputed set == manifest set exactly) →
    per-artifact revalidation (commit, latest path-touch, exists, owner, raw hash)
-   → transfer → explicit stage → commit → post-commit hash verify → push → fetch
-   → remote verify → **ONLY THEN** advance `last_promoted_ops_sha` + clear the
-   promotion-pending lock → remove residue.
-4. Push failure → `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`: local commit
-   preserved, origin/main unchanged, last_promoted unchanged, manifest preserved.
+   → transfer → explicit stage → commit → post-commit hash verify → record the
+     exact recovery identity BEFORE the push (R0.4 §6) → push → fetch → remote
+     verify (post-push fetch failure = UNKNOWN outcome, reconcile later) →
+     **ONLY THEN** ONE atomic final state transition (R0.4 §7: last_promoted +
+     exact pending/approval/recovery keys in a single authoritative write) →
+     remove residue.
+4. Push failure / acknowledgement loss → `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`:
+   local commit preserved, last_promoted unchanged, manifest preserved.
    `promote_batch.py --recover --manifest <path> --target-branch main` verifies
-   parent + hashes then retries the EXACT push. No reset. `last_promoted_ops_sha`
+   the recorded identity (id+digest+commit, persisted BEFORE the push) +
+   parent + hashes, then RECONCILES (R0.4 §5): remote == base → retry the EXACT
+   push; remote == exact promotion commit → finalize state ONLY
+   (`reconciled_remote_success`, no duplicate push); remote == other →
+   `main_moved` FAIL CLOSED, Founder disposition only. No reset.
+   `last_promoted_ops_sha`
    advances ONLY after a REAL remote-VERIFIED approved P1 into main — the
-   code ENFORCES the Founder-approval gate (R0.3 §2/§3), so "Founder-approved"
+   code ENFORCES the Founder-approval gate (R0.3 §2/§3; R0.4 §2 pending pair
+   MANDATORY), so "Founder-approved"
    is a mechanical fact, not an aspiration
    (mechanical; canary / generation / cron commits / push failure never advance
    it). On success the manifest residue is removed; G0 returns clean.
@@ -110,10 +119,11 @@ Persistent scheduler state lives OUTSIDE the repo (never breaks G0 cleanliness):
 
 ## Tests
 
-`pytest tests/ops/test_ops_tooling.py -q` — full-matrix on temp git repos + a
+`pytest tests/ops/test_ops_tooling.py -q --basetemp <scratch>` — full-matrix on
+temp git repos + a
 per-test temp state dir; never touches the real worktree/remote/ops-state.
-76 tests: G0 A–E + PENDING + STATE_CORRUPT (promotion-
-pending lock), S0–S3 sync lifecycle (T1–T7), multi-job manifests M1–M8
+91 tests: G0 A–E + PENDING + STATE_CORRUPT (promotion-
+pending pair), S0–S3 sync lifecycle (T1–T7), multi-job manifests M1–M8
 (mechanical ownership, ambiguity FAIL, deletion/rename FAIL, raw CRLF/latin-1
 blob, frozen head), canary-vs-real last-promoted, owner-scope, real-source-commit
 blob, residue removal, P1-A..P1-G + recovery (exact-canonical-main baseline/
@@ -126,7 +136,11 @@ state advance, deterministic --recover), M9–M18 (mechanical canonical range,
   refusals incl. digest/receipt binding, late-artifact atomic zero-mutation,
   corrupt-state FAIL CLOSED, interrupted-write preservation, owner re-derivation,
   recovery exact-delta refusal + success, post-commit extra-path push refusal,
-  duplicate-path + batch-base HOLDs).
+  duplicate-path + batch-base HOLDs), R0.4 R4-A..R4-J (mandatory pending
+  identity, exact-disposition cancellation incl. recovery-refusal, short-write
+  safety, remote-success/ack-loss reconciliation A/B/C, pre-push recovery
+  identity, one atomic final transition, partial-tuple STATE_CORRUPT,
+  lock-first manifest write).
 
 ## Maintenance mode (P2, design-only)
 
