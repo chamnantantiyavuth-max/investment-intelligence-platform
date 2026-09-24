@@ -1031,5 +1031,395 @@ def test_m18_successful_p1_clears_promotion_pending(fx):
     assert "promotion_pending_manifest_id" not in ops_config.load_state()
 
 
-# footer: 2026-09-24 13:30 UTC+7 (R0.2 P1-execution-hardening RED diagnostics)
+# =====================================================================
+# R0.3 RED diagnostics — bounded P1 governance/atomicity hardening
+# (POST-M5.3 O3 R0.3, FD #142 conformance, NO new FD)
+#
+# The real P1 path must: enforce Founder approval BOUND TO THE EXACT
+# manifest digest (R0.3 §2/§3), validate the ENTIRE batch with zero
+# primary mutation before writing anything (§4/§5 two-phase), fail
+# closed on corrupt ops state (§6), persist state atomically (§7),
+# re-derive the unique owner at consumption (§8), verify the exact
+# preserved-commit delta before recovery push (§9), verify the new
+# commit's exactness before push (§10), reject duplicate manifest
+# paths (§11), verify batch_base_sha == manifest_main_sha (§12), and
+# require the pending/approval identity to match EXACTLY (§13).
+# =====================================================================
+
+
+def _manifest_digest(m):
+    """Deterministic immutable payload digest (R0.3 §3): manifest identity +
+    batch range + exact ordered artifact entries + changed_jobs. Mutable
+    review fields (disposition/approval/review notes) are EXCLUDED."""
+    payload = {
+        "manifest_id": m["manifest_id"],
+        "batch_base_sha": m["batch_base_sha"],
+        "manifest_main_sha": m["manifest_main_sha"],
+        "manifest_ops_head_sha": m["manifest_ops_head_sha"],
+        "artifacts": [{"path": a["path"], "job_id": a["job_id"],
+                       "source_commit": a["source_commit"], "sha256": a["sha256"]}
+                      for a in m["artifacts"]],
+        "changed_jobs": m["changed_jobs"],
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _approve(fx, m):
+    """Founder-approval binding (R0.3 §2/§3): disposition APPROVED + pending
+    lock == manifest_id + digest-bound receipt in ops-state. Mechanical —
+    approval applies to ONE exact deterministic batch."""
+    m["disposition"] = "APPROVED"
+    _pending_lock(m["manifest_id"])
+    ops_config.save_state({**ops_config.load_state(),
+                           "approved_manifest_id": m["manifest_id"],
+                           "approved_manifest_sha256": _manifest_digest(m)})
+    return m
+
+
+def _assert_main_pristine(fx, manifest):
+    repo = str(fx["canonical"])
+    assert git(repo, "status", "--porcelain") == ""
+    assert git(repo, "diff", "--cached", "--name-only") == ""
+    assert git(repo, "rev-parse", "HEAD").strip() == manifest["manifest_main_sha"]
+    assert git(repo, "rev-parse", "origin/main").strip() == manifest["manifest_main_sha"]
+    for a in manifest["artifacts"]:
+        assert not (fx["canonical"] / a["path"]).exists()
+
+
+def test_r3a_awaiting_approval_refuses(fx):
+    """R3-A: disposition AWAITING_FOUNDER_APPROVAL -> REAL P1 FAILS 'approval'
+    BEFORE any mutation (R0.3 §2) — main pristine."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    assert m["disposition"] == "AWAITING_FOUNDER_APPROVAL"
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "approval"
+    _assert_main_pristine(fx, m)
+
+
+def test_r3b_rejected_manifest_refuses(fx):
+    """R3-B: disposition REJECTED -> REAL P1 FAILS 'approval' (R0.3 §2)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["disposition"] = "REJECTED"
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "approval"
+    _assert_main_pristine(fx, m)
+
+
+def test_r3c_approved_string_without_receipt_refuses(fx):
+    """R3-C: disposition=APPROVED but NO matching external approval receipt in
+    ops-state -> real P1 FAILS 'approval' (R0.3 §3 — mutable string alone is
+    never sufficient)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["disposition"] = "APPROVED"
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "approval"
+    _assert_main_pristine(fx, m)
+
+
+def test_r3d_receipt_digest_mismatch_refuses(fx):
+    """R3-D: external receipt exists but approved_manifest_sha256 != recomputed
+    immutable digest -> real P1 FAILS 'approval' (R0.3 §3 — digest-bound)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["disposition"] = "APPROVED"
+    _pending_lock(m["manifest_id"])
+    ops_config.save_state({**ops_config.load_state(),
+                           "approved_manifest_id": m["manifest_id"],
+                           "approved_manifest_sha256": "0" * 64})
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "approval"
+    _assert_main_pristine(fx, m)
+
+
+def test_r3e_pending_id_mismatch_refuses(fx):
+    """R3-E: promotion_pending_manifest_id != supplied manifest id -> real P1
+    FAILS 'pending' (R0.3 §13 — one manifest can never promote/clear another)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["disposition"] = "APPROVED"
+    _pending_lock("p1-OTHER-MANIFEST")
+    ops_config.save_state({**ops_config.load_state(),
+                           "approved_manifest_id": m["manifest_id"],
+                           "approved_manifest_sha256": _manifest_digest(m)})
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "pending"
+    _assert_main_pristine(fx, m)
+
+
+def test_a1_late_bad_hash_zero_mutation(fx):
+    """A1: artifact 1 valid + artifact 2 bad hash -> FAIL with ZERO primary
+    mutation: main worktree clean, artifact 1 NOT written, HEAD/index/origin
+    unchanged (R0.3 §4/§5 two-phase)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    h1 = _make_artifact_commit(fx, AM_REL, base)
+    _make_artifact_commit(fx, RADAR23, h1)
+    repo = str(fx["canonical"])
+    git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
+    m = _approve(fx, generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False))
+    a0, a1 = m["artifacts"][0], m["artifacts"][1]          # AM first (sorted)
+    a1["sha256"] = "0" * 64                                 # late bad hash
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False  # stage: hash (or earlier) — zero mutation either way
+    _assert_main_pristine(fx, m)
+    assert a0["path"] not in git(repo, "ls-tree", "-r", "--name-only", "main").splitlines()
+
+
+def test_a2_late_invalid_owner_zero_mutation(fx):
+    """A2: artifact 1 valid + artifact 2 invalid owner -> zero primary mutation
+    (R0.3 §4/§5)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    h1 = _make_artifact_commit(fx, AM_REL, base)
+    _make_artifact_commit(fx, RADAR23, h1)
+    repo = str(fx["canonical"])
+    git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
+    m = _approve(fx, generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False))
+    m["artifacts"][1]["job_id"] = "1f5f03f9236d"        # observer job: owns nothing
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False
+    _assert_main_pristine(fx, m)
+
+
+def test_a3_late_invalid_source_zero_mutation(fx):
+    """A3: artifact 1 valid + artifact 2 invalid source_commit -> zero primary
+    mutation (R0.3 §4/§5)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    h1 = _make_artifact_commit(fx, AM_REL, base)
+    _make_artifact_commit(fx, RADAR23, h1)
+    repo = str(fx["canonical"])
+    git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
+    m = _approve(fx, generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False))
+    m["artifacts"][1]["source_commit"] = base          # outside the frozen batch
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False
+    _assert_main_pristine(fx, m)
+
+
+def test_a4_late_denylisted_zero_mutation(fx, monkeypatch):
+    """A4: artifact 1 valid + artifact 2 denied by CURRENT denylist config at
+    promotion time (config changed after generation) -> zero primary mutation
+    (R0.3 §4/§5)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    h1 = _make_artifact_commit(fx, AM_REL, base)
+    _make_artifact_commit(fx, RADAR23, h1)
+    repo = str(fx["canonical"])
+    git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
+    m = _approve(fx, generate_promotion_manifest.generate_manifest(
+        repo, expected_jobs=[WEEKLY, AM], fetch=False))
+    mp = _write_manifest(fx, m)
+    # denylist gains the radar prefix AFTER generation
+    extra = r"^evidence/radar/"
+    monkeypatch.setattr(ops_config, "DENYLIST_PATTERNS",
+                        ops_config.DENYLIST_PATTERNS + [extra])
+    monkeypatch.setattr(ops_config, "_COMPILED_DENY",
+                        [re.compile(p) for p in ops_config.DENYLIST_PATTERNS + [extra]])
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False
+    _assert_main_pristine(fx, m)
+
+
+def test_r3h_corrupt_state_fails_closed(fx):
+    """R3-H: corrupt ops-state JSON -> G0 FAIL CLOSED (STATE_CORRUPT), manifest
+    generation HOLD, real P1 HOLD. NEVER interpret corrupt state as 'no lock'."""
+    st = ops_config.state_dir() / "ops-state.json"
+    st.parent.mkdir(parents=True, exist_ok=True)
+    orig = ops_config.load_state()
+    try:
+        st.write_text("{not valid json", encoding="utf-8")
+        res = g0_check.g0_check(fx["ops"], fx["canonical"])
+        assert res["ok"] is False and res["case"] == "STATE_CORRUPT"
+        base = git(fx["ops"], "rev-parse", "HEAD").strip()
+        head = _make_artifact_commit(fx, RADAR23, base)
+        repo = str(fx["canonical"])
+        git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
+        with pytest.raises(ValueError, match="HOLD"):
+            generate_promotion_manifest.generate_manifest(repo, fetch=False)
+        m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+        mp = _write_manifest(fx, m)
+        res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+        assert res["ok"] is False and res["stage"] == "state_corrupt"
+        _assert_main_pristine(fx, m)
+    finally:
+        ops_config.save_state(orig)
+
+
+def test_r3i_state_write_interrupted_preserves_previous(fx, monkeypatch):
+    """R3-I: state write interrupted at the atomic-replace step -> previous
+    valid state preserved and readable; never partial/truncated authoritative
+    state (R0.3 §7)."""
+    ops_config.save_state({"promotion_pending_manifest_id": "p1-old",
+                           "last_promoted_ops_sha": "a" * 40})
+    def boom(src, dst):
+        raise OSError("simulated replace failure")
+    monkeypatch.setattr(os, "replace", boom)
+    with pytest.raises(OSError):
+        ops_config.save_state({"promotion_pending_manifest_id": "p1-new"})
+    st = ops_config.load_state()
+    assert st.get("promotion_pending_manifest_id") == "p1-old"
+    assert st.get("last_promoted_ops_sha") == "a" * 40
+
+
+def test_r3j_owner_ambiguity_derived_at_consumption(fx, monkeypatch):
+    """R3-J: owner re-derived MECHANICALLY at promotion time (R0.3 §8): path
+    becomes ambiguous AFTER manifest generation -> HOLD, main pristine; unique
+    owner changes -> owner_mismatch; owner removed -> owner."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    # path becomes ambiguous: MIDWEEK now also owns the digest path
+    monkeypatch.setattr(
+        ops_config, "JOB_ALLOWLISTS",
+        {**ops_config.JOB_ALLOWLISTS,
+         MIDWEEK: [r"^evidence/radar/digests/\d{4}-\d{2}-\d{2}-radar-digest\.md$"]})
+    monkeypatch.setattr(ops_config, "_COMPILED_ALLOW",
+                        {jid: [re.compile(p) for p in pats]
+                         for jid, pats in ops_config.JOB_ALLOWLISTS.items()})
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "owner_ambiguous"
+    _assert_main_pristine(fx, m)
+
+
+def test_r3k_recovery_rejects_extra_path(fx, monkeypatch):
+    """R3-K: recovery must refuse when the preserved local promote commit delta
+    contains an extra file (exact path-set + hashes verified BEFORE exact push,
+    R0.3 §9) — no push, origin/main unchanged."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    repo, real = str(fx["canonical"]), ops_git.run_git
+    calls = {"n": 0}
+    def fail_once(cwd, *args, **kw):
+        if args and args[0] == "push":
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise ops_git.OpsGitError("push refused (simulated)")
+        return real(cwd, *args, **kw)
+    monkeypatch.setattr(ops_git, "run_git", fail_once)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.undo()
+    assert res["ok"] is False
+    assert res["pending_state"] == "P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY"
+    # someone amends an EXTRA file into the preserved promotion commit
+    write(fx["canonical"], "docs/extra-recovery.md", "x")
+    git(fx["canonical"], "add", "-A")
+    git(fx["canonical"], "commit", "--amend", "--no-edit")
+    r2 = promote_batch.recover_local_promotion(mp, str(fx["canonical"]), str(fx["ops"]))
+    assert r2["ok"] is False
+    assert git(repo, "rev-parse", "origin/main").strip() == m["manifest_main_sha"]
+
+
+def test_r3l_exact_recovery_succeeds(fx, monkeypatch):
+    """R3-L: recovery succeeds ONLY when the recorded pending identity matches
+    (id + digest + local commit) AND the preserved commit delta is EXACT
+    (path set + hashes) (R0.3 §9) — advances last_promoted, clears locks,
+    removes residue."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    repo, real = str(fx["canonical"]), ops_git.run_git
+    calls = {"n": 0}
+    def fail_once(cwd, *args, **kw):
+        if args and args[0] == "push":
+            calls["n"] += 1
+            if calls["n"] == 1:
+                raise ops_git.OpsGitError("push refused (simulated)")
+        return real(cwd, *args, **kw)
+    monkeypatch.setattr(ops_git, "run_git", fail_once)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.undo()
+    assert res["ok"] is False and res["commit"]
+    # recorded recovery identity (R0.3 §9) — written by the corrected impl on
+    # push failure; set explicitly here so the test pins the exact contract
+    ops_config.save_state({**ops_config.load_state(),
+                           "pending_p1_manifest_id": m["manifest_id"],
+                           "pending_p1_manifest_sha256": _manifest_digest(m),
+                           "pending_p1_local_commit_sha": res["commit"]})
+    r2 = promote_batch.recover_local_promotion(mp, str(fx["canonical"]), str(fx["ops"]))
+    assert r2["ok"] is True and r2["remote_verified"] is True
+    assert r2["last_promoted_ops_sha"] == m["manifest_ops_head_sha"]
+    st = ops_config.load_state()
+    assert st.get("last_promoted_ops_sha") == m["manifest_ops_head_sha"]
+    assert "promotion_pending_manifest_id" not in st
+    assert "approved_manifest_id" not in st
+    assert "pending_p1_local_commit_sha" not in st
+    assert not mp.exists()          # residue removed
+    assert git(repo, "rev-parse", "origin/main").strip() == res["commit"]
+
+
+def test_r3m_post_commit_extra_path_refuses_push(fx, monkeypatch):
+    """R3-M: unexpected commit delta (hook/index mutation between staged-set
+    check and commit) adds an extra path -> normal real P1 refuses BEFORE push
+    (R0.3 §10); local commit preserved, origin/main unchanged."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    repo, real = str(fx["canonical"]), ops_git.run_git
+    def inject(cwd, *args, **kw):
+        if args and args[0] == "commit":
+            extra = Path(cwd) / "docs/injected.md"
+            extra.parent.mkdir(parents=True, exist_ok=True)
+            extra.write_text("hook injected", encoding="utf-8")
+            real(cwd, "add", "--", "docs/injected.md")
+        return real(cwd, *args, **kw)
+    monkeypatch.setattr(ops_git, "run_git", inject)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.undo()
+    assert res["ok"] is False and res["stage"] == "post_commit"
+    assert git(repo, "rev-parse", "origin/main").strip() == m["manifest_main_sha"]
+    assert res["commit"] and git(repo, "rev-parse", "HEAD").strip() == res["commit"]
+
+
+def test_r3n_duplicate_path_fails(fx):
+    """R3-N: duplicate artifact path entries -> FAIL CLOSED 'manifest'
+    (len(list) != len(set)); duplicates must never collapse silently (R0.3 §11)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["artifacts"].append(dict(m["artifacts"][0]))
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"],
+                                      do_push=False)
+    assert res["ok"] is False and res["stage"] == "manifest"
+    assert mp.exists()          # interactive review manifest never deleted by a canary
+
+
+def test_r3o_batch_base_mismatch_fails(fx):
+    """R3-O: batch_base_sha != manifest_main_sha -> FAIL CLOSED 'manifest'
+    (internally contradictory provenance fields not retained, R0.3 §12)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["batch_base_sha"] = "0" * 40
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"],
+                                      do_push=False)
+    assert res["ok"] is False and res["stage"] == "manifest"
+    assert mp.exists()
+
+
+# footer: 2026-09-24 15:00 UTC+7 (R0.3 P1-governance/atomicity RED diagnostics)
 
