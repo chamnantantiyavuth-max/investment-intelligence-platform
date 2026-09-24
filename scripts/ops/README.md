@@ -21,8 +21,8 @@ Hard invariants (FD #142):
 | `sync_main_to_ops.py` | S0/S1/S2/S3 main->ops lifecycle (remote-ops-first; durable baseline push; clean-merge / conflict-abort); captures `OPS_SYNC_BASE_SHA` |
 | `validate_delta.py` | Cron-delta authority: validates only `OPS_SYNC_BASE_SHA -> job-produced state` |
 | `commit_push_ops.py` | Explicit-path stage -> commit -> push ops -> fetch -> verify remote SHA |
-| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest (mechanical ownership, per-artifact source_commit, raw-blob SHA-256; interactive only) |
-| `promote_batch.py` | Exact-content promotion w/ TOCTOU HOLD; per-artifact owner authority; R0 = temp/canary branch only |
+| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest over the CANONICAL range (origin/main → origin/ops/automation, mechanical — R0.2 §7/§8); mechanical ownership, per-artifact source_commit, raw-blob SHA-256; interactive only; write sets the promotion-pending lock |
+| `promote_batch.py` | Exact-content promotion w/ exact-canonical-main contract (into_primary ⇒ main + push, clean local, local==origin==manifest), TOCTOU + frozen-lineage + canonical-delta + per-artifact HOLDs, remote-verified-first state advance, P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY + `--recover` exact-push; R0 = temp/canary branch only |
 
 ## Per-job anchored artifact allowlists (fullmatch, POSIX-rel)
 
@@ -58,28 +58,41 @@ G0 sees case C and refuses a new job until the exact commit is pushed. NEVER res
 ## P1 promotion (interactive, Founder-approved batch)
 
 1. Interactive review session:
-   `generate_promotion_manifest.py --from <base> --to <head> [--job <id> ...]`
+   `generate_promotion_manifest.py [--job <id> ...]`
    → writes `ops/manifests/<id>.json` on ops (gitignored; interactive-only residue).
+   **Canonical authority (R0.2):** the batch range is MECHANICAL —
+   `MANIFEST_MAIN_SHA = origin/main`, `MANIFEST_OPS_HEAD_SHA =
+   origin/ops/automation` (no `--from/--to`; HOLD unless main is ancestor of ops —
+   sync first). Writing the manifest sets `promotion_pending_manifest_id` in
+   external ops-state → G0 FAILS CLOSED (case PENDING) until verified REAL P1 or
+   cancellation (R0.2 §14).
    One manifest may span MULTIPLE job classes (Radar + AM / Radar + CIW): each
    artifact's owning job is DERIVED mechanically from the anchored allowlists
    (0 matches / >1 matches = FAIL CLOSED; `--job` = optional expected-owner
    constraint only; Learning Loop's empty allowlist never owns a repo artifact).
-   Per-artifact: `source_commit` = actual latest commit in `base..head` touching
+   Per-artifact: `source_commit` = actual latest commit in `main..ops` touching
    the path; `sha256` = SHA-256 over the exact RAW `git show <c>:<path>` blob
    bytes (binary `run_git_bytes` — no text decode / no newline conversion / no
    errors=replace); `run_timestamp` = source committer time; PIT only when given.
 2. Founder approves the manifest batch (one approval = whole batch).
-3. Exact content promotion: `promote_batch.py --manifest <path> --target-branch <branch> [--push]`
-   (R0 canary uses a temporary branch; real P1 uses `main` with `--into-primary` after approval).
-   TOCTOU: current main must equal `manifest_main_sha`, else HOLD exit 2.
-   Per-artifact independent authority: blob verified at its real `source_commit`,
-   hash recomputed (same raw-blob definition), target path re-validated against
-   THAT artifact's owning job (never widened by the batch), denylist authoritative.
-4. Promotion record = normal governed main commit (artifacts + receipt); ops merge
-   history is never imported. `last_promoted_ops_sha` (external state) advances
-   ONLY after a REAL Founder-approved P1 into main succeeds (mechanical; canary /
-   manifest generation / cron artifact commits never advance it). On success the
-   manifest residue is removed from the automation worktree; G0 returns clean.
+3. Exact content promotion — real P1:
+   `promote_batch.py --manifest <path> --target-branch main --push --into-primary`
+   (R0 canary uses a temporary branch; canary NEVER advances state/removes the
+   review manifest; `--verify-only` is canary-only, invalid with `--into-primary`).
+   Exact order (R0.2 §4): contract (into_primary ⇒ main + push) → fetch → primary
+   main clean → local == origin == manifest_main_sha → frozen-lineage check →
+   canonical-delta revalidation (recomputed set == manifest set exactly) →
+   per-artifact revalidation (commit, latest path-touch, exists, owner, raw hash)
+   → transfer → explicit stage → commit → post-commit hash verify → push → fetch
+   → remote verify → **ONLY THEN** advance `last_promoted_ops_sha` + clear the
+   promotion-pending lock → remove residue.
+4. Push failure → `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`: local commit
+   preserved, origin/main unchanged, last_promoted unchanged, manifest preserved.
+   `promote_batch.py --recover --manifest <path> --target-branch main` verifies
+   parent + hashes then retries the EXACT push. No reset. `last_promoted_ops_sha`
+   advances ONLY after a REAL remote-VERIFIED Founder-approved P1 into main
+   (mechanical; canary / generation / cron commits / push failure never advance
+   it). On success the manifest residue is removed; G0 returns clean.
 
 ## State
 
@@ -89,16 +102,21 @@ Persistent scheduler state lives OUTSIDE the repo (never breaks G0 cleanliness):
 ## Tests
 
 `pytest tests/ops/test_ops_tooling.py -q` — full-matrix on temp git repos;
-never touches the real worktree/remote. 41 tests: G0 A–E, S0–S3 sync lifecycle
-(T1 ops-ahead, T2 two sequential cycles, T3 remote-first, T4 durable S1 push,
-T5 clean merge, T6 conflict abort, T7 push-failure block), delta semantics,
-multi-job manifests M1–M8 (mechanical ownership, ambiguity FAIL, deletion/rename
-FAIL, raw CRLF/latin-1 blob, frozen head), canary-vs-real last-promoted,
-owner-scope, real-source-commit blob, residue removal.
+never touches the real worktree/remote. 59 tests: G0 A–E + PENDING (promotion-
+pending lock), S0–S3 sync lifecycle (T1–T7), multi-job manifests M1–M8
+(mechanical ownership, ambiguity FAIL, deletion/rename FAIL, raw CRLF/latin-1
+blob, frozen head), canary-vs-real last-promoted, owner-scope, real-source-commit
+blob, residue removal, P1-A..P1-G + recovery (exact-canonical-main baseline/
+dirty/contract/target/verify-only refusals, push-failure
+P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY preservation, remote-verified-first
+state advance, deterministic --recover), M9–M18 (mechanical canonical range,
+caller-range equality, frozen-lineage HOLD, out-of-batch/stale source_commit
+HOLD, delta omission/foreign-artifact HOLD, governance-between-batches delta,
+promotion-pending lock block + clear).
 
 ## Maintenance mode (P2, design-only)
 
 Promotion is refused when env `OPS_MAINTENANCE_MODE=ON` or the IIP profile config
 key `ops.maintenance_mode` is set — lock lives outside governed main.
 
-<!-- 2026-09-24 12:50 UTC+7 (R0.1 correction closeout) -->
+<!-- 2026-09-24 14:30 UTC+7 (R0.2 P1 hardening closeout) -->

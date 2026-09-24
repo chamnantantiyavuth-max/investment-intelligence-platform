@@ -1,9 +1,13 @@
-# C+ Cron Operations Runbook — POST-M5.3 O3 R0.1 (FD #142)
+# C+ Cron Operations Runbook — POST-M5.3 O3 R0.2 (FD #142)
 
-Status: **R0.1 CORRECTION COMPLETE** — bounded implementation correction (24 Sep
-2026, Founder independent source review: `R0 NOT YET ACCEPTED`; R0.1 does NOT
-reopen FD #142 architecture / M5.3 / D-0 / C0 / P1 policy / Learning Loop
-authority). M5.3 permanently `FOUNDER ACCEPTED / CLOSED / FROZEN` (FD #141).
+Status: **R0.2 P1 HARDENING COMPLETE** — bounded implementation corrections (24
+Sep 2026, Founder independent source review): R0.1-A sync lifecycle PASS, R0.1-B
+multi-job manifest/raw-blob PASS, R0.2 real-P1 promotion path hardened (exact
+canonical-main start, into_primary⇒push+main, exact success order, per-artifact
++ delta revalidation, promotion-pending lock, P1_LOCAL_COMMIT_PENDING_REMOTE_
+RECOVERY + deterministic --recover). No FD reopened: FD #142 architecture /
+M5.3 / D-0 / C0 / P1 Founder-approval policy / Learning Loop authority / P2
+prohibition all intact — R0.1/R0.2 are implementation conformance, NO new FD.
 M6 remains PARKED until clean-cycle gate G is satisfied.
 
 ## 1. Hard invariants
@@ -105,32 +109,73 @@ lateness; plus >= ONE successful end-to-end P1 batch promotion (canary-verified)
 
 ## 7. P1 promotion (interactive; Founder-approved batch; P2 NOT authorized)
 
-1. Interactive review: `python scripts/ops/generate_promotion_manifest.py --from <base> --to <head> [--job <id> ...]`
-   → `ops/manifests/<id>.json`. TWO or more job classes may share one batch (e.g.
-   Radar + AM); every artifact's owning job is DERIVED mechanically from the
-   anchored allowlists (0 matches = FAIL, >1 = FAIL ambiguous; `--job` is an
-   optional expected-owner validation constraint only). Per-artifact
-   `source_commit` = the actual latest commit in `base..head` touching that path;
-   `sha256` = SHA-256 over the exact RAW `git show <source_commit>:<path>` blob
-   bytes (binary — no text decode, no newline conversion, no errors=replace);
-   `run_timestamp` = source commit committer time (mechanical provenance); PIT
-   only when provided. Denylist/allowlist re-checked per artifact (fail-closed).
+1. Interactive review: `python scripts/ops/generate_promotion_manifest.py [--job <id> ...]`
+   → `ops/manifests/<id>.json`.
+   - **Canonical authority model (R0.2 §7/§8):** the batch range is derived
+     MECHANICALLY from the fetched origin refs — `MANIFEST_MAIN_SHA = origin/main`,
+     `MANIFEST_OPS_HEAD_SHA = origin/ops/automation`; `batch_base_sha = main`.
+     `main..ops` is the authoritative pending-promotion delta. No caller `--from/
+     --to` (production never trusts arbitrary SHAs). HOLD unless main is an
+     ancestor of (or equal to) ops — run the main→ops sync first.
+   - `last_promoted_ops_sha` is provenance ONLY (R0.2 §9): must resolve to a
+     commit and be in the current ops lineage, else HOLD; it never overrides the
+     canonical current-main → current-ops delta.
+   - Two or more job classes may share one batch (e.g. Radar + AM); every
+     artifact's owning job is DERIVED mechanically from the anchored allowlists
+     (0 matches = FAIL, >1 = FAIL ambiguous; `--job` is an optional expected-owner
+     validation constraint only). Per-artifact `source_commit` = the actual latest
+     commit in `main..ops` touching that path; `sha256` = SHA-256 over the exact
+     RAW `git show <source_commit>:<path>` blob bytes (binary — no text decode,
+     no newline conversion, no errors=replace); `run_timestamp` = source commit
+     committer time (mechanical provenance); PIT only when provided. Denylist/
+     allowlist re-checked per artifact (fail-closed).
+   - **Promotion-pending lock (R0.2 §14):** writing the manifest sets
+     `promotion_pending_manifest_id` in external ops-state (NOT a repo write).
+     While set, artifact-cron preflight / G0 FAILS CLOSED (case PENDING) — the
+     "jobs paused during Founder P1 review" pause is mechanical.
 2. Founder approves the manifest (one approval = whole batch; `disposition` → APPROVED).
-3. `python scripts/ops/promote_batch.py --manifest <path> --target-branch <b> [--push]`
-   — TOCTOU: current origin/main must equal `manifest_main_sha` else HOLD (revalidate).
-   R0 canary uses a temporary branch; real P1 uses `main` + `--into-primary` after approval.
-   Per artifact: frozen blob verified at its REAL source_commit, hash recomputed on
-   the same raw-blob definition, target path re-validated against THAT artifact's
-   owning job (authority never widened by a multi-job batch), exact bytes transfer,
-   post-commit hash re-verify.
-4. Promotion record = normal governed main commit (files + receipt). Ops merge history
-   never imported; no broad cherry-pick. Newer ops artifacts are never implicit.
-5. `last_promoted_ops_sha` (external ops state) advances ONLY after a Founder-approved
-   REAL P1 promotion into main succeeds — never on canary, manifest generation, or
-   cron artifact commits. It defines the next batch range.
-6. On success the interactive manifest is removed from the automation working tree
-   (residue); `ops/manifests/` is gitignored and is NEVER a cron allowlist. G0 must
-   return clean before scheduled cron resumes.
+3. Real P1: `python scripts/ops/promote_batch.py --manifest <path> --target-branch main
+   --push --into-primary` — exact success order (R0.2 §4):
+   1. invocation contract (into_primary ⇒ target==main + do_push; into_primary +
+      verify_only invalid) → 2. fetch → 3. primary main CLEAN → 4. local HEAD ==
+      origin/main == manifest_main_sha (ahead/behind/diverged = HOLD "baseline",
+      NO merge/rebase/reset) → 5. revalidate frozen ops snapshot (manifest ops
+      head still in current origin/ops lineage, else "frozen_lineage" HOLD) →
+      6. canonical-delta revalidation (recomputed `main..ops` artifact set must
+      EQUAL the manifest set exactly — no omitted/added/deleted/renamed/unknown/
+      denylisted/ambiguous entry; tampering = "delta" FAIL CLOSED) → 7. per-
+      artifact revalidation (§11): source_commit is a commit, is the LATEST path-
+      touch within the frozen batch, path exists there, owner still matches, raw
+      sha256 matches → 8. exact transfer → 9. explicit-path stage → 10. commit →
+      11. post-commit raw-blob verify → 12. push → 13. fetch → 14. verify
+      origin/main == promotion commit → **ONLY THEN** 15. advance
+      `last_promoted_ops_sha` + clear the promotion-pending lock + persist → 16.
+      remove manifest residue → success.
+   - R0 canary: `--target-branch <temp>` (optionally `--push`) — NEVER advances
+     last_promoted, NEVER touches promotion state, NEVER removes the review
+     manifest. `--verify-only` rehearses a temp branch; it is invalid with
+     into_primary.
+4. **Push/remote-verify failure (R0.2 §13):** state =
+   `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`. Local promotion commit PRESERVED,
+   origin/main unchanged, last_promoted unchanged, manifest preserved, no new P1,
+   no unrelated governed-main work. Recovery:
+   `python scripts/ops/promote_batch.py --recover --manifest <path> --target-branch main`
+   — verifies preserved commit parent == manifest_main_sha and artifact hashes ==
+   manifest, then retries the EXACT push; on success advances state + clears lock
+   + removes residue. No reset. If origin/main advanced past the reviewed base
+   (`main_moved`), Founder disposition only.
+5. Promotion record = normal governed main commit (files + receipt). Ops merge
+   history never imported; no broad cherry-pick. Newer ops artifacts are never
+   implicit.
+6. `last_promoted_ops_sha` (external ops state) advances ONLY after a
+   Founder-approved, remote-VERIFIED REAL P1 promotion into main succeeds — never
+   on canary, manifest generation, cron artifact commits, or push failure. It
+   defines the next batch range as provenance.
+7. On REAL P1 success the interactive manifest is removed from the automation
+   working tree (residue); `ops/manifests/` is gitignored and is NEVER a cron
+   allowlist. G0 must return clean before scheduled cron resumes. The
+   promotion-pending lock is cleared ONLY by verified success or explicit
+   cancellation/disposition of that manifest.
 
 ## 8. Maintenance mode (P2 design)
 
@@ -142,15 +187,21 @@ on ops; no promotion; no artifact loss; state remains auditable.
 ## 9. Verification
 
 - Ops tooling: `python -m pytest tests/ops/test_ops_tooling.py -q --basetemp <scratch>`
-  (41 tests; temp git repos only — never the real worktree/remote). R0.1 matrix:
-  T1/T2 sequential ops-ahead lifecycle (the previously-missing acceptance
-  scenario), T3 remote-ops-first, T4 durable S1 push, T5 clean-divergence merge,
-  T6 conflict abort, T7 sync push-failure preserve+block, M1/M2 multi-job
-  manifests, M3 unknown path FAIL, M4 ambiguous ownership FAIL, M5 deletion FAIL,
-  M6 rename FAIL, M7 raw CRLF/latin-1 blob hash, M8 frozen head, canary-vs-real
-  last-promoted semantics, owner-scope, real-source-commit blob, residue removal.
+  (59 tests; temp git repos only — never the real worktree/remote). Matrix:
+  G0 A–E + PENDING (promotion-pending lock), S0–S3 sync lifecycle (T1/T2
+  sequential ops-ahead acceptance, T3 remote-first, T4 durable S1 push, T5 clean-
+  divergence merge, T6 conflict abort, T7 push-failure preserve+block), M1/M2
+  multi-job manifests, M3 unknown path FAIL, M4 ambiguous ownership FAIL, M5
+  deletion FAIL, M6 rename FAIL, M7 raw CRLF/latin-1 blob hash, M8 frozen head,
+  canary-vs-real last-promoted semantics, owner-scope, real-source-commit blob,
+  residue removal, **R0.2 P1-A..P1-G + recovery** (baseline/dirty/contract/target/
+  verify-only refusal, push-failure pending-state preservation, remote-first
+  state advance, deterministic --recover), **M9–M18** (mechanical canonical
+  range, caller-range equality, frozen-lineage HOLD, out-of-batch/stale
+  source_commit HOLD, delta omission/foreign-artifact HOLD, governance-between-
+  batches delta, promotion-pending lock block + clear).
 - Full suite: `python -m pytest` (must stay green; no M5.3 semantic changes).
-  R0.1 gate: 813 passed (795 R0 + 18 net new ops tests).
+  R0.2 gate: 831 passed (813 R0.1 + 18 net new ops tests).
 - Gate: `bash scripts/gate-check.sh` (all gates incl. verification-tag on the
   closeout commit) + `bash scripts/isolation-scan.sh` (clean tree).
 

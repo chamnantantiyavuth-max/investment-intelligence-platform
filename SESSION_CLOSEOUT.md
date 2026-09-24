@@ -1,3 +1,72 @@
+# Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.2 P1 EXECUTION HARDENING — COMPLETE)
+
+## POST-M5.3 O3 R0.2 P1 HARDENING COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
+
+**Session:** Founder independent source review of canonical `main @ aed8462`:
+R0.1-A sync lifecycle = PASS; R0.1-B multi-job manifest/raw-blob = PASS; BUT
+**REAL P1 PROMOTION PATH = NOT YET SAFE** → bounded R0.2 correction executed.
+No FD reopened (FD #142 architecture / M5.3 / C+ / C0 / D-0 / Hermes scheduler /
+Windows Gateway / P1 Founder-approval policy / Learning Loop authority / P2
+prohibition intact).
+
+1. **Pre-mutation pause (§0):** `73e611584447` + `cda817d17236` re-PAUSED via
+   supported CLI (paused_reason = R0.2 bounded correction); all 5 canonical jobs
+   verified PAUSED; no run counts toward gate G.
+2. **Base verified (§1):** `origin/main == origin/ops/automation == local main ==
+   local ops == aed8462`; both worktrees clean.
+3. **RED diagnostics (commit `5069c6b`):** appended R0.2 tests to
+   tests/ops/test_ops_tooling.py — P1-A..P1-G + recovery (§15) + M9–M18 (§16) +
+   flipped the stale R0.1 real-P1 test to the R0.2 contract (into_primary MUST
+   imply push, §3). Ran on current aed8462 → **18 failed / 41 passed** (RED
+   demonstrated; P1-D already guarded by the old target check).
+4. **Implementation (commit `30b8108`):**
+   - ops_config: `promotion_pending()` / `set_promotion_pending()` (§14 lock).
+   - g0_check: new **PENDING** case — G0 FAILS CLOSED while a Founder-review
+     manifest awaits promotion/recovery (§14).
+   - generate_promotion_manifest: batch range now MECHANICAL — origin/main →
+     origin/ops/automation after fetch (§7/§8); caller refs accepted only as a
+     test surface and MUST equal the derived refs (M10); HOLD unless main is an
+     ancestor of ops (§7); `last_promoted_ops_sha` = provenance only, must
+     resolve + be in ops lineage (§9); manifest carries `batch_base_sha` (§8) and
+     frozen ops head == origin/ops at generation (§10); CLI `--from/--to`
+     REMOVED; write_manifest sets the promotion-pending lock (§14).
+   - promote_batch: exact-canonical-main contract (P1-1: target==main, primary
+     branch main, primary CLEAN, local==origin==manifest_main_sha; ahead/behind/
+     diverged = stage "baseline" HOLD, NO merge/rebase/reset); P1-2
+     into_primary⇒do_push (fail before any write); P1-3 into_primary reserved for
+     main; P1-6 into_primary+verify_only invalid; exact §4 success order — remote
+     verified FIRST, THEN last_promoted advances + lock cleared + residue
+     removed; frozen-lineage check (§10); canonical-delta revalidation (§12 —
+     recomputed `main..ops` set must EQUAL manifest set exactly; omission/foreign
+     = "delta" FAIL CLOSED); per-artifact A–G revalidation (§11 — commit check,
+     LATEST path-touch within frozen batch, path exists, owner unchanged, raw
+     blob hash); push failure → `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`
+     (commit preserved, origin/main unchanged, last_promoted unchanged, manifest
+     preserved, no reset) + deterministic `recover_local_promotion` (`--recover`)
+     verifying parent==manifest_main_sha + hashes then retrying the EXACT push
+     (§13); canary NEVER advances state / removes review manifest (§5).
+   - Tests updated to the mechanical API (M1–M8, _manifest_for, source-blob,
+     M14); M8 rewritten to freeze-at-generation semantics.
+5. **Tests green:** ops **59/59** (81.3s) → FULL pytest **831/831** (88.6s, 813
+   R0.1 + 18 net new). gate-check: Gate 6 pending the closeout tag (pattern as
+   R0/R0.1); isolation-scan PASS (working tree + R0.2 range scan: no forbidden
+   paths).
+6. **§19 normalize (this session's pending tail):** push corrected main
+   fast-forward + main→ops sync via the corrected lifecycle (S1/S0 + durable
+   push/verify) → verify `origin/main == origin/ops/automation == local ops`,
+   G0 = case A, no manifest / no promotion_pending residue, all 5 jobs PAUSED.
+7. **Resume after green (§20):** `73e611584447` (Nick-Weekly, Sat 26 Sep 09:00)
+   + `cda817d17236` (Mid-Week Radar, Thu 01 Oct 08:00) — natural occurrences
+   only, no forced runs. Weekly Radar + CIW + Learning Loop stay PAUSED.
+
+**Next action (recommended):** after the two REAL clean scheduled artifact cycles
+(from ≥2 distinct job classes) + ≥1 verified P1 canary/batch → generate the
+deterministic multi-job P1 manifest (mechanical canonical range) → Founder
+approval → real P1 → M6 gate. No P1 manifest before both cycles complete.
+Alternatives: (B) resume later / staggered; (C) re-review R0.2 first.
+
+---
+
 # Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.1 BOUNDED CORRECTION — COMPLETE)
 
 ## POST-M5.3 O3 R0.1 CORRECTION COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
