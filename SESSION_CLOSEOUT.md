@@ -1,3 +1,64 @@
+# Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.1 BOUNDED CORRECTION — COMPLETE)
+
+## POST-M5.3 O3 R0.1 CORRECTION COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
+
+**Session:** Founder independent source review of canonical `main @ e88a7f2` returned
+`R0 NOT YET ACCEPTED` and ordered a bounded R0.1 implementation correction. Does NOT
+reopen FD #142 architecture / M5.3 / D-0 / C0 / P1 policy / Learning Loop authority.
+
+- **Pause first (before any code mutation):** both resumed live artifact jobs re-PAUSED
+  via supported CLI — `cda817d17236` (Mid-Week Radar) + `73e611584447` (Nick-Weekly AM);
+  verified all 5 canonical jobs PAUSED. No run during the correction counts toward gate G.
+- **Canonical base verified:** `origin/main == origin/ops/automation == local HEAD == e88a7f2`.
+- **R0.1-A — sync lifecycle:** now S0/S1/S2/S3. OPS_AHEAD (`main=A, ops=A-R1`) is the
+  NORMAL post-artifact state: S2 = no-op, preserve, base = ops HEAD. S1 = ff + **push +
+  remote-verify BEFORE persisting OPS_SYNC_BASE_SHA** (durable baseline — no false case C
+  after a mid-run job failure). S3 = true divergence → normal main→ops merge in the ops
+  worktree only: clean → push/verify, base = merge HEAD; conflict → abort, clean verify,
+  preserve pre-merge ops HEAD, FAIL CLOSED. Remote-first: local ops is --ff-only'd to
+  origin/ops/automation and verified equal before main-vs-ops evaluation (G0 B contract;
+  C/D remain G0 blocks).
+- **R0.1-B — P1 manifest:** ONE manifest may span multiple job classes (Radar+AM /
+  Radar+CIW). Ownership DERIVED mechanically per path from anchored allowlists
+  (owning_jobs: 0 matches or >1 matches = FAIL CLOSED; `--job` = optional constraint
+  only; Learning Loop never owns repo artifacts). Per-artifact `source_commit` = actual
+  latest commit in `base..head` touching that path; `sha256` = SHA-256 over raw `git
+  show <c>:<path>` blob bytes via new binary `run_git_bytes` (no text decode / no
+  newline conversion / no errors=replace — blob bytes authoritative); mechanical
+  `run_timestamp`; truthful null PIT. `promote_batch` consumes per-artifact
+  independently: owner-scoped allowlist (never widened), blob at real source_commit,
+  same raw-blob hash definition, post-commit re-verify. `last_promoted_ops_sha` advances
+  ONLY after real Founder-approved P1 into main; canary/manifest-gen/cron never.
+  `ops/manifests/` gitignored; success removes residue → G0 clean.
+- **TDD RED→GREEN:** commit `3228284` = R0.1 diagnostic suite (T1–T7 + M1/M7) run RED
+  against R0 code: **9 failed / 23 passed** (T1/T2 = the previously-missing ops-ahead
+  acceptance scenario). After corrections: **ops 41/41** · **FULL pytest 813/813** (63.3s)
+  · gate-check PASS · isolation-scan PASS.
+- **Commits (bounded, no history rewrite):** `3228284` RED diagnostics → `4c80edf` sync
+  lifecycle S0–S3 → `ebc69ee` multi-job manifest + raw-blob + last-promoted + residue →
+  `(R0.1 closeout)`.
+- **Post-closeout:** corrected main pushed fast-forward; `main → ops` synchronized with
+  the CORRECTED lifecycle helper (S1 + durable push/verify); ops worktree clean
+  (G0 case A); OPS_SYNC_BASE_SHA = corrected main SHA. No artifact/manifest test residue.
+
+**State:** all 5 canonical cron jobs PAUSED · corrected main = corrected ops HEAD ·
+G0 = case A · M5.3 FROZEN · M6 PARKED.
+
+**Recommended next action:** resume ONLY `cda817d17236` (Thu) + `73e611584447` (Sat) at
+their NATURAL scheduled occurrences — no forced runs — and verify each per runbook §4
+(G0 A/B → sync S0–S3 → validate → commit/push → main SHA unchanged → worktree clean).
+Keep Weekly Radar + CIW + Learning Loop PAUSED. After TWO REAL clean scheduled artifact
+cycles from ≥2 distinct classes: STOP and return the deterministic multi-job P1 manifest
+for Founder approval. No P1 manifest before both cycles complete. Alternatives:
+(B) resume all artifact jobs at once (deviates from §6 order); (C) wait longer.
+
+> **Scope:** R0.1 implementation conformance to FD #142. No FD #142 reopen; no M5.3
+> change; no Hermes patch; no gateway mutation; no promotion to main; no M6 work.
+
+<!-- 2026-09-24 13:00 UTC+7 -->
+
+---
+
 # Session — 2026-09-23 (interactive: POST-M5.3 O3 — FINAL FOUNDER RULING A–G + R0 IMPLEMENTATION — COMPLETE)
 
 ## POST-M5.3 O3 R0 IMPLEMENTED — 23 Sep 2026 (FD #142)
