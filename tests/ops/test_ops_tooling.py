@@ -21,6 +21,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "ops"))
 
 import ops_config  # noqa: E402
+import ops_git  # noqa: E402
 import g0_check  # noqa: E402
 import sync_main_to_ops  # noqa: E402
 import validate_delta  # noqa: E402
@@ -182,16 +183,6 @@ def test_sync_ff_captures_base(fx):
     assert res["ops_sync_base_sha"] == main
     assert git(fx["ops"], "rev-parse", "HEAD").strip() == main  # fast-forwarded
     assert ops_config.load_state()["ops_sync_base_sha"] == main
-
-
-def test_sync_diverged_fail_closed(fx):
-    write(fx["ops"], "evidence/radar/digests/2026-09-23-radar-digest.md")
-    git(fx["ops"], "add", "-A"); git(fx["ops"], "commit", "-m", "local divergent")
-    write(fx["canonical"], "docs/gov.md"); git(fx["canonical"], "add", "-A")
-    git(fx["canonical"], "commit", "-m", "main divergent"); git(fx["canonical"], "push", "origin", "main")
-    res = sync_main_to_ops.sync_main_to_ops(fx["ops"], fx["canonical"], do_fetch=True, persist=False)
-    assert res["ok"] is False
-    assert "FAIL CLOSED" in res["reason"]
 
 
 def test_ops_sync_base_delta_semantics(fx):
@@ -378,9 +369,10 @@ def test_t2_two_sequential_normal_cron_cycles(fx):
     # cycle 2's own next pre-run sync: ops=A-R1-R2, main=A -> S2 PASS
     s2 = sync_main_to_ops.sync_main_to_ops(fx["ops"], fx["canonical"], do_fetch=True, persist=True)
     assert s2["ok"] is True and s2["ops_sync_base_sha"] == r2
-    # both artifacts on remote ops; main untouched
-    assert "2026-09-23-radar-digest.md" in git(fx["ops"], "show", "--stat", r2)
-    assert "2026-09-24-radar-digest.md" in git(fx["ops"], "show", "--stat", r2)
+    # both artifacts are in the final ops tree; main untouched
+    tree = set(git(fx["ops"], "ls-tree", "-r", "--name-only", r2).splitlines())
+    assert "evidence/radar/digests/2026-09-23-radar-digest.md" in tree
+    assert "evidence/radar/digests/2026-09-24-radar-digest.md" in tree
     assert git(fx["canonical"], "rev-parse", "origin/main").strip() == a
 
 
@@ -444,8 +436,8 @@ def test_t5_divergence_clean_merge(fx):
     # ops contains both histories
     assert r1 in git(fx["ops"], "log", "--format=%H").split()
     assert g1 in git(fx["ops"], "log", "--format=%H").split()
-    assert "docs/gov.md" in git(fx["ops"], "show", "--stat", "HEAD")
-    assert "2026-09-23-radar-digest.md" in git(fx["ops"], "show", "--stat", "HEAD")
+    assert "docs/gov.md" in git(fx["ops"], "ls-tree", "-r", "--name-only", "HEAD").splitlines()
+    assert "evidence/radar/digests/2026-09-23-radar-digest.md" in git(fx["ops"], "ls-tree", "-r", "--name-only", "HEAD").splitlines()
     # main unchanged; remote ops verified
     assert git(fx["canonical"], "rev-parse", "origin/main").strip() == g1
     assert git(fx["ops"], "rev-parse", "origin/ops/automation").strip() == head
