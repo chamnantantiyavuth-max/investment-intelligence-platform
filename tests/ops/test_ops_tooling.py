@@ -664,16 +664,19 @@ def test_canary_does_not_advance_last_promoted(fx):
 
 
 def test_real_p1_advances_last_promoted_and_removes_residue(fx):
-    """Founder-approved REAL P1 (into_primary) advances last_promoted mechanically
-    and removes the manifest residue from the automation worktree (R0.1 §13/§14)."""
+    """Founder-approved REAL P1 (into_primary + push) advances last_promoted
+    mechanically, clears the promotion-pending lock, and removes manifest residue
+    (R0.1 §13/§14; R0.2 §3 into_primary MUST imply do_push — no local-only success)."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head = _make_artifact_commit(fx, "evidence/radar/digests/2026-09-23-radar-digest.md", base)
     m = _manifest_for(fx, WEEKLY, head, base)
-    mp = fx["ops"] / "m.json"; mp.write_text(json.dumps(m), encoding="utf-8")
+    mp = _write_manifest(fx, m)
+    _pending_lock("p1-real")
     res = promote_batch.promote_batch(mp, "main", fx["canonical"], fx["ops"],
-                                      do_push=False, into_primary=True)
-    assert res["ok"] is True
+                                      do_push=True, into_primary=True)
+    assert res["ok"] is True and res["remote_verified"] is True
     assert ops_config.load_state()["last_promoted_ops_sha"] == head
+    assert "promotion_pending_manifest_id" not in ops_config.load_state()
     # artifact landed on governed main
     assert "evidence/radar/digests/2026-09-23-radar-digest.md" in \
         git(fx["canonical"], "ls-tree", "-r", "--name-only", "main").splitlines()
@@ -712,5 +715,313 @@ def test_promotion_uses_real_source_commit_blob(fx):
         assert hashlib.sha256(data).hexdigest() == art["sha256"]
 
 
-# footer: 2026-09-24 12:40 UTC+7 (R0.1 multi-job manifest tests)
+# ---- R0.2 P1 execution hardening RED diagnostics (POST-M5.3 O3 R0.2, 24 Sep 2026) ---
+# The REAL P1 path must start from EXACT canonical main, require push, verify remote
+# BEFORE advancing state, revalidate the entire frozen batch against the canonical
+# delta, and enforce a mechanical promotion-pending lock. These tests demonstrate the
+# R0.1 gaps BEFORE the runtime hardening (TDD RED). Contract: §15 P1-A..P1-G +
+# recovery; §16 M9..M18. R0.1 T1-T7, M1-M8, S0-S3, G0 A-E must stay GREEN.
+
+RADAR23 = "evidence/radar/digests/2026-09-23-radar-digest.md"
+RADAR24 = "evidence/radar/digests/2026-09-24-radar-digest.md"
+
+
+def _refresh_ops_ref(fx):
+    git(str(fx["canonical"]), "fetch", "origin",
+        "ops/automation:refs/remotes/origin/ops/automation")
+
+
+def _pending_lock(state_val="p1-r02-00000000"):
+    ops_config.save_state({**ops_config.load_state(),
+                           "promotion_pending_manifest_id": state_val})
+
+
+def _write_manifest(fx, m):
+    mp = fx["ops"] / "m.json"
+    mp.write_text(json.dumps(m), encoding="utf-8")
+    return mp
+
+
+def _real_p1_args(mp, fx):
+    return dict(manifest_path=mp, target_branch="main", repo=str(fx["canonical"]),
+                operations_worktree=str(fx["ops"]), do_push=True, into_primary=True)
+
+
+def test_p1a_local_main_ahead_refuses(fx):
+    """P1-1D: REAL P1 refuses BEFORE mutation when local primary main is AHEAD of
+    origin/main (no merge/rebase/reset/auto-resolve)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    # local main advances WITHOUT push — origin/main still == manifest_main_sha
+    write(fx["canonical"], "docs/unpushed.md", "x")
+    git(fx["canonical"], "add", "-A")
+    git(fx["canonical"], "commit", "-m", "unpushed local commit")
+    local_head = git(fx["canonical"], "rev-parse", "HEAD").strip()
+    origin_before = git(fx["canonical"], "rev-parse", "origin/main").strip()
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "baseline"
+    assert git(fx["canonical"], "rev-parse", "HEAD").strip() == local_head   # preserved
+    assert git(fx["canonical"], "rev-parse", "origin/main").strip() == origin_before
+    assert RADAR23 not in git(fx["canonical"], "ls-tree", "-r", "--name-only",
+                              "main").splitlines()  # no promotion commit
+
+
+def test_p1b_dirty_main_refuses(fx):
+    """P1-1C: REAL P1 refuses when the primary main worktree is dirty (staged/
+    unstaged/untracked) — FAIL CLOSED, never reset/clean."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    write(fx["canonical"], "evidence/unstaged.tmp", "x")   # untracked residue
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "dirty"
+    assert ops_git.porcelain(fx["canonical"])               # preserved untouched
+
+
+def test_p1c_into_primary_requires_push(fx):
+    """P1-2: into_primary=True MUST imply do_push=True — the invalid combination
+    fails BEFORE writing any artifact."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "main", fx["canonical"], fx["ops"],
+                                      do_push=False, into_primary=True)
+    assert res["ok"] is False and res["stage"] == "contract"
+    assert RADAR23 not in git(fx["canonical"], "ls-tree", "-r", "--name-only",
+                              "main").splitlines()    # main untouched
+
+
+def test_p1d_into_primary_target_must_be_main(fx):
+    """P1-3: into_primary is reserved exclusively for target_branch == 'main'."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"],
+                                      do_push=True, into_primary=True)
+    assert res["ok"] is False and res["stage"] == "target"
+
+
+def test_p1e_into_primary_verify_only_refused(fx):
+    """P1-6: into_primary + verify_only is invalid and must never dirty main."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "main", fx["canonical"], fx["ops"],
+                                      do_push=True, into_primary=True, verify_only=True)
+    assert res["ok"] is False and res["stage"] == "contract"
+    assert not ops_git.porcelain(fx["canonical"])           # main stays pristine
+
+
+def test_p1f_push_failure_preserves_commit_and_state(fx, monkeypatch):
+    """P1-13: real-P1 push failure -> P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY:
+    local promotion commit PRESERVED, origin/main unchanged, last_promoted NOT
+    advanced, manifest preserved — no reset/discard."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    real_run = ops_git.run_git
+
+    def fake_run(cwd, *args, **kw):
+        if args and args[0] == "push" and "origin" in args:
+            raise ops_git.OpsGitError("simulated network push failure")
+        return real_run(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", fake_run)
+    origin_before = git(fx["canonical"], "rev-parse", "origin/main").strip()
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False
+    assert res.get("pending_state") == "P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY"
+    assert git(fx["canonical"], "rev-parse", "origin/main").strip() == origin_before
+    assert ops_config.load_state().get("last_promoted_ops_sha") != head  # NOT advanced
+    assert mp.exists()                                                   # manifest preserved
+    # the local promotion commit is PRESERVED (HEAD advanced once; never reset)
+    assert git(fx["canonical"], "rev-parse", "HEAD").strip() == res["commit"]
+
+
+def test_p1_failure_recovery_exact_push(fx, monkeypatch):
+    """P1-13 recovery tool: verify local commit parent == manifest_main_sha and
+    artifact hashes == manifest, then retry the EXACT push. No reset."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    real_run = ops_git.run_git
+    calls = {"n": 0}
+
+    def fake_run(cwd, *args, **kw):
+        if args and args[0] == "push" and "origin" in args and calls["n"] == 0:
+            calls["n"] += 1
+            raise ops_git.OpsGitError("simulated network push failure")
+        return real_run(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", fake_run)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res.get("pending_state") == "P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY"
+    rec = promote_batch.recover_local_promotion(mp, str(fx["canonical"]), str(fx["ops"]))
+    assert rec["ok"] is True
+    assert rec["commit"] == res["commit"]
+    assert git(fx["canonical"], "rev-parse", "origin/main").strip() == rec["commit"]
+    assert ops_config.load_state()["last_promoted_ops_sha"] == m["manifest_ops_head_sha"]
+    assert "promotion_pending_manifest_id" not in ops_config.load_state()
+    assert not mp.exists()
+
+
+def test_p1g_success_remote_verified_then_state_advances(fx):
+    """P1-4 order: real P1 success = remote verified FIRST, THEN last_promoted
+    advances, THEN lock cleared + residue removed. Lock is SET during promotion."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    _pending_lock("p1-g")
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is True
+    assert res["remote_verified"] is True
+    assert git(fx["canonical"], "rev-parse", "origin/main").strip() == res["commit"]
+    assert ops_config.load_state()["last_promoted_ops_sha"] == m["manifest_ops_head_sha"]
+    assert "promotion_pending_manifest_id" not in ops_config.load_state()  # lock cleared
+    assert not mp.exists()                                                  # residue removed
+
+
+def test_m9_production_manifest_uses_canonical_refs(fx):
+    """P1-4/M9: production manifest derives the range MECHANICALLY from
+    origin/main -> origin/ops/automation — no caller-selected refs."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    repo = str(fx["canonical"])
+    _refresh_ops_ref(fx)
+    m = generate_promotion_manifest.generate_manifest(repo, fetch=False)
+    assert m["manifest_main_sha"] == git(repo, "rev-parse", "origin/main").strip()
+    assert m["manifest_ops_head_sha"] == git(repo, "rev-parse", "origin/ops/automation").strip()
+    assert m["batch_base_sha"] == m["manifest_main_sha"]
+    a = m["artifacts"][0]
+    assert a["path"] == RADAR23 and a["source_commit"] == head
+
+
+def test_m10_caller_range_must_equal_canonical(fx):
+    """M10: caller-supplied refs MUST equal the mechanically derived canonical refs."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    repo = str(fx["canonical"])
+    _refresh_ops_ref(fx)
+    with pytest.raises(ValueError, match="origin/main"):
+        generate_promotion_manifest.generate_manifest(repo, manifest_main_sha=head, fetch=False)
+
+
+def test_m11_ops_head_outside_lineage_holds(fx):
+    """M11: manifest ops head no longer in canonical origin/ops lineage -> HOLD."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    # sever the lineage: force-push canonical main (init) over ops/automation
+    git(fx["canonical"], "push", "--force", "origin", "main:refs/heads/ops/automation")
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
+    assert res["ok"] is False and res["stage"] == "frozen_lineage"
+
+
+def test_m12_source_commit_outside_batch_holds(fx):
+    """M12: source_commit outside the frozen batch (base commit, not in main..head)
+    -> HOLD at promotion."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["artifacts"][0]["source_commit"] = git(fx["canonical"], "rev-parse", "HEAD").strip()  # init/base
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
+    assert res["ok"] is False and res["stage"] == "source"
+
+
+def test_m13_stale_source_commit_holds(fx):
+    """M13: source_commit is not the LATEST path-touch in the frozen range -> HOLD."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    write(fx["ops"], RADAR23, "v1"); git(fx["ops"], "add", "--", RADAR23)
+    git(fx["ops"], "commit", "-m", "r1"); git(fx["ops"], "push", "origin", "ops/automation")
+    r1 = git(fx["ops"], "rev-parse", "HEAD").strip()
+    write(fx["ops"], RADAR23, "v2"); git(fx["ops"], "add", "--", RADAR23)
+    git(fx["ops"], "commit", "-m", "r2"); git(fx["ops"], "push", "origin", "ops/automation")
+    r2 = git(fx["ops"], "rev-parse", "HEAD").strip()
+    m = _manifest_for(fx, WEEKLY, r2, base)          # generator says latest touch = r2
+    assert m["artifacts"][0]["source_commit"] == r2
+    m["artifacts"][0]["source_commit"] = r1          # stale claim
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
+    assert res["ok"] is False and res["stage"] == "source"
+
+
+def test_m14_manifest_subset_omission_holds(fx):
+    """M14: manifest artifact set must EQUAL the canonical batch delta — dropping
+    one artifact (Founder approval = the exact deterministic batch) -> HOLD."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    r = _make_artifact_commit(fx, RADAR23, base)
+    h = _make_artifact_commit(fx, AM_REL, r)
+    repo = str(fx["canonical"]); _refresh_ops_ref(fx)
+    m = generate_promotion_manifest.generate_manifest(repo, base, h,
+                                                      expected_jobs=[WEEKLY, AM], fetch=False)
+    m["artifacts"] = [a for a in m["artifacts"] if a["job_id"] != AM]   # omitted artifact
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
+    assert res["ok"] is False and res["stage"] == "delta"
+
+
+def test_m15_manifest_adds_foreign_artifact_holds(fx):
+    """M15: manifest adds an artifact NOT in the canonical delta -> HOLD."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    m["artifacts"].append({"path": RADAR24, "job_id": WEEKLY,
+                           "source_commit": head, "sha256": "0" * 64})
+    mp = _write_manifest(fx, m)
+    res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
+    assert res["ok"] is False and res["stage"] == "delta"
+
+
+def test_m16_governance_between_batches_delta_only_unpromoted(fx):
+    """M16: a governed main commit between batches + main->ops sync must NOT fail;
+    the new canonical delta contains ONLY currently-unpromoted ops artifacts."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    _make_artifact_commit(fx, RADAR23, base)             # batch-1 ops artifact
+    # governed main commit arrives between batches
+    write(fx["canonical"], "docs/gov.md", "x"); git(fx["canonical"], "add", "-A")
+    git(fx["canonical"], "commit", "-m", "governed docs commit")
+    git(fx["canonical"], "push", "origin", "main")
+    # main -> ops sync (S3 clean merge in the ops worktree, exactly the sync helper)
+    git(fx["ops"], "fetch", "origin", "main:refs/remotes/origin/main")
+    git(fx["ops"], "merge", "origin/main", "-m", "sync main into ops")
+    git(fx["ops"], "push", "origin", "ops/automation")
+    repo = str(fx["canonical"]); git(repo, "fetch", "origin")
+    m = generate_promotion_manifest.generate_manifest(repo, fetch=False)   # MECHANICAL
+    assert m["manifest_main_sha"] == git(repo, "rev-parse", "origin/main").strip()
+    assert m["batch_base_sha"] == m["manifest_main_sha"]
+    assert [a["path"] for a in m["artifacts"]] == [RADAR23]  # ONLY the unpromoted artifact
+
+
+def test_m17_promotion_pending_blocks_preflight(fx):
+    """M17: promotion_pending_manifest_id set -> G0 preflight refuses new jobs
+    (FAIL CLOSED; mechanical, not merely procedural)."""
+    _pending_lock("p1-x")
+    res = g0_check.g0_check(fx["ops"], fx["canonical"])
+    assert res["ok"] is False and res["case"] == "PENDING"
+
+
+def test_m18_successful_p1_clears_promotion_pending(fx):
+    """M18: a successful verified REAL P1 clears promotion_pending_manifest_id."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    mp = _write_manifest(fx, m)
+    _pending_lock("p1-m18")
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is True
+    assert "promotion_pending_manifest_id" not in ops_config.load_state()
+
+
+# footer: 2026-09-24 13:30 UTC+7 (R0.2 P1-execution-hardening RED diagnostics)
 
