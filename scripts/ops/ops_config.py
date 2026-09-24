@@ -101,6 +101,17 @@ def allowed_for(job_id: str, rel: str) -> bool:
     return any(p.fullmatch(rel) for p in pats)
 
 
+def owning_jobs(rel: str) -> list[str]:
+    """ALL job ids whose anchored allowlist fullmatches rel, in config order.
+
+    Mechanical path-authority derivation for multi-job P1 manifests (R0.1 87):
+    exactly one match = the owning job; zero = unknown (FAIL CLOSED); more than
+    one = ambiguous ownership (FAIL CLOSED).
+    """
+    rel = normalize_rel(rel)
+    return [jid for jid in JOB_ALLOWLISTS if allowed_for(jid, rel)]
+
+
 def job_exists(job_id: str) -> bool:
     return job_id in JOB_ALLOWLISTS
 

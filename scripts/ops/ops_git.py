@@ -31,6 +31,32 @@ def run_git(cwd: str | Path, *args: str, check: bool = True, env_extra: dict | N
     return res.stdout
 
 
+def run_git_bytes(cwd: str | Path, *args: str, check: bool = True,
+                  env_extra: dict | None = None) -> bytes:
+    """Binary git output — used for `git show <commit>:<path>` so blob bytes are
+    hashed EXACTLY (no text decoding, no newline conversion, no errors=replace).
+    Working-tree encoding is irrelevant; git blob bytes are authoritative (R0.1 89)."""
+    env = None
+    if env_extra:
+        import os
+        env = dict(os.environ)
+        env.update(env_extra)
+    res = subprocess.run(
+        ["git", *args],
+        cwd=str(cwd),
+        capture_output=True,
+        check=False,
+        text=False,
+        encoding=None,
+        errors=None,
+        env=env,
+    )
+    if check and res.returncode != 0:
+        err = res.stderr.decode("utf-8", errors="replace").strip()
+        raise OpsGitError(f"git {' '.join(args)} failed ({res.returncode}): {err}")
+    return res.stdout
+
+
 def is_ancestor(cwd: str | Path, ancestor: str, descendant: str) -> bool:
     try:
         run_git(cwd, "merge-base", "--is-ancestor", ancestor, descendant)

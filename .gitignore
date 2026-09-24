@@ -56,3 +56,8 @@ discovery/equity_inflection/output/*
 evidence/harness/**/kanban-*.db*
 evidence/harness/**/*.sqlite*
 evidence/harness/**/*.sqlite3*
+
+# C+ ops (FD #142): interactive P1 manifest review files — NEVER a cron allowlist.
+# Interactive residue only; removed after successful promotion (R0.1 14); gitignored
+# so G0 porcelain stays clean while automation is paused awaiting Founder review.
+ops/manifests/
