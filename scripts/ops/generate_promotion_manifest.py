@@ -254,13 +254,53 @@ def generate_manifest(repo: str | Path,
 
 
 def write_manifest(manifest: dict, repo: str | Path, worktree: str | Path) -> Path:
+    """LOCK-FIRST manifest publication (R0.4 §9).
+
+    Sequence: 1) compute the exact immutable digest, 2) atomically persist the
+    pending id + pending digest, 3) write the manifest atomically
+    (temp + complete write + fsync + replace), 4) if the manifest write FAILS,
+    the pending lock is KEPT and recovery/cancellation is required — a review
+    manifest without its lock is NEVER an acceptable state (a conservatively
+    STUCK lock is)."""
     wp = Path(worktree)
     out = wp / "ops" / "manifests" / f"{manifest['manifest_id']}.json"
+    digest = manifest_immutable_digest(manifest)
+    # 2. lock FIRST — pending id + exact immutable digest, one atomic write
+    ops_config.set_promotion_pending(manifest["manifest_id"], digest)
+    # 3. atomic manifest file write
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
-    # R0.2 §14: a Founder-review manifest exists — artifact-cron preflight / G0
-    # FAILS CLOSED until a verified REAL P1 clears it or explicit cancellation
-    ops_config.set_promotion_pending(manifest["manifest_id"])
+    tmp = out.with_name(f".{out.name}.tmp.{os.getpid()}")
+    data = json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8")
+    fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        written = 0
+        while written < len(data):
+            n = os.write(fd, data[written:])
+            if n is None or n <= 0:
+                raise OSError(f"short write on manifest at offset {written}")
+            written += n
+        os.fsync(fd)
+    except OSError:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+    else:
+        os.close(fd)
+    try:
+        os.replace(tmp, out)
+    except OSError:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        # 4. KEEP the pending lock — recovery/cancellation required (R0.4 §9)
+        raise
     return out
 
 
@@ -281,6 +321,82 @@ def _load_manifest_file(path: str | Path):
         if key not in m:
             raise ValueError(f"manifest {path} missing required key {key!r}")
     return m
+
+
+def cancel_manifest(manifest_path: str | Path, repo: str | Path | None = None,
+                    worktree: str | Path | None = None) -> dict:
+    """Exact-disposition cancellation (R0.4 §3) — the module-level API used by
+    the CLI and locked by R4-B1..B4.
+
+    For an APPROVED manifest requires ALL: supplied id == pending id,
+    pending digest == recomputed immutable digest, approval receipt id ==
+    manifest id, receipt digest == recomputed digest, disposition == CANCELLED.
+    For an unapproved AWAITING manifest requires the exact pending id + digest.
+    If a PENDING RECOVERY record exists for the SAME manifest/digest,
+    ordinary cancellation REFUSES (a preserved local P1 commit must never be
+    silently destroyed) — Founder recovery-disposition required.
+
+    On success performs ONE atomic state transition clearing ONLY the matching
+    promotion-pending pair (+ the approval pair for an approved manifest).
+    Returns {"ok", "stage", "reason"}.
+    """
+    res = {"ok": False, "stage": "", "reason": ""}
+    try:
+        m = _load_manifest_file(manifest_path)
+    except ValueError as e:
+        res.update(stage="manifest", reason=str(e))
+        return res
+    digest = manifest_immutable_digest(m)
+    mid = m["manifest_id"]
+    try:
+        state = ops_config.load_state()
+    except ops_config.StateError as e:
+        res.update(stage="state_corrupt", reason=f"ops-state corrupt: {e}")
+        return res
+    pending_id = state.get("promotion_pending_manifest_id")
+    pending_digest = state.get("promotion_pending_manifest_sha256")
+    approved_id = state.get("approved_manifest_id")
+    approved_sha = state.get("approved_manifest_sha256")
+    # exact pending identity (id + digest) ALWAYS required for cancellation
+    if pending_id != mid or pending_digest != digest:
+        res.update(stage="pending",
+                   reason=f"pending pair ({pending_id!r}/{pending_digest!r}) does not "
+                          f"match supplied manifest {mid!r}/{digest!r} — one manifest "
+                          "never cancels another (R0.4 §3)")
+        return res
+    # a preserved local P1 commit must NEVER be destroyed silently
+    rec = ops_config.pending_p1_record()
+    if rec.get("pending_p1_manifest_id") == mid and \
+            rec.get("pending_p1_manifest_sha256") == digest:
+        res.update(stage="recovery",
+                   reason="pending-P1 recovery record exists for this exact "
+                          "manifest/digest — ordinary cancellation REFUSES; "
+                          "Founder recovery-disposition required (R0.4 §3)")
+        return res
+    if approved_id == mid and approved_sha == digest:
+        if m.get("disposition") != "CANCELLED":
+            res.update(stage="disposition",
+                       reason="approved manifest cancellation requires "
+                              "disposition == CANCELLED (exact-disposition flow, "
+                              "R0.4 §3)")
+            return res
+        st = dict(state)
+        st.pop("promotion_pending_manifest_id", None)
+        st.pop("promotion_pending_manifest_sha256", None)
+        st.pop("approved_manifest_id", None)
+        st.pop("approved_manifest_sha256", None)
+        ops_config.save_state(st)              # ONE atomic transition
+        res.update(ok=True, stage="approved_cancelled",
+                   reason=f"approved manifest {mid} cancelled (digest-bound)")
+        return res
+    # unapproved AWAITING manifest: exact pending pair -> clear pending pair only
+    st = dict(state)
+    st.pop("promotion_pending_manifest_id", None)
+    st.pop("promotion_pending_manifest_sha256", None)
+    ops_config.save_state(st)                  # ONE atomic transition
+    res.update(ok=True, stage="cancelled",
+               reason=f"AWAITING manifest {mid} cancelled (exact pending id + digest)")
+    return res
 
 
 # footer: 2026-09-24 15:30 UTC+7 (R0.3 immutable-digest + approval/cancel CLI + corrupt-state HOLD)
@@ -317,41 +433,39 @@ def main() -> int:
         if not args.manifest:
             print("error: --approve/--cancel requires --manifest <path>", file=sys.stderr)
             return 1
-        m = _load_manifest_file(args.manifest)
-        digest = manifest_immutable_digest(m)
+        if args.cancel:
+            res = cancel_manifest(args.manifest)
+            print(json.dumps(res, indent=2, sort_keys=True))
+            return 0 if res["ok"] else 1
+        # --approve (exact-manifest identity BEFORE approval — R0.4 §3/§9)
         try:
-            pending = ops_config.promotion_pending()
+            m = _load_manifest_file(args.manifest)
+            digest = manifest_immutable_digest(m)
+            state = ops_config.load_state()
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
         except ops_config.StateError as e:
             print(f"error: ops-state corrupt — HOLD: {e}", file=sys.stderr)
             return 1
-        if pending != m["manifest_id"]:
-            print(f"error: pending manifest {pending!r} != supplied {m['manifest_id']!r} "
-                  f"— cancellation/approval must name the EXACT pending manifest (R0.3 §13)",
-                  file=sys.stderr)
+        if (state.get("promotion_pending_manifest_id") != m["manifest_id"]
+                or state.get("promotion_pending_manifest_sha256") != digest):
+            print(f"error: approval must name the EXACT pending manifest — pending "
+                  f"pair does not match supplied {m['manifest_id']!r}/{digest!r} "
+                  f"(R0.4 §3)", file=sys.stderr)
             return 1
-        if args.approve:
-            if m.get("disposition") != "APPROVED":
-                print(f"error: disposition is {m.get('disposition')!r}, not APPROVED — "
-                      "the Founder-approved manifest must carry disposition=APPROVED "
-                      "before the receipt is bound (R0.3 §2)", file=sys.stderr)
-                return 1
-            ops_config.set_approval_receipt(m["manifest_id"], digest)
-            print(json.dumps({"approved_manifest_id": m["manifest_id"],
-                              "approved_manifest_sha256": digest,
-                              "pending": pending}, indent=2, sort_keys=True))
-            print("APPROVAL_RECEIPT_BOUND — real P1 now matches pending + receipt + "
-                  "recomputed digest + disposition=APPROVED")
-            return 0
-        if m.get("disposition") == "APPROVED" or ops_config.approval_receipt():
-            print("error: manifest has an approval receipt / APPROVED disposition — "
-                  "cancellation of an approved manifest requires explicit Founder "
-                  "disposition (set manifest disposition=CANCELLED first)",
-                  file=sys.stderr)
+        if m.get("disposition") != "APPROVED":
+            print(f"error: disposition is {m.get('disposition')!r}, not APPROVED — "
+                  "the Founder-approved manifest must carry disposition=APPROVED "
+                  "before the receipt is bound (R0.3 §2)", file=sys.stderr)
             return 1
-        ops_config.set_promotion_pending(None)
-        print(json.dumps({"cancelled_manifest_id": m["manifest_id"],
-                          "immutable_digest": digest}, indent=2, sort_keys=True))
-        print("PROMOTION_PENDING_CLEARED — exact manifest cancelled (R0.3 §13)")
+        ops_config.set_approval_receipt(m["manifest_id"], digest)
+        print(json.dumps({"approved_manifest_id": m["manifest_id"],
+                          "approved_manifest_sha256": digest,
+                          "pending_id_matched": True,
+                          "pending_digest_matched": True}, indent=2, sort_keys=True))
+        print("APPROVAL_RECEIPT_BOUND — real P1 now matches pending (id+digest) + "
+              "receipt + recomputed digest + disposition=APPROVED")
         return 0
 
     manifest = generate_manifest(args.repo, expected_jobs=args.job,

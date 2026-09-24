@@ -126,21 +126,41 @@ def state_dir() -> Path:
 
 
 class StateError(RuntimeError):
-    """ops-state is corrupt/unreadable — FAIL CLOSED (R0.3 §6). An existing
-    malformed/truncated/unreadable state is NEVER interpreted as 'no lock';
-    callers must HOLD (G0 -> STATE_CORRUPT, manifest generation HOLD, real P1
-    HOLD, recovery HOLD unless a safe path reads valid state)."""
+    """ops-state is corrupt/unreadable — FAIL CLOSED (R0.3 §6; R0.4 §8). An
+    existing malformed/truncated/unreadable state is NEVER interpreted as
+    'no lock'; callers must HOLD (G0 -> STATE_CORRUPT, manifest generation
+    HOLD, real P1 HOLD, recovery HOLD unless a safe path reads valid state).
+    Covers structural invariants too: impossible PARTIAL tuples are StateError,
+    never silently 'not approved' / 'no lock' (R0.4 §8)."""
 
+
+# The seven promotion-state keys — the ONLY keys a promotion/cancellation
+# transition ever mutates (R0.4 §7). Never use generic clear helpers that
+# could clear a newly-written FOREIGN record; mutate in ONE save_state().
+_PROMOTION_STATE_KEYS = (
+    "promotion_pending_manifest_id",
+    "promotion_pending_manifest_sha256",
+    "approved_manifest_id",
+    "approved_manifest_sha256",
+    "pending_p1_manifest_id",
+    "pending_p1_manifest_sha256",
+    "pending_p1_local_commit_sha",
+)
 
 def load_state() -> dict:
-    """Fail-closed ops-state read (R0.3 §6).
+    """Fail-closed ops-state read (R0.3 §6; R0.4 §8).
 
     Missing file -> fresh {} (bootstrap explicitly allowed: the first write
     creates authoritative state). Existing file that is malformed JSON,
     truncated, unreadable, a wrong top-level type, or structurally malformed
     raises StateError — the caller must fail closed, never silently continue
-    with {}. Covers: promotion_pending_manifest_id, last_promoted_ops_sha,
-    approval receipt, recovery state.
+    with {}. Covers: ops_sync_base_sha, last_promoted_ops_sha,
+    promotion-pending id/digest, approval receipt, recovery state.
+
+    Partial TUPLES are impossible states and raise StateError (R0.4 §8):
+    * promotion_pending id XOR digest present
+    * approved_manifest_id XOR approved_manifest_sha256 present
+    * pending_p1 record with 1 or 2 of its 3 fields present
     """
     p = state_dir() / "ops-state.json"
     if not p.exists():
@@ -156,50 +176,123 @@ def load_state() -> dict:
     if not isinstance(data, dict):
         raise StateError(f"ops-state wrong top-level type: {type(data).__name__}")
     for key in ("ops_sync_base_sha", "last_promoted_ops_sha",
-                "promotion_pending_manifest_id", "approved_manifest_id",
-                "approved_manifest_sha256", "pending_p1_manifest_id",
-                "pending_p1_manifest_sha256", "pending_p1_local_commit_sha"):
+                "promotion_pending_manifest_id", "promotion_pending_manifest_sha256",
+                "approved_manifest_id", "approved_manifest_sha256",
+                "pending_p1_manifest_id", "pending_p1_manifest_sha256",
+                "pending_p1_local_commit_sha"):
         if key in data and not isinstance(data[key], str):
             raise StateError(
                 f"ops-state key {key!r} is not a string: {type(data[key]).__name__}")
+    for a, b in (("promotion_pending_manifest_id", "promotion_pending_manifest_sha256"),
+                 ("approved_manifest_id", "approved_manifest_sha256")):
+        if (a in data) != (b in data):
+            raise StateError(f"ops-state partial tuple: {a!r} present without {b!r} "
+                             "(or vice versa) — FAIL CLOSED (R0.4 §8)")
+    rec = [k for k in _PROMOTION_STATE_KEYS[-3:] if k in data]
+    if len(rec) not in (0, 3):
+        raise StateError(f"ops-state partial pending-P1 recovery tuple: {rec} — "
+                         "FAIL CLOSED (R0.4 §8)")
     return data
 
 
+def _write_all(fd: int, data: bytes) -> None:
+    """Complete-write semantics (R0.4-C): loop os.write until ALL bytes are
+    written. Zero-byte / partial / OSError = failure. The authoritative file is
+    only ever replaced AFTER the complete payload is written AND fsynced."""
+    view = memoryview(data)
+    written = 0
+    while written < len(view):
+        n = os.write(fd, view[written:])
+        if n is None or n <= 0:
+            raise OSError(f"short write: {n} bytes at offset {written}")
+        written += n
+
+
 def save_state(state: dict) -> None:
-    """ATOMIC ops-state persistence (R0.3 §7): deterministic same-directory
-    temp file -> flush -> fsync -> atomic os.replace. The previous valid state
-    survives until replacement succeeds; an interrupted write never leaves
-    partial/truncated authoritative state."""
+    """ATOMIC ops-state persistence (R0.3 §7; R0.4-C): deterministic
+    same-directory temp file -> complete write -> fsync -> atomic os.replace.
+    The previous valid state survives until replacement succeeds; an
+    interrupted/short write NEVER replaces authoritative state with partial
+    JSON. On failure the temp file is removed best-effort."""
     p = state_dir() / "ops-state.json"
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_name(f"ops-state.json.tmp.{os.getpid()}")
     data = json.dumps(state, indent=2, sort_keys=True).encode("utf-8")
     fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     try:
-        os.write(fd, data)
+        _write_all(fd, data)
         os.fsync(fd)
-    finally:
+    except OSError:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+    else:
         os.close(fd)
-    os.replace(tmp, p)
+    try:
+        os.replace(tmp, p)
+    except OSError:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
-# ---- promotion-pending lock (R0.2 §14) --------------------------------------
+# ---- promotion-pending lock (R0.2 §14; R0.3 §13; R0.4 §2/§3/§9) ---------------
 def promotion_pending() -> str | None:
     """promotion_pending_manifest_id — external operational flag (NOT a repo
     governance write). When set, artifact-cron preflight / G0 FAILS CLOSED until
     a verified REAL P1 promotion clears it or the manifest is explicitly
     cancelled/disposed. Makes 'jobs are paused during Founder P1 review'
-    mechanical rather than merely procedural."""
+    mechanical rather than merely procedural. R0.4: the pending pair (id +
+    immutable digest) is MANDATORY for real P1 — there is NO valid real-P1
+    state with an absent lock."""
     return load_state().get("promotion_pending_manifest_id")
 
 
-def set_promotion_pending(manifest_id: str | None) -> None:
+def promotion_pending_digest() -> str | None:
+    """promotion_pending_manifest_sha256 — the exact immutable digest of the
+    pending manifest, stored AT GENERATION (R0.4 §3/§9) so approval,
+    cancellation and real P1 can all verify EXACT-manifest identity BEFORE any
+    receipt exists. Closes the pre-approval identity window."""
+    return load_state().get("promotion_pending_manifest_sha256")
+
+
+def set_promotion_pending(manifest_id: str | None, digest: str | None = None) -> None:
+    """Set or clear the pending pair (id + digest) TOGETHER (R0.4 §3/§9): a
+    partial pair is never persisted. Setting an id REQUIRES its immutable
+    digest; clearing uses None/None."""
     state = load_state()
     if manifest_id is None:
         state.pop("promotion_pending_manifest_id", None)
+        state.pop("promotion_pending_manifest_sha256", None)
     else:
+        if not digest:
+            raise ValueError("pending digest required with pending id (partial tuple)")
         state["promotion_pending_manifest_id"] = manifest_id
+        state["promotion_pending_manifest_sha256"] = digest
     save_state(state)
+
+
+def finalize_promotion_state(state: dict, ops_head: str) -> dict:
+    """The ONE atomic final promotion-state transition payload (R0.4 §7) —
+    a single save_state() of the returned dict sets last_promoted_ops_sha and
+    removes ALL SEVEN promotion-state keys in the same authoritative write.
+    Caller MUST have reloaded authoritative state and re-checked exact identity
+    immediately before. Used by: normal verified P1 success, remote-already-
+    successful reconciliation (CASE B), and exact approved cancellation.
+    Generic clear helpers are never used on the promotion path."""
+    st = dict(state)
+    st["last_promoted_ops_sha"] = ops_head
+    for k in _PROMOTION_STATE_KEYS:
+        st.pop(k, None)
+    return st
 
 
 # ---- Founder approval receipt (R0.3 §3) -------------------------------------
@@ -220,21 +313,25 @@ def set_approval_receipt(manifest_id: str, digest: str) -> None:
 
 
 def clear_approval_receipt() -> None:
+    """Non-promotion helper (legacy): clears the approval pair. Real-P1 /
+    cancellation / recovery finalization use finalize_promotion_state instead —
+    never a generic clear that could clear a foreign record."""
     st = load_state()
     st.pop("approved_manifest_id", None)
     st.pop("approved_manifest_sha256", None)
     save_state(st)
 
 
-# ---- pending-P1 recovery identity (R0.3 §9) ---------------------------------
+# ---- pending-P1 recovery identity (R0.3 §9; R0.4 §6) -------------------------
 _PENDING_P1_KEYS = ("pending_p1_manifest_id", "pending_p1_manifest_sha256",
                     "pending_p1_local_commit_sha")
 
 
 def pending_p1_record() -> dict:
-    """Recorded recovery identity written on push failure: manifest id + immutable
-    digest + exact local promotion commit. Recovery requires all three exact
-    matches — identity is never inferred from current HEAD alone."""
+    """Recorded recovery identity — written BEFORE the real push is invoked
+    (R0.4 §6): manifest id + immutable digest + exact local promotion commit.
+    Recovery requires all three exact matches — identity is never inferred
+    from current HEAD alone."""
     st = load_state()
     return {k: st[k] for k in _PENDING_P1_KEYS if k in st}
 
@@ -248,6 +345,8 @@ def set_pending_p1_record(manifest_id: str, digest: str, local_commit: str) -> N
 
 
 def clear_pending_p1_record() -> None:
+    """Non-promotion helper (legacy): clears the recovery pair. Real-P1 /
+    cancellation / recovery finalization use finalize_promotion_state instead."""
     st = load_state()
     for k in _PENDING_P1_KEYS:
         st.pop(k, None)

@@ -253,6 +253,37 @@ def _post_commit_exactness(repo, target_cwd, manifest, commit_sha):
     return None
 
 
+def _finalize_promotion(manifest, digest, head, manifest_path, operations_worktree, res):
+    """R0.4 §7 — the SAME single-atomic-save finalization shared by every
+    verified success path: normal P1 success, exact-delta recovery (CASE A) and
+    remote-already-successful reconciliation (CASE B). Reloads authoritative
+    state, re-checks EXACT identity (pending id/digest + approval id/digest +
+    recovery id/digest/commit), then sets last_promoted_ops_sha and removes ALL
+    SEVEN promotion-state keys in ONE save_state(). Never uses generic clear
+    helpers that could clear a newly-written foreign record."""
+    try:
+        st = ops_config.load_state()
+    except ops_config.StateError as e:
+        return _stage(res, "state_corrupt",
+                      f"HOLD — ops-state corrupt at finalization: {e}")
+    if (st.get("promotion_pending_manifest_id") != manifest["manifest_id"]
+            or st.get("promotion_pending_manifest_sha256") != digest
+            or st.get("approved_manifest_id") != manifest["manifest_id"]
+            or st.get("approved_manifest_sha256") != digest
+            or st.get("pending_p1_manifest_id") != manifest["manifest_id"]
+            or st.get("pending_p1_manifest_sha256") != digest
+            or st.get("pending_p1_local_commit_sha") != head):
+        return _stage(res, "state_mismatch",
+                      "concurrent promotion-state change detected — NO finalization; "
+                      "HOLD for manual review (R0.4 §7)")
+    final = ops_config.finalize_promotion_state(st, manifest["manifest_ops_head_sha"])
+    ops_config.save_state(final)          # THE one atomic final transition
+    _remove_worktree_manifest(manifest_path, operations_worktree)
+    res["last_promoted_ops_sha"] = manifest["manifest_ops_head_sha"]
+    res["ok"] = True                      # verified success — finalization complete
+    return res
+
+
 def promote_batch(manifest_path, target_branch, repo, operations_worktree,
                   do_push=False, into_primary=False, verify_only=False) -> dict:
     """Promote the exact manifest batch onto target_branch (R0.3 two-phase)."""
@@ -328,17 +359,24 @@ def promote_batch(manifest_path, target_branch, repo, operations_worktree,
             state = ops_config.load_state()
         except ops_config.StateError as e:
             return _stage(res, "state_corrupt", f"HOLD — ops-state is corrupt: {e}")
-        # R0.3 §2/§3/§13 — applies to the REAL P1 only.
-        # A FOREIGN pending lock (different manifest) refuses 'pending' — one
-        # manifest never promotes/clears another. An ABSENT lock falls through to
-        # the approval gate: unapproved manifests refuse 'approval' before any
-        # mutation (R0.3 §2 requires pending AND receipt AND digest AND APPROVED).
-        pending = state.get("promotion_pending_manifest_id")
-        if pending is not None and pending != manifest["manifest_id"]:
+        # R0.4 §2 — pending identity is MANDATORY for real P1: there is NO valid
+        # real-P1 state with an absent pending lock. Missing key OR wrong id
+        # FAILS CLOSED 'pending'; fall-through to the approval gate is removed.
+        # The pending pair is digest-bound (R0.4 §3/§9) — exact-manifest identity
+        # holds BEFORE any receipt exists.
+        if state.get("promotion_pending_manifest_id") != manifest["manifest_id"]:
             return _stage(res, "pending",
-                          f"promotion_pending_manifest_id {pending!r} != supplied "
-                          f"{manifest['manifest_id']!r} — one manifest never promotes/clears "
-                          "another (R0.3 §13)")
+                          f"promotion_pending_manifest_id "
+                          f"{state.get('promotion_pending_manifest_id')!r} != supplied "
+                          f"{manifest['manifest_id']!r} — pending identity is MANDATORY "
+                          "for real P1; missing/wrong lock FAILS CLOSED (R0.2 §14, "
+                          "R0.4 §2)")
+        if state.get("promotion_pending_manifest_sha256") != digest:
+            return _stage(res, "pending",
+                          f"promotion_pending_manifest_sha256 "
+                          f"{state.get('promotion_pending_manifest_sha256')!r} != "
+                          f"recomputed immutable digest {digest} — exact-manifest "
+                          "identity required (R0.4 §2/§3)")
         approved_id = state.get("approved_manifest_id")
         approved_sha = state.get("approved_manifest_sha256")
         if approved_id != manifest["manifest_id"]:
@@ -426,54 +464,74 @@ def promote_batch(manifest_path, target_branch, repo, operations_worktree,
                           "Local promotion commit preserved for bounded recovery/manual "
                           "disposition (R0.3 §10)")
 
+        # 9b. RECORD recovery identity BEFORE the uncertain push (R0.4 §6) —
+        # once approval + Phase V + post-commit verification passed, persist the
+        # EXACT pending id/digest + approval id/digest + recovery id/digest/commit
+        # atomically, THEN push. Makes BOTH 'push failed' AND 'remote accepted
+        # but process disappeared / ack lost' recoverable deterministically.
+        # last_promoted is NOT marked here.
+        if into_primary:
+            try:
+                st = ops_config.load_state()
+            except ops_config.StateError as e:
+                return _stage(res, "state_corrupt", f"HOLD — ops-state corrupt: {e}")
+            st["pending_p1_manifest_id"] = manifest["manifest_id"]
+            st["pending_p1_manifest_sha256"] = digest
+            st["pending_p1_local_commit_sha"] = commit_sha
+            ops_config.save_state(st)
+
         # 10/11/12. PUSH -> FETCH -> REMOTE VERIFY
         if into_primary or do_push:
             try:
                 ops_git.run_git(target_cwd, "push", "origin", target_branch)
             except ops_git.OpsGitError as e:
                 if into_primary:
-                    # R0.3 §9: RECORD the exact recovery identity — never inferred
-                    # from current HEAD later
-                    try:
-                        ops_config.set_pending_p1_record(manifest["manifest_id"], digest, commit_sha)
-                    except ops_config.StateError:
-                        pass
-                res["pending_state"] = PENDING_RECOVERY
+                    # identity ALREADY recorded pre-push (R0.4 §6) — preserve it
+                    res["pending_state"] = PENDING_RECOVERY
+                    return _stage(res, "push_recovery",
+                                  f"push FAILED after local promotion commit {commit_sha} — "
+                                  f"commit PRESERVED, recovery identity ALREADY recorded, "
+                                  f"origin/{target_branch} unchanged, last_promoted NOT "
+                                  f"advanced; recover with --recover (verifies recorded "
+                                  f"pending identity + parent + exact delta + hashes, then "
+                                  f"reconciles remote: base/exact-commit/other, R0.4 §5) or "
+                                  f"Founder disposition. ({str(e)[:120]}) (R0.3 §9, R0.4 §6)")
                 return _stage(res, "push_recovery",
-                              f"push FAILED after local promotion commit {commit_sha} — commit "
-                              f"PRESERVED, origin/{target_branch} unchanged, last_promoted NOT "
-                              f"advanced, manifest preserved, ops-state untouched; recover with "
-                              f"--recover (verifies recorded pending identity + parent + exact "
-                              f"delta + hashes, then retries the EXACT push) or Founder "
-                              f"disposition. ({str(e)[:120]}) (R0.3 §9)")
+                              f"push FAILED after local commit {commit_sha} — HOLD "
+                              f"({str(e)[:120]})")
             try:
                 ops_git.run_git(repo, "fetch", "origin")
             except ops_git.OpsGitError as e:
+                if into_primary:
+                    # ack-loss window (R0.4 §5): remote may ALREADY hold P — the
+                    # recorded identity is preserved; recovery reconciles
+                    res["pending_state"] = PENDING_RECOVERY
+                    return _stage(res, "push_recovery",
+                                  f"post-push fetch failed — push outcome UNKNOWN; "
+                                  f"recovery identity recorded, recover with --recover to "
+                                  f"reconcile remote (base/exact-commit/other) ({str(e)[:120]}) "
+                                  f"(R0.4 §5)")
                 return _stage(res, "fetch", f"post-push fetch failed: {str(e)[:120]}")
             remote = ops_git.run_git(repo, "rev-parse", f"origin/{target_branch}").strip()
             if remote != commit_sha:
                 if into_primary:
-                    try:
-                        ops_config.set_pending_p1_record(manifest["manifest_id"], digest, commit_sha)
-                    except ops_config.StateError:
-                        pass
-                res["pending_state"] = PENDING_RECOVERY
+                    res["pending_state"] = PENDING_RECOVERY
+                    return _stage(res, "verify",
+                                  f"remote {remote} != local {commit_sha} — "
+                                  f"{PENDING_RECOVERY} (identity recorded pre-push, R0.4 §6)")
                 return _stage(res, "verify",
-                              f"remote {remote} != local {commit_sha} — "
-                              f"{PENDING_RECOVERY if into_primary else 'HOLD'}")
+                              f"remote {remote} != local {commit_sha} — HOLD")
             res["remote_verified"] = True
 
-        # 13/14/15. STATE TRANSITION — ONLY AFTER remote verification (R0.2 §4 order).
-        # into_primary clears ONLY the exact matched pending/approval/recovery state.
+        # 13/14/15. ONE ATOMIC FINAL STATE TRANSITION (R0.4 §7) — reload the
+        # authoritative state and re-check EXACT identity, then set
+        # last_promoted + remove ALL SEVEN promotion-state keys in ONE save.
         if into_primary:
-            st = ops_config.load_state()
-            st["last_promoted_ops_sha"] = manifest["manifest_ops_head_sha"]
-            ops_config.save_state(st)
-            ops_config.set_promotion_pending(None)
-            ops_config.clear_approval_receipt()
-            ops_config.clear_pending_p1_record()
-            res["last_promoted_ops_sha"] = manifest["manifest_ops_head_sha"]
-            _remove_worktree_manifest(manifest_path, operations_worktree)
+            fin = _finalize_promotion(manifest, digest, commit_sha, manifest_path,
+                                      operations_worktree, res)
+            if not fin["ok"]:
+                return fin
+            res = fin
 
         res["ok"] = True
         res["stage"] = "promoted"
@@ -512,11 +570,16 @@ def recover_local_promotion(manifest_path, repo, operations_worktree,
     if branch != target_branch:
         return _stage(res, "target", f"primary is on {branch}, not {target_branch}")
 
-    # APPROVAL GATE — --recover can never bypass Founder approval (R0.3 §2)
+    # APPROVAL GATE — --recover can never bypass Founder approval (R0.3 §2),
+    # and requires the MANDATORY exact pending identity (id + digest, R0.4 §2/§6)
     if state.get("promotion_pending_manifest_id") != manifest["manifest_id"]:
         return _stage(res, "pending",
                       f"pending manifest {state.get('promotion_pending_manifest_id')!r} != "
                       f"supplied {manifest['manifest_id']!r}")
+    if state.get("promotion_pending_manifest_sha256") != digest:
+        return _stage(res, "pending",
+                      "pending digest != recomputed immutable digest — recovery "
+                      "requires the exact pending identity (R0.4 §2/§6)")
     if state.get("approved_manifest_id") != manifest["manifest_id"]:
         return _stage(res, "approval",
                       "no approval receipt for this manifest — recovery cannot bypass the "
@@ -577,37 +640,59 @@ def recover_local_promotion(manifest_path, repo, operations_worktree,
     except ops_git.OpsGitError as e:
         return _stage(res, "fetch", f"fetch failed: {str(e)[:120]}")
     origin_main = ops_git.run_git(repo, "rev-parse", "origin/main").strip()
-    if origin_main != manifest["manifest_main_sha"]:
-        return _stage(res, "main_moved",
-                      "origin/main advanced past the reviewed base — exact push no longer "
-                      "safe; Founder disposition required (R0.2 §13)")
 
-    try:
-        ops_git.run_git(repo, "push", "origin", target_branch)
-    except ops_git.OpsGitError as e:
-        res["pending_state"] = PENDING_RECOVERY
-        return _stage(res, "push", f"exact push retry failed: {str(e)[:120]}")
-    try:
-        ops_git.run_git(repo, "fetch", "origin")
-    except ops_git.OpsGitError:
-        pass
-    remote = ops_git.run_git(repo, "rev-parse", f"origin/{target_branch}").strip()
-    if remote != head:
-        res["pending_state"] = PENDING_RECOVERY
-        return _stage(res, "verify", f"remote {remote} != local {head}")
-
-    # state transition after remote verification (R0.2 §4 order)
-    st = ops_config.load_state()
-    st["last_promoted_ops_sha"] = manifest["manifest_ops_head_sha"]
-    ops_config.save_state(st)
-    ops_config.set_promotion_pending(None)
-    ops_config.clear_approval_receipt()
-    ops_config.clear_pending_p1_record()
-    _remove_worktree_manifest(manifest_path, operations_worktree)
-    res.update({"ok": True, "stage": "recovered", "commit": head,
-                "remote_verified": True,
-                "last_promoted_ops_sha": manifest["manifest_ops_head_sha"]})
-    return res
+    # R0.4 §5 — REMOTE SUCCESS / ACKNOWLEDGEMENT-LOSS RECONCILIATION.
+    # The push may have ACTUALLY SUCCEEDED while the client reported failure or
+    # the process died before state finalization. Distinguish mechanically:
+    #   CASE A  origin/main == base (B)   -> remote did NOT receive it -> retry EXACT push
+    #   CASE B  origin/main == exact promotion commit (P) -> remote ALREADY has it
+    #           -> DO NOT push again -> STATE-FINALIZATION ONLY -> reconciled_remote_success
+    #   CASE C  origin/main == any other SHA -> FAIL CLOSED main_moved, Founder only
+    if origin_main == manifest["manifest_main_sha"]:
+        # CASE A — remote did NOT receive the promotion: retry the exact push.
+        try:
+            ops_git.run_git(repo, "push", "origin", target_branch)
+        except ops_git.OpsGitError as e:
+            res["pending_state"] = PENDING_RECOVERY
+            return _stage(res, "push", f"exact push retry failed: {str(e)[:120]}")
+        try:
+            ops_git.run_git(repo, "fetch", "origin")
+        except ops_git.OpsGitError:
+            res["pending_state"] = PENDING_RECOVERY
+            return _stage(res, "fetch",
+                          "post-push fetch failed — outcome unknown; run --recover "
+                          "again to reconcile (R0.4 §5)")
+        remote = ops_git.run_git(repo, "rev-parse", f"origin/{target_branch}").strip()
+        if remote != head:
+            res["pending_state"] = PENDING_RECOVERY
+            return _stage(res, "verify", f"remote {remote} != local {head}")
+        fin = _finalize_promotion(manifest, digest, head, manifest_path,
+                                  operations_worktree, res)
+        if not fin["ok"]:
+            return fin
+        res = fin
+        res.update({"stage": "recovered", "remote_verified": True,
+                    "commit": head})
+        return res
+    if origin_main == head:
+        # CASE B — the remote ALREADY holds the exact recorded promotion commit:
+        # delivery succeeded, acknowledgements were lost. NO second push —
+        # verify the recorded identity (done above) and finalize state ONLY.
+        fin = _finalize_promotion(manifest, digest, head, manifest_path,
+                                  operations_worktree, res)
+        if not fin["ok"]:
+            return fin
+        res = fin
+        res.update({"stage": "recovered", "remote_verified": True,
+                    "reconciled_remote_success": True, "commit": head})
+        return res
+    # CASE C — remote is neither the reviewed base nor the exact promotion commit
+    res["pending_state"] = PENDING_RECOVERY
+    return _stage(res, "main_moved",
+                  f"origin/main {origin_main} is neither the reviewed base "
+                  f"{manifest['manifest_main_sha']} nor the exact promotion commit "
+                  f"{head} — FAIL CLOSED, NO state clearing; Founder disposition only "
+                  f"(R0.4 §5)")
 
 
 def main() -> int:
