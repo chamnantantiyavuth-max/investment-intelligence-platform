@@ -1439,5 +1439,334 @@ def test_r3o_batch_base_mismatch_fails(fx):
     assert mp.exists()
 
 
-# footer: 2026-09-24 15:00 UTC+7 (R0.3 P1-governance/atomicity RED diagnostics)
+# =====================================================================
+# R0.4 RED diagnostics — final bounded P1 crash-consistency/disposition
+# (POST-M5.3 O3 R0.4, FD #142 conformance, NO new FD)
+#
+# R0.3 RETAINED. R0.4 covers ONLY: (1) mandatory pending identity,
+# (2) approved-manifest cancellation, (3) short-write-safe state persistence,
+# (4) remote-success/acknowledgement-loss reconciliation, (5) single atomic
+# promotion-state transition. All must demonstrate RED on canonical 2d44d7e.
+# =====================================================================
+
+def test_r4a_missing_pending_refuses(fx):
+    """R4-A: valid APPROVED manifest + matching receipt but NO pending lock ->
+    real P1 FAILS 'pending', zero primary mutation. There is NO valid real-P1
+    state with an absent pending lock (R0.4 §2)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    # remove the whole pending tuple (id + digest) — approval receipt stays
+    st = ops_config.load_state()
+    st.pop("promotion_pending_manifest_id", None)
+    st.pop("promotion_pending_manifest_sha256", None)
+    ops_config.save_state(st)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    assert res["ok"] is False and res["stage"] == "pending"
+    _assert_main_pristine(fx, m)
+
+
+def test_r4b1_approved_exact_cancellation_succeeds(fx):
+    """R4-B1: approved receipt exists + disposition CANCELLED + exact id/digest
+    -> cancellation succeeds; ONE atomic transition clears ONLY the pending pair
+    and the approval pair (R0.4 §3/§7)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    m["disposition"] = "CANCELLED"
+    mp = _write_manifest(fx, m)
+    res = generate_promotion_manifest.cancel_manifest(mp)
+    assert res["ok"] is True, res
+    st = ops_config.load_state()
+    assert "promotion_pending_manifest_id" not in st
+    assert "promotion_pending_manifest_sha256" not in st
+    assert "approved_manifest_id" not in st
+    assert "approved_manifest_sha256" not in st
+    assert "pending_p1_local_commit_sha" not in st
+
+
+def test_r4b2_cancellation_digest_mismatch_refuses(fx):
+    """R4-B2: same manifest id but ALTERED immutable digest -> cancellation
+    refuses; pending + approval state untouched (R0.4 §3)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    m["disposition"] = "CANCELLED"
+    m["artifacts"][0]["sha256"] = "0" * 64           # tamper -> different digest
+    mp = _write_manifest(fx, m)
+    res = generate_promotion_manifest.cancel_manifest(mp)
+    assert res["ok"] is False and res["stage"] == "pending"
+    st = ops_config.load_state()
+    assert st.get("promotion_pending_manifest_id") == m["manifest_id"]
+    assert st.get("approved_manifest_id") == m["manifest_id"]
+
+
+def test_r4b3_foreign_pending_cancellation_refuses(fx):
+    """R4-B3: pending lock belongs to a DIFFERENT manifest -> cancellation
+    refuses (one manifest never cancels another) (R0.4 §3)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    h1 = _make_artifact_commit(fx, RADAR23, base)
+    m1 = _approve(fx, _manifest_for(fx, WEEKLY, h1, base))     # pending = m1
+    h2 = _make_artifact_commit(fx, AM_REL, h1)
+    m2 = _manifest_for(fx, AM, h2, h1)                          # unapproved foreign
+    mp2 = _write_manifest(fx, m2)
+    res = generate_promotion_manifest.cancel_manifest(mp2)
+    assert res["ok"] is False and res["stage"] == "pending"
+    assert ops_config.promotion_pending() == m1["manifest_id"]  # unchanged
+
+
+def test_r4b4_pending_recovery_cancellation_refuses(fx):
+    """R4-B4: pending recovery record exists for the same manifest/digest ->
+    ordinary cancellation REFUSES (must not destroy the preserved local P1
+    commit); Founder recovery-disposition required (R0.4 §3)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    m["disposition"] = "CANCELLED"
+    mp = _write_manifest(fx, m)
+    st = ops_config.load_state()
+    st.update({"pending_p1_manifest_id": m["manifest_id"],
+               "pending_p1_manifest_sha256": _manifest_digest(m),
+               "pending_p1_local_commit_sha": "1" * 40})
+    ops_config.save_state(st)
+    res = generate_promotion_manifest.cancel_manifest(mp)
+    assert res["ok"] is False and res["stage"] == "recovery"
+    st = ops_config.load_state()
+    assert st.get("pending_p1_local_commit_sha") == "1" * 40    # commit NOT destroyed
+
+
+def test_r4c_partial_write_cannot_corrupt_state(fx):
+    """R4-C: OS short-write cannot replace authoritative state with partial
+    JSON — the implementation must loop until the FULL payload is written, or
+    fail BEFORE os.replace; the previous valid state stays authoritative."""
+    real_write = os.write
+
+    def short_write(fd, data):
+        n = max(1, len(data) // 4)
+        return real_write(fd, data[:n])
+
+    monkeypatch.setattr(os, "write", short_write)
+    ops_config.save_state({"promotion_pending_manifest_id": "p1-full",
+                           "promotion_pending_manifest_sha256": "0" * 64})
+    st = ops_config.load_state()          # must decode the FULL payload
+    assert st.get("promotion_pending_manifest_id") == "p1-full"
+    assert len(st.get("promotion_pending_manifest_sha256", "")) == 64
+
+
+def test_r4d1_remote_accepted_push_reports_failure_reconciles(fx):
+    """R4-D1: push ACTUALLY reaches remote P, then the client reports failure ->
+    recovery detects origin/main == P, performs NO second push, and finalizes
+    state exactly once (reconciled_remote_success) (R0.4 §5 CASE B)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    real = ops_git.run_git
+    pushes = {"n": 0}
+
+    def fail_after_accept(cwd, *args, **kw):
+        if args and args[0] == "push":
+            real(cwd, *args, **kw)        # remote accepts P
+            pushes["n"] += 1
+            raise ops_git.OpsGitError("push reported failure after remote accepted")
+        return real(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", fail_after_accept)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.setattr(ops_git, "run_git", real)
+    assert res["ok"] is False
+    assert res["pending_state"] == "P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY"
+    assert res["commit"]
+    rec = ops_config.pending_p1_record()
+    assert rec["pending_p1_manifest_id"] == m["manifest_id"]
+    assert rec["pending_p1_local_commit_sha"] == res["commit"]
+    r2 = promote_batch.recover_local_promotion(mp, str(fx["canonical"]), str(fx["ops"]))
+    assert r2["ok"] is True and r2.get("reconciled_remote_success") is True, r2
+    assert pushes["n"] == 1               # NO second push during reconciliation
+    st = ops_config.load_state()
+    assert st.get("last_promoted_ops_sha") == m["manifest_ops_head_sha"]
+    for k in ("promotion_pending_manifest_id", "promotion_pending_manifest_sha256",
+              "approved_manifest_id", "approved_manifest_sha256",
+              "pending_p1_manifest_id", "pending_p1_manifest_sha256",
+              "pending_p1_local_commit_sha"):
+        assert k not in st
+    assert not mp.exists()
+
+
+def test_r4d2_post_push_fetch_failure_reconciles(fx):
+    """R4-D2: push succeeds but the post-push fetch fails -> later reconciliation
+    detects origin/main == P and finalizes exactly once (R0.4 §5 CASE B)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    real = ops_git.run_git
+    calls = {"fetch": 0, "push": 0}
+
+    def flaky_fetch(cwd, *args, **kw):
+        if args and args[0] == "fetch":
+            if calls["fetch"] >= 1:
+                raise ops_git.OpsGitError("post-push fetch failed")
+            calls["fetch"] += 1
+        if args and args[0] == "push":
+            calls["push"] += 1
+        return real(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", flaky_fetch)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.setattr(ops_git, "run_git", real)
+    assert res["ok"] is False and res["commit"]
+    assert calls["push"] == 1
+    r2 = promote_batch.recover_local_promotion(mp, str(fx["canonical"]), str(fx["ops"]))
+    assert r2["ok"] is True and r2.get("reconciled_remote_success") is True, r2
+    assert calls["push"] == 1             # finalization only, NO duplicate push
+    assert ops_config.load_state().get("last_promoted_ops_sha") == m["manifest_ops_head_sha"]
+    assert not mp.exists()
+
+
+def test_r4d3_remote_unrelated_sha_fails_closed(fx):
+    """R4-D3: origin/main holds an arbitrary third SHA -> recovery FAILS CLOSED
+    'main_moved'; no state clearing (R0.4 §5 CASE C)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    real = ops_git.run_git
+    pushes = {"n": 0}
+
+    def fail_before_send(cwd, *args, **kw):
+        if args and args[0] == "push":
+            pushes["n"] += 1
+            raise ops_git.OpsGitError("push refused")
+        return real(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", fail_before_send)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.setattr(ops_git, "run_git", real)
+    assert res["ok"] is False and res["commit"]
+    # origin/main moves to an UNRELATED SHA (neither base B nor promotion P)
+    repo = str(fx["canonical"])
+    write(repo, "docs/unrelated-r4d3.md", "x")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "unrelated main commit")
+    git(repo, "push", "origin", "main")
+    r2 = promote_batch.recover_local_promotion(mp, repo, str(fx["ops"]))
+    assert r2["ok"] is False and r2["stage"] == "main_moved"
+    st = ops_config.load_state()
+    assert st.get("promotion_pending_manifest_id") == m["manifest_id"]
+    assert st.get("approved_manifest_id") == m["manifest_id"]
+    assert st.get("pending_p1_local_commit_sha") == res["commit"]  # nothing cleared
+
+
+def test_r4e_recovery_identity_before_push(fx):
+    """R4-E: the pending-P1 recovery identity is persisted BEFORE the real push
+    is invoked (ack-loss safety) (R0.4 §6)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    real = ops_git.run_git
+    seen = {}
+
+    def snap_at_push(cwd, *args, **kw):
+        if args and args[0] == "push":
+            seen.update(ops_config.load_state())
+        return real(cwd, *args, **kw)
+
+    monkeypatch.setattr(ops_git, "run_git", snap_at_push)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.setattr(ops_git, "run_git", real)
+    assert res["ok"] is True, res
+    assert seen.get("promotion_pending_manifest_id") == m["manifest_id"]
+    assert seen.get("promotion_pending_manifest_sha256") == _manifest_digest(m)
+    assert seen.get("approved_manifest_id") == m["manifest_id"]
+    assert seen.get("pending_p1_manifest_id") == m["manifest_id"]
+    assert seen.get("pending_p1_manifest_sha256") == _manifest_digest(m)
+    assert seen.get("pending_p1_local_commit_sha") == res["commit"]
+
+
+def test_r4f_single_atomic_final_transition(fx):
+    """R4-F: the promotion final state transition is ONE atomic save carrying
+    last_promoted_ops_sha AND the removal of ALL seven promotion-state keys in
+    the SAME payload (R0.4 §7)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _approve(fx, _manifest_for(fx, WEEKLY, head, base))
+    mp = _write_manifest(fx, m)
+    saves = []
+    real_save = ops_config.save_state
+
+    def spy(state):
+        saves.append(dict(state))
+        return real_save(state)
+
+    monkeypatch.setattr(ops_config, "save_state", spy)
+    res = promote_batch.promote_batch(**_real_p1_args(mp, fx))
+    monkeypatch.setattr(ops_config, "save_state", real_save)
+    assert res["ok"] is True, res
+    finals = [s for s in saves if "last_promoted_ops_sha" in s]
+    assert len(finals) == 1
+    st = finals[0]
+    assert st["last_promoted_ops_sha"] == m["manifest_ops_head_sha"]
+    for k in ("promotion_pending_manifest_id", "promotion_pending_manifest_sha256",
+              "approved_manifest_id", "approved_manifest_sha256",
+              "pending_p1_manifest_id", "pending_p1_manifest_sha256",
+              "pending_p1_local_commit_sha"):
+        assert k not in st
+
+
+def test_r4g_partial_approval_tuple_fails_closed(fx):
+    """R4-G: approved_manifest_id without approved_manifest_sha256 -> StateError /
+    G0 STATE_CORRUPT (never treated as 'not approved') (R0.4 §8)."""
+    st = ops_config.state_dir() / "ops-state.json"
+    st.parent.mkdir(parents=True, exist_ok=True)
+    st.write_text('{"approved_manifest_id": "p1-x"}', encoding="utf-8")
+    with pytest.raises(ops_config.StateError):
+        ops_config.load_state()
+    res = g0_check.g0_check(fx["ops"], fx["canonical"])
+    assert res["ok"] is False and res["case"] == "STATE_CORRUPT"
+
+
+def test_r4h_partial_recovery_tuple_fails_closed(fx):
+    """R4-H: pending_p1 partial tuple (id + commit, missing digest) -> StateError
+    (R0.4 §8)."""
+    st = ops_config.state_dir() / "ops-state.json"
+    st.parent.mkdir(parents=True, exist_ok=True)
+    st.write_text('{"pending_p1_manifest_id": "p1-x", '
+                  '"pending_p1_local_commit_sha": "' + "1" * 40 + '"}',
+                  encoding="utf-8")
+    with pytest.raises(ops_config.StateError):
+        ops_config.load_state()
+
+
+def test_r4i_partial_pending_tuple_fails_closed(fx):
+    """R4-I: promotion_pending_manifest_id without the pending digest ->
+    StateError (R0.4 §8)."""
+    st = ops_config.state_dir() / "ops-state.json"
+    st.parent.mkdir(parents=True, exist_ok=True)
+    st.write_text('{"promotion_pending_manifest_id": "p1-x"}', encoding="utf-8")
+    with pytest.raises(ops_config.StateError):
+        ops_config.load_state()
+
+
+def test_r4j_manifest_write_failure_keeps_pending_lock(fx):
+    """R4-J: a manifest-write failure can NEVER produce a review manifest
+    without a conservative pending lock — the lock is persisted FIRST (R0.4 §9)."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    # sabotage the manifests directory: a FILE in the way of the dir
+    blocked = Path(fx["ops"]) / "ops" / "manifests"
+    blocked.parent.mkdir(parents=True, exist_ok=True)
+    blocked.write_text("not a directory", encoding="utf-8")
+    with pytest.raises((OSError, FileExistsError)):
+        generate_promotion_manifest.write_manifest(
+            m, str(fx["canonical"]), str(fx["ops"]))
+    # conservative lock MUST be set even though the manifest file could not be written
+    assert ops_config.promotion_pending() == m["manifest_id"]
+    assert ops_config.promotion_pending_digest() == _manifest_digest(m)
+
+
+# footer: 2026-09-24 16:00 UTC+7 (R0.4 crash-consistency/disposition RED diagnostics)
 
