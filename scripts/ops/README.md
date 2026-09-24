@@ -21,8 +21,8 @@ Hard invariants (FD #142):
 | `sync_main_to_ops.py` | S0/S1/S2/S3 main->ops lifecycle (remote-ops-first; durable baseline push; clean-merge / conflict-abort); captures `OPS_SYNC_BASE_SHA` |
 | `validate_delta.py` | Cron-delta authority: validates only `OPS_SYNC_BASE_SHA -> job-produced state` |
 | `commit_push_ops.py` | Explicit-path stage -> commit -> push ops -> fetch -> verify remote SHA |
-| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest over the CANONICAL range (origin/main → origin/ops/automation, mechanical — R0.2 §7/§8); mechanical ownership, per-artifact source_commit, raw-blob SHA-256; interactive only; write sets the promotion-pending lock |
-| `promote_batch.py` | Exact-content promotion w/ exact-canonical-main contract (into_primary ⇒ main + push, clean local, local==origin==manifest), TOCTOU + frozen-lineage + canonical-delta + per-artifact HOLDs, remote-verified-first state advance, P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY + `--recover` exact-push; R0 = temp/canary branch only |
+| `generate_promotion_manifest.py` | Deterministic MULTI-JOB P1 manifest over the CANONICAL range (origin/main → origin/ops/automation, mechanical — R0.2 §7/§8); mechanical ownership, per-artifact source_commit, raw-blob SHA-256, immutable payload digest (R0.3 §3); `--approve`/`--cancel` digest-bound receipt; corrupt-state HOLD (R0.3 §6); interactive only; write sets the promotion-pending lock |
+| `promote_batch.py` | TWO-PHASE P1 promotion (R0.3 §4): Phase V pure read-only validation of the ENTIRE batch (approval gate + owner re-derived at consumption + exact delta + hashes — zero primary mutation), Phase M write/stage/commit; exact-canonical-main contract (into_primary ⇒ main + push, clean local, local==origin==manifest), post-commit exactness before push (R0.3 §10), remote-verified-first state advance, P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY + `--recover` exact-push with recorded pending identity (R0.3 §9); R0 = temp/canary branch only |
 
 ## Per-job anchored artifact allowlists (fullmatch, POSIX-rel)
 
@@ -60,6 +60,13 @@ G0 sees case C and refuses a new job until the exact commit is pushed. NEVER res
 1. Interactive review session:
    `generate_promotion_manifest.py [--job <id> ...]`
    → writes `ops/manifests/<id>.json` on ops (gitignored; interactive-only residue).
+2. Founder approval is DIGEST-BOUND (R0.3 §2/§3): set `disposition = APPROVED` in
+   the manifest, then `generate_promotion_manifest.py --approve --manifest <path>`
+   records `approved_manifest_id + approved_manifest_sha256` into ops-state. A
+   real P1 requires pending id == manifest id AND receipt id == manifest id AND
+   receipt digest == recomputed immutable digest AND disposition == APPROVED.
+   A different/edited manifest requires NEW approval; one pending manifest never
+   clears/promotes another. `--cancel --manifest <path>` for exact disposition.
    **Canonical authority (R0.2):** the batch range is MECHANICAL —
    `MANIFEST_MAIN_SHA = origin/main`, `MANIFEST_OPS_HEAD_SHA =
    origin/ops/automation` (no `--from/--to`; HOLD unless main is ancestor of ops —
@@ -90,7 +97,9 @@ G0 sees case C and refuses a new job until the exact commit is pushed. NEVER res
    preserved, origin/main unchanged, last_promoted unchanged, manifest preserved.
    `promote_batch.py --recover --manifest <path> --target-branch main` verifies
    parent + hashes then retries the EXACT push. No reset. `last_promoted_ops_sha`
-   advances ONLY after a REAL remote-VERIFIED Founder-approved P1 into main
+   advances ONLY after a REAL remote-VERIFIED approved P1 into main — the
+   code ENFORCES the Founder-approval gate (R0.3 §2/§3), so "Founder-approved"
+   is a mechanical fact, not an aspiration
    (mechanical; canary / generation / cron commits / push failure never advance
    it). On success the manifest residue is removed; G0 returns clean.
 
@@ -101,8 +110,9 @@ Persistent scheduler state lives OUTSIDE the repo (never breaks G0 cleanliness):
 
 ## Tests
 
-`pytest tests/ops/test_ops_tooling.py -q` — full-matrix on temp git repos;
-never touches the real worktree/remote. 59 tests: G0 A–E + PENDING (promotion-
+`pytest tests/ops/test_ops_tooling.py -q` — full-matrix on temp git repos + a
+per-test temp state dir; never touches the real worktree/remote/ops-state.
+76 tests: G0 A–E + PENDING + STATE_CORRUPT (promotion-
 pending lock), S0–S3 sync lifecycle (T1–T7), multi-job manifests M1–M8
 (mechanical ownership, ambiguity FAIL, deletion/rename FAIL, raw CRLF/latin-1
 blob, frozen head), canary-vs-real last-promoted, owner-scope, real-source-commit
@@ -110,13 +120,17 @@ blob, residue removal, P1-A..P1-G + recovery (exact-canonical-main baseline/
 dirty/contract/target/verify-only refusals, push-failure
 P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY preservation, remote-verified-first
 state advance, deterministic --recover), M9–M18 (mechanical canonical range,
-caller-range equality, frozen-lineage HOLD, out-of-batch/stale source_commit
-HOLD, delta omission/foreign-artifact HOLD, governance-between-batches delta,
-promotion-pending lock block + clear).
+  caller-range equality, frozen-lineage HOLD, out-of-batch/stale source_commit
+  HOLD, delta omission/foreign-artifact HOLD, governance-between-batches delta,
+  promotion-pending lock block + clear), R0.3 R3-A..R3-O + A1–A4 (approval-gate
+  refusals incl. digest/receipt binding, late-artifact atomic zero-mutation,
+  corrupt-state FAIL CLOSED, interrupted-write preservation, owner re-derivation,
+  recovery exact-delta refusal + success, post-commit extra-path push refusal,
+  duplicate-path + batch-base HOLDs).
 
 ## Maintenance mode (P2, design-only)
 
 Promotion is refused when env `OPS_MAINTENANCE_MODE=ON` or the IIP profile config
 key `ops.maintenance_mode` is set — lock lives outside governed main.
 
-<!-- 2026-09-24 14:30 UTC+7 (R0.2 P1 hardening closeout) -->
+<!-- 2026-09-24 15:30 UTC+7 (R0.3 P1 governance/atomicity hardening closeout) -->

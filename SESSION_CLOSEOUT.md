@@ -1,3 +1,142 @@
+# Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.3 P1 GOVERNANCE/ATOMICITY HARDENING — COMPLETE)
+
+## POST-M5.3 O3 R0.3 P1 GOVERNANCE/ATOMICITY HARDENING COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
+
+**Session:** Founder independent source review of canonical
+`main @ ec07bcd2ed4bbbccc0062ef580ddf0d609545cdf`:
+**R0.2 materially corrected the previously-authorized findings. Retain as PASS /
+DO NOT REOPEN** the R0.1 S0–S3 lifecycle, multi-job manifest, raw-blob hashing,
+canonical origin/main→origin/ops batch authority, exact canonical-main baseline,
+into_primary⇒main+push, into_primary+verify_only refusal, frozen ops lineage,
+canonical artifact-set equality, latest source_commit validation,
+remote-verified-first state advance, push-failure commit preservation,
+deterministic recovery concept, promotion-pending concept — **BUT R0.2 NOT final
+accepted**: bounded P1 governance/atomicity defects found → R0.3 correction
+executed. M5.3 / FD #142 / C+ / C0 / D-0 / Hermes scheduler / Windows Gateway /
+P2 / Learning Loop / M6 NOT reopened.
+
+**Gate 0 — pause before mutation:** `73e611584447` + `cda817d17236` re-PAUSED
+(all 5 canonical jobs PAUSED) before any code mutation; no R0.3-time run counts
+toward gate G; no forced runs.
+
+**Gate 1 — canonical base verified:** `origin/main == origin/ops/automation ==
+ec07bcd2ed4bbbccc0062ef580ddf0d609545cdf`; local primary clean; local ops clean;
+no manifest residue; ops-state = `{"ops_sync_base_sha": ec07bcd}` only — no
+promotion_pending, no approval receipt, no recovery residue.
+
+**Findings corrected (R0.3 §2–§13):**
+- **R0.3-A — Founder approval enforced:** real P1 (`into_primary=True`) refuses
+  BEFORE ANY mutation unless `disposition == APPROVED`; AWAITING_FOUNDER_APPROVAL
+  / REJECTED / CANCELLED / missing / malformed / unknown = FAIL CLOSED `approval`;
+  canary may rehearse an AWAITING manifest but NEVER converts that into approval;
+  `--recover` never bypasses the gate.
+- **R0.3 §3 — approval bound to the EXACT manifest:** `manifest_immutable_digest`
+  = SHA-256 over the deterministic canonical serialization of the immutable
+  payload (manifest_id, batch_base_sha, manifest_main_sha, manifest_ops_head_sha,
+  ordered artifact entries path/job_id/source_commit/sha256, changed_jobs —
+  mutable review metadata EXCLUDED); external receipt `approved_manifest_id +
+  approved_manifest_sha256` stored in ops-state; real P1 requires
+  pending==manifest_id AND approved_manifest_id==manifest_id AND
+  approved_manifest_sha256==recomputed digest AND disposition==APPROVED; a
+  different/edited manifest requires NEW approval; one pending manifest never
+  clears/promotes another. `generate_promotion_manifest.py --approve/--cancel`
+  CLI added.
+- **R0.3-B — two-phase atomicity:** promote restructured to PHASE V (pure
+  read-only validation of the ENTIRE batch: approval binding, refs/TOCTOU,
+  frozen lineage, canonical delta, duplicate-path detection, per-artifact
+  ownership / source / latest-path-touch / blob-existence / raw hash / metadata —
+  validated bytes held in memory; NO writes/stage/commit/state change) then
+  PHASE M (write, explicit-path stage, staged-set verify, commit, committed-set +
+  hash verify, push, fetch, remote verify, state transition, cleanup). Any
+  PHASE-V failure leaves primary main byte-for-byte clean → A1–A4 locked.
+- **R0.3-C — ops-state FAILS CLOSED:** `StateError` raised when the state FILE
+  EXISTS but is malformed/truncated/unreadable/wrong-top-level-type/structurally
+  invalid; only a missing file yields `{}` (explicit bootstrap); G0 →
+  `STATE_CORRUPT`; manifest generation HOLDS; real P1 HOLDS; recovery HOLDS;
+  corrupt state is NEVER read as "no lock".
+- **R0.3 §7 — atomic state writes:** same-directory temp file → flush → fsync →
+  `os.replace`; previous valid state preserved until replacement succeeds;
+  no partial/truncated authoritative state.
+- **R0.3-D — owner re-derived at consumption:** `owning_jobs(rel)` run
+  mechanically in Phase V: 0 = `owner`, >1 = `owner_ambiguous`, unique ≠
+  manifest claim = `owner_mismatch`; manifest's claimed job alone is never
+  trusted; zero primary mutation on failure.
+- **R0.3-E — recovery verifies EXACT commit delta:** `HEAD^ == manifest_main_sha`
+  AND `git diff --name-status manifest_main_sha..HEAD` == exact manifest path set
+  (A/M only, no extra/omitted/deletion/rename) AND per-artifact HEAD raw blob
+  hash == manifest sha256 AND the preserved commit equals the RECORDED
+  `pending_p1_manifest_id` / `pending_p1_manifest_sha256` /
+  `pending_p1_local_commit_sha` (identity never inferred from HEAD).
+- **R0.3 §10 — post-commit exactness before push:** the freshly-created local
+  promotion commit is verified (parent == manifest_main_sha, diff path-set ==
+  manifest, committed raw hashes == manifest) BEFORE push — protects against
+  commit hooks / index mutation; failure = DO NOT PUSH, local commit preserved,
+  bounded recovery/manual-disposition state.
+- **R0.3 §11 — duplicate manifest paths** FAIL CLOSED
+  (`len(paths_list) == len(set(paths_list))`); duplicate/inconsistent manifest
+  IDs rejected.
+- **R0.3 §12 — batch base consistency:** consumer verifies
+  `batch_base_sha == manifest_main_sha`; mismatch = FAIL CLOSED `manifest`.
+- **R0.3 §13 — manifest/pending identity:** real P1 requires
+  `promotion_pending_manifest_id == manifest_id`; no/different/multiple = HOLD;
+  success clears ONLY the exact matching pending + approval receipt;
+  cancellation requires the exact manifest id + digest.
+
+**RED baseline (Go §14):** RED diagnostics commit `a1487dc` (17 tests:
+R3-A..E approval gate, A1–A4 atomicity zero-mutation, R3-H corrupt-state, R3-I
+interrupted-write, R3-J owner re-derivation, R3-K/L recovery exact-delta, R3-M
+post-commit push refusal, R3-N duplicate-path, R3-O batch-base) — **17 failed /
+59 passed** on ec07bcd (all prior greens retained, zero weakened).
+
+**Implementation (commit `7fc4682`):** ops_config (StateError + fail-closed
+load + atomic save + approval/pending/recovery helpers), g0_check (STATE_CORRUPT),
+generate_promotion_manifest (immutable digest + corrupt-state HOLD +
+`--approve`/`--cancel`), promote_batch (approval gate, two-phase, owner
+re-derive, post-commit exactness, exact-delta recovery), tests (existing real-P1
+tests bound to `_approve`; owner-scope → `owner_mismatch`; per-test temp
+`OPS_STATE_DIR` fixture — tests NEVER touch the real ops-state).
+
+**Debug note (honest):** during GREEN iteration, `monkeypatch.undo()` in the
+recovery/post-commit tests was found to revert the fixture's `OPS_STATE_DIR`/
+`HOME` env (pytest monkeypatch semantics) → the post-undo code read the REAL
+profile state. Root cause: `undo()` reverts ALL patches incl. fixture env.
+Fixed by scoped `monkeypatch.setattr(ops_git, "run_git", real)` restore (never
+full undo). Real ops-state was restored to `{"ops_sync_base_sha": ec07bcd}`.
+
+**Gate 16 — full verification:**
+- ops suite: **76/76 PASS (121.9s)** — all T1–T7, M1–M18, P1-A..G + recovery,
+  G0 A–E + PENDING + STATE_CORRUPT, R3-A..O + A1–A4, atomic-write R3-I
+- FULL pytest: **848/848 PASS (126.6s)** — 813 R0.1 + 18 R0.2 + 17 R0.3 net new
+- gate-check: ALL GATES PASSED (Gate 6 via `[TEST_VERIFIED]` on the closeout)
+- isolation-scan: PASS (working tree + R0.3 range `a1487dc^..HEAD` — no
+  forbidden paths); no M5.3 semantic change; no Hermes scheduler change
+
+**Gate 18 — push/normalize (§19 done):** corrected main pushed fast-forward
+`ec07bcd -> a1487dc -> 7fc4682 -> (R0.3 closeout)`; pre-push fetch verified
+origin/main == base; post-push local == origin/main == ls-remote; main→ops
+synced via the corrected lifecycle (S1 + remote_verified, durable
+push-before-base-persist); final pre-live: origin/main == origin/ops/automation
+== local ops; G0 = case A; ops-state = `{"ops_sync_base_sha": <corrected>}`
+only; no manifest; no pending promotion; no approval receipt; no recovery
+residue; all five cron jobs PAUSED.
+
+**Gate 19 — resume AFTER R0.3 green:** `73e611584447` + `cda817d17236` RESUMED
+(natural schedules only, no forced runs); Weekly Radar + CIW + Learning Loop stay
+PAUSED.
+
+**Status:** `POST-M5.3 O3 — R0.3 P1 GOVERNANCE/ATOMICITY HARDENING COMPLETE /
+CLEAN ARTIFACT CYCLES READY`
+
+**Next action (recommended):** observe the TWO REAL scheduled clean artifact
+cycles (Nick-Weekly Sat 26 Sep 09:00 + Mid-Week Radar Thu 01 Oct 08:00, ≥2
+distinct classes), then STOP and return the deterministic multi-job P1 manifest
+for Founder approval — generate → review → `disposition = APPROVED` →
+`--approve` binds the digest receipt → promote (two-phase, approval-gated). NO
+P1 manifest until both real cycles complete. P2 NOT authorized; M5.3 FROZEN;
+M6 PARKED.
+
+---
+
 # Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.2 P1 EXECUTION HARDENING — COMPLETE)
 
 ## POST-M5.3 O3 R0.2 P1 HARDENING COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)

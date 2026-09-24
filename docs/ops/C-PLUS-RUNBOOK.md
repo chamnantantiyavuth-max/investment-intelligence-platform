@@ -1,7 +1,13 @@
-# C+ Cron Operations Runbook — POST-M5.3 O3 R0.2 (FD #142)
+# C+ Cron Operations Runbook — POST-M5.3 O3 R0.3 (FD #142)
 
-Status: **R0.2 P1 HARDENING COMPLETE** — bounded implementation corrections (24
-Sep 2026, Founder independent source review): R0.1-A sync lifecycle PASS, R0.1-B
+Status: **R0.3 P1 GOVERNANCE/ATOMICITY HARDENING COMPLETE** — bounded
+implementation corrections (24
+Sep 2026, Founder independent source review): R0.1/R0.2 retained PASS; R0.3 adds
+Founder-approval gate bound to the exact immutable manifest digest, two-phase
+validate-then-mutate (zero primary mutation on late failure), fail-closed atomic
+ops-state, owner re-derivation at consumption, post-commit exactness before push,
+and exact-delta recovery with a recorded pending identity.
+R0.1 sync lifecycle PASS, R0.1-B
 multi-job manifest/raw-blob PASS, R0.2 real-P1 promotion path hardened (exact
 canonical-main start, into_primary⇒push+main, exact success order, per-artifact
 + delta revalidation, promotion-pending lock, P1_LOCAL_COMMIT_PENDING_REMOTE_
@@ -133,37 +139,66 @@ lateness; plus >= ONE successful end-to-end P1 batch promotion (canary-verified)
      `promotion_pending_manifest_id` in external ops-state (NOT a repo write).
      While set, artifact-cron preflight / G0 FAILS CLOSED (case PENDING) — the
      "jobs paused during Founder P1 review" pause is mechanical.
-2. Founder approves the manifest (one approval = whole batch; `disposition` → APPROVED).
+2. Founder approves the manifest (one approval = whole batch). **Approval is
+   DIGEST-BOUND (R0.3 §2/§3):** the manifest carries `immutable_digest` — a
+   SHA-256 over the deterministic canonical serialization of the immutable
+   payload (manifest_id, batch_base_sha, manifest_main_sha, manifest_ops_head_sha,
+   the exact ordered artifact entries path/job_id/source_commit/sha256, and
+   changed_jobs). Mutable review metadata (disposition, generated_at, notes) is
+   EXCLUDED. Set `disposition = APPROVED` in the manifest, then bind the receipt:
+   `python scripts/ops/generate_promotion_manifest.py --approve --manifest <path>`
+   → records `approved_manifest_id + approved_manifest_sha256` in ops-state. A
+   real P1 requires ALL FOUR: `promotion_pending_manifest_id == manifest_id` AND
+   `approved_manifest_id == manifest_id` AND
+   `approved_manifest_sha256 == recomputed immutable_digest` AND
+   `disposition == APPROVED`. Any mismatch = FAIL CLOSED `approval`/`pending`.
+   A different/edited manifest requires NEW approval; one pending manifest never
+   promotes/clears another. Cancellation:
+   `... --cancel --manifest <path>` (exact id + digest only).
 3. Real P1: `python scripts/ops/promote_batch.py --manifest <path> --target-branch main
-   --push --into-primary` — exact success order (R0.2 §4):
+   --push --into-primary` — TWO-PHASE (R0.3 §4), exact order (R0.2 §4/R0.3 §17):
    1. invocation contract (into_primary ⇒ target==main + do_push; into_primary +
       verify_only invalid) → 2. fetch → 3. primary main CLEAN → 4. local HEAD ==
       origin/main == manifest_main_sha (ahead/behind/diverged = HOLD "baseline",
       NO merge/rebase/reset) → 5. revalidate frozen ops snapshot (manifest ops
       head still in current origin/ops lineage, else "frozen_lineage" HOLD) →
-      6. canonical-delta revalidation (recomputed `main..ops` artifact set must
-      EQUAL the manifest set exactly — no omitted/added/deleted/renamed/unknown/
-      denylisted/ambiguous entry; tampering = "delta" FAIL CLOSED) → 7. per-
-      artifact revalidation (§11): source_commit is a commit, is the LATEST path-
-      touch within the frozen batch, path exists there, owner still matches, raw
-      sha256 matches → 8. exact transfer → 9. explicit-path stage → 10. commit →
-      11. post-commit raw-blob verify → 12. push → 13. fetch → 14. verify
-      origin/main == promotion commit → **ONLY THEN** 15. advance
-      `last_promoted_ops_sha` + clear the promotion-pending lock + persist → 16.
-      remove manifest residue → success.
-   - R0 canary: `--target-branch <temp>` (optionally `--push`) — NEVER advances
-     last_promoted, NEVER touches promotion state, NEVER removes the review
-     manifest. `--verify-only` rehearses a temp branch; it is invalid with
-     into_primary.
-4. **Push/remote-verify failure (R0.2 §13):** state =
+      6. APPROVAL GATE (pending identity, then receipt id, then receipt digest,
+      then disposition — R0.3 §2/§3/§13) → 7. manifest consistency
+      (batch_base_sha == manifest_main_sha; duplicate artifact paths = FAIL
+      CLOSED) → **PHASE V — PURE READ-ONLY VALIDATION OF THE ENTIRE BATCH (no
+      file writes/staging/commits/state changes):** canonical-delta revalidation
+      (recomputed `main..ops` artifact set must EQUAL the manifest set exactly)
+      then per-artifact: denylist under CURRENT config, owner MECHANICALLY
+      RE-DERIVED at consumption via owning_jobs (0 = "owner", >1 =
+      "owner_ambiguous", unique ≠ manifest claim = "owner_mismatch"), source_commit
+      is a commit, is the LATEST path-touch within the frozen batch, path exists
+      there, raw sha256 matches — validated bytes held in memory ONLY → 8. IF
+      EVERY artifact passed: PHASE M — write exact bytes, explicit-path stage,
+      staged-set verify, commit → 9. POST-COMMIT EXACTNESS before push (parent ==
+      manifest_main_sha; `diff --name-status main..HEAD` == manifest path set; all
+      committed raw-blob hashes == manifest — protects against hooks/index
+      mutation; failure = "post_commit", DO NOT PUSH) → 10. push → 11. fetch →
+      12. verify origin/main == promotion commit → **ONLY THEN** 13-15. advance
+      `last_promoted_ops_sha`, clear the exact pending + approval + recovery
+      state, persist → 16. remove manifest residue → success.
+      Any PHASE-V failure leaves primary main byte-for-byte clean.
+   - R0 canary: `--target-branch <temp>` (optionally `--push`) — may rehearse an
+     AWAITING manifest; NEVER advances last_promoted, NEVER touches promotion
+     state, NEVER implies Founder approval, NEVER removes the review manifest.
+     `--verify-only` rehearses a temp branch; it is invalid with into_primary.
+4. **Push/remote-verify failure (R0.2 §13 + R0.3 §9):** state =
    `P1_LOCAL_COMMIT_PENDING_REMOTE_RECOVERY`. Local promotion commit PRESERVED,
    origin/main unchanged, last_promoted unchanged, manifest preserved, no new P1,
-   no unrelated governed-main work. Recovery:
+   no unrelated governed-main work. The failure RECORDS the exact recovery
+   identity in ops-state (`pending_p1_manifest_id`, `pending_p1_manifest_sha256`,
+   `pending_p1_local_commit_sha`). Recovery:
    `python scripts/ops/promote_batch.py --recover --manifest <path> --target-branch main`
-   — verifies preserved commit parent == manifest_main_sha and artifact hashes ==
-   manifest, then retries the EXACT push; on success advances state + clears lock
-   + removes residue. No reset. If origin/main advanced past the reviewed base
-   (`main_moved`), Founder disposition only.
+   — requires the recorded identity to MATCH exactly (never inferred from HEAD),
+   re-runs the approval gate (--recover never bypasses approval), verifies parent
+   == manifest_main_sha and the EXACT commit delta (path set + A/M only + raw
+   hashes), then retries the EXACT push; on success advances state + clears the
+   exact locks + removes residue. No reset. If origin/main advanced past the
+   reviewed base (`main_moved`), Founder disposition only.
 5. Promotion record = normal governed main commit (files + receipt). Ops merge
    history never imported; no broad cherry-pick. Newer ops artifacts are never
    implicit.
@@ -176,6 +211,16 @@ lateness; plus >= ONE successful end-to-end P1 batch promotion (canary-verified)
    allowlist. G0 must return clean before scheduled cron resumes. The
    promotion-pending lock is cleared ONLY by verified success or explicit
    cancellation/disposition of that manifest.
+8. **Ops-state is FAIL-CLOSED + ATOMIC (R0.3 §6/§7):** ops-state (external
+   profile dir, never a repo write) carries the promotion-pending lock, approval
+   receipt, last_promoted_ops_sha and recovery identity. `load_state()` returns
+   {} ONLY when the file does not exist (explicit bootstrap); an EXISTING file
+   that is malformed/truncated/unreadable/wrong-type/structurally-invalid raises
+   StateError — G0 returns `STATE_CORRUPT`, manifest generation HOLDS, real P1
+   HOLDS, recovery HOLDS. Corrupt state is NEVER treated as 'no lock'. Writes
+   are atomic: deterministic same-directory temp file → flush → fsync →
+   `os.replace` — the previous valid state survives until replacement succeeds;
+   no partial/truncated authoritative state.
 
 ## 8. Maintenance mode (P2 design)
 
@@ -187,8 +232,10 @@ on ops; no promotion; no artifact loss; state remains auditable.
 ## 9. Verification
 
 - Ops tooling: `python -m pytest tests/ops/test_ops_tooling.py -q --basetemp <scratch>`
-  (59 tests; temp git repos only — never the real worktree/remote). Matrix:
-  G0 A–E + PENDING (promotion-pending lock), S0–S3 sync lifecycle (T1/T2
+  (76 tests; temp git repos + per-test temp state dir only — never the real
+  worktree, remote OR ops-state). Matrix:
+  G0 A–E + PENDING + STATE_CORRUPT (promotion-pending lock with fail-closed
+  corrupt state), S0–S3 sync lifecycle (T1/T2
   sequential ops-ahead acceptance, T3 remote-first, T4 durable S1 push, T5 clean-
   divergence merge, T6 conflict abort, T7 push-failure preserve+block), M1/M2
   multi-job manifests, M3 unknown path FAIL, M4 ambiguous ownership FAIL, M5
@@ -199,9 +246,15 @@ on ops; no promotion; no artifact loss; state remains auditable.
   state advance, deterministic --recover), **M9–M18** (mechanical canonical
   range, caller-range equality, frozen-lineage HOLD, out-of-batch/stale
   source_commit HOLD, delta omission/foreign-artifact HOLD, governance-between-
-  batches delta, promotion-pending lock block + clear).
+  batches delta, promotion-pending lock block + clear),
+  **R0.3 R3-A..R3-O + A1–A4** (AWAITING/REJECTED/approved-string-without-receipt/
+  digest-mismatch refusals, foreign-pending refusal, late bad-hash/invalid-owner/
+  invalid-source/denylisted atomic zero-mutation, corrupt-state G0+generate+
+  promote HOLD, interrupted-write state preservation, owner-ambiguity
+  re-derivation, recovery extra-path refusal + exact recovery, post-commit
+  extra-path push refusal, duplicate-path FAIL, batch-base mismatch FAIL).
 - Full suite: `python -m pytest` (must stay green; no M5.3 semantic changes).
-  R0.2 gate: 831 passed (813 R0.1 + 18 net new ops tests).
+  R0.3 gate: 848 passed (813 R0.1 + 18 R0.2 + 17 net new ops tests).
 - Gate: `bash scripts/gate-check.sh` (all gates incl. verification-tag on the
   closeout commit) + `bash scripts/isolation-scan.sh` (clean tree).
 
