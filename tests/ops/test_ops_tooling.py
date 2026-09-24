@@ -241,12 +241,12 @@ def _make_artifact_commit(fx, rel, base_sha):
     return git(fx["ops"], "rev-parse", "HEAD").strip()
 
 
-def _manifest_for(fx, job, head, base=None):
+def _manifest_for(fx, job, head=None, base=None):
     repo, ops = str(fx["canonical"]), fx["ops"]
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    base = base or git(repo, "rev-parse", "origin/ops/automation").strip()
-    m = generate_promotion_manifest.generate_manifest(repo, base, head,
-                                                      expected_jobs=[job], fetch=False)
+    # R0.2 §8: batch range is MECHANICAL (origin/main -> origin/ops/automation);
+    # in the fixtures the caller's base/head equal the derived refs.
+    m = generate_promotion_manifest.generate_manifest(repo, expected_jobs=[job], fetch=False)
     return m
 
 
@@ -513,8 +513,8 @@ def test_m1_multi_job_batch_single_manifest(fx):
     m = _make_artifact_commit(fx, AM_REL, r)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    # single manifest over A..M covering BOTH artifact classes
-    manifest = generate_promotion_manifest.generate_manifest(repo, base, m, fetch=False)
+    # single manifest over the canonical A..M batch covering BOTH artifact classes
+    manifest = generate_promotion_manifest.generate_manifest(repo, fetch=False)
     paths = {a["path"] for a in manifest["artifacts"]}
     assert paths == {"evidence/radar/digests/2026-09-23-radar-digest.md", AM_REL}
     owners = {a["job_id"] for a in manifest["artifacts"]}
@@ -545,7 +545,7 @@ def test_m7_raw_blob_hash_not_working_tree(fx):
     head = git(fx["ops"], "rev-parse", "HEAD").strip()
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    manifest = generate_promotion_manifest.generate_manifest(repo, base, head, fetch=False)
+    manifest = generate_promotion_manifest.generate_manifest(repo, fetch=False)
     raw = git_b(repo, "show", f"{head}:{rel}")
     assert raw == blob  # plumbing staging preserved the exact CRLF + latin-1 bytes
     # R0.1 §9: hash over the RAW GIT BLOB BYTES, not working-tree bytes
@@ -565,7 +565,7 @@ def test_m2_radar_ciw_multi_job_batch(fx):
     c = _make_artifact_commit(fx, CIW_REL, r)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    manifest = generate_promotion_manifest.generate_manifest(repo, base, c, fetch=False)
+    manifest = generate_promotion_manifest.generate_manifest(repo, fetch=False)
     paths = {a["path"] for a in manifest["artifacts"]}
     assert paths == {"evidence/radar/digests/2026-09-23-radar-digest.md", CIW_REL}
     owners = {a["job_id"] for a in manifest["artifacts"]}
@@ -585,7 +585,7 @@ def test_m3_unknown_path_fail_closed(fx):
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
     head = git(repo, "rev-parse", "origin/ops/automation").strip()
     with pytest.raises(ValueError, match="no owning job allowlist"):
-        generate_promotion_manifest.generate_manifest(repo, base, head, fetch=False)
+        generate_promotion_manifest.generate_manifest(repo, fetch=False)
 
 
 def test_m4_ambiguous_ownership_fail_closed(fx, monkeypatch):
@@ -602,7 +602,7 @@ def test_m4_ambiguous_ownership_fail_closed(fx, monkeypatch):
         jid: [re.compile(p) for p in pats] for jid, pats in ops_config.JOB_ALLOWLISTS.items()
     })
     with pytest.raises(ValueError, match="ambiguous ownership"):
-        generate_promotion_manifest.generate_manifest(repo, base, head, fetch=False)
+        generate_promotion_manifest.generate_manifest(repo, fetch=False)
 
 
 def test_m5_deletion_in_range_fails(fx):
@@ -615,7 +615,7 @@ def test_m5_deletion_in_range_fails(fx):
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
     head = git(repo, "rev-parse", "origin/ops/automation").strip()
     with pytest.raises(ValueError, match="deletion"):
-        generate_promotion_manifest.generate_manifest(repo, base, head, fetch=False)
+        generate_promotion_manifest.generate_manifest(repo, fetch=False)
 
 
 def test_m6_rename_in_range_fails(fx):
@@ -629,24 +629,33 @@ def test_m6_rename_in_range_fails(fx):
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
     head = git(repo, "rev-parse", "origin/ops/automation").strip()
     with pytest.raises(ValueError, match="rename"):
-        generate_promotion_manifest.generate_manifest(repo, base, head, fetch=False)
+        generate_promotion_manifest.generate_manifest(repo, fetch=False)
 
 
 def test_m8_manifest_frozen_despite_newer_ops_commits(fx):
-    """Newer ops commits after the frozen manifest head -> manifest stays frozen."""
+    """Newer ops commits AFTER the frozen manifest head: the FROZEN manifest stays
+    exactly as generated (freeze point, R0.2 §10); a later generation is a NEW
+    batch over the newer canonical delta."""
     base = git(fx["ops"], "rev-parse", "HEAD").strip()
     head1 = _make_artifact_commit(fx, "evidence/radar/digests/2026-09-23-radar-digest.md", base)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    m1 = generate_promotion_manifest.generate_manifest(repo, base, head1, fetch=False)
-    # newer ops commit AFTER the frozen head
+    m1 = generate_promotion_manifest.generate_manifest(repo, fetch=False)  # frozen at head1
+    assert m1["manifest_ops_head_sha"] == head1
+    frozen_artifacts = m1["artifacts"]
+    # newer ops commit AFTER the freeze
     _make_artifact_commit(fx, "evidence/radar/digests/2026-09-24-radar-digest.md", head1)
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    m2 = generate_promotion_manifest.generate_manifest(repo, base, head1, fetch=False)
-    assert m1["manifest_ops_head_sha"] == head1 == m2["manifest_ops_head_sha"]
-    assert m1["artifacts"] == m2["artifacts"]          # identical freeze
-    assert m1["artifacts"][0]["source_commit"] == head1  # frozen, not the newer commit
-    assert m2["artifacts"][0]["source_commit"] == head1
+    # the frozen manifest object is stable — never mutated by newer ops
+    assert m1["manifest_ops_head_sha"] == head1
+    assert m1["artifacts"] == frozen_artifacts
+    assert m1["artifacts"][0]["source_commit"] == head1
+    # a NEW generation is a NEW batch over the newer canonical delta
+    m2 = generate_promotion_manifest.generate_manifest(repo, fetch=False)
+    assert m2["manifest_ops_head_sha"] != head1
+    assert {a["path"] for a in m2["artifacts"]} == {
+        "evidence/radar/digests/2026-09-23-radar-digest.md",
+        "evidence/radar/digests/2026-09-24-radar-digest.md"}
 
 
 # ---- R0.1 §13 / §14 — last-promoted semantics + manifest residue ---------------
@@ -704,7 +713,7 @@ def test_promotion_uses_real_source_commit_blob(fx):
     m = _make_artifact_commit(fx, AM_REL, r)
     repo = str(fx["canonical"])
     git(repo, "fetch", "origin", "ops/automation:refs/remotes/origin/ops/automation")
-    manifest = generate_promotion_manifest.generate_manifest(repo, base, m, fetch=False)
+    manifest = generate_promotion_manifest.generate_manifest(repo, fetch=False)
     mp = fx["ops"] / "m.json"; mp.write_text(json.dumps(manifest), encoding="utf-8")
     res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)
     assert res["ok"] is True
@@ -963,8 +972,7 @@ def test_m14_manifest_subset_omission_holds(fx):
     r = _make_artifact_commit(fx, RADAR23, base)
     h = _make_artifact_commit(fx, AM_REL, r)
     repo = str(fx["canonical"]); _refresh_ops_ref(fx)
-    m = generate_promotion_manifest.generate_manifest(repo, base, h,
-                                                      expected_jobs=[WEEKLY, AM], fetch=False)
+    m = generate_promotion_manifest.generate_manifest(repo, expected_jobs=[WEEKLY, AM], fetch=False)
     m["artifacts"] = [a for a in m["artifacts"] if a["job_id"] != AM]   # omitted artifact
     mp = _write_manifest(fx, m)
     res = promote_batch.promote_batch(mp, "wip/canary", fx["canonical"], fx["ops"], do_push=False)

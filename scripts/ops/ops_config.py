@@ -141,4 +141,23 @@ def save_state(state: dict) -> None:
     p.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
-# footer: 2026-09-23 15:00 UTC+7
+# ---- promotion-pending lock (R0.2 §14) --------------------------------------
+def promotion_pending() -> str | None:
+    """promotion_pending_manifest_id — external operational flag (NOT a repo
+    governance write). When set, artifact-cron preflight / G0 FAILS CLOSED until
+    a verified REAL P1 promotion clears it or the manifest is explicitly
+    cancelled/disposed. Makes 'jobs are paused during Founder P1 review'
+    mechanical rather than merely procedural."""
+    return load_state().get("promotion_pending_manifest_id")
+
+
+def set_promotion_pending(manifest_id: str | None) -> None:
+    state = load_state()
+    if manifest_id is None:
+        state.pop("promotion_pending_manifest_id", None)
+    else:
+        state["promotion_pending_manifest_id"] = manifest_id
+    save_state(state)
+
+
+# footer: 2026-09-24 13:45 UTC+7 (R0.2 promotion-pending lock helpers)

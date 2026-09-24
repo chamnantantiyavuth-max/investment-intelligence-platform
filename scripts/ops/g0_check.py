@@ -35,6 +35,20 @@ def g0_check(worktree: str | Path, repo: str | Path, do_fetch: bool = True) -> d
         result["reasons"] = [f"G0-E0 worktree is on '{branch}', expected '{ops_config.OPS_BRANCH}'"]
         return result
 
+    # promotion-pending lock (R0.2 §14): a Founder-review P1 manifest exists or a
+    # promotion awaits recovery — artifact jobs FAIL CLOSED; cleared ONLY after a
+    # verified REAL P1 promotion or explicit cancellation/disposition.
+    pending = ops_config.promotion_pending()
+    if pending:
+        result["case"] = "PENDING"
+        result["reasons"] = [
+            "G0-PENDING promotion_pending_manifest_id="
+            f"{pending!r} — artifact jobs FAIL CLOSED while a P1 manifest awaits "
+            "Founder review/recovery (mechanical pause, R0.2 §14); cleared only "
+            "after a verified REAL P1 promotion or explicit cancellation."
+        ]
+        return result
+
     if do_fetch:
         try:
             ops_git.run_git(cwd, "fetch", "origin")
