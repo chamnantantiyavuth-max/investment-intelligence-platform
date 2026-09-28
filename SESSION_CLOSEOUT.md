@@ -1,3 +1,67 @@
+# Session — 2026-09-28 (interactive: POST-M5.3 O3 — R0.4 FOUNDER FINAL SOURCE AUDIT ACCEPTANCE / COMPLETE)
+
+## POST-M5.3 O3 R0.4 FOUNDER FINAL SOURCE AUDIT PASS — ACCEPTED / COMPLETE (28 Sep 2026, session decision — NO new FD)
+
+**Session:** Founder independently audited canonical
+`origin/main == origin/ops/automation == 56d040c1160d53bb90dc3e319c5a19430e798154`
+(source/contract review) and returned **POST-M5.3 O3 — R0.4 FOUNDER FINAL SOURCE
+AUDIT PASS** → **R0.4 ACCEPTED / COMPLETE**; MUST NOT be reopened without a newly
+demonstrated material defect. Verified by this session at write time: local HEAD ==
+origin/main == origin/ops/automation == 56d040c (clean); cron gate verified exactly as
+the Founder listed it (Nick-Weekly `73e611584447` + Mid-Week `cda817d17236` =
+SCHEDULED/natural-only; Weekly Radar `8ba233e88015` + CIW `8b1cd19aba7d` + Learning
+Loop `1f5f03f9236d` = PAUSED); ops-state = `{"ops_sync_base_sha": 56d040c}` only.
+
+**Accepted bounded semantics (retained, NOT reopened):** mandatory digest-bound
+promotion-pending identity · exact Founder approval receipt binding · exact-disposition
+approved cancellation with recovery protection · short-write-safe fail-closed ops-state
+persistence · lock-first manifest publication · recovery identity before uncertain push ·
+three-case remote reconciliation (base→retry / exact-commit→finalize-only / other→main_moved)
+· one atomic promotion-state finalization · partial tuples fail closed · R0.1/R0.2/R0.3
+retained. Independent-audit note: reported evidencen (RED 15/76 · ops 91/91 · FULL 863/863 ·
+gate-check PASS · isolation-scan PASS) remains Hermes LOCAL — NOT relabeled as independent CI.
+
+**NON-BLOCKING housekeeping (accepted; NO new correction round):** (1) cancellation without
+the literal AWAITING_FOUNDER_APPROVAL disposition — safe, no promotion/cancel bypass/recovery
+clear; (2) gitignored `ops/manifests/` residue — operational housekeeping only.
+
+**⚠ Scheduler-execution truth (executions ledger, read 28 Sep):** TWO natural occurrences
+around/after R0.4 have status `unknown` (scheduler restarted, owner exited before durable
+terminal state — side effects unknown): Mid-Week 24 Sep (claimed 08:56, inside the R0.4
+correction window → EXCLUDED from gate G per the R0.4 closeout) and **Nick-Weekly 26 Sep
+(claimed 11:09, WROTE AM SRL `2026-09-26-run-AM-V0-20260926-111044.md`, exited 18:57 —
+POST-R0.4-green, genuine gate-G candidate, but NOT clean)**. The SRL is UNTRACKED at its
+allowlisted path in the ops worktree → next ops G0 + sync FAIL CLOSED (case E) until a
+Founder residue disposition. **ZERO clean cycles so far.** Governed main untouched by cron.
+
+**Closeout actions (docs-only, NO runtime/code change):** PROJECT_STATE current-state bullet
++ closeout_status + Git push state updated · SESSION_CLOSEOUT entry · vault fd-register
+backfill FD-139..142 (both mirrors, [BACKFILLED] markers) · obsidian CURRENT-STATE capture +
+Sessions log · native memory canonical-SHA refresh. No tests re-run (docs-only commit — suite
+baseline 863/863 unchanged). P1 REAL PROMOTION NOT AUTHORIZED · M6 NOT AUTHORIZED · no R0.5 ·
+M5.3 FROZEN.
+
+**Decisions table:**
+
+| # | Decision | Type |
+|---|----------|------|
+| 1 | R0.4 FOUNDER ACCEPTED / COMPLETE — session decision, NOT numbered FD (matches R0.1–R0.4 precedent: implementation conformance to FD #142); fd_count 158 unchanged | Session decision |
+| 2 | GATE G — OBSERVATION IN PROGRESS; resume ONLY the 2 scheduled jobs at natural occurrences; NO forced runs | Session decision |
+| 3 | Untracked `2026-09-26-run-AM-V0-20260926-111044.md` (unknown-status run residue) + ops-sync block → Founder disposition REQUIRED before next Nick-Weekly G0 | Decision required (presented) |
+
+**Recommended next action:** Founder dispositions the untracked AM SRL residue (A: deterministic
+commit to ops as interrupted-run evidence via commit_push_ops.py, restoring G0 case A / B: park
+to gitignored evidence location preserving the artifact / C: leave as-is, accept G0-E block on
+the next Nick-Weekly run); then ops sync resumes; then observe TWO REAL clean scheduled cycles
+per runbook §4 (next natural: Mid-Week Thu 1 Oct 08:00, Nick-Weekly Sat 3 Oct 09:00) with full
+evidence (pre-run G0 · S0-S3 · exact allowed delta · validation · explicit-path commit/push ·
+remote verification · main unchanged · clean final state); after BOTH → STOP and return the
+deterministic multi-job P1 manifest/evidence package to Founder (no auto-approve, no receipt
+binding, no promote). Alternatives: (B) run the ops suite + gate-check + isolation-scan on the
+docs-only tree first; (C) wait for Founder review of the executions ledger before any resume.
+
+<!-- 2026-09-28 12:10 UTC+7 -->
+
 # Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.4 FINAL P1 CRASH-CONSISTENCY/DISPOSITION CORRECTION — COMPLETE)
 
 ## POST-M5.3 O3 R0.4 FINAL P1 CRASH-CONSISTENCY / DISPOSITION CORRECTION COMPLETE — 24 Sep 2026 (FD #142 conformance, NO new FD)
