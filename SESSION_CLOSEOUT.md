@@ -60,6 +60,71 @@ deterministic multi-job P1 manifest/evidence package to Founder (no auto-approve
 binding, no promote). Alternatives: (B) run the ops suite + gate-check + isolation-scan on the
 docs-only tree first; (C) wait for Founder review of the executions ledger before any resume.
 
+## POST-M5.3 O3 — UNKNOWN-RUN RESIDUE QUARANTINED / CANONICAL MAIN-OPS BASELINE RESTORED (28 Sep 2026, Founder Operational Ruling — operational disposition, NO new FD)
+
+**Founder ruling:** selected **Option B — QUARANTINE / PRESERVE OUTSIDE THE REPOSITORY** for the
+26 Sep unknown-run AM SRL (explicitly NOT Option A; DO NOT commit to `ops/automation` — an
+unknown-status artifact must never appear promotion-eligible and would contaminate the future
+canonical `origin/main..origin/ops/automation` P1 delta). **GATE G remains ZERO CLEAN CYCLES.**
+
+**Executed procedure (16-step bounded protocol):**
+1. **State verified first:** remote `origin/main == origin/ops/automation == 56d040c…`; local primary
+   HEAD = `b26aef3` (exactly one docs-only acceptance closeout above remote); orphan untracked in ops
+   worktree; cron states matched the ruling list.
+2. **Temporary pause during disposition:** `73e611584447` + `cda817d17236` PAUSED (schedules/prompts/
+   workdirs untouched; no forced runs).
+3. **Orphan captured mechanically:** `operational/self-reflection-logs/2026-09-26-run-AM-V0-20260926-111044.md`
+   — 1,190 bytes · SHA-256 `9575426f24cbae06f0d70357c9c4c46b597c1f48cccbdb81e494d8c854e6c505` ·
+   mtime 2026-09-26T11:11:49.549721+07:00 · ops HEAD `56d040c…` · execution id
+   `0d3ab358f82648e3a84173fc3cdfb9f9` (scheduled 2026-09-26T02:00:00+00:00, claimed 11:09:17+07:00,
+   finished/owner-exit 18:57:49+07:00, status UNKNOWN — "scheduler restarted after owner exited before
+   a durable terminal state").
+4. **Quarantine outside all git worktrees:** copied to `<IIP profile>/quarantine/gate-g/2026-09-26/`
+   (profile runtime evidence area, NOT a gitignored in-repo path) + sidecar metadata record
+   `gate-g-quarantine-2026-09-26-73e611584447.sidecar.json` (quarantine reason, original abs path,
+   sha256, size, captured_at 2026-09-28T17:39:37+07:00, job id, execution id, scheduled/claimed/
+   owner-exit times, durable status UNKNOWN, gate_g_status NOT_CLEAN, source ops SHA,
+   `NOT ELIGIBLE FOR P1 PROMOTION`).
+5. **Verify before removal:** quarantine-copy SHA-256 == original SHA-256 (`9575426f…e6c505`) AND byte
+   size 1190 == 1190 AND sidecar exists → ONLY THEN removed the untracked original. Never deleted first.
+6. **G0 restored:** `case A` (no tracked changes, no untracked residue, no pending, no approval, no
+   recovery; local ops == origin/ops; exit 0).
+7. **b26aef3 verified before push:** `56d040c..b26aef3` = ONLY PROJECT_STATE.md + SESSION_CLOSEOUT.md
+   (no runtime/ops tooling/tests/schemas/registers/artifacts/QAD/M5.3/M6); docs truthfully record
+   R0.4 accepted, gate G = 0 clean cycles, 24 Sep excluded, 26 Sep UNKNOWN/NOT CLEAN, disposition
+   pending-at-commit-time.
+8. **Push:** fetch-before-push; `origin/main == 56d040c…` confirmed unchanged; fast-forward
+   `56d040c → b26aef3`; remote-verified `origin/main == b26aef3…`.
+9. **Sync main→ops (frozen C+ lifecycle):** expected S1 — MAIN AHEAD; fast-forward
+   `origin/main → ops/automation`, push + remote-verified; final
+   `origin/main == origin/ops/automation == b26aef3`, local primary == local ops == b26aef3;
+   ops-state = `{"ops_sync_base_sha": b26aef3}` ONLY; G0 after sync = `case A`. No merge commit created.
+10. **Disposition recorded truthfully:** b26aef3 NOT rewritten/amended; this SMALL FOLLOW-UP docs-only
+    commit (PROJECT_STATE + SESSION_CLOSEOUT) records the quarantine outcome; external machine path
+    kept out of the public repo (referenced as `<IIP profile>/…` only).
+11. **Vault/memory mirrors:** FD-139..142 backfills = mirror repair ONLY (NO new FD, no FD #143);
+    repo canonical FD authority unchanged; R0.4 acceptance remains implementation-conformance closure
+    under FD #142; R0.4 runtime NOT modified.
+12. **Resume:** `73e611584447` + `cda817d17236` RESUMED (natural schedules only; no forced runs) after
+    quarantine verified + G0 clean + b26aef3 pushed + S1 verified + no residue. Other three stay PAUSED.
+13. **Gate G counter:** QUALIFYING CLEAN CYCLES = **0 / 2** (24 Sep Mid-Week EXCLUDED — R0.4-window;
+    26 Sep Nick-Weekly NOT counted — UNKNOWN, C+ incomplete, orphan quarantined). Next natural
+    qualifying opportunities: Mid-Week + Nick-Weekly (authoritative `next_run_at` on the scheduler).
+14. **Clean-cycle criteria remain FROZEN** (G0 clean start · sync passes · allowlisted-only artifact ·
+    denylist zero · exact-path validation · ops commit · remote ops verified · main unchanged by cron ·
+    no residue · ledger truthful terminal state · no unresolved claim · PIT/as-of valid · clean worktree).
+    UNKNOWN scheduler status = NOT CLEAN.
+15. **P1/M6 boundary:** no P1 manifest generated/approved/promoted; M6 NOT begun. Only after TWO
+    qualifying REAL clean scheduled cycles → STOP, build deterministic multi-job P1 manifest from
+    canonical `origin/main → origin/ops/automation`, return to Founder for explicit approval.
+
+**Closeout actions (docs-only follow-up, NO runtime/code change):** PROJECT_STATE current-state bullet
+(disposition) + Git push state (SYNCED at b26aef3) + closeout_status phrase-update · SESSION_CLOSEOUT
+entry · no tests re-run (docs-only; suite baseline 863/863 unchanged). P1 REAL PROMOTION NOT
+AUTHORIZED · M6 NOT AUTHORIZED · no R0.5 · M5.3 FROZEN. Gate G = 0/2 observation continues with the
+two resumed natural-schedule jobs.
+
+
 <!-- 2026-09-28 12:10 UTC+7 -->
 
 # Session — 2026-09-24 (interactive: POST-M5.3 O3 — R0.4 FINAL P1 CRASH-CONSISTENCY/DISPOSITION CORRECTION — COMPLETE)
