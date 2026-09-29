@@ -1,3 +1,88 @@
+# Session — 2026-09-29 (interactive: FD #143 IIP MODEL ROUTING REFRESH + FOUNDER DISPOSITION — COMPLETE)
+
+## FD #143 — IIP MODEL ROUTING REFRESH 2026-09 (Founder authorization + Founder disposition, 29 Sep 2026)
+
+**Scope:** OPERATIONAL MODEL-ROUTING CHANGE ONLY. No QAD semantic / Master Plan research-logic /
+evidence-contract / M5.3 / R0.4 / C+ / P1-semantics / C0-D-0 / strategy-rule / methodology / M6 change.
+Model and provider routing belong to the operational implementation layer.
+
+**Canonical baseline:** started at `origin/main == origin/ops/automation == 0fcb809458cea2122756f2e755c3667ff3a1250f`
+(verified; primary + ops worktrees clean; no promotion/approval/P1 residue; G0 case A). Ended at
+`09fa5ad1eb3db758277a3ad62d8d83a74e7d2a0c` (FD #143 governance commit, pushed, ops synced S1).
+
+**Gate G frozen throughout:** all five canonical IIP cron jobs verified PAUSED before ANY config mutation
+(`73e611584447`, `1f5f03f9236d`, `8b1cd19aba7d`, `8ba233e88015`, `cda817d17236`). No forced run, no P1 manifest,
+no M6, no schedule/workdir/C+/R0.4 mutation. **Gate G retained 0/2**; the 24 Sep Mid-Week, 26 Sep Nick-Weekly and
+all routing canaries do NOT count. **GATE G MODEL BASELINE = POST-2026-09 MODEL ROUTING REFRESH.**
+
+**BEFORE → AFTER routing:** BEFORE — 12 workforce profiles already `deepseek/deepseek-v4.1-flash`/openrouter/high but
+`fallback_providers: []`; 5 cron jobs pinned inconsistently (3 openrouter V4.1 Flash; **Nick-Weekly + Daily Learning
+Loop on `deepseek-flash` / provider `deepseek` DIRECT**); routing skill v4.2.1 documenting GPT-5.6 Luna premium +
+Gemini 3.7 Flash auditor. AFTER — routine primary **DeepSeek V4.1 Flash** (`deepseek/deepseek-v4.1-flash`, high) ·
+routine fallback **GPT-6 Luna** (root-level `fallback_model` on iip + 11 org-*) · material independent challenge/audit
+**GPT-6 Luna High** · high-risk escalation **GPT-6 Sol** · cross-family independent review **Gemini 3.8 Flash High** ·
+**model-family independence rule** (A DeepSeek→Luna · B OpenAI→Gemini, Luna/Sol insufficient · C Gemini→Luna ·
+D none→**FAIL CLOSED**) · all 5 cron jobs uniformly pinned `openrouter`/`deepseek/deepseek-v4.1-flash` ·
+`model-routing` skill v5.0.0.
+
+**Verification (all REAL executions):** live OpenRouter catalogue probe (4 target slugs resolve; tools + structured
+output + reasoning + ≥1.04M context) · FOUR bounded runtime canaries PASS (real tool call + structured single-line
+JSON + exact model self-ID): DeepSeek V4.1 Flash routine · GPT-6 Luna independent review of DeepSeek output (correctly
+returned FAIL on a false claim) · GPT-6 Sol bounded escalation smoke · Gemini 3.8 Flash cross-family review ·
+family-independence guard validated on all four cases (exit 0/3/0/0).
+
+**Enforcement limitation (documented honestly):** Hermes core has NO per-role routing layer, so
+`producer_family != independent_reviewer_family` cannot be enforced by the runtime. Smallest bounded guard
+implemented instead — additive stdlib-only `profiles/iip/scripts/routing_provenance.py`
+(`--require-independent`: exit 0 INDEPENDENT / exit 3 FAMILY-INDEPENDENCE VIOLATION). NO Hermes core redesign.
+
+**Rollback:** pre-change snapshot of 23 configs + IIP cron store + skill, SHA-256 integrity manifest
+(25/25 verified OK), bounded procedure `ROLLBACK.md` — `profiles/iip/backups/routing-refresh-2026-09-29/`.
+
+**Founder disposition (same day, later turn) — COMPLETE:**
+1. Pending skill approval `5dce3a19` **DISCARDED** via the supported surface (`/skills reject` →
+   `tools.write_approval.discard_pending`), identity verified first (id exact, `skills`, `patch` on `model-routing`,
+   staged draft confirmed to OMIT `Free-Aux Guardrails` + `Canary B` → superset-replacement that would have deleted
+   the section). NOT approved. On-disk skill stays v5.0.0 with Free-Aux Guardrails intact.
+2. Global/default Hermes profile `LEAVE UNCHANGED` — an intentional scope boundary, NOT IIP drift. FD #143 governs
+   the IIP workforce only. No new FD created for the boundary. NOTE: verification found a non-routing
+   `command_allowlist` line had been appended to `AppData\Local\hermes\config.yaml` at 11:17 by the
+   command-approval/allowlist machinery; per the directive the file was restored byte-identical to the pre-refresh
+   snapshot (sha256 `0c04a9f3…` == snapshot; 0 changes).
+3. Gate G = 0/2 retained; natural observation only.
+
+**TEST TRUTH (exact, not relabeled):** routing canaries PASS · model-family guard cases PASS ·
+`tests/locked/test_audit_api.py` **4/4 PASS** · `tests/locked` **147 passed / 15 failed** — the SAME 15 failures
+reproduce on the unmodified tree (verified by `git stash` + re-run), so ZERO regression was introduced ·
+`gate-check` PASS (Gate 4 required the hermes-agent venv python on PATH; Gate 6 satisfied by the `[TEST_VERIFIED]`
+commit tag) · `isolation-scan` PASS · **full pytest NOT GREEN / NOT COMPLETED** — pre-existing collection
+environment error `ModuleNotFoundError: hermes_yaml` (`tests/test_capital_office_semantics.py`). Recorded as
+pre-existing technical debt for later investigation; NOT fixed in this session.
+
+**Commit:** `09fa5ad` — docs(governance), explicit paths only (`PROJECT_STATE.md`,
+`operational/FOUNDERS-DECISIONS.md`, `tests/locked/test_audit_api.py`), `[TEST_VERIFIED]`. Register item 143
+(contiguous 45..143; item 142 survived) + Constitution §21 amendment record + locked audit-register date
+23 Sep → 29 Sep 2026 (Acceptance-Lock co-touch, `locked-test-governance`). fd_count **159**. Vault fd-register
+row FD-143 + `_Hermes-Memory/Decisions/MEM-IIP-099-fd143-model-routing-refresh.md` + native memory updated.
+Push verified via `git ls-remote`; ops fast-forwarded via `scripts/ops/sync_main_to_ops.py` (S1, remote_verified).
+
+**Final state at session end:** `local HEAD == origin/main == origin/ops/automation == 09fa5ad…`; primary worktree
+clean; ops worktree clean (`ops/automation`); G0 case A; ops-state = `{"ops_sync_base_sha": "09fa5ad…"}` only —
+no P1 / promotion / approval residue. Cron: Mid-Week `cda817d17236` (next Thu 01 Oct 08:00 +07) + Nick-Weekly
+`73e611584447` (next Sat 03 Oct 09:00 +07) SCHEDULED natural-only; Weekly Radar `8ba233e88015` + CIW
+`8b1cd19aba7d` + Learning Loop `1f5f03f9236d` PAUSED.
+
+**Recommended next action (for the next session):** observe the TWO required natural Gate-G cycles (Mid-Week Thu
+01 Oct, then Nick-Weekly Sat 03 Oct) under the frozen C+ lifecycle and record per-cycle evidence (pre-run G0 ·
+S0–S3 · allowed artifact delta · validation · explicit-path commit/push · remote verification · governed main
+unchanged by cron · truthful scheduler terminal state · clean final worktree · exact model/provider provenance);
+after BOTH clean → STOP and return the deterministic multi-job P1 manifest for explicit Founder approval
+(no auto-approve, no receipt binding, no promote). Alternatives: (B) investigate the pre-existing
+`hermes_yaml` full-suite collection debt first; (C) treat the 15 pre-existing `test_real_data_api.py` lineage
+failures as a separate bounded debugging task before the Gate-G cycles.
+
+<!-- 2026-09-29 12:05 UTC+7 -->
+
 # Session — 2026-09-28 (interactive: POST-M5.3 O3 — R0.4 FOUNDER FINAL SOURCE AUDIT ACCEPTANCE / COMPLETE)
 
 ## POST-M5.3 O3 R0.4 FOUNDER FINAL SOURCE AUDIT PASS — ACCEPTED / COMPLETE (28 Sep 2026, session decision — NO new FD)
