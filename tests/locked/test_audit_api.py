@@ -70,11 +70,12 @@ def test_decisions_register_contiguous_and_parsed():
     # Latest decisions carry a dated stamp (FD #132, 19 Aug 2026).
     # Authority-date synchronization (CP4-7, 13 Sep 2026 → CP5, 14 Sep
     # 2026 → M5.3 FINAL CLOSEOUT, 21 Sep 2026 → O3 FINAL RULING, 23 Sep
-    # 2026): the latest registered
-    # Founder Decision is FD #142 dated 23 Sep 2026 (mechanical sync, per
-    # FD #141 register update).
+    # 2026 → IIP MODEL ROUTING REFRESH, 29 Sep 2026): the latest registered
+    # Founder Decision is FD #143 dated 29 Sep 2026 (Acceptance-Lock updated
+    # under FD #143 authority — register-tail sync; locked-test-governance
+    # procedure: every FD append co-touches this expected date).
     latest = decisions[-1]
-    assert latest["date"] == "23 Sep 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "29 Sep 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():
