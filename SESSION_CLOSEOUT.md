@@ -1,3 +1,109 @@
+# Session — 2026-10-01 (interactive: GATE G WINDOWS SCHEDULER/GATEWAY ROOT-CAUSE + WINDOWS MATCHED-CONTROL + FD #144 MODE A + CYCLE #1 MODE-A PREFLIGHT — COMPLETE)
+
+## GATE G WINDOWS CRON LIFECYCLE — ROOT CAUSE, MATCHED CONTROL, MODE A ADOPTION, FD #144 (1 Oct 2026)
+
+**Canonical baseline:** started at `origin/main == origin/ops/automation == 1477365922b53a561d93d9be9ebf28228160a367`
+(verified; both worktrees clean; no promotion/approval/P1 residue; G0 case A). Ended at
+`c3b8b2e00d77802cfe9a67fc5a72ad1669505ad3` (FD #144 governance commit, pushed fast-forward 1477365 → c3b8b2e);
+`origin/ops/automation` deliberately still `1477365…` (behind 1, clean fast-forward for the Nick-Weekly S1 lifecycle).
+
+**Installed Hermes (unchanged, D-0 respected):** `v0.21.5+5090.gbe7f7b1 (2026.9.24)`, install SHA
+`be7f7b1af9f6fcc8c63b67f1ae018ec151c09888` — verified before/during/after; no patch, no monkeypatch, no update,
+no downgrade, no Windows Scheduled Task change.
+
+### 1. Diagnostic (POST-M5.3 O3 Gate-G repeated UNKNOWN)
+Three UNKNOWN executions compared — 24 Sep Mid-Week (`00c29bb91c32…`), 26 Sep Nick-Weekly (`0d3ab358f826…`),
+01 Oct Mid-Week (`d4aa19f8c6ad…`). COMMON: all three were catch-up fires; claim→start gap 0.08–0.14 s
+(**the earlier "serialised behind a long sibling" hypothesis is REFUTED**); all three ran **in-process inside the
+gateway** (executions.pid == gateway pid; `cron/external-workers/` has never existed on this host); all three ran a
+real agent (15/31/23 API calls, 25/40/42 tool calls in `state.db`); all three owners died abruptly 3.5–8 min in;
+in all three `finish_execution`, session finalization, `usage_audit`, output artifact and `mark_job_run` are missing;
+in all three a later gateway stamped `unknown` ("owner exited before a durable terminal state").
+LAST_GOOD_STEP = tool execution/model invocation; FIRST_MISSING_STEP = post-run durable terminalization.
+
+**Root cause:** the restart-safe external cron worker is systemd-only by explicit code branch
+(`tools/process_registry.py` `if not _IS_LINUX: return GatewayChildDispatch("in_process", command)`;
+`cron/scheduler.py::_launch_external_cron_worker` returns False on `in_process`) → on Windows cron lifetime is bound
+to the gateway process. Triggers: host power/session teardown (24 Sep sleep/SetSuspendState, 26 Sep sleep) and a
+planned restart that outran its drain budget (01 Oct — announced 1800 s cap vs effective `cron_drain_timeout=30s`;
+tracked upstream as issue #129947). **Root-cause classification: PROBABLE** (structural mechanism CONFIRMED;
+per-incident trigger PROBABLE/partly UNRESOLVED).
+
+### 2. Independent review (cross-family, mandatory)
+Kanban task `t_1dba9ca5`, board `iip`, assignee `org-auditor`, per-task override `openai/gpt-6-luna` /
+`openrouter`; `routing_provenance.py --require-independent` → exit 0 INDEPENDENT (producer DeepSeek).
+VERDICT: **PROBABLE** — structural Windows in-process ownership vulnerability confirmed, incident-specific triggers
+not; required changes applied (narrow the causal verdict; A/B matched on input+path only; separate durable
+terminalization from workload success; label Mode A best-effort; clarify the Windows-service option is only a
+session-teardown mitigation; resolve the Test-A artifact claim).
+
+### 3. Windows matched control (Founder-authorized R7, outside all canonical surfaces)
+Lab home `C:\Users\Admin\AppData\Local\hermes-lab\gate-g-windows-lifecycle-lab` (own cron store/ledger/logs/output/
+gateway identity; `.env` = OPENROUTER_API_KEY only). Same workload both tests.
+- **Test A (stable gateway):** execution `c1b019af3aa5…` → **completed** 14:20:52, session finalized, usage audit +
+  artifact + `last_run_at` written (5 m 22 s; guardrail `identical_call_streak_halt` stopped it at 5 of 8 calls).
+- **Test B (controlled `--replace` restart 2 m 40 s in):** execution `5fe5bda59a27…` → **unknown**; old gateway
+  exited UNCLEANLY; replacement marked 1 interrupted execution; no terminalization/artifact/usage row.
+- **CAUSAL VERDICT: CONFIRMED** for the tested `--replace` takeover sequence (narrowed per review); graceful-drain
+  path not matched-tested. Independent review: PARTIAL PASS WITH MATERIAL QUALIFICATIONS.
+- 01 Oct restart actor identified mechanically: **HERMES DESKTOP APPLICATION UPDATER HAND-OFF**
+  (`logs/desktop.log` 11:29:48 launched `scripts/desktop-update/windows.ps1`; gateway planned stop 12 s later).
+- Upstream recheck: **NO WINDOWS DURABLE-WORKER FIX FOUND** (`origin/main` `031d2237…` still `in_process` off Linux;
+  adjacent open PRs #129957/#113355/#115190 address only the graceful-drain truncation).
+
+### 4. FD #144 — Mode A adopted (Founder disposition)
+`MODE A — ATTENDED / BEST-EFFORT WINDOWS AUTOMATION` for the current phase; **an OPERATING CONSTRAINT, NOT a root
+fix**. No unattended 24/7, no gateway-restart survival, no sleep/shutdown or session-teardown survival, no
+production-grade durable Windows cron ownership. Eligibility A–I (awake PC · session available · gateway healthy ·
+awake for the whole bounded window · no Hermes update · no Desktop update hand-off · no `--replace`/restart/shutdown ·
+provider+network · durable scheduler terminal state). **Catch-up occurrences NON-QUALIFYING.** Narrow D-0 waiver =
+cron expressions of `cda817d17236` + `73e611584447` only. Production-readiness limitation recorded.
+**Mode B (durable unattended automation) DEFERRED.** Root-cause investigation CLOSED for this decision; evidence lab
+preserved outside the repository (NOT to be deleted yet).
+Registered: FOUNDERS-DECISIONS item 144 · Constitution §21 amendment record · `tests/locked/test_audit_api.py`
+date 29 Sep → 1 Oct 2026 (locked test 4/4 PASS) · PROJECT_STATE fd_count/rows · vault FD-144 row ·
+`_Hermes-Memory` MEM-IIP-102 · native memory. fd_count = **160** (44 + 16 + (144 − 45 + 1)).
+
+### 5. Schedule normalization applied (clock time only; research day preserved)
+`cda817d17236` Thu 08:00 → **Thu 14:00 +07** (`0 14 * * 4`, next 2026-10-08T14:00:00+07:00) ·
+`73e611584447` Sat 09:00 → **Sat 14:00 +07** (`0 14 * * 6`, next 2026-10-03T14:00:00+07:00). Both **ACTIVE**
+(natural occurrence only, no forced runs); Weekly Radar + CIW + Learning Loop remain PAUSED; prompts, workdirs,
+deliver targets, model/provider and the Windows Scheduled Task unchanged.
+
+### 6. Cycle #1 MODE-A PREFLIGHT — VERDICT PASS
+Recorded 2026-10-01T15:48:33+07 (≈46.2 h before the instant). Host PASS (awake · session 18 · no sleep transition ·
+network OK · no pending reboot; `powercfg /requests` unavailable without elevation — event-log evidence used),
+gateway PASS (PID 13544, heartbeat 18 s, restart_requested false, no shutdown/updater/replace in flight), Desktop
+**CLOSED** PASS, repository PASS (`origin/main c3b8b2e` · `origin/ops 1477365` · both clean · G0 case A), cron PASS
+(no claimed/running execution, no pending slot, no duplicate; stale fire-claims are dead-owner and past the 300 s TTL).
+**MODE-A PREFLIGHT PASS — NICK-WEEKLY NATURAL OCCURRENCE ELIGIBLE**, with the STANDING CAVEAT that a FRESH preflight
+must be re-run and recorded immediately before 14:00 on 3 Oct (the 24/26 Sep failures came from changes after the run
+began). Evidence committed to `evidence/gate-g/preflight/2026-10-01-mode-a-preflight-nick-weekly.md`.
+
+### 7. Gate G
+**Gate G = 0 / 2** (re-baselined). Not counting: 24 Sep Mid-Week · 26 Sep Nick-Weekly · 01 Oct Mid-Week · the short
+scheduler canary · matched-control Test A · matched-control Test B · any future catch-up. TWO new qualifying cycles
+required from ≥2 distinct artifact classes. After 2/2 → pause both, freeze the main→ops range, deterministic P1
+manifest, return to Founder (no auto-approve / receipt / promote / M6); label
+`GATE G — MODE-A WINDOWS OPERATIONAL ACCEPTANCE` only. P1 NOT AUTHORIZED · M6 NOT AUTHORIZED · no R0.5 · M5.3 FROZEN.
+
+### 8. Verification (exact)
+`tests/locked/test_audit_api.py` **4/4 PASS** · `scripts/gate-check.sh` **ALL automated gates passed** (Gates
+1/3/4/5/6 ✓, run with an interpreter carrying the project deps; with the bare default interpreter Gate 4 fails on
+`ModuleNotFoundError: No module named 'fastapi'` — environment condition, not caused by this docs/test commit) ·
+`scripts/isolation-scan.sh` **PASS** · G0 **case A** · register contiguity 45..144 contiguous, item 143 intact ·
+`git ls-remote` remote re-read confirmed the push. FULL pytest NOT run this session (no code change).
+
+**Next action (recommended):** re-run and record MODE_A_PREFLIGHT immediately before **2026-10-03T14:00:00+07**,
+then allow the Nick-Weekly natural occurrence to execute the C+ lifecycle unassisted (G0 → S1 main-ahead
+fast-forward → own allowlisted artifact → validate → explicit-path commit/push → remote verify). After TWO clean
+cycles from ≥2 distinct artifact classes → pause both Gate-G jobs, freeze the candidate main→ops range, generate the
+deterministic P1 manifest and return it for explicit Founder approval.
+Alternatives: (B) widen the attended window / add buffer before the first candidate; (C) keep Gate G blocked and
+continue non-Gate-G observation only until a Founder waiver.
+
+<!-- 2026-10-01 15:56 UTC+7 -->
+
 # Session — 2026-09-29 (interactive: FD #143 IIP MODEL ROUTING REFRESH + FOUNDER DISPOSITION — COMPLETE)
 
 ## FD #143 — IIP MODEL ROUTING REFRESH 2026-09 (Founder authorization + Founder disposition, 29 Sep 2026)
