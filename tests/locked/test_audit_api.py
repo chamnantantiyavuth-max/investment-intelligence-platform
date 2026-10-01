@@ -75,7 +75,7 @@ def test_decisions_register_contiguous_and_parsed():
     # under FD #143 authority — register-tail sync; locked-test-governance
     # procedure: every FD append co-touches this expected date).
     latest = decisions[-1]
-    assert latest["date"] == "29 Sep 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "1 Oct 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():
