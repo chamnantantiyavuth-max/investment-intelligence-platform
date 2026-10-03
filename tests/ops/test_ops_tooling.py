@@ -1783,5 +1783,83 @@ def test_r4j_manifest_write_failure_keeps_pending_lock(fx):
     assert ops_config.promotion_pending_digest() == _manifest_digest(m)
 
 
-# footer: 2026-09-24 16:00 UTC+7 (R0.4 crash-consistency/disposition RED diagnostics)
+# ---- FD #146 regression: manifest writer must reach completion (import os) ----
+
+def test_r4fix_manifest_writer_completes_success_path(fx):
+    """A/B/C/D: the atomic manifest writer must reach COMPLETION on the success
+    path. Pre-fix the module used os.getpid/open/write/fsync/close/replace/unlink
+    without importing os -> NameError. The only pre-existing write_manifest test
+    (R4-J) blocks the manifests dir so it raises BEFORE the os.getpid() line and
+    therefore never exercised this path."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    out = generate_promotion_manifest.write_manifest(
+        m, str(fx["canonical"]), str(fx["ops"]))
+    # A/D: persisted to disk; no NameError
+    assert out.exists()
+    persisted = json.loads(out.read_text(encoding="utf-8"))
+    assert persisted["manifest_id"] == m["manifest_id"]
+    # B: pending lock established
+    assert ops_config.promotion_pending() == m["manifest_id"]
+    # C: persisted immutable digest == pending digest (lock-first identity)
+    assert persisted["immutable_digest"] == ops_config.promotion_pending_digest()
+    assert ops_config.promotion_pending_digest() == _manifest_digest(persisted)
+    # no stray temp file residue
+    assert list((Path(fx["ops"]) / "ops" / "manifests").glob(".*tmp*")) == []
+
+
+def test_r4fix_write_failure_still_keeps_pending_lock(fx, monkeypatch):
+    """F: an ACTUAL manifest-write failure inside the atomic writer must still
+    keep the conservative pending lock (lock-first, R0.4 §9) with no manifest."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+
+    class _BoomOS:
+        def __init__(self, real):
+            self._real = real
+
+        def __getattr__(self, name):
+            if name == "write":
+                def _boom(*a, **k):
+                    raise OSError("injected manifest write failure")
+                return _boom
+            return getattr(self._real, name)
+
+    monkeypatch.setattr(generate_promotion_manifest, "os", _BoomOS(os))
+    with pytest.raises(OSError):
+        generate_promotion_manifest.write_manifest(
+            m, str(fx["canonical"]), str(fx["ops"]))
+    assert ops_config.promotion_pending() == m["manifest_id"]
+    assert ops_config.promotion_pending_digest() == _manifest_digest(m)
+    # failure path leaves NO manifest and NO temp residue (reviewer note, FD #146)
+    manifests_dir = Path(fx["ops"]) / "ops" / "manifests"
+    assert not (manifests_dir / f"{m['manifest_id']}.json").exists()
+    if manifests_dir.exists():
+        assert list(manifests_dir.glob(".*tmp*")) == []
+
+
+def test_r4fix_cancel_identity_semantics_unchanged(fx):
+    """E: cancellation/approval identity semantics are unchanged by the fix —
+    a foreign id cannot cancel another manifest; the exact carrier cancels ONLY
+    its own pending pair."""
+    base = git(fx["ops"], "rev-parse", "HEAD").strip()
+    head = _make_artifact_commit(fx, RADAR23, base)
+    m = _manifest_for(fx, WEEKLY, head, base)
+    out = generate_promotion_manifest.write_manifest(
+        m, str(fx["canonical"]), str(fx["ops"]))
+    foreign = dict(m)
+    foreign["manifest_id"] = "p1-foreign-id"
+    fp = Path(fx["ops"]) / "foreign.json"
+    fp.write_text(json.dumps(foreign), encoding="utf-8")
+    res = generate_promotion_manifest.cancel_manifest(fp)
+    assert res["ok"] is False and res["stage"] == "pending"
+    assert ops_config.promotion_pending() == m["manifest_id"]  # untouched
+    res2 = generate_promotion_manifest.cancel_manifest(out)
+    assert res2["ok"] is True and res2["stage"] == "cancelled"
+    assert ops_config.promotion_pending() is None
+
+
+# footer: 2026-10-04 01:45 UTC+7 (FD #146 manifest-writer write-path regression: success + injected-failure)
 
