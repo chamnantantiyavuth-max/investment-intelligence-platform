@@ -131,6 +131,24 @@ All 68 M4A schemas are canonical. The five anchors are the stores with distinct 
 
 **Admission gate:** `admit_source(instance, raw_bytes)` binds metadata SHA-256(raw_bytes) atomically. Direct `store(SRC-01)` prohibited. `store_batch` containing SRC-01 prohibited. Admitted raw bytes cannot be overwritten. Tombstone preserves historical state.
 
+#### 2.1.1 Archive admission attestation (FD #150 — M6 SEALED trusted-capture)
+
+RawSourceArchive-owned, **immutable** admission metadata created by the admission boundary itself. It is **NOT** a canonical M4A investment schema and **NOT** the DeepResearchRunLedger; it is operational-integrity metadata of Anchor 1 (RawSourceArchive).
+
+**Rule:** `SRC-01.retrieval_date` is source/provenance metadata and MUST NOT be used as authoritative proof that the exact bytes existed in the archive at that historical time (the SRC-01 instance is caller-constructed before `admit_source`, so `retrieval_date` can be caller-supplied/backdated). The trusted capture time is **`attestation.admitted_at`**, generated INSIDE the archive boundary.
+
+**Atomicity:** `admit_source(instance, raw_bytes)` MUST, in ONE logical transaction, atomically establish (1) the canonical SRC-01 metadata, (2) the exact raw bytes, (3) the metadata↔byte hash binding, and (4) an immutable `ArchiveAdmissionAttestation`. If any component fails, NONE is admitted — no state may exist with a usable SRC-01 and no attestation, an attestation without bytes, or a hash mismatch.
+
+**Required attestation fields:** `attestation_id`, `source_id`, canonical SRC-01 identity/reference, `source_content_hash`, `raw_blob_sha256`, `raw_byte_length`, `admitted_at`, `archive_instance`/adapter identity where meaningful, `admission_method`, attestation-format schema/version. **Optional:** transaction/commit identity, storage-backend identity, external time-attestation reference.
+
+**Time authority:** `admitted_at` is generated INSIDE the trusted admission boundary from an **archive-owned clock provider** (UTC; append-only/immutable; set at successful admission; not editable through normal source APIs; caller metadata cannot supply or override it). Deterministic tests MAY inject the archive clock; **production caller paths MUST NOT be able to supply historical `admitted_at`.**
+
+**API (semantics; exact naming may differ if a better existing abstraction exists):** `admit_source(...)`, `get_admission_attestation(source_id)`, and verification that attestation ↔ SRC-01 ↔ raw blob remain intact. Attestation storage is part of RawSourceArchive operational-integrity metadata — it must NOT be Research Room state, Gemini Notebook state, mutable caller JSON, an M4A Evidence object, or a DeepResearchRunLedger substitute.
+
+**Legacy policy:** SRC-01 records created before attestation support → **`LEGACY_UNATTESTED_SRC01 = NOT_ELIGIBLE_FOR_M6_V1_SEALED`** — never synthesize `admitted_at` from git history / filesystem mtime / current database timestamps / `retrieval_date` / `publication_date` / Notebook metadata / browser history / current re-retrieval. Such a source may become usable for LIVE research via normal current retrieval/admission, but does **not** become historically SEALED-eligible retroactively.
+
+**No 69th canonical schema:** prefer archive-owned immutable admission metadata. If it cannot be represented safely without a new canonical schema, **STOP** and return a minimal Founder decision package (do not invent one). Attestation is required for M6 SEALED operation; a production adapter supporting SEALED mode MUST provide mechanically-equivalent operations.
+
 ### 2.2 EvidenceRegistry (Anchor 2)
 
 **Schemas:** EV-01, EAR-01, EG-01, CLM-01, FACT-01, INF-01, HYP-01, CTR-01

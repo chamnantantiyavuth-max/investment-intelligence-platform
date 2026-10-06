@@ -74,28 +74,33 @@ Per Deep Research request:
 
 ---
 
-## 5. SEALED PIT trusted capture rule (B1 — final)
+## 5. SEALED PIT trusted capture — `ArchiveAdmissionAttestation` (B1 FINAL — FD #150)
 
-**Founder rule (M6 v1, conservative): `SRC-01 ATOMIC ADMISSION IS THE ONLY TRUSTED SEALED BYTE-CAPTURE PROOF`.**
+**Founder rule (M6 v1):** the trusted SEALED byte-capture proof is an **archive-owned, caller-non-overridable, immutable `ArchiveAdmissionAttestation`** created atomically by `RawSourceArchive.admit_source(...)`. `SRC-01.retrieval_date` is source/provenance metadata and MUST NOT be used as authoritative proof of historical capture (it is caller-constructed and can be backdated); comparing `retrieval_date <= AS_OF` alone is **insufficient**.
 
-The canonical RawSourceArchive contract already establishes `admit_source(instance, raw_bytes)` as an atomic metadata + exact-byte admission operation where `SRC-01.content_hash == SHA256(raw_bytes)` is mandatory. Therefore, for `SEALED_HISTORICAL_EVALUATION` and ordinary (non-exception) replay, a source is **M6-input-eligible ONLY if ALL hold**:
+For `SEALED_HISTORICAL_EVALUATION` and ordinary (non-exception) replay, a source may be used ONLY if **ALL** hold:
 
-- (A) a canonical `SRC-01` record exists;
-- (B) its raw blob exists in RawSourceArchive;
-- (C) `SRC-01.retrieval_date <= PITC-01.as_of_date`;
-- (D) at evaluation time `SHA256(stored_raw_blob) == SRC-01.content_hash`;
-- (E) the exact bytes supplied to the Gemini Notebook request are **BYTE-IDENTICAL** to the stored raw blob;
-- (F) the hash is **reverified immediately before** constructing the request snapshot.
+- (A) canonical `SRC-01` exists;
+- (B) raw blob exists in RawSourceArchive;
+- (C) a valid **archive admission attestation** exists;
+- (D) `attestation.admitted_at <= PITC-01.as_of_date`;
+- (E) `attestation.source_id == SRC-01.source_id`;
+- (F) `attestation.source_content_hash == SRC-01.content_hash`;
+- (G) `SHA256(stored_raw_blob) == attestation.raw_blob_sha256`;
+- (H) `attestation.raw_blob_sha256 == SRC-01.content_hash`;
+- (I) byte length matches;
+- (J) the bytes placed into the Notebook request are **byte-identical** to the attested stored blob;
+- (K) all bindings are **reverified immediately before** the immutable M6 input snapshot is constructed.
 
-If ANY condition fails → classify **`UNAVAILABLE_FOR_SEALED_PIT`** and preserve/update the associated Evidence Gap (EG-01).
+Any failure → **`UNAVAILABLE_FOR_SEALED_PIT`** (fail closed).
 
-**SRCV-01 limitation (explicit):** M5.2 §10.4 does NOT define `SRCV-01.content_hash == SHA256(raw version bytes)`. M6 v1 MUST NOT use an `SRCV-01` record alone as trusted SEALED byte-capture proof → classify **`SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED`** until a future, separately governed contract defines exact version-byte storage, capture-timestamp authority, content_hash derivation, and atomic metadata↔version-byte binding. **SRCV-01 semantics are NOT amended here; no new canonical schema is added.** This deliberately trades historical coverage for correctness.
+**Attestation contract** (see `QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md` §2.1.1, FD #150): archive-owned immutable metadata; `admitted_at` generated inside the archive boundary from an archive-owned clock (caller cannot supply/override it); created atomically with SRC-01 + bytes + hash binding; a production adapter supporting SEALED mode MUST provide `admit_source(...)`, `get_admission_attestation(source_id)`, and attestation↔SRC-01↔blob integrity verification. It is **not** a canonical M4A schema, not the Research Room, not the Run Ledger, and not mutable caller JSON.
 
-**Trusted timestamp semantics:** `SRC-01.retrieval_date` is accepted as the trusted capture timestamp **ONLY** because the source metadata and exact bytes are admitted through the canonical atomic `RawSourceArchive.admit_source(...)` boundary. It must **NOT** be accepted from: Gemini Notebook; browser metadata; webpage publication date; current web retrieval; caller-supplied unadmitted metadata; a Research Room artifact; or manually constructed detached JSON. **The M6 adapter must resolve the SRC-01 + blob from the authoritative RawSourceArchive itself; caller-provided source bytes are never authoritative.**
+**Legacy policy:** `LEGACY_UNATTESTED_SRC01 = NOT_ELIGIBLE_FOR_M6_V1_SEALED` (no synthesized `admitted_at`). **SRCV-01 policy (FD #149, retained):** `SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED` — SRCV-01 must not be used to bypass the attestation requirement.
 
-**Sealed snapshot construction (mechanical):** for every input source include at minimum `source_id`, `SRC-01 retrieval_date`, `SRC-01 content_hash`, `recomputed raw_blob_sha256`, `raw byte length`, `PIT as_of`, `eligibility verdict`. Compute a deterministic **`input_snapshot_hash`** over the **ordered** source-id + exact-blob-hash set plus `case_id`, `case_version`, PIT mode, `as_of`. The actual Gemini request MUST be populated **only** from the exact verified snapshot. **No live provider retrieval is allowed to augment a `SEALED_HISTORICAL_EVALUATION` request.** If the provider surface cannot disable uncontrolled web/source discovery for a SEALED request → **FAIL CLOSED: `PROVIDER_CANNOT_ENFORCE_SEALED_INPUT`**; do NOT run Deep Research in SEALED mode.
+**Sealed snapshot construction:** the snapshot builder MUST independently reload SRC-01, raw bytes, and the attestation from RawSourceArchive, recompute hashes, verify all bindings, and only THEN include the exact bytes in the deterministic `input_snapshot_hash` (ordered source-id + exact-blob-hash set + case_id, case_version, PIT mode, as_of) and the provider request. **Caller-provided detached bytes must be ignored/rejected.** No live retrieval may augment SEALED; if the provider cannot disable uncontrolled discovery for SEALED → **FAIL CLOSED `PROVIDER_CANNOT_ENFORCE_SEALED_INPUT`**.
 
-`LIVE_CASE_UPDATE` may perform current retrieval under existing LIVE rules. (S7 enforces PIT on canonical evidence at admission; Notebook-side upstream isolation is the adapter's duty.)
+`LIVE_CASE_UPDATE` is not over-constrained: current/newly admitted sources remain usable under existing LIVE PIT rules (the attestation is primarily the SEALED/replay capture proof).
 
 ## 6. REPLAY_EXCEPTION separation (B4 — final)
 
@@ -212,50 +217,63 @@ No blind "Import All"; every candidate receives a durable disposition (§7).
 
 ---
 
-## 11. Acceptance-test plan (DESIGN ONLY — no runtime; tests 1–20)
+## 11. Acceptance-test plan (DESIGN ONLY — no runtime)
 
-Baseline from FD #148 (retry Mode A/B; telemetry; admission) remains in force; the set below is the FINAL mechanically-testable acceptance criteria for the M6.0 design gate.
+### 11.1 B1 — archive-admission-attestation suite (FD #150; the final SEALED capture criteria)
 
 | # | Test | Expected |
 |---|---|---|
-| 1 | SRC-01 atomic admission binds exact bytes | `admit_source()` stores metadata+bytes atomically; `SRC-01.content_hash == SHA256(raw_bytes)` |
-| 2 | `retrieval_date <= AS_OF` | eligible only when `SRC-01.retrieval_date <= PITC-01.as_of_date` |
-| 3 | stored raw hash equals `SRC-01.content_hash` | recomputed `SHA256(stored_blob) == SRC-01.content_hash` |
-| 4 | provider-supplied request bytes equal stored bytes | supplied bytes byte-identical to the stored raw blob |
-| 5 | detached/backdated metadata cannot authorize a source | detached/backdated metadata → `UNAVAILABLE_FOR_SEALED_PIT` (test proves post-AS_OF bytes ineligible) |
-| 6 | SRCV-only proof rejected in M6 v1 SEALED | `SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED` |
-| 7 | live web augmentation forbidden in SEALED | no provider retrieval augments a SEALED request |
-| 8 | inability to disable live retrieval → FAIL CLOSED | `PROVIDER_CANNOT_ENFORCE_SEALED_INPUT`; no SEALED run |
-| 9 | ledger record exists before provider call | run record created pre-execution |
-| 10 | NOT_EXPOSED persisted durably with reason | status + reason durable; read-back test |
-| 11 | Research Room deletion cannot erase ledger | ledger record survives |
-| 12 | notebook deletion cannot erase ledger | ledger record survives |
-| 13 | all source candidates have dispositions | every discovered source has exactly one disposition entry |
-| 14 | Request A canary cannot leak to B | B's provider-visible inventory ⊆ B's snapshot; no A canary/citation/chat/report/identity |
-| 15 | isolation must be positively verifiable | PASS requires positive proof of a clean request-scoped context |
-| 16 | isolation-unverifiable → FAIL CLOSED | `REQUEST_ISOLATION_UNVERIFIED`; execution must not proceed |
-| 17 | normal SEALED blocks future bytes | post-AS_OF bytes unreachable in SEALED |
-| 18 | authorized REPLAY_EXCEPTION succeeds and is labelled | output labelled `REPLAY_EXCEPTION`; excluded from clean SEALED metrics |
-| 19 | unauthorized exception blocked | missing Founder authority OR empty `exception_reason` → BLOCKED |
-| 20 | exception results excluded from clean SEALED reporting | cannot be reported as clean SEALED; no re-labelling without a new valid SEALED run |
+| 1 | bytes↔SRC-01 hash binding | `SRC-01.content_hash == SHA256(raw_bytes)` at admission |
+| 2 | attestation created only by the archive | no caller API can create an attestation |
+| 3 | attestation timestamp created inside the archive | `admitted_at` from the archive-owned clock, not caller input |
+| 4 | caller cannot override/backdate the timestamp | providing/mutating `admitted_at` fails mechanically |
+| 5 | attestation+SRC-01+blob atomicity | one transaction; no partial attested state |
+| 6 | backdated `retrieval_date` does not grant SEALED eligibility | SEALED BLOCKED despite `retrieval_date < AS_OF` |
+| 7 | `admitted_at > AS_OF` blocks the source | `UNAVAILABLE_FOR_SEALED_PIT` |
+| 8 | `admitted_at <= AS_OF` + exact byte/hash binding permits the source | eligible; all bindings verified |
+| 9 | legacy unattested SRC-01 blocked for SEALED | `LEGACY_UNATTESTED_SRC01 = NOT_ELIGIBLE_FOR_M6_V1_SEALED` |
+| 10 | SRCV-only proof blocked | `SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED` |
+| 11 | detached caller bytes rejected | snapshot built only from archive-reloaded bytes |
+| 12 | pre-request hash revalidation | all bindings reverified immediately before snapshot construction |
+| 13 | attestation mutation rejected | replace/edit attempts fail |
+| 14 | failed admission leaves no valid attested partial source | rollback → no usable SRC-01 without attestation |
+| 15 | inability to establish attestation truth fails closed | no SEALED run when truth cannot be proven |
 
-**B3 (§10) — isolation leakage test D (observable provider-capability test):** create Request A with unique canary material `M6_ISOLATION_CANARY_A_<fixed fixture id>` present ONLY in A's provider context/corpus; terminalize/retire A; create Request B as a fresh isolated request with a disjoint corpus. **B MUST NOT** retrieve the A canary, cite A sources, reference A's prior chat, reference A's report, or expose A's notebook identity/context; and **B's provider-visible source inventory must contain ONLY B's approved snapshot**. PASS requires **positive proof of clean context** (absence from final prose alone is NOT sufficient). If the surface cannot prove isolation → **FAIL CLOSED `REQUEST_ISOLATION_UNVERIFIED`**; the request-isolated production adapter must not proceed.
+### 11.2 Retained accepted tests (B2/B3/B4 + retry — FD #149/#148; do NOT reopen)
 
-**B4 (§6) — REPLAY_EXCEPTION positive/negative:** test B4-A (properly authorized → allowed + labelled `REPLAY_EXCEPTION`, excluded from clean SEALED reporting); test B4-B (missing Founder authority OR missing `exception_reason` → BLOCKED); test B4-C (a REPLAY_EXCEPTION result cannot be re-labelled SEALED without a new valid SEALED run).
+| # | Test | Expected |
+|---|---|---|
+| R1 | run record created before provider call | ledger record precedes external execution |
+| R2 | NOT_EXPOSED persisted durably with reason | read-back of status+value+reason |
+| R3 | Research Room deletion cannot erase ledger | ledger survives |
+| R4 | notebook deletion cannot erase ledger | ledger survives |
+| R5 | all source candidates have dispositions | one disposition entry per discovered source |
+| R6 | Request A canary cannot leak to B | B's inventory ⊆ B's snapshot; no A canary/citation/chat/report/identity |
+| R7 | isolation positively verifiable / fail-closed | PASS requires positive clean-context proof; else `REQUEST_ISOLATION_UNVERIFIED` |
+| R8 | authorized REPLAY_EXCEPTION succeeds and is labelled | labelled `REPLAY_EXCEPTION`; excluded from clean SEALED metrics |
+| R9 | unauthorized exception blocked | missing authority OR empty `exception_reason` → BLOCKED |
+| R10 | exception excluded from clean SEALED reporting | no re-labelling without a new valid SEALED run |
+| R11 | retry Mode A (≥2 compliant providers) | different-provider retry; `fallback_used` truthful |
+| R12 | retry Mode B (single provider) | `SAME_PROVIDER_RETRY`, max 3; never labelled fallback |
+| R13 | retry exhaustion | `RESEARCH_UNAVAILABLE` + EG-01 `DEFERRED`; gates unchanged |
 
-## 12. B1–B4 FINAL RECONCILIATION (FD #149) — closure of prior findings
+**REPLAY_EXCEPTION request-gate conformance (non-blocking, from the FD #149 review):** because `_adjudicate_object` returns ALLOWED for pre-AS_OF evidence first, the REPLAY_EXCEPTION **request gate** itself must be tested (including pre-AS_OF-only / empty-input requests), not only post-AS_OF evidence access.
+
+## 12. FINAL RECONCILIATION (FD #149 B2–B4 · FD #150 B1) — closure of prior findings
 
 | Prior review item | Closure |
 |---|---|
-| **CRITICAL** — PIT byte-level: `retrieval_date ≤ AS_OF` + SRCV hash did not prove the exact bytes were captured by AS_OF | **B1 closed:** trusted SEALED byte-capture proof = **SRC-01 atomic admission only** (six-condition rule §5) + **SRCV-only proof explicitly rejected** (`SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED`) + trusted timestamp = SRC-01.retrieval_date **only via the atomic admission boundary** + fail-closed tests (#1–#8). |
-| **MAJOR** — telemetry `NOT_EXPOSED` had no durable home | **B2 closed:** `DeepResearchRunLedgerStore` contract (§7) with a durable per-metric `telemetry.<metric>.{status,value,reason}` structure; read-back test (#10). |
-| **MINOR** — request isolation test D lacked an observable probe | **B3 closed:** canary-based provider-capability test + fail-closed `REQUEST_ISOLATION_UNVERIFIED` (§11 #14–#16). |
-| **MINOR** — REPLAY_EXCEPTION test H lacked positive-path assertions | **B4 closed:** positive/blocked/re-labelling tests (§11 #18–#20). |
+| **CRITICAL** — PIT: `retrieval_date` + SRCV hash did not prove the exact bytes existed in the archive by AS_OF | **B1 closed by FD #150:** trusted capture = **archive-owned immutable `ArchiveAdmissionAttestation`** (`admitted_at` generated inside the archive boundary; caller cannot supply/override/backdate), created atomically with SRC-01 + exact bytes + hash binding; 11-condition SEALED rule §5; legacy unattested blocked; SRCV-only blocked; backdating test (#6). |
+| **MAJOR** — durable NOT_EXPOSED telemetry | **B2 closed (FD #149):** `DeepResearchRunLedgerStore` per-metric `telemetry.<metric>.{status,value,reason}`. |
+| **MINOR** — isolation test lacked an observable probe | **B3 closed (FD #149):** canary + inventory restriction + fail-closed. |
+| **MINOR** — REPLAY_EXCEPTION lacked positive-path assertions | **B4 closed (FD #149):** positive/blocked/re-labelling. |
 
-**Consumer transport reality (recorded, unchanged):** `CONSUMER_BROWSER_TRANSPORT = CURRENTLY NON-FUNCTIONAL` — local `notebooklm` auth `doctor`/`status` work, but live notebook/source/research operations fail with observable CSRF/UI drift; model identity / token usage / invocation cost **not exposed**. This is **NOT** a reason to weaken contracts and **NOT** permission to fabricate successful automation. M6 implementation may begin behind an adapter (deterministic adapters/mocks for contract tests; manual transport fallback where explicitly allowed) but **no automated Gemini Notebook integration may be claimed until a real live canary passes**.
+**Consumer transport reality (recorded, unchanged):** `CONSUMER_BROWSER_TRANSPORT = CURRENTLY NON-FUNCTIONAL`. Not a reason to weaken contracts; not permission to fabricate automation; no automated integration may be claimed until a real live canary passes.
 
-**No frozen contract is amended in this task except the FD #148 S10 amendments.** B1–B4 are design/contract reconciliations within M6.0.
+**No new M4A canonical schema** (68 unchanged); SRC-01/SRCV-01 semantics amended NO (only RawSourceArchive-owned admission attestation metadata added, FD #150).
 
 <!-- 2026-10-06 UTC+7 · FD #148 M6.0 reconciliation (design only) -->
 
 <!-- 2026-10-06 UTC+7 · FD #149 B1–B4 final reconciliation (design only) -->
+
+<!-- 2026-10-06 UTC+7 · FD #150 archive-admission-attestation (B1 FINAL); B2–B4 retained (FD #149) -->

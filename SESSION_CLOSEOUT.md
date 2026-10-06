@@ -1,3 +1,13 @@
+# Session — 2026-10-06 (interactive: QAD M6.0 TRUSTED ARCHIVE ADMISSION ATTESTATION — FD #150 final B1; design only, NO implementation)
+
+## QAD M6.0 FINAL B1 TRUSTED-CAPTURE RECONCILIATION — FD #150 (6 Oct 2026)
+
+**Role:** governed-interactive. **Scope:** design/contract only — no runtime code. Baseline `origin/main 871471b…`; O3 CLOSED; all five cron PAUSED.
+
+**Founder ruling:** `ArchiveAdmissionAttestation` (archive-owned immutable admission metadata; NOT a canonical schema) replaces `SRC-01.retrieval_date` as the trusted SEALED capture proof. `admitted_at` is generated INSIDE the RawSourceArchive admission boundary (caller cannot supply/override/backdate it), created atomically with SRC-01 + exact bytes + hash binding; 11-condition SEALED rule; `LEGACY_UNATTESTED_SRC01` + `SRCV_ONLY_CAPTURE_PROOF` not eligible; `LIVE_CASE_UPDATE` not over-constrained. M5.2 §2.1.1 added. 15 attestation acceptance criteria (§11.1) + retained B2/B3/B4 (FD #149). No new M4A canonical schema.
+
+**Status:** B1 reconciliation COMPLETE (design only); implementation **BLOCKED** pending the authorized family-independent review. Historical branch PARKED. Register item 150, fd_count 166.
+
 # Session — 2026-10-06 (interactive: QAD M6.0 B1–B4 FINAL DESIGN-GATE RECONCILIATION — FD #149; design only, NO implementation)
 
 ## QAD M6.0 B1–B4 FINAL DESIGN-GATE RECONCILIATION — FD #149 (6 Oct 2026)
