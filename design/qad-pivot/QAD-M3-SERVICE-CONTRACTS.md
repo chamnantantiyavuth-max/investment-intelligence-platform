@@ -250,17 +250,19 @@ downstream_dependencies
 | **deterministic_or_policy_governed** | Infrastructure — provides access to NotebookLM and Deep Research capabilities. |
 | **inputs** | Research question, source corpus, prior evidence, provider configuration |
 | **outputs** | Synthesis output with source pointers. **NON-CANONICAL** — must be validated against original source before canonical admission. |
-| **persistent_state** | Stateless (per-request) |
+| **persistent_state** | Stateless (per-request) — IIP-facing contract. *(FD #148 R-4: an adapter MUST present each Deep Research request with an ISOLATED provider context — request-isolated reconstruction; persistent accumulated case workspaces are NOT an authorized M6 default.)* |
 | **owner** | Evidence Intelligence Lead (Role 2) |
 | **authority** | Provide research discovery / interrogation capability. |
-| **failure_behavior** | Research failure → documented, not silent blank. `RESEARCH_UNAVAILABLE` state. |
-| **retry_behavior** | Retry 3× with different provider. After 3 → documented failure. |
+| **failure_behavior** | Research failure → documented, not silent blank. `RESEARCH_UNAVAILABLE` state. On retry exhaustion → linked Evidence Gap (EG-01) `DEFERRED` / unresolved state; quality and evidence gates are NEVER weakened. *(FD #148 R-1.)* |
+| **retry_behavior** | *(reconciled — FD #148 R-1.)* **Mode A (≥2 compliant `deep_research_provider` implementations configured):** retry may use a DIFFERENT compliant provider; the provider change is recorded; `fallback_used` must be truthful. **Mode B (exactly ONE compliant provider configured, e.g. Gemini Notebook default):** bounded SAME-PROVIDER retry is permitted, maximum 3 attempts, each recorded explicitly as `SAME_PROVIDER_RETRY` and NEVER labelled provider fallback. After exhaustion → `RESEARCH_UNAVAILABLE` + EG-01 `DEFERRED`. Quality/evidence gates are never weakened. |
 | **idempotency** | Same question + same corpus → same output (provider-dependent; best effort). |
-| **logging** | `{request_id, provider, model, tokens, sources, timestamp}` |
-| **provenance** | Provider, model version, prompt, retrieved sources |
+| **logging** | `{request_id, provider, model, tokens, sources, timestamp}` — *(FD #148 R-3: record model/tokens with EXACT values WHEN EXPOSED; otherwise record the approved truthful-unavailability state — `NOT_EXPOSED_BY_PROVIDER` for model identity, `NOT_EXPOSED` (with reason) elsewhere. NEVER fabricate or estimate.)* |
+| **provenance** | Provider, model version, prompt, retrieved sources — *(FD #148 R-3: model version recorded only WHEN EXPOSED; otherwise explicitly `NOT_EXPOSED`.)* |
 | **PIT_behavior** | Uses corpus as of request time. All outputs tagged with retrieval timestamp. |
 | **forbidden_inference** | ❌ Must NOT declare canonical truth ❌ Must NOT make final quality/impairment/valuation determination ❌ Must NOT bypass original-source validation |
 | **downstream_dependencies** | Evidence Registry (S4) — output must be validated before admission |
+
+> **FD #148 reconciliation note (S10 — M6 design gate, 6 Oct 2026):** the retry / logging / provenance / persistent-state semantics above are **explicitly reconciled** for M6 (Gemini Notebook Deep Research). R-1 retry (Mode A / Mode B `SAME_PROVIDER_RETRY`); R-3 telemetry truthfulness (`NOT_EXPOSED(_BY_PROVIDER)`, never fabricated; MOD-01/PROV-01 are NOT minted with invented numerics); R-4 request-isolated reconstruction (logical statelessness preserved). There is **no hidden implementation-only exception**. S10 remains a NON-CANONICAL, FAIL_OPEN interface — its output must be validated against the original source before canonical admission.
 
 ---
 

@@ -1,3 +1,15 @@
+# Session — 2026-10-06 (interactive: QAD M6.0 DESIGN-GATE RECONCILIATION — FD #148 R-1…R-4 / explicit S10 amendments / M6.0 artifact; NO implementation)
+
+## QAD M6.0 DESIGN-GATE RECONCILIATION — FD #148 (6 Oct 2026)
+
+**Role:** governed-interactive. **Scope:** design/contract reconciliation only — no runtime code. Baseline `origin/main 08f3956…`; O3 CLOSED; all five cron PAUSED.
+
+**Founder ruling:** independent-review verdict `C — M6 DESIGN GATE FAIL / CONTRACT RECONCILIATION REQUIRED` accepted; R-1–R-4 resolved: R-1 S10 retry (Mode A different-provider / Mode B `SAME_PROVIDER_RETRY`) · R-2 transport (browser/UI automation authorized behind the adapter for M6; order official→connector→browser→manual) · R-3 telemetry truthfulness (`NOT_EXPOSED(_BY_PROVIDER)`; MOD-01/PROV-01 never fabricated) · R-4 request-isolated reconstruction · PIT pre-AS_OF byte-level capture · REPLAY_EXCEPTION separated · durable M6 Deep Research Run Ledger (+ RRM-01 `deep_research_runs[]` id refs). **Explicit S10 amendments** applied to `design/qad-pivot/QAD-M3-SERVICE-CONTRACTS.md` §S10. M6.0 artifact `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md` (+ acceptance tests A–M).
+
+**Capability probe (read-only, non-destructive):** consumer NotebookLM/Gemini Notebook via `notebooklm` CLI v0.7.3 (browser automation) — auth OK, `status` OK, but EVERY live operation FAILS (`CSRF token not found` / UI drift at `notebook.google.com`) → transport currently NON-FUNCTIONAL; model identity / tokens / cost NOT_EXPOSED; no official API NOT_EXPOSED. No create/delete/add; no DR run; no source ingestion.
+
+**Status:** M6.0 reconciliation COMPLETE (design only); M6 implementation **BLOCKED** pending the authorized family-independent re-review. Historical branch `docs/m6-gemini-notebook-dr @ a37e92d…` PARKED (not merged). Register item 148, fd_count 164.
+
 # Session — 2026-10-06 (interactive: POST-M5.3 O3 OPERATIONAL ACCEPTANCE — REAL P1 #1 PROMOTION EXECUTED + FOUNDER ACCEPTED / CLOSED — FD #147)
 
 ## POST-M5.3 O3 OPERATIONAL ACCEPTANCE — FD #147 (6 Oct 2026)
