@@ -49,7 +49,7 @@ from qad.persistence.attestation import (
     ADMISSION_METHOD_ADMIT_SOURCE,
     ArchiveAdmissionAttestation,
     ArchiveClock,
-    build_attestation,
+    _build_attestation,
     utc_now,
     verify_attestation_binding,
 )
@@ -723,11 +723,12 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         dict[str, bytes],
         dict[str, dict[str, "_Record"]],
         dict[str, str],
+        dict[str, ArchiveAdmissionAttestation],
     ]:
         """Deep-copy snapshot — extends base with raw-blob/version/tombstone state.
 
         Returns ``(data, tombstones, versions, version_counts, raw_blobs,
-        version_data, tombstone_reasons)``.
+        version_data, tombstone_reasons, attestations)``.
         """
         base = super()._snapshot()
         return (
@@ -748,6 +749,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             dict[str, bytes],
             dict[str, dict[str, "_Record"]],
             dict[str, str],
+            dict[str, ArchiveAdmissionAttestation],
         ],
     ) -> None:
         """Restore — extends base to include RawSourceArchive-specific state."""
@@ -873,7 +875,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             # 3c. M6.1 (FD #150): archive-owned, caller-non-overridable,
             #     immutable admission attestation — ONE atomic unit with the
             #     canonical SRC-01 metadata + exact bytes + hash binding.
-            self._attestations[record_id] = build_attestation(
+            self._attestations[record_id] = _build_attestation(
                 source_id=record_id,
                 source_content_hash=content_hash,
                 raw_bytes=raw_bytes,
@@ -920,10 +922,14 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
         blob = self._raw_blobs.get(record_id)
         if rec is None or blob is None:
             return False
+        if att.source_id != record_id:
+            return False
         return verify_attestation_binding(
             attestation=att,
             stored_raw_bytes=blob,
             src_content_hash=rec.instance.content_hash,
+            expected_source_id=record_id,
+            expected_source_ref=f"SRC-01:{record_id}",
         )
 
     # -- Override store() to reject SRC-01 bypass --------------------------

@@ -34,6 +34,28 @@ class SealedEligibility(str, Enum):
     SOURCE_NOT_FOUND = "SOURCE_NOT_FOUND"
 
 
+def _has_version_records(archive, source_id: str) -> bool:
+    """True if the archive holds SRCV-01 version evidence for this source.
+
+    SRCV-01 alone is never sufficient byte-capture proof for M6 v1 SEALED
+    (M5.2 §10.4 does not bind SRCV-01.content_hash to exact version bytes).
+    """
+    data = getattr(archive, "_data", None)
+    if isinstance(data, dict):
+        for rec in data.get("SRCV-01", {}).values():
+            inst = getattr(rec, "instance", rec)
+            if getattr(inst, "source_id", None) == source_id:
+                return True
+    fn = getattr(archive, "list_versions", None)
+    if callable(fn):
+        try:
+            if fn(source_id):
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def evaluate_sealed_source_eligibility(
     archive, source_id: str, as_of: dt.date,
 ) -> SealedEligibility:
@@ -48,7 +70,11 @@ def evaluate_sealed_source_eligibility(
     try:
         attestation = archive.get_admission_attestation(source_id)
     except AttestationNotFound:
-        # SRC-01 exists but was admitted before attestation support.
+        # No archive attestation: either a pre-attestation legacy record, or a
+        # caller relying on SRCV-01 version records as the capture proof
+        # (FD #149/#150: SRCV_ONLY_CAPTURE_PROOF is NOT M6 v1 SEALED-eligible).
+        if _has_version_records(archive, source_id):
+            return SealedEligibility.SRCV_ONLY_CAPTURE_PROOF
         return SealedEligibility.LEGACY_UNATTESTED_SRC01
 
     # Re-verify attestation ↔ SRC-01 ↔ raw-blob bindings from archive state.

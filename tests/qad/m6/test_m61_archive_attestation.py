@@ -22,6 +22,7 @@ from qad.models.family_b import (
     SourceRecord,
     SourceRecordSource_tier,
     SourceRecordSource_type,
+    SourceVersion,
 )
 from qad.persistence.attestation import (
     ArchiveAdmissionAttestation,
@@ -107,6 +108,16 @@ class TestAttestationCreationAndBinding:
             store.admit_source(src, raw, admitted_at="2020-01-01T00:00:00+00:00")  # type: ignore[call-arg]
         assert store.get_admission_attestation.__doc__ is not None
 
+    def test_verification_rejects_swapped_source_identity(self):
+        store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")
+        raw = b"identical bytes"
+        store.admit_source(_src("M61-S1", raw), raw)
+        store.admit_source(_src("M61-S2", raw), raw)   # same bytes, other source
+        # replay S1's attestation against S2 (same hash + length would pass a
+        # hash-only binding check) — identity binding must reject it
+        store._attestations["M61-S2"] = store._attestations["M61-S1"]
+        assert store.verify_admission_attestation("M61-S2") is False
+
     def test_attestation_is_immutable(self):
         store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")
         raw = b"immutable"
@@ -139,6 +150,27 @@ class TestAttestationAbsenceAndRollback:
             store.load_raw_blob("M61-F")
         with pytest.raises(AttestationNotFound):
             store.get_admission_attestation("M61-F")
+
+    def test_rollback_after_partial_write(self, monkeypatch):
+        """Failure AFTER SRC-01 + bytes are written must roll all three back.
+
+        The archive clock is consulted after the bytes are stored (step 3c), so a
+        clock failure is a genuine mid-admission failure past the first writes.
+        """
+        store = InMemoryRawSourceArchive()
+
+        def _boom():
+            raise RuntimeError("archive clock failure after bytes written")
+
+        monkeypatch.setattr(store, "_clock", _boom)
+        raw = b"partial write"
+        with pytest.raises(RuntimeError):
+            store.admit_source(_src("M61-RB", raw), raw)
+        assert not store.contains("SRC-01", "M61-RB")
+        with pytest.raises(KeyError):
+            store.load_raw_blob("M61-RB")
+        with pytest.raises(AttestationNotFound):
+            store.get_admission_attestation("M61-RB")
 
     def test_verification_detects_tampered_blob(self):
         store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")
@@ -211,6 +243,19 @@ class TestSealedEligibility:
         store = _archive()
         assert evaluate_sealed_source_eligibility(store, "MISSING", dt.date(2026, 1, 1)) \
             is SealedEligibility.SOURCE_NOT_FOUND
+
+    def test_srcv_only_capture_proof_yields_srcv_verdict(self):
+        store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")
+        raw = b"srcv only"
+        store.admit_source(_src("M61-SRCV", raw), raw)
+        sv = SourceVersion(
+            version_id="M61-SRCV-V1", source_id="M61-SRCV", version_number="1",
+            retrieval_date="2025-12-01", content_hash=hashlib.sha256(raw).hexdigest(),
+        )
+        store.store(sv)                                    # SRCV-01 evidence
+        store._attestations.pop("M61-SRCV")                # no archive attestation
+        assert evaluate_sealed_source_eligibility(store, "M61-SRCV", dt.date(2026, 1, 1)) \
+            is SealedEligibility.SRCV_ONLY_CAPTURE_PROOF
 
     def test_verification_failure_blocks_sealed(self):
         store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")

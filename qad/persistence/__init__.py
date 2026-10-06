@@ -52,7 +52,6 @@ from qad.persistence.attestation import (
     ArchiveAdmissionAttestation,
     ArchiveClock,
     ATTESTATION_FORMAT_VERSION,
-    build_attestation,
     utc_now,
     verify_attestation_binding,
 )
@@ -145,7 +144,6 @@ __all__ = [
     "ArchiveAdmissionAttestation",
     "ArchiveClock",
     "ATTESTATION_FORMAT_VERSION",
-    "build_attestation",
     "utc_now",
     "verify_attestation_binding",
     # -- Reference implementations --

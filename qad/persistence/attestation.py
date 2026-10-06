@@ -88,7 +88,7 @@ class ArchiveAdmissionAttestation:
     external_time_attestation_ref: str | None = None
 
 
-def build_attestation(
+def _build_attestation(
     *,
     source_id: str,
     source_content_hash: str,
@@ -100,10 +100,11 @@ def build_attestation(
     storage_backend: str | None = None,
     external_time_attestation_ref: str | None = None,
 ) -> ArchiveAdmissionAttestation:
-    """Construct an attestation INSIDE the archive boundary.
+    """INTERNAL — construct an attestation inside the archive boundary.
 
-    This helper only ever runs within the archive; it deliberately takes no
-    caller-facing ``admitted_at`` source other than the archive's own clock.
+    Underscore-prefixed on purpose: it accepts an ``admitted_at`` value, so it
+    MUST NOT be used outside the archive. A detached object built here is not an
+    archive-issued receipt until the archive stores it (M6.1 review fix).
     """
     return ArchiveAdmissionAttestation(
         attestation_id=str(uuid.uuid4()),
@@ -124,13 +125,23 @@ def build_attestation(
 def verify_attestation_binding(
     *, attestation: ArchiveAdmissionAttestation,
     stored_raw_bytes: bytes, src_content_hash: str,
+    expected_source_id: str | None = None,
+    expected_source_ref: str | None = None,
 ) -> bool:
     """Recompute the attestation ↔ SRC-01 ↔ raw-blob bindings (FD #150 C–I).
 
     Returns ``True`` only if every binding is intact. The caller is responsible
     for having re-loaded ``stored_raw_bytes`` and the SRC-01 record from the
     authoritative archive (never from caller-supplied detached bytes).
+
+    ``expected_source_id`` / ``expected_source_ref`` bind the attestation to the
+    authoritative source identity so a same-bytes attestation cannot be replayed
+    against a different source record (M6.1 review fix).
     """
+    if expected_source_id is not None and attestation.source_id != expected_source_id:
+        return False
+    if expected_source_ref is not None and attestation.source_ref != expected_source_ref:
+        return False
     if attestation.source_content_hash != src_content_hash:
         return False
     if attestation.raw_blob_sha256 != src_content_hash:
