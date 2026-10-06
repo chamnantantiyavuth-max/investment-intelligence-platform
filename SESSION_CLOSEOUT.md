@@ -1,3 +1,13 @@
+# Session — 2026-10-06 (interactive: QAD M6.0 B1–B4 FINAL DESIGN-GATE RECONCILIATION — FD #149; design only, NO implementation)
+
+## QAD M6.0 B1–B4 FINAL DESIGN-GATE RECONCILIATION — FD #149 (6 Oct 2026)
+
+**Role:** governed-interactive. **Scope:** design/contract reconciliation only — no runtime code. Baseline `origin/main e957655…`; O3 CLOSED; all five cron PAUSED.
+
+**Founder ruling:** Option B (one bounded pass closing B1–B4; FD #148 not reopened). **B1** SEALED PIT trusted capture = `SRC-01` atomic admission ONLY (6-condition rule; `SRCV_ONLY_CAPTURE_PROOF = NOT_ELIGIBLE_FOR_M6_V1_SEALED`; trusted timestamp only via `admit_source`; `PROVIDER_CANNOT_ENFORCE_SEALED_INPUT` fail-closed). **B2** `DeepResearchRunLedgerStore` (durable, non-canonical, deletion-resistant; `telemetry.<metric>.{status,value,reason}`; RRM-01 `deep_research_runs[]` id refs). **B3** canary-based request-isolation test + `REQUEST_ISOLATION_UNVERIFIED` fail-closed. **B4** REPLAY_EXCEPTION positive/blocked/re-labelling tests. **20 acceptance criteria** (§11 #1–#20). Transport recorded `CONSUMER_BROWSER_TRANSPORT = CURRENTLY NON-FUNCTIONAL`.
+
+**Status:** B1–B4 design reconciliations COMPLETE; M6 implementation **BLOCKED** pending the authorized family-independent review. Historical branch PARKED. Register item 149, fd_count 165.
+
 # Session — 2026-10-06 (interactive: QAD M6.0 DESIGN-GATE RECONCILIATION — FD #148 R-1…R-4 / explicit S10 amendments / M6.0 artifact; NO implementation)
 
 ## QAD M6.0 DESIGN-GATE RECONCILIATION — FD #148 (6 Oct 2026)
