@@ -1,3 +1,13 @@
+# Session — 2026-10-06 (interactive: QAD M6 IMPLEMENTATION AUTHORIZED — FD #151; first cluster M6.1 Archive Admission Attestation)
+
+## QAD M6 IMPLEMENTATION AUTHORIZED — FD #151 (6 Oct 2026)
+
+**Role:** governed-interactive. Baseline `origin/main d128376…`; O3 CLOSED; all five cron PAUSED.
+
+**Founder authorization:** design verdict `M6 DESIGN GATE PASS WITH BOUNDED NON-BLOCKING FINDINGS` accepted under FD #148–150; `QAD M6 — SOURCE INTELLIGENCE / GEMINI NOTEBOOK ENGINEERING` AUTHORIZED on a new branch `impl/m6-gemini-notebook` from current main (historical `docs/m6-gemini-notebook-dr @ a37e92d…` PARKED). Dependency-bounded order M6.1→M6.10 (deterministic core before browser automation). HARD acceptance conditions: (1) combined backdating fixture; (2) real atomic attestation persistence; (3) no live claim before a real canary. First cluster = **M6.1 Archive Admission Attestation**.
+
+**Status:** M6 IMPLEMENTATION AUTHORIZED; M6.1 in progress. Register item 151, fd_count 167.
+
 # Session — 2026-10-06 (interactive: QAD M6.0 TRUSTED ARCHIVE ADMISSION ATTESTATION — FD #150 final B1; design only, NO implementation)
 
 ## QAD M6.0 FINAL B1 TRUSTED-CAPTURE RECONCILIATION — FD #150 (6 Oct 2026)
