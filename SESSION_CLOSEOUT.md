@@ -1,3 +1,27 @@
+# Session — 2026-10-06 (interactive: QAD M6 IMPLEMENTATION AUTHORIZED — FD #151; clusters M6.1 Archive Admission Attestation + M6.2 SEALED Snapshot Builder / PIT Boundary)
+
+## QAD M6.1 + M6.2 COMPLETE (6 Oct 2026) — branch `impl/m6-gemini-notebook`
+
+**Role:** governed-interactive. **Scope:** deterministic M6 core implementation only (no provider transport, no Gemini call, no browser).
+Baseline main `5bf1077…` (FD #151 governance); starting branch head `404af96…`; final branch head `ae930ea…` (see caveat below).
+
+**FD #151 (main `5bf1077…`):** design verdict B accepted under FD #148–150; `QAD M6 — SOURCE INTELLIGENCE / GEMINI NOTEBOOK ENGINEERING` AUTHORIZED on new branch `impl/m6-gemini-notebook` from current main (historical `docs/m6-gemini-notebook-dr @ a37e92d…` PARKED). Dependency-bounded order M6.1→M6.10. 3 review follow-ups = HARD acceptance conditions (combined backdating fixture; real atomic attestation persistence; no live claim before a real canary). O3 CLOSED; all five cron PAUSED. fd_count 167.
+
+**M6.1 — Archive Admission Attestation (GREEN).** `ArchiveAdmissionAttestation` (frozen dataclass; NOT a canonical M4A schema) created atomically with canonical SRC-01 + exact raw bytes + hash binding; archive-owned caller-non-overridable immutable `admitted_at` (UTC clock; test-DI only); `get_admission_attestation` / `verify_admission_attestation` (identity-binding REQUIRED); `LEGACY_UNATTESTED_SRC01` / `SRCV_ONLY_CAPTURE_PROOF` fail closed; mandatory combined backdating fixture (AS_OF 2026-01-01 / retrieval_date 2025-12-01 / admitted_at 2026-02-01 → BLOCKED). 21 tests GREEN. Commits `a02ed85` → `2271748` (R1) → `9f1fbf9` (R2) → `404af96` (evidence).
+
+**M6.2 — SEALED Snapshot Builder / PIT Boundary (GREEN).** `qad/m6/snapshot.py`: PIT authority resolved from `PITContextStore` by `pit_context_id` (mode/case_id/as_of from PITC-01; caller values never trusted); archive-only source authority (source ids only cross the boundary); FD #150 conditions A–K enforced at resolution AND revalidated against archive authority at finalisation (K); S7 SEALED source-time guard (publication_date required + pre-AS_OF, parser aligned with S7); strict no-silent-partial-corpus (whole snapshot refused with per-source verdicts); canonical ordering + order-invariant deterministic `input_snapshot_hash` via the accepted canonical serialiser (volatile wall-clock and random attestation uuid excluded from identity); exact verified bytes with immutable copies (admission + snapshot boundary); `closed_corpus_required = True` downstream contract (no provider-enforcement claim). 32 tests GREEN. Commits `6ae50fb` → `a4330ec` (R1) → `a20cbc4` (R2) → `69c03a7` (R3 bounded fix) → `b986c60` (evidence).
+
+**Independent review (cross-family, FD #143; producer deepseek/deepseek-v4.1-flash → reviewer openai/gpt-6-luna, `--require-independent` → INDEPENDENT):**
+M6.1 rounds C → C → **A (PASS, no blocking)**; M6.2 rounds C → C → **B (PASS, no blocking**, one bounded non-blocking finding which was fixed).
+
+**Tests:** `tests/qad/m6` 53 passed (21 M6.1 + 32 M6.2); `tests/qad` 589 passed; `tests/qad/m53` (M5.3 S7 PIT) 116 passed — no weakening; `tests/qad/persistence` 292 passed; `tests/ops` (with `--basetemp`) 94 passed. Known pre-existing, reported honestly and NOT relabelled: `tests/locked` 147 passed / 15 failed (`test_real_data_api.py` lineage set, identical to the FD #147 baseline); full-suite collection error `tests/test_capital_office_semantics.py` (`ModuleNotFoundError: hermes_yaml`).
+
+**State:** `origin/main` UNCHANGED `5bf1077…`; `origin/ops/automation` UNCHANGED `9e7d95e…`; all five cron PAUSED; no production activation; no new M4A canonical schema (68 unchanged).
+
+**⚠ RECORDED CAVEAT (non-authoritative artifact):** commit `ae930ea` (`docs(qad): establish M6.2 implementation plan`) was NOT authored by the main agent — a review subagent process wrote `design/qad-pivot/m6/M6.2-IMPLEMENTATION-PLAN.md` and committed it on this branch (the review toolset was granted `file`, which permits writes). The document carries **NO authority** (it is not Founder-approved, not an FD, and not a frozen contract) and must be reviewed, kept as an unchecked draft, or dropped at the Founder's discretion. No history was rewritten. Corrective action for future review rounds: run reviewers with a read-only toolset.
+
+**Next:** M6.3 `DeepResearchRunLedgerStore` (durable; append-only while running; immutable after terminalisation; no silent GC; RRM-01 `deep_research_runs[]` holds ledger ids only) → M6.4 adapter contract → M6.5 retry/telemetry/idempotency → M6.6 source-discovery/admission bridge → M6.7 provider adapter + mock transport → M6.8 live transport → M6.9 live canary → M6.10 independent audit / Founder acceptance. `CONSUMER_BROWSER_TRANSPORT = CURRENTLY NON-FUNCTIONAL` retained.
+
 # Session — 2026-10-06 (interactive: QAD M6 IMPLEMENTATION AUTHORIZED — FD #151; first cluster M6.1 Archive Admission Attestation)
 
 ## QAD M6 IMPLEMENTATION AUTHORIZED — FD #151 (6 Oct 2026)
