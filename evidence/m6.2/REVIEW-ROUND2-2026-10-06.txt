@@ -1,0 +1,28 @@
+VERDICT: C
+
+ANSWERS:
+
+R1-1 — NO. The finalizer reloads and rechecks archive data, but it does not verify that the reloaded SRC-01’s `source_id` still matches the source/attestation. The archive verifier also checks the attestation against the record key, not the loaded record’s own `source_id`. A changed SRC-01 identity can therefore pass finalization, violating FD #150 E/K. The finalizer also does not bind the reloaded attestation ID/admission time to the provenance captured in the snapshot, allowing stale provenance if the archive attestation is replaced. `qad/m6/snapshot.py:282-320, especially 298-307`; `qad/persistence/reference.py:914-934`; FD #150 conditions: `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:81-101`.
+
+R1-2 — YES. Attestation ID is excluded from the identity payload, while the ID remains on `SealedSourceSnapshot` as provenance. The tests cover distinct UUIDs producing the same hash. `qad/m6/snapshot.py:87-99, 122-165, 261-270`; `tests/qad/m6/test_m62_sealed_snapshot.py:351-365`.
+
+R1-3 — YES for post-admission/post-snapshot mutation. Admission stores `bytes(raw_bytes)`; snapshot resolution freezes the loaded blob with `bytes(...)`; the snapshot dataclasses are frozen and hold `bytes`. The mutable-buffer regression test covers caller mutation after admission. `qad/persistence/reference.py:872-885, 543-550`; `qad/m6/snapshot.py:87-99, 225-228`; `tests/qad/m6/test_m62_sealed_snapshot.py:301-315`. No post-admission mutable-byte alias path found.
+
+R1-4 — YES. Exceptions from per-source resolution are caught and recorded as that source’s `SNAPSHOT_BUILD_FAILED` verdict; aggregation then refuses the whole snapshot. `qad/m6/snapshot.py:385-402`.
+
+Re-checks:
+- PIT authority — PASS: PITC-01 is loaded by ID from `PITContextStore`; mode, case ID, and AS_OF come from that record. `qad/m6/snapshot.py:327-370`.
+- Archive-only source authority — PASS for the supplied archive boundary: only source IDs cross resolution; SRC-01, attestation, and bytes are loaded from the archive. `qad/m6/snapshot.py:204-229, 327-342`.
+- FD #150 A–J — initial resolution checks these conditions; K is not fully enforced at finalization because the SRC-01 identity binding is omitted there (R1-1). `qad/m6/snapshot.py:213-270, 282-320`.
+- Strict no-partial-corpus — PASS: any failed source prevents snapshot construction. `qad/m6/snapshot.py:385-405`.
+- Deterministic, order-invariant hash; volatile creation time and random attestation ID excluded — PASS by inspection; tests cover order and cross-archive attestation IDs. `qad/m6/snapshot.py:122-184, 382-425`; `tests/qad/m6/test_m62_sealed_snapshot.py:130-138, 341-365`; `qad/persistence/serialization.py:67-107`.
+- Exact bytes — PASS by inspection and test assertions. `qad/m6/snapshot.py:225-270, 294-320`; `tests/qad/m6/test_m62_sealed_snapshot.py:317-328`.
+- Closed-corpus flag and provider-enforcement claim — PASS: `closed_corpus_required=True` is explicit; the module states this defines a downstream contract and does not claim provider enforcement. `qad/m6/snapshot.py:17-19, 48-52, 114-115, 421-424`.
+- M5.3 S7 — FAIL. Snapshot eligibility does not check `publication_date` or invoke/bind S7 validation. The M6.2 test helper omits `publication_date`, yet the happy-path snapshot test succeeds. S7 requires publication date in SEALED mode and blocks missing or post-AS_OF dates; the M6 design also specifies the S7 source-time check. `qad/m6/snapshot.py:204-270, 385-405`; `tests/qad/m6/test_m62_sealed_snapshot.py:42-48, 115-128`; `qad/m53/pit_enforcement.py:10-19, 341-350`; `tests/qad/m53/test_pit_enforcement.py:197-220`; `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:182-184`.
+- New registered M4A schema — PASS by inspection: snapshot structures are local dataclasses/private hash-payload models; no canonical registration is present in the reviewed M6 code. `qad/m6/snapshot.py:21-24, 87-139`.
+
+Read-only basis: no files changed. Tests were inspected but not executed.
+
+Governance sync note: the configured canonical `~/.hermes/shared/SOUL.md` and active IIP SOUL path were not found through the available read-only file tools, so disk sync could not be verified.
+
+BLOCKING: (1) Complete finalization binding: verify reloaded SRC-01 identity against the source ID and ensure snapshot provenance cannot refer to a superseded attestation. (2) Prevent sources lacking SEALED-valid S7 source-time eligibility—including missing or post-AS_OF publication dates—from entering the provider-input snapshot. Both must be resolved before M6.3.

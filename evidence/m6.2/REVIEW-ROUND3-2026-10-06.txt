@@ -1,0 +1,22 @@
+VERDICT: B
+
+ANSWERS:
+
+R2-1 — PASS. Finalisation reloads SRC-01 and the raw blob, re-verifies the archive attestation, and checks the reloaded source ID and content hash against the captured snapshot. It also binds the reloaded attestation ID and admitted_at to captured provenance. Exact bytes, hash, and length are checked again. qad/m6/snapshot.py:315-360. Tests cover a replaced attestation ID and failed finalisation verification; they do not separately mutate the reloaded SRC-01 fields. tests/qad/m6/test_m62_sealed_snapshot.py:430-463.
+
+R2-2 — PASS against future-source inclusion; no S7 weakening. The builder requires publication_date and rejects dates after AS_OF both during resolution and finalisation. qad/m6/snapshot.py:196-211, 245-248, 336-338. Missing and post-AS_OF dates are covered in tests. tests/qad/m6/test_m62_sealed_snapshot.py:264-278. This matches S7’s SEALED requirement for publication_date and its no-retrieval-date-substitution rule. qad/m53/pit_enforcement.py:10-19, 341-350; design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:182-184.
+
+Bounded non-blocking finding: the new guard rejects ISO datetime strings such as `2025-11-20T09:00:00` because it parses the whole string with `date.fromisoformat`; S7 explicitly strips the `T` suffix before parsing. qad/m6/snapshot.py:202-208; qad/m53/pit_enforcement.py:450-462. SRC-01 permits publication_date as a string. qad/models/family_b.py:295-310. This is fail-closed, not a future-information leak, but it can refuse a timestamp-form date that S7 accepts. Align the parser and add a timestamp-form test if that representation is intended to be valid.
+
+Re-checks:
+- PIT authority comes from `PITContextStore.load("PITC-01", pit_context_id)`; mode, case ID, and AS_OF derive from that record, not caller-supplied values. qad/m6/snapshot.py:387-410.
+- FD #150 A–K: source and attestation resolution, raw-blob presence, admission-time check, identity/hash/length bindings, exact bytes, and final revalidation are present. qad/m6/snapshot.py:233-296, 307-360; design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:81-101.
+- Strict no-partial-corpus: any ineligible requested source refuses the whole snapshot. qad/m6/snapshot.py:424-441; tests/qad/m6/test_m62_sealed_snapshot.py:307-318.
+- Deterministic ordering/hash: requested IDs are sorted; random attestation IDs and operational creation time are excluded from identity. qad/m6/snapshot.py:124-186, 421-450; tests/qad/m6/test_m62_sealed_snapshot.py:133-149, 360-383.
+- Exact verified bytes/no mutable alias: snapshot bytes are created with `bytes(...)`, then checked against the archive at finalisation. qad/m6/snapshot.py:250-296, 354-359; tests/qad/m6/test_m62_sealed_snapshot.py:320-347.
+- `closed_corpus_required` is explicitly true; the code describes a downstream contract and does not claim provider enforcement. qad/m6/snapshot.py:48-52, 103-118, 452-464.
+- No new registered M4A schema is present in the snapshot builder’s private hash payloads; the current canonical registry lists 68 schemas and no M6 snapshot or attestation schema. qad/m6/snapshot.py:21-24, 124-142; qad/contract/canonical_boundary.py:4-73.
+- The combined backdating fixture required by FD #151 is present. operational/FOUNDERS-DECISIONS.md:331; tests/qad/m6/test_m62_sealed_snapshot.py:420-428.
+- Checkout confirmed at `impl/m6-gemini-notebook` / `a20cbc4a16ad70abe2aaa9dea4357d8611fc6f77`. `.git/HEAD:1`; `.git/refs/heads/impl/m6-gemini-notebook:1`.
+
+BLOCKING: none. Static code and test-source review; tests were not executed.

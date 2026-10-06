@@ -1,0 +1,27 @@
+VERDICT: C — M6.2 FAIL / MATERIAL DEFECT
+
+ANSWERS:
+
+1. YES. The builder loads PITC-01 by `pit_context_id`, derives `case_id` and `as_of` from that record, and rejects unreadable, missing, or non-SEALED contexts. Caller-supplied `as_of`, `mode`, and `case_id` are not builder parameters. `qad/m6/snapshot.py:292-336`; reference store: `qad/persistence/reference.py:163-170,1827-1833`.
+
+2. YES, for the normal archive API path. The builder accepts source IDs and resolves the attestation, SRC-01, and raw blob from the archive; it does not accept caller-provided bytes, hashes, attestations, or admission timestamps. `qad/m6/snapshot.py:201-265,292-306`; archive attestation access and verification: `qad/persistence/reference.py:898-933`.
+
+3. PARTIAL — A–J are checked during source resolution, but K is not fully enforced at finalization. `_finalization_revalidation` re-hashes the captured bytes and checks their hash bindings and length, but does not reload or reverify the archive attestation, SRC-01 identity/reference, or admission time immediately before constructing the snapshot. `qad/m6/snapshot.py:210-265,268-285`; FD #150 conditions: `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:81-95`.
+
+4. PARTIAL. Recognized per-source failures are accumulated and any failure refuses the whole snapshot with a verdict map. But generic archive read/verification exceptions and invalid `admitted_at` parsing can escape `_resolve_source` without a per-source verdict. They still abort construction—no partial snapshot is returned—but the per-source verdict contract is not complete. `qad/m6/snapshot.py:211-230,250-253,350-364`.
+
+5. YES. Duplicate IDs are rejected, requested IDs are sorted before resolution, and source ordering is included in the identity payload, supporting order-invariant hashes. `qad/m6/snapshot.py:337-349,138-181`; tests: `tests/qad/m6/test_m62_sealed_snapshot.py:130-154`.
+
+6. NO. The hash payload includes `archive_attestation_id`, while attestation IDs are generated with `uuid.uuid4()`. Equivalent semantic inputs admitted into separate archives can therefore produce different `input_snapshot_hash` values. `qad/m6/snapshot.py:138-181` (especially 153-160); `qad/persistence/attestation.py:115-128`. `created_at` is correctly excluded: `qad/m6/snapshot.py:144-146,369-386`.
+
+7. NO — material byte-integrity bypass. The reference archive stores the caller’s `raw_bytes` object directly, and the snapshot stores the archive-returned `blob` directly; neither boundary makes an immutable defensive copy. Python type annotations do not prevent passing a `bytearray`. That mutable alias can be changed after verification/hash computation, including through the frozen snapshot’s `raw_bytes` field. `qad/persistence/reference.py:769-770,819-829,872-885`; `qad/m6/snapshot.py:87-99,224-264,268-285`; current byte test uses immutable `bytes`: `tests/qad/m6/test_m62_sealed_snapshot.py:301-313`.
+
+8. YES. `closed_corpus_required` is an explicit snapshot field and is set to `True`. The code describes provider enforcement as a downstream contract and explicitly identifies the failure state if a provider cannot enforce it; this cluster does not claim provider-level enforcement. `qad/m6/snapshot.py:17-19,48-52,101-116,375-386`.
+
+9. YES, with a boundary caveat. M5.3 S7 remains present and still enforces authoritative source-time PIT, including the SEALED `publication_date` requirement and fail-closed behavior. M6.2 adds archive-admission-time checks; it does not invoke or replace S7. A snapshot alone must not be represented as proof that S7 evidence eligibility passed. `qad/m53/pit_enforcement.py:233-275,301-368`; M6.2 checks admission time at `qad/m6/snapshot.py:250-253`.
+
+10. YES. The hash-payload models are private, plain `BaseModel` classes without canonical schema registration; the file expressly describes them as serializer-only and not M4A schemas. `qad/m6/snapshot.py:21-24,119-136,165-181`.
+
+11. MATERIAL DEFECTS: mutable raw-byte aliasing breaks exact-byte preservation after hashing; random attestation UUID inclusion breaks semantic determinism; and finalization does not reverify all archive bindings as K requires. No false claim of provider enforcement found. `qad/persistence/reference.py:769-885`; `qad/persistence/attestation.py:115-128`; `qad/m6/snapshot.py:153-160,268-285`.
+
+BLOCKING: 3 — complete K revalidation against archive authority immediately before snapshot construction; 6 — remove nondeterministic attestation UUID from identity hash inputs while retaining it as provenance; 7 — defensively freeze/copy bytes at admission and snapshot boundaries, with a mutable-buffer regression test. Fix before M6.3.
