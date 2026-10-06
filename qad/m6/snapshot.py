@@ -120,10 +120,14 @@ class SealedInputSnapshot:
 # ---------------------------------------------------------------------------
 
 class _OrderedSourceRef(BaseModel):
+    # NOTE: archive_attestation_id is deliberately NOT part of the identity hash.
+    # Attestation ids are random (uuid4); including one would break the required
+    # invariant "same authoritative inputs -> same input_snapshot_hash" across
+    # equivalent captures in separate archives. Attestation identity is retained
+    # as provenance on SealedSourceSnapshot, not as an identity input.
     source_id: str
     source_content_hash: str
     raw_blob_sha256: str
-    archive_attestation_id: str
 
 
 class _SealedInputSnapshotIdentity(BaseModel):
@@ -155,7 +159,6 @@ def input_snapshot_identity_payload(
                 "source_id": s.source_id,
                 "source_content_hash": s.source_content_hash,
                 "raw_blob_sha256": s.raw_blob_sha256,
-                "archive_attestation_id": s.archive_attestation_id,
             }
             for s in ordered
         ],
@@ -221,7 +224,7 @@ def _resolve_source(
 
     # B — raw blob exists
     try:
-        blob = archive.load_raw_blob(source_id)
+        blob = bytes(archive.load_raw_blob(source_id))
     except KeyError:
         return None, SnapshotFailureCode.RAW_BLOB_UNAVAILABLE
 
@@ -248,7 +251,10 @@ def _resolve_source(
         return None, _INTEGRITY
 
     # D — admitted_at <= AS_OF
-    admitted_at = dt.datetime.fromisoformat(att.admitted_at)
+    try:
+        admitted_at = dt.datetime.fromisoformat(att.admitted_at)
+    except ValueError:
+        return None, _INTEGRITY
     if admitted_at.date() > as_of:
         return None, SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF
 
@@ -265,24 +271,53 @@ def _resolve_source(
     ), None
 
 
-def _finalization_revalidation(ordered: tuple[SealedSourceSnapshot, ...]) -> None:
-    """K — revalidate every binding immediately before finalisation."""
+def _fail(source_id: str, why: str) -> None:
+    raise SnapshotBuildError(
+        SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
+        f"{source_id}: {why}",
+        {source_id: SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE},
+    )
+
+
+def _finalization_revalidation(archive, as_of: dt.date,
+                               ordered: tuple[SealedSourceSnapshot, ...]) -> None:
+    """K — RELOAD and revalidate every archive binding immediately before finalisation.
+
+    Re-reads the archive (attestation, SRC-01, raw blob) rather than trusting values
+    captured earlier, and confirms the captured bytes are byte-identical to the
+    archive's current stored bytes.
+    """
     for s in ordered:
+        try:
+            att = archive.get_admission_attestation(s.source_id)
+            src = archive.load("SRC-01", s.source_id)
+            blob = bytes(archive.load_raw_blob(s.source_id))
+        except Exception as exc:  # noqa: BLE001 — fail closed
+            _fail(s.source_id, f"archive state unreadable at finalisation ({type(exc).__name__})")
+            return
+        if not archive.verify_admission_attestation(s.source_id):
+            _fail(s.source_id, "archive verification failed at finalisation")
+        if att.source_id != s.source_id or att.source_ref != f"SRC-01:{s.source_id}":
+            _fail(s.source_id, "attestation source identity broken at finalisation")
+        if att.source_content_hash != src.content_hash:
+            _fail(s.source_id, "attestation/content-hash binding broken at finalisation")
+        if att.raw_blob_sha256 != src.content_hash:
+            _fail(s.source_id, "raw-blob-hash/content-hash binding broken at finalisation")
+        if len(blob) != att.raw_byte_length:
+            _fail(s.source_id, "attested byte length mismatch at finalisation")
+        try:
+            admitted = dt.datetime.fromisoformat(att.admitted_at)
+        except ValueError:
+            _fail(s.source_id, "admission timestamp unreadable at finalisation")
+            return
+        if admitted.date() > as_of:
+            _fail(s.source_id, "source admitted after AS_OF at finalisation")
+        if blob != s.raw_bytes:
+            _fail(s.source_id, "captured bytes differ from archive bytes at finalisation")
         if hashlib.sha256(s.raw_bytes).hexdigest() != s.raw_blob_sha256:
-            raise SnapshotBuildError(
-                SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
-                f"{s.source_id}: bytes changed between verification and finalisation",
-            )
-        if s.raw_blob_sha256 != s.source_content_hash:
-            raise SnapshotBuildError(
-                SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
-                f"{s.source_id}: hash binding broken at finalisation",
-            )
+            _fail(s.source_id, "bytes changed between verification and finalisation")
         if len(s.raw_bytes) != s.raw_byte_length:
-            raise SnapshotBuildError(
-                SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
-                f"{s.source_id}: byte length changed at finalisation",
-            )
+            _fail(s.source_id, "byte length changed at finalisation")
 
 
 # ---------------------------------------------------------------------------
@@ -350,7 +385,10 @@ def build_sealed_input_snapshot(
     verdicts: dict[str, SnapshotFailureCode | None] = {}
     resolved: list[SealedSourceSnapshot] = []
     for sid in ordered_ids:
-        snap, code = _resolve_source(archive, as_of, sid)
+        try:
+            snap, code = _resolve_source(archive, as_of, sid)
+        except Exception:  # noqa: BLE001 — every source must yield a typed verdict
+            snap, code = None, SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
         verdicts[sid] = code
         if code is None and snap is not None:
             resolved.append(snap)
@@ -364,7 +402,7 @@ def build_sealed_input_snapshot(
         )
 
     ordered = tuple(resolved)
-    _finalization_revalidation(ordered)
+    _finalization_revalidation(archive, as_of, ordered)
 
     as_of_str = as_of.isoformat()
     snap_hash = _compute_input_snapshot_hash(

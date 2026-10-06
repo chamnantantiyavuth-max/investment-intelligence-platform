@@ -298,6 +298,22 @@ class TestByteAuthority:
         assert exc.value.verdicts["S2"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
         assert exc.value.code is SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
 
+    def test_mutable_buffer_cannot_mutate_stored_or_snapshot_bytes(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        buf = bytearray(b"mutable bytes")
+        a.admit_source(SourceRecord(
+            source_id="S1", source_tier=SourceRecordSource_tier.L1,
+            source_type=SourceRecordSource_type.SEC_FILING,
+            url_or_identifier="https://sec.gov/S1",
+            content_hash=hashlib.sha256(bytes(buf)).hexdigest(),
+            retrieval_date="2025-12-01"), buf)
+        buf[0:7] = b"MUTATED"           # mutate the caller buffer AFTER admission
+        pid = _pit(p)
+        snap = _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert isinstance(snap.ordered_sources[0].raw_bytes, bytes)
+        assert snap.ordered_sources[0].raw_bytes == b"mutable bytes"
+        assert a.load_raw_blob("S1") == b"mutable bytes"
+
     def test_snapshot_contains_exact_verified_bytes(self):
         a, p = _archive(), InMemoryPITContextStore()
         raw = b"\x00\x01exact\xff"
@@ -331,6 +347,21 @@ class TestDeterministicHash:
         s2 = self._one_source_snapshot(a, p, clock=t2)
         assert s1.created_at != s2.created_at          # operational metadata differs
         assert s1.input_snapshot_hash == s2.input_snapshot_hash
+
+    def test_equivalent_inputs_in_separate_archives_same_hash(self):
+        """Same semantic inputs captured in two archives must hash identically.
+
+        Attestation ids are random uuid4 — they must NOT be identity inputs.
+        """
+        p = InMemoryPITContextStore()
+        a1 = _archive(); _admit(a1, "S1", b"same")
+        a2 = _archive(); _admit(a2, "S1", b"same")
+        pid = _pit(p)
+        h1 = _build(a1, p, source_ids=["S1"], pit_context_id=pid).input_snapshot_hash
+        h2 = _build(a2, p, source_ids=["S1"], pit_context_id=pid).input_snapshot_hash
+        assert a1.get_admission_attestation("S1").attestation_id != \
+            a2.get_admission_attestation("S1").attestation_id
+        assert h1 == h2
 
     def test_changing_one_raw_byte_changes_hash(self):
         p = InMemoryPITContextStore()
@@ -376,6 +407,23 @@ class TestPolicyInvariants:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF
         assert dt.date.fromisoformat("2025-12-01") < dt.date.fromisoformat("2026-01-01")
+
+    def test_finalization_revalidates_archive_authority(self, monkeypatch):
+        """K must RELOAD/reverify at finalisation, not trust the earlier result."""
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        pid = _pit(p)
+        real = a.verify_admission_attestation
+        calls = {"n": 0}
+
+        def flaky(sid):
+            calls["n"] += 1
+            return real(sid) if calls["n"] == 1 else False
+
+        monkeypatch.setattr(a, "verify_admission_attestation", flaky)
+        with pytest.raises(SnapshotBuildError):
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert calls["n"] >= 2          # resolution + finalisation revalidation
 
     def test_verification_happens_during_construction(self, monkeypatch):
         """A false archive verification at build time must fail the build."""

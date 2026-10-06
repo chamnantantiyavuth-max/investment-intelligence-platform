@@ -538,7 +538,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
                 expected_hash=blob_hash,
                 actual_hash=actual,
             )
-        self._raw_blobs[record_id] = data
+        self._raw_blobs[record_id] = bytes(data)
 
     def load_raw_blob(self, record_id: RecordID) -> bytes:
         """Load raw blob — raises KeyError for tombstoned sources."""
@@ -869,8 +869,9 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             tx.add_store(instance)
             tx.execute()
 
-            # 3b. Store raw bytes
-            self._raw_blobs[record_id] = raw_bytes
+            # 3b. Store raw bytes (M6.2: defensive immutable copy — a caller
+            #     bytearray must not be able to mutate admitted bytes)
+            self._raw_blobs[record_id] = bytes(raw_bytes)
 
             # 3c. M6.1 (FD #150): archive-owned, caller-non-overridable,
             #     immutable admission attestation — ONE atomic unit with the
@@ -1020,7 +1021,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
                     actual_hash=blob_hash,
                 )
 
-        self._raw_blobs[record_id] = data
+        self._raw_blobs[record_id] = bytes(data)
 
 
 # ===================================================================
