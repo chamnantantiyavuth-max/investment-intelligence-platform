@@ -193,6 +193,31 @@ class TestAttestationAbsenceAndRollback:
 
 
 # =====================================================================
+# 8b: public/archive boundary (M6.1 review R2)
+# =====================================================================
+
+class TestPublicBoundary:
+    def test_low_level_verifier_is_not_public(self):
+        import qad.persistence as P
+        assert not hasattr(P, "verify_attestation_binding")
+        assert "verify_attestation_binding" not in getattr(P, "__all__", [])
+
+    def test_detached_attestation_is_not_archive_proof(self):
+        store = _archive()
+        detached = ArchiveAdmissionAttestation(
+            attestation_id="forged", source_id="X", source_ref="SRC-01:X",
+            source_content_hash="a" * 64, raw_blob_sha256="a" * 64,
+            raw_byte_length=1, admitted_at="1999-01-01T00:00:00+00:00",
+            archive_instance="CallerMade", admission_method="ADMIT_SOURCE",
+        )
+        assert detached.source_id == "X"  # constructible, but carries no authority
+        with pytest.raises(AttestationNotFound):
+            store.get_admission_attestation("X")
+        with pytest.raises(AttestationNotFound):
+            store.verify_admission_attestation("X")
+
+
+# =====================================================================
 # 9–13: SEALED eligibility — the mandatory combined backdating fixture
 # =====================================================================
 
@@ -256,6 +281,19 @@ class TestSealedEligibility:
         store._attestations.pop("M61-SRCV")                # no archive attestation
         assert evaluate_sealed_source_eligibility(store, "M61-SRCV", dt.date(2026, 1, 1)) \
             is SealedEligibility.SRCV_ONLY_CAPTURE_PROOF
+
+    def test_archive_version_snapshot_is_not_srcv_evidence(self):
+        """M6.1 review R2: store_version()/list_versions() are SRC-01 snapshots,
+        NOT SRCV-01 records — such a source is LEGACY_UNATTESTED, not SRCV-only."""
+        store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")
+        raw = b"snapshot only"
+        src = _src("M61-SNAP", raw)
+        store.admit_source(src, raw)
+        store.store_version(src, "v0001")            # archive version snapshot
+        assert store.list_versions("M61-SNAP")       # labels exist...
+        store._attestations.pop("M61-SNAP")
+        assert evaluate_sealed_source_eligibility(store, "M61-SNAP", dt.date(2026, 1, 1)) \
+            is SealedEligibility.LEGACY_UNATTESTED_SRC01
 
     def test_verification_failure_blocks_sealed(self):
         store = _archive(admitted_at_iso="2025-12-15T00:00:00+00:00")

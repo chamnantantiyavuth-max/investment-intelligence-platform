@@ -40,19 +40,16 @@ def _has_version_records(archive, source_id: str) -> bool:
     SRCV-01 alone is never sufficient byte-capture proof for M6 v1 SEALED
     (M5.2 §10.4 does not bind SRCV-01.content_hash to exact version bytes).
     """
+    # IMPORTANT (M6.1 review R2): only ACTUAL SRCV-01 records count. The
+    # RawSourceArchive store_version()/list_versions() API manages SRC-01
+    # version *snapshots* and is NOT SRCV-01 evidence (M5.2 §10.4 / boundary
+    # contract). Inferring SRCV-only from list_versions would misclassify.
     data = getattr(archive, "_data", None)
     if isinstance(data, dict):
         for rec in data.get("SRCV-01", {}).values():
             inst = getattr(rec, "instance", rec)
             if getattr(inst, "source_id", None) == source_id:
                 return True
-    fn = getattr(archive, "list_versions", None)
-    if callable(fn):
-        try:
-            if fn(source_id):
-                return True
-        except Exception:
-            pass
     return False
 
 

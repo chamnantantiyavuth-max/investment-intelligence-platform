@@ -70,6 +70,12 @@ class ArchiveAdmissionAttestation:
     Frozen dataclass — deliberately NOT a canonical M4A schema and NOT a
     Pydantic canonical record, so it can never be admitted through the canonical
     stores.
+
+    **A constructed instance is not an archive-issued receipt.** Only the object
+    returned by ``RawSourceArchive.get_admission_attestation(source_id)`` — i.e.
+    one created *inside* the archive admission boundary and stored in archive
+    state — is authoritative proof of capture. Detached caller-created instances
+    carry no archive authority and are ignored by every archive API.
     """
 
     attestation_id: str
@@ -122,11 +128,11 @@ def _build_attestation(
     )
 
 
-def verify_attestation_binding(
+def _verify_attestation_binding(
     *, attestation: ArchiveAdmissionAttestation,
     stored_raw_bytes: bytes, src_content_hash: str,
-    expected_source_id: str | None = None,
-    expected_source_ref: str | None = None,
+    expected_source_id: str,
+    expected_source_ref: str,
 ) -> bool:
     """Recompute the attestation ↔ SRC-01 ↔ raw-blob bindings (FD #150 C–I).
 
@@ -134,13 +140,15 @@ def verify_attestation_binding(
     for having re-loaded ``stored_raw_bytes`` and the SRC-01 record from the
     authoritative archive (never from caller-supplied detached bytes).
 
-    ``expected_source_id`` / ``expected_source_ref`` bind the attestation to the
-    authoritative source identity so a same-bytes attestation cannot be replayed
-    against a different source record (M6.1 review fix).
+    Both identity arguments are REQUIRED (no defaults): identity binding is never
+    optional, so a same-bytes attestation cannot be replayed onto a different
+    source record. INTERNAL — the only public verification path is
+    ``RawSourceArchive.verify_admission_attestation``, which re-loads from
+    archive state (M6.1 review fixes R1/R2).
     """
-    if expected_source_id is not None and attestation.source_id != expected_source_id:
+    if attestation.source_id != expected_source_id:
         return False
-    if expected_source_ref is not None and attestation.source_ref != expected_source_ref:
+    if attestation.source_ref != expected_source_ref:
         return False
     if attestation.source_content_hash != src_content_hash:
         return False

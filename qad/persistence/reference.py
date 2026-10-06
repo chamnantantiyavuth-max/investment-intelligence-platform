@@ -51,7 +51,7 @@ from qad.persistence.attestation import (
     ArchiveClock,
     _build_attestation,
     utc_now,
-    verify_attestation_binding,
+    _verify_attestation_binding,
 )
 from qad.persistence.interfaces import (
     BlobHash,
@@ -924,7 +924,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             return False
         if att.source_id != record_id:
             return False
-        return verify_attestation_binding(
+        return _verify_attestation_binding(
             attestation=att,
             stored_raw_bytes=blob,
             src_content_hash=rec.instance.content_hash,

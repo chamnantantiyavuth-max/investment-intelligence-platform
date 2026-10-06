@@ -53,7 +53,6 @@ from qad.persistence.attestation import (
     ArchiveClock,
     ATTESTATION_FORMAT_VERSION,
     utc_now,
-    verify_attestation_binding,
 )
 
 # Re-export protocol interfaces
@@ -145,7 +144,6 @@ __all__ = [
     "ArchiveClock",
     "ATTESTATION_FORMAT_VERSION",
     "utc_now",
-    "verify_attestation_binding",
     # -- Reference implementations --
     "InMemoryBlobStore",
     "InMemoryCanonicalRecordStore",
