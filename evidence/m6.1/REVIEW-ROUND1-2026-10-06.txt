@@ -1,0 +1,31 @@
+VERDICT: C
+
+ANSWERS:
+
+1. PASS in the implementation, with a test-coverage gap. `admit_source` snapshots before any writes, then stores SRC-01, raw bytes, and the attestation inside one `try`/rollback boundary (`qad/persistence/reference.py:854–886`). The archive snapshot and restore include `_attestations` (`reference.py:716–763`). However, the rollback test’s bad hash is rejected before that boundary (`tests/qad/m6/test_m61_archive_attestation.py:129–141`; `reference.py:817–827`), so it does not exercise rollback after partial writes.
+
+2. PASS for the `admit_source` path. Its signature has no timestamp argument (`reference.py:767–769`); it obtains `admitted_at` from the archive clock inside the transaction (`reference.py:876–883`). Clock injection is available on the reference archive constructor as permitted for tests (`reference.py:512–525`). Caveat: `build_attestation` is a public module-level factory that accepts caller-supplied `admitted_at` (`qad/persistence/attestation.py:91–107`); it creates a detached object rather than changing archive state, but weakens the claimed “only the archive creates attestations” API boundary.
+
+3. PASS for stored attestations through the archive API. The attestation is a frozen dataclass (`qad/persistence/attestation.py:66–89`), and the getter returns it without an archive mutation/replacement operation (`reference.py:896–909`). The private `_attestations` dictionary remains directly mutable by white-box access; no public mutator was found in the scoped API.
+
+4. FAIL. The binding verifier checks content hashes and byte length but never checks `attestation.source_id` against the requested/archive record ID (`qad/persistence/attestation.py:124–142`; `qad/persistence/reference.py:911–927`). The creation path sets `source_id` (`attestation.py:108–115`), but verification does not enforce it. An attestation swapped between same-byte source records could therefore verify successfully despite the source-identity mismatch.
+
+5. PARTIAL. Legacy unattested SRC-01 is classified as `LEGACY_UNATTESTED_SRC01` (`qad/m6/eligibility.py:48–52`), so that path fails closed. The SRCV-only verdict is declared but not produced by the evaluator (`eligibility.py:22–34, 37–56`). Its test only checks a constant and that a missing SRC-01 returns `SOURCE_NOT_FOUND`; it does not construct or evaluate an SRCV-only proof (`tests/qad/m6/test_m61_archive_attestation.py:209–213`). This does not demonstrate the required `SRCV_ONLY_CAPTURE_PROOF` disposition.
+
+6. PASS. The mandatory fixture uses the specified retrieval date, archive admission time, and AS_OF date, then asserts the blocked eligibility result (`tests/qad/m6/test_m61_archive_attestation.py:168–185`). The evaluator bases the decision on `attestation.admitted_at`, not `retrieval_date` (`qad/m6/eligibility.py:54–60`).
+
+7. PASS within the inspected implementation. `ArchiveAdmissionAttestation` is a standard frozen dataclass, explicitly not a Pydantic canonical record (`qad/persistence/attestation.py:66–73`). The runtime canonical model registry still declares 68 schemas and 68 models and does not list the attestation (`qad/models/__init__.py:172–252`). The design rule is also explicit in M5.2 §2.1.1 (`QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md:134–150`) and the M6 design §5 (`QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:77–103`).
+
+8. Findings and evidence limits:
+   - Source identity is not verified (item 4), a correctness defect against FD #150’s required source binding (FD #150, `operational/FOUNDERS-DECISIONS.md:327`; design §5, lines 87–93).
+   - The SRCV-only acceptance test does not test the named case or verdict (item 5; test lines 209–213).
+   - The rollback test fails before any mutation, so it does not substantiate rollback after a mid-admission failure (test lines 129–141 versus `reference.py:854–886`).
+   - `_snapshot` and `_restore` annotations/docstring describe seven tuple members, but the implementation returns and unpacks eight, including attestations (`reference.py:716–763`). This is a typing/documentation defect, not an observed runtime failure.
+   - `build_attestation` publicly accepts caller-controlled timestamp and binding inputs (`attestation.py:91–107`). It does not currently persist or replace archive state, but should not be treated as an authoritative archive receipt.
+   - Branch and commit reference were verified from `.git/HEAD` and the branch ref: `impl/m6-gemini-notebook` at `a02ed853f5556d65e4bc8d8572827d7d717bd426`. I inspected source; I could not execute the test suite with the available read-only tools.
+
+BLOCKING:
+
+- Item 4: verify that the attestation’s `source_id` (and canonical source reference) matches the authoritative SRC-01 identity before returning a successful binding verification.
+- Item 5: implement and test the SRCV-only case so it yields `SRCV_ONLY_CAPTURE_PROOF` and cannot be treated as eligible.
+- Item 8: make the caller-timestamped attestation factory internal or otherwise ensure detached caller-created attestations cannot be mistaken for archive-issued receipts before M6.2 consumes this type.

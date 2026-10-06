@@ -1,0 +1,20 @@
+VERDICT: A — M6.1 PASS / READY FOR NEXT DETERMINISTIC CORE CLUSTER
+
+ANSWERS:
+Review target verified: branch `impl/m6-gemini-notebook`, HEAD `9f1fbf9e6feb445297143f440920886b0dfa28b8`; the local `origin/impl/m6-gemini-notebook` ref matches. Source review only; I did not execute pytest.
+
+R2-1 — Closed through the supported public API. `_verify_attestation_binding` is private, requires both expected identity values, and checks source ID/reference plus hash and byte-length bindings (`qad/persistence/attestation.py:131-161`). It is absent from the package exports (`qad/persistence/__init__.py:50-56,103-146`). The public verifier accepts only a source ID and retrieves the attestation, SRC-01, and blob from archive state before verifying (`qad/persistence/reference.py:913-933`); no public verifier accepts a detached attestation. As normal Python convention, an explicitly imported underscore-prefixed helper is not technically inaccessible, but that is not a public API path.
+
+R2-2 — Resolved. Classification scans only actual records in `_data["SRCV-01"]`; it does not use `list_versions()` (`qad/m6/eligibility.py:37-53`). The regression test confirms an archive SRC-01 version snapshot is classified as legacy, not SRCV-only (`tests/qad/m6/test_m61_archive_attestation.py:285-297`), consistent with M5.2’s distinction (`design/qad-pivot/m5/QAD-M5.2-PERSISTENCE-BOUNDARY-CONTRACT.md:353-367`).
+
+R2-3 — Boundary is unambiguous. The attestation type is constructible, but its documentation explicitly says a constructed instance has no archive authority (`qad/persistence/attestation.py:66-79`). Archive retrieval and verification use only the archive’s stored attestation map (`qad/persistence/reference.py:898-933`). The detached-instance test confirms an unattached instance cannot be retrieved or verified through those APIs (`tests/qad/m6/test_m61_archive_attestation.py:199-218`).
+
+Re-checks:
+- `admitted_at`: `admit_source` has no caller timestamp argument and builds the attestation using the archive-held clock after writing SRC-01 and bytes (`qad/persistence/reference.py:769-771,875-885`). The reference adapter exposes clock injection at construction for deterministic tests (`qad/persistence/reference.py:512-525`); production adapters must not expose caller-controlled historical time. The caller-override test is present (`tests/qad/m6/test_m61_archive_attestation.py:102-109`).
+- Immutability: frozen dataclass (`qad/persistence/attestation.py:66-95`); mutation rejection is tested (`tests/qad/m6/test_m61_archive_attestation.py:121-127`).
+- Atomic SRC-01 + bytes + attestation: admission snapshots and restores the combined state on failure (`qad/persistence/reference.py:716-765,856-890`); the injected post-write clock failure test checks rollback of all three (`tests/qad/m6/test_m61_archive_attestation.py:154-173`).
+- Identity binding: creation binds the resolved source ID and canonical `SRC-01:<id>` reference (`qad/persistence/attestation.py:115-128`); verification supplies and checks the expected ID and reference (`qad/persistence/reference.py:925-933`, `qad/persistence/attestation.py:149-161`).
+- No new M4A canonical schema: the attestation is a frozen dataclass explicitly outside the canonical schema path (`qad/persistence/attestation.py:66-79`); the design reiterates no new M4A schema (`design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:273`).
+- Mandatory combined backdating fixture: present with AS_OF `2026-01-01`, retrieval date `2025-12-01`, admission date `2026-02-01`, and `UNAVAILABLE_FOR_SEALED_PIT` expected (`tests/qad/m6/test_m61_archive_attestation.py:225-242`).
+
+BLOCKING: none
