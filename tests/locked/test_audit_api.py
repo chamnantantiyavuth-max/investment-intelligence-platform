@@ -4,7 +4,7 @@ Charter:
   1. Route inventory  — /api/decisions, /api/audit/git-log, /api/audit/model-registry
                         return 401 without a session cookie (FD #46 auth boundary)
   2. /api/decisions   — 200 with auth; data_source = founders_decisions_register;
-                        register is contiguous 1..N (currently 102 items); every
+                        register is contiguous 1..N (currently 147 items); every
                         item has num/title/preview; latest items carry a 2026 date
   3. /api/audit/git-log — 200; data_source = git_history; commits non-empty with
                         hash/date/subject; corrections list non-empty (repo has
@@ -59,7 +59,7 @@ def test_decisions_register_contiguous_and_parsed():
     body = r.json()
     assert body["data_source"] == "founders_decisions_register"
     decisions = body["decisions"]
-    # Contiguous register 1..N (currently 102 items — FD #86 register append)
+    # Contiguous register 1..N (currently 147 items — FD #86 register append)
     nums = [d["num"] for d in decisions]
     assert nums == list(range(1, len(nums) + 1)), "register must be contiguous 1..N"
     assert len(decisions) >= 100, "register must carry the full decision history"
@@ -71,11 +71,11 @@ def test_decisions_register_contiguous_and_parsed():
     # Authority-date synchronization (CP4-7, 13 Sep 2026 → CP5, 14 Sep
     # 2026 → M5.3 FINAL CLOSEOUT, 21 Sep 2026 → O3 FINAL RULING, 23 Sep
     # 2026 → IIP MODEL ROUTING REFRESH, 29 Sep 2026): the latest registered
-    # Founder Decision is FD #143 dated 29 Sep 2026 (Acceptance-Lock updated
-    # under FD #143 authority — register-tail sync; locked-test-governance
+    # Founder Decision is FD #147 dated 6 Oct 2026 (Acceptance-Lock updated
+    # under FD #147 authority (FD #145 3 Oct + FD #146 4 Oct dates backfilled in the same chain) — register-tail sync; locked-test-governance
     # procedure: every FD append co-touches this expected date).
     latest = decisions[-1]
-    assert latest["date"] == "1 Oct 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "6 Oct 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():

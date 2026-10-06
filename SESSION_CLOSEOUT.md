@@ -1,3 +1,15 @@
+# Session — 2026-10-06 (interactive: POST-M5.3 O3 OPERATIONAL ACCEPTANCE — REAL P1 #1 PROMOTION EXECUTED + FOUNDER ACCEPTED / CLOSED — FD #147)
+
+## POST-M5.3 O3 OPERATIONAL ACCEPTANCE — FD #147 (6 Oct 2026)
+
+**Role:** governed-interactive operational acceptance closeout. **Scope:** governance/state only + the mechanically-required locked audit-register date test — NO runtime/code change.
+
+**Executed (verified):** baseline revalidated (origin/main `d655d824e8e39f2a4321e24e8607c3c271d5892d`, origin/ops/automation `9e7d95eefa680824f5fc7001a5419d35e219af92`, main ancestor of ops, all five cron jobs PAUSED, both worktrees clean, no approval/recovery record) → exact batch revalidated (exactly the 3 artifact paths; raw SHA-256 match; allowlist/denylist PASS; 0 deletions/renames) → **Founder approval binding** (disposition AWAITING → APPROVED; immutable digest unchanged `52b2e537…`; receipt bound via canonical `--approve`) → **canonical verify-only pre-flight** (canary rehearsal derived from origin/main; ZERO governed-main mutation) → **REAL P1 promotion** commit `3dc4b969a58bc8bd3928744cf7034e44f9f5440d` (parent `d655d82…`; exactly the 3 artifacts; committed blob hashes equal the manifest) → pushed + **remote-verified** `origin/main == 3dc4b969…` → ONE atomic final state (`last_promoted_ops_sha = 9e7d95ee…`; all seven promotion/approval/recovery keys cleared; `last_pushed_ops_sha = cc1e81e…` retained) → manifest residue NONE; G0 case A.
+
+**Founder ruling:** `REAL P1 #1 — SUCCESS` · `POST-M5.3 O3 OPERATIONAL ACCEPTANCE GATE — SATISFIED` (CLOSED). Gate G = 2/2 (`GATE G — MODE-A WINDOWS OPERATIONAL ACCEPTANCE`; NOT unattended production readiness). **Mode-A limitation retained** (FD #144 NOT superseded). **M6 = PARKED / ELIGIBLE FOR FOUNDER AUTHORIZATION** — not authorized. All five cron jobs remain PAUSED. No P2. M5.3 FROZEN.
+
+**FD #147 governance commit:** pushed fast-forward + remote-verified (see Final return). Register item 147, fd_count 163.
+
 # Session — 2026-10-01 (interactive: GATE G WINDOWS SCHEDULER/GATEWAY ROOT-CAUSE + WINDOWS MATCHED-CONTROL + FD #144 MODE A + CYCLE #1 MODE-A PREFLIGHT — COMPLETE)
 
 ## GATE G WINDOWS CRON LIFECYCLE — ROOT CAUSE, MATCHED CONTROL, MODE A ADOPTION, FD #144 (1 Oct 2026)
