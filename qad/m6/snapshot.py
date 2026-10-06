@@ -63,6 +63,8 @@ class SnapshotFailureCode(str, Enum):
     SRCV_ONLY_CAPTURE_PROOF = "SRCV_ONLY_CAPTURE_PROOF"
     ATTESTATION_INTEGRITY_FAILURE = "ATTESTATION_INTEGRITY_FAILURE"
     SOURCE_ADMITTED_AFTER_AS_OF = "SOURCE_ADMITTED_AFTER_AS_OF"
+    SOURCE_PUBLICATION_DATE_MISSING = "SOURCE_PUBLICATION_DATE_MISSING"
+    SOURCE_PUBLISHED_AFTER_AS_OF = "SOURCE_PUBLISHED_AFTER_AS_OF"
     RAW_BLOB_UNAVAILABLE = "RAW_BLOB_UNAVAILABLE"
     DUPLICATE_SOURCE_ID = "DUPLICATE_SOURCE_ID"
     SNAPSHOT_BUILD_FAILED = "SNAPSHOT_BUILD_FAILED"
@@ -191,6 +193,24 @@ def _compute_input_snapshot_hash(
 _INTEGRITY = SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
 
+def _sealed_source_time_check(src, as_of: dt.date) -> SnapshotFailureCode | None:
+    """S7 SEALED source-time rule (upstream guard; S7 itself remains authoritative).
+
+    SEALED requires SRC-01.publication_date and it must be <= AS_OF. Missing or
+    uninterpretable metadata fails closed (M6 design §9; S7 FD #138).
+    """
+    pub = getattr(src, "publication_date", None)
+    if not pub:
+        return SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
+    try:
+        pub_date = dt.date.fromisoformat(str(pub))
+    except ValueError:
+        return SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
+    if pub_date > as_of:
+        return SnapshotFailureCode.SOURCE_PUBLISHED_AFTER_AS_OF
+    return None
+
+
 def _classify_unattested(archive, source_id: str, as_of: dt.date) -> SnapshotFailureCode:
     """Classify a source with no archive attestation (fail closed)."""
     verdict = evaluate_sealed_source_eligibility(archive, source_id, as_of)
@@ -221,6 +241,11 @@ def _resolve_source(
         src = archive.load("SRC-01", source_id)
     except KeyError:
         return None, SnapshotFailureCode.SOURCE_NOT_FOUND
+
+    # S7 SEALED source-time guard (publication_date required + pre-AS_OF)
+    st = _sealed_source_time_check(src, as_of)
+    if st is not None:
+        return None, st
 
     # B — raw blob exists
     try:
@@ -297,6 +322,20 @@ def _finalization_revalidation(archive, as_of: dt.date,
             return
         if not archive.verify_admission_attestation(s.source_id):
             _fail(s.source_id, "archive verification failed at finalisation")
+        # R1-1: bind the RELOADED SRC-01 to the finalised source, and bind the
+        # reloaded attestation to the provenance captured in the snapshot so a
+        # superseded/replaced attestation cannot silently pass finalisation.
+        if getattr(src, "source_id", None) != s.source_id:
+            _fail(s.source_id, "reloaded SRC-01 identity mismatch at finalisation")
+        if src.content_hash != s.source_content_hash:
+            _fail(s.source_id, "reloaded SRC-01 content hash mismatch at finalisation")
+        if att.attestation_id != s.archive_attestation_id:
+            _fail(s.source_id, "attestation replaced/superseded at finalisation")
+        if att.admitted_at != s.archive_admitted_at:
+            _fail(s.source_id, "attestation admission time changed at finalisation")
+        st = _sealed_source_time_check(src, as_of)
+        if st is not None:
+            _fail(s.source_id, f"SEALED source-time check failed at finalisation ({st.value})")
         if att.source_id != s.source_id or att.source_ref != f"SRC-01:{s.source_id}":
             _fail(s.source_id, "attestation source identity broken at finalisation")
         if att.source_content_hash != src.content_hash:

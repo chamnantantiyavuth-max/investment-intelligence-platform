@@ -39,12 +39,14 @@ AS_OF = "2026-01-01"
 ADMITTED = "2025-12-15T00:00:00+00:00"
 
 
-def _src(sid: str, raw: bytes, retrieval_date: str = "2025-12-01") -> SourceRecord:
+def _src(sid: str, raw: bytes, retrieval_date: str = "2025-12-01",
+         publication_date: str | None = "2025-11-20") -> SourceRecord:
     return SourceRecord(
         source_id=sid, source_tier=SourceRecordSource_tier.L1,
         source_type=SourceRecordSource_type.SEC_FILING,
         url_or_identifier=f"https://sec.gov/{sid}",
         content_hash=hashlib.sha256(raw).hexdigest(), retrieval_date=retrieval_date,
+        publication_date=publication_date,
     )
 
 
@@ -94,8 +96,9 @@ def _pit(store: InMemoryPITContextStore, *, mode=PITContextMode.SEALED_HISTORICA
     return pid
 
 
-def _admit(store: InMemoryRawSourceArchive, sid: str, raw: bytes, retrieval_date="2025-12-01"):
-    store.admit_source(_src(sid, raw, retrieval_date), raw)
+def _admit(store: InMemoryRawSourceArchive, sid: str, raw: bytes, retrieval_date="2025-12-01",
+           publication_date: str | None = "2025-11-20"):
+    store.admit_source(_src(sid, raw, retrieval_date, publication_date), raw)
 
 
 def _build(archive, pit_store, *, source_ids, pit_context_id="PITC-1",
@@ -258,6 +261,22 @@ class TestSourceConditions:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
+    def test_missing_publication_date_fails_closed(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a", publication_date=None)
+        pid = _pit(p)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
+
+    def test_publication_date_after_as_of_fails_closed(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a", publication_date="2026-02-15")
+        pid = _pit(p)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_PUBLISHED_AFTER_AS_OF
+
     def test_raw_blob_unavailable_blocked(self):
         a, p = _archive(), InMemoryPITContextStore()
         _admit(a, "S1", b"a")
@@ -306,7 +325,7 @@ class TestByteAuthority:
             source_type=SourceRecordSource_type.SEC_FILING,
             url_or_identifier="https://sec.gov/S1",
             content_hash=hashlib.sha256(bytes(buf)).hexdigest(),
-            retrieval_date="2025-12-01"), buf)
+            retrieval_date="2025-12-01", publication_date="2025-11-20"), buf)
         buf[0:7] = b"MUTATED"           # mutate the caller buffer AFTER admission
         pid = _pit(p)
         snap = _build(a, p, source_ids=["S1"], pit_context_id=pid)
@@ -407,6 +426,24 @@ class TestPolicyInvariants:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF
         assert dt.date.fromisoformat("2025-12-01") < dt.date.fromisoformat("2026-01-01")
+
+    def test_finalization_binds_reloaded_attestation_provenance(self, monkeypatch):
+        """A replaced attestation must be caught at finalisation (R1-1)."""
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        pid = _pit(p)
+        real = a.get_admission_attestation
+        calls = {"n": 0}
+
+        def swapped(sid):
+            calls["n"] += 1
+            att = real(sid)
+            return att if calls["n"] == 1 else dataclasses.replace(att, attestation_id="REPLACED")
+
+        monkeypatch.setattr(a, "get_admission_attestation", swapped)
+        with pytest.raises(SnapshotBuildError):
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert calls["n"] >= 2
 
     def test_finalization_revalidates_archive_authority(self, monkeypatch):
         """K must RELOAD/reverify at finalisation, not trust the earlier result."""
