@@ -202,8 +202,14 @@ def _sealed_source_time_check(src, as_of: dt.date) -> SnapshotFailureCode | None
     pub = getattr(src, "publication_date", None)
     if not pub:
         return SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
+    # Mirror S7's parser (qad/m53/pit_enforcement.py _parse_date): an ISO datetime
+    # form (``2025-11-20T09:00:00``) reduces to its date part; anything
+    # uninterpretable fails closed.
+    text = str(pub).strip()
+    if "T" in text:
+        text = text.split("T", 1)[0]
     try:
-        pub_date = dt.date.fromisoformat(str(pub))
+        pub_date = dt.date.fromisoformat(text)
     except ValueError:
         return SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
     if pub_date > as_of:

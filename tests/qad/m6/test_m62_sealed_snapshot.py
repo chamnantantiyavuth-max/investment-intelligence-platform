@@ -269,6 +269,13 @@ class TestSourceConditions:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
 
+    def test_timestamp_form_publication_date_accepted(self):
+        """S7 parity: an ISO datetime form reduces to its date part."""
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a", publication_date="2025-11-20T09:00:00")
+        snap = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p))
+        assert snap.source_count == 1
+
     def test_publication_date_after_as_of_fails_closed(self):
         a, p = _archive(), InMemoryPITContextStore()
         _admit(a, "S1", b"a", publication_date="2026-02-15")
