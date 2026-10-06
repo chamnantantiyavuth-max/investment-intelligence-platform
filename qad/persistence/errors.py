@@ -135,3 +135,30 @@ class PITBlockError(PersistenceError):
         self.verdict = verdict      # "BLOCKED" | "SEAL_INVALIDATED"
         self.reason = reason        # machine-readable blocking reason
         super().__init__(message, schema_id=schema_id, record_id=record_id)
+
+
+
+class AttestationNotFound(PersistenceError):
+    """Raised when no admission attestation exists for a source (FD #150).
+
+    A missing attestation means the SRC-01 was created before archive-attestation
+    support (``LEGACY_UNATTESTED_SRC01``) or was never admitted through
+    ``admit_source``. M6 v1 SEALED operation MUST NOT synthesize one.
+    """
+
+    def __init__(self, message: str, *, schema_id: str | None = None,
+                 record_id: str | None = None):
+        super().__init__(message, schema_id=schema_id, record_id=record_id)
+
+
+class AttestationIntegrityError(PersistenceError):
+    """Raised when an admission attestation is tampered with or inconsistent.
+
+    Attestations are immutable archive-owned metadata; no normal application API
+    may mutate, replace, or backdate them (FD #150).
+    """
+
+    def __init__(self, message: str, *, schema_id: str | None = None,
+                 record_id: str | None = None):
+        super().__init__(message, schema_id=schema_id, record_id=record_id)
+

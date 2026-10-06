@@ -258,6 +258,28 @@ class RawSourceArchive(CanonicalRecordStore, Protocol):
         """
         ...
 
+    # -- Archive admission attestation (M6.1 — FD #150) ---------------------
+
+    def get_admission_attestation(self, source_id: RecordID):
+        """Return the immutable archive admission attestation for a source.
+
+        The attestation is archive-owned metadata (NOT a canonical schema),
+        created atomically with ``admit_source`` and carrying the
+        caller-non-overridable ``admitted_at`` capture time.
+
+        Raises:
+            AttestationNotFound: the source has no attestation (legacy record).
+        """
+        ...
+
+    def verify_admission_attestation(self, source_id: RecordID) -> bool:
+        """Re-verify attestation <-> SRC-01 <-> raw-blob bindings.
+
+        Returns True only when the SRC-01 ``content_hash``, the stored raw
+        blob's SHA-256, the attested blob hash, and the byte length all agree.
+        """
+        ...
+
     # -- Versioning ---------------------------------------------------------
 
     def store_version(

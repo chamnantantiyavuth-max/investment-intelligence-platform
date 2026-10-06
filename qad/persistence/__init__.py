@@ -33,6 +33,8 @@ from __future__ import annotations
 
 # Re-export all error classes
 from qad.persistence.errors import (
+    AttestationIntegrityError,
+    AttestationNotFound,
     CanonicalBoundaryViolation,
     HashMismatch,
     ImmutabilityViolation,
@@ -43,6 +45,16 @@ from qad.persistence.errors import (
     PITBlockError,
     TransactionFailure,
     ValidationFailure,
+)
+
+# Re-export M6.1 archive admission attestation (FD #150)
+from qad.persistence.attestation import (
+    ArchiveAdmissionAttestation,
+    ArchiveClock,
+    ATTESTATION_FORMAT_VERSION,
+    build_attestation,
+    utc_now,
+    verify_attestation_binding,
 )
 
 # Re-export protocol interfaces
@@ -92,6 +104,8 @@ from qad.persistence.reference import (
 
 __all__ = [
     # -- Errors --
+    "AttestationIntegrityError",
+    "AttestationNotFound",
     "CanonicalBoundaryViolation",
     "HashMismatch",
     "ImmutabilityViolation",
@@ -127,6 +141,13 @@ __all__ = [
     "serialize_to_canonical_json",
     # -- Transaction --
     "Transaction",
+    # -- M6.1 archive admission attestation (FD #150) --
+    "ArchiveAdmissionAttestation",
+    "ArchiveClock",
+    "ATTESTATION_FORMAT_VERSION",
+    "build_attestation",
+    "utc_now",
+    "verify_attestation_binding",
     # -- Reference implementations --
     "InMemoryBlobStore",
     "InMemoryCanonicalRecordStore",

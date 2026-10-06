@@ -42,7 +42,16 @@ from qad.persistence.errors import (
     MissingForeignKey,
     NonCanonicalAdmissionRejected,
     PersistenceError,
+    AttestationNotFound,
     TransactionFailure,
+)
+from qad.persistence.attestation import (
+    ADMISSION_METHOD_ADMIT_SOURCE,
+    ArchiveAdmissionAttestation,
+    ArchiveClock,
+    build_attestation,
+    utc_now,
+    verify_attestation_binding,
 )
 from qad.persistence.interfaces import (
     BlobHash,
@@ -500,14 +509,20 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
     versioning, and tombstone support.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, data=None, *, clock: ArchiveClock | None = None) -> None:
+        super().__init__(data)
         # {record_id: {version_label: _Record}}
         self._version_data: dict[str, dict[str, _Record]] = {}
         # {record_id: raw_blob_bytes}
         self._raw_blobs: dict[str, bytes] = {}
         # {record_id: reason} — supplements base-class _tombstones set
         self._tombstone_reasons: dict[str, str] = {}
+        # M6.1 (FD #150): archive-owned admission attestations
+        # {record_id: ArchiveAdmissionAttestation}
+        self._attestations: dict[str, ArchiveAdmissionAttestation] = {}
+        # Archive-owned clock — deterministic tests MAY inject; production
+        # caller paths MUST NOT be able to supply historical admitted_at.
+        self._clock: ArchiveClock = clock if clock is not None else utc_now
 
     # -- Raw blob storage ---------------------------------------------------
 
@@ -720,6 +735,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             deepcopy(self._raw_blobs),
             deepcopy(self._version_data),
             deepcopy(self._tombstone_reasons),
+            deepcopy(self._attestations),
         )
 
     def _restore(
@@ -743,6 +759,7 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
             self._raw_blobs,
             self._version_data,
             self._tombstone_reasons,
+            self._attestations,
         ) = snapshot
 
     # -- Atomic source admission (Item 5) ----------------------------------
@@ -852,11 +869,62 @@ class InMemoryRawSourceArchive(InMemoryCanonicalRecordStore):
 
             # 3b. Store raw bytes
             self._raw_blobs[record_id] = raw_bytes
+
+            # 3c. M6.1 (FD #150): archive-owned, caller-non-overridable,
+            #     immutable admission attestation — ONE atomic unit with the
+            #     canonical SRC-01 metadata + exact bytes + hash binding.
+            self._attestations[record_id] = build_attestation(
+                source_id=record_id,
+                source_content_hash=content_hash,
+                raw_bytes=raw_bytes,
+                admitted_at=self._clock(),
+                archive_instance=self._archive_instance(),
+                admission_method=ADMISSION_METHOD_ADMIT_SOURCE,
+            )
         except BaseException:
             self._restore(snapshot)
             raise
 
         return compute_canonical_hash(instance)
+
+    # -- M6.1 archive admission attestation (FD #150) ----------------------
+
+    def _archive_instance(self) -> str:
+        """Identity of this archive/adapter, recorded on the attestation."""
+        return f"{type(self).__name__}/REFERENCE"
+
+    def get_admission_attestation(self, record_id: RecordID) -> ArchiveAdmissionAttestation:
+        """Return the immutable archive admission attestation for a source.
+
+        Raises:
+            AttestationNotFound: legacy/unattested SRC-01 (no synthesized date).
+        """
+        att = self._attestations.get(record_id)
+        if att is None:
+            raise AttestationNotFound(
+                f"{record_id}: no archive admission attestation "
+                f"(legacy/unattested SRC-01 — NOT_ELIGIBLE_FOR_M6_V1_SEALED)",
+                schema_id="SRC-01", record_id=record_id,
+            )
+        return att
+
+    def verify_admission_attestation(self, record_id: RecordID) -> bool:
+        """Re-verify attestation <-> SRC-01 <-> raw-blob bindings (M6.1)."""
+        att = self._attestations.get(record_id)
+        if att is None:
+            raise AttestationNotFound(
+                f"{record_id}: no archive admission attestation",
+                schema_id="SRC-01", record_id=record_id,
+            )
+        rec = self._data.get("SRC-01", {}).get(record_id)
+        blob = self._raw_blobs.get(record_id)
+        if rec is None or blob is None:
+            return False
+        return verify_attestation_binding(
+            attestation=att,
+            stored_raw_bytes=blob,
+            src_content_hash=rec.instance.content_hash,
+        )
 
     # -- Override store() to reject SRC-01 bypass --------------------------
 
