@@ -370,12 +370,19 @@ def _telemetry_from_json(raw: str | None) -> dict[str, TelemetryMetric]:
     if not raw:
         return {}
     data = json.loads(raw)
-    return {
-        k: TelemetryMetric(
+    out: dict[str, TelemetryMetric] = {}
+    for k, v in data.items():
+        # Defence in depth: a durable record written by the store is always
+        # well-formed (the datastore trigger enforces it); a foreign/legacy row
+        # is rejected with a typed error rather than an unrelated TypeError.
+        if not isinstance(v, Mapping) or v.get("status") not in ("EXPOSED", "NOT_EXPOSED"):
+            raise LedgerValidationError(
+                f"stored telemetry[{k}] is not a well-formed metric record"
+            )
+        out[k] = TelemetryMetric(
             status=TelemetryStatus(v["status"]), value=v.get("value"), reason=v.get("reason")
         )
-        for k, v in data.items()
-    }
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -405,7 +412,9 @@ CREATE TABLE IF NOT EXISTS ledger_run (
 
 CREATE TABLE IF NOT EXISTS ledger_attempt (
     ledger_id       TEXT NOT NULL REFERENCES ledger_run(ledger_id),
-    attempt_number  INTEGER NOT NULL CHECK (attempt_number BETWEEN 1 AND 3),
+    attempt_number  INTEGER NOT NULL
+        CHECK (typeof(attempt_number) = 'integer'
+               AND attempt_number BETWEEN 1 AND 3),
     retry_mode      TEXT NOT NULL,
     provider_surface TEXT NOT NULL,
     transport_type  TEXT NOT NULL,
@@ -611,10 +620,9 @@ def _build_telemetry_guard_sql() -> str:
         bad.extend(_metric_violations(f"$.{m}"))
     for m in OPTIONAL_TELEMETRY_METRICS:
         p = f"$.{m}"
-        present = (
-            f"(json_type(NEW.telemetry_json, '{p}') IS NOT NULL"
-            f" AND json_type(NEW.telemetry_json, '{p}') <> 'null')"
-        )
+        # The key being present AT ALL (including an explicit JSON null) makes it
+        # a declared metric member: it must then be a well-formed metric object.
+        present = f"(json_type(NEW.telemetry_json, '{p}') IS NOT NULL)"
         bad.append(f"({present} AND ({' OR '.join(_metric_violations(p))}))")
 
     when = "\n      OR ".join(bad)

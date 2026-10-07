@@ -906,3 +906,59 @@ class TestReviewHardening:
         rec = store.load_run("L-001")
         assert rec.dispositions == ()
         assert rec.terminal_status is None
+
+    def test_42_fractional_attempt_number_rejected(self, tmp_path):
+        """The range CHECK must also require integer storage (not just 1..3)."""
+        store, path = _store(tmp_path)
+        _create(store)
+        _attempt(store, "L-001", n=1)
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            # genuinely fractional values are stored as REAL and rejected
+            for bad in ("1.5", "2.5", "0.5"):
+                with pytest.raises(sqlite3.IntegrityError):
+                    conn.execute(
+                        "INSERT INTO ledger_attempt (ledger_id, attempt_number,"
+                        " retry_mode, provider_surface, transport_type, started_at,"
+                        " telemetry_json) VALUES ('L-001'," + bad + ",'SAME_PROVIDER_RETRY',"
+                        f"'p','X','t','{json.dumps(_tel())}')"
+                    )
+            # SQLite INTEGER affinity coerces a lossless REAL (2.0) to integer 2,
+            # which is a valid attempt identity — verify it is stored as INTEGER.
+            conn.execute(
+                "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                " provider_surface, transport_type, started_at, telemetry_json)"
+                f" VALUES ('L-001',2.0,'SAME_PROVIDER_RETRY','p','X','t','{json.dumps(_tel())}')"
+            )
+            assert conn.execute(
+                "SELECT typeof(attempt_number) FROM ledger_attempt"
+                " WHERE ledger_id='L-001' AND attempt_number=2"
+            ).fetchone()[0] == "integer"
+            conn.commit()
+        finally:
+            conn.close()
+        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [1, 2]
+        assert all(isinstance(a.attempt_number, int) for a in store.load_run("L-001").attempts)
+
+    def test_43_explicit_null_optional_metric_rejected_and_reader_defended(self, tmp_path):
+        import qad.m6.ledger as ledger_mod
+
+        store, path = _store(tmp_path)
+        _create(store)
+        conn = sqlite3.connect(str(path))
+        try:
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                    " provider_surface, transport_type, started_at, telemetry_json)"
+                    f" VALUES ('L-001',1,'INITIAL_ATTEMPT','p','X','t',"
+                    f"'{json.dumps({**_tel(), 'total_tokens': None})}')"
+                )
+        finally:
+            conn.close()
+        # defence in depth: a malformed stored metric raises a TYPED error, not TypeError
+        with pytest.raises(ledger_mod.LedgerValidationError):
+            ledger_mod._telemetry_from_json('{"total_tokens": null}')
+        with pytest.raises(ledger_mod.LedgerValidationError):
+            ledger_mod._telemetry_from_json('{"cost": {"status": "BOGUS", "value": 1}}')
