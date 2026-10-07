@@ -1,3 +1,39 @@
+# Session — 2026-10-07 (M6.3 state sync — Deep Research Run Ledger GREEN / READY FOR M6.4)
+
+## QAD M6.3 DEEP RESEARCH RUN LEDGER — GREEN / DURABLE PROVENANCE VERIFIED / READY FOR M6.4
+
+Facts-only state sync. No new Founder Decision. No governance-semantics change.
+No runtime code or test change is introduced by this entry. `main` unchanged.
+
+- **Cluster:** M6.3 Deep Research Run Ledger (`DeepResearchRunLedgerStore`), authority
+  FD #149 / `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md` §7, implemented on
+  branch `impl/m6-gemini-notebook` (no merge to main).
+- **Final reviewed SHA:** `9cd07030ff75af54ff434f3674703e8ff6122e0d`.
+- **Independent review (family-separated, FD #143):** reviewer GPT-6 Luna High —
+  family-independent from the DeepSeek producer, executed with the corrected read-only
+  harness (disposable repository copy with no `.git`, explicit native path,
+  `--no-restore-cwd`, external basetemp; the reviewer wrote nothing into any governed
+  worktree) = **A — M6.3 PASS / READY FOR M6.4**; material findings NONE · required
+  changes NONE · Founder decisions required NONE.
+- **Tests (real local runs):** M6.3 targeted **46/46 GREEN** · all `tests/qad/m6`
+  **108/108 GREEN** (M6.1 + M6.2 + M6.3) · QAD **643 passed / 1 inherited pre-existing
+  failure** (`tests/qad/test_contract_conformance.py::test_schema_build_identity` — M4A
+  spec-source digest drift, reproduced on clean HEAD, unrelated to M6) · ops **94 passed** ·
+  broader-suite inherited failures reported honestly, NOT relabelled.
+- **Boundaries retained:** durable NON-CANONICAL operational/provenance ledger only;
+  Python stdlib `sqlite3` ONLY (no third-party DB dependency; does NOT select the M5.2
+  canonical-anchor persistence technology); runtime state outside the repository; no 69th
+  canonical schema (registry still 68); Research Room + Notebook independence; no provider
+  transport / Gemini / network; RRM-01 `deep_research_runs[]` unchanged
+  (`Optional[list[str]]` of ledger ids only).
+- **Prior baseline correction (mechanical, NO FD):** the unauthorized TRACKED M6.2
+  implementation-plan artifact `design/qad-pivot/m6/M6.2-IMPLEMENTATION-PLAN.md` was removed
+  on the implementation branch by `28a0751aa785cd8c3bedfd3939187e25f78d4a61`.
+- **Canonical main:** `5bf107774b29e5a5fe4dcec5846800b9b48361ba` (unchanged).
+- **Cron:** 5/5 PAUSED.
+- **M6.4:** NOT started at the moment of this entry. Next cluster per FD #151 =
+  M6.4 Research Request/Result Adapter Contract.
+
 # Session — 2026-10-07 (M6.2 contract correction — family-independent review and closeout)
 
 ## M6.2 CONTRACT CORRECTION PASS — TEST_VERIFIED / FAMILY-INDEPENDENT REVIEW PASS
@@ -1421,3 +1457,5 @@ then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
 **Recommended next action:** Founder runs the **NEW FOUNDER INDEPENDENT RE-AUDIT of CP4** at `7238c43`. Alternatives: (B) register the CP4 GO as an FD first, then re-audit; (C) reconcile the parking-branch artifacts into `main` + fix the Telegram delivery target first.
 
 <!-- 2026-09-14 11:45 UTC+7 -->
+
+<!-- 2026-10-07 16:37 UTC+7 (M6.3 state sync — Deep Research Run Ledger GREEN / DURABLE PROVENANCE VERIFIED / READY FOR M6.4; no new FD; main 5bf1077 unchanged; 5/5 cron PAUSED) -->
