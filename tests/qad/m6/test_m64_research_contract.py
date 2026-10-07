@@ -1,0 +1,526 @@
+"""M6.4 — Research Request/Result Adapter Contract — acceptance tests (FD #151).
+
+RED→GREEN suite for the M6.4 cluster: the S10-facing logical request/result
+boundary for Deep Research. Proves:
+
+* the authoritative M6.2 SEALED snapshot cannot be overridden by the caller;
+* S10 stateless / REQUEST-ISOLATED semantics are carried, not weakened;
+* request identity is deterministic (no clock / UUID / path influence);
+* results are always NON-CANONICAL, blank output can never be SUCCESS, and the
+  result hash is exact over the stored bytes;
+* source pointers are preserved faithfully as DISCOVERED SOURCE REFERENCES;
+* ledger/RRM linkage keeps the existing types;
+* no provider transport, no network, no canonical schema change.
+
+Run:  pytest tests/qad/m6/test_m64_research_contract.py -q
+"""
+
+from __future__ import annotations
+
+import dataclasses
+import datetime as dt
+import hashlib
+import socket
+from pathlib import Path
+
+import pytest
+
+from qad.contract.canonical_boundary import CANONICAL_SCHEMAS
+from qad.models import CandidateRecord, CaseRecord, SecurityMaster
+from qad.models.family_a import (
+    CandidateRecordEntry_route,
+    CandidateRecordSelection_state,
+    CaseRecordCase_state,
+    SecurityMasterSecurity_type,
+    SecurityMasterStatus,
+)
+from qad.models.family_b import (
+    SourceRecord,
+    SourceRecordSource_tier,
+    SourceRecordSource_type,
+)
+from qad.models.family_i import (
+    PITContext,
+    PITContextMode,
+    RunManifestRecord,
+    RunManifestRecordRun_state,
+)
+from qad.persistence.reference import InMemoryPITContextStore, InMemoryRawSourceArchive
+from qad.m6.ledger import (
+    DeepResearchRunLedgerStore,
+    validate_rrm_deep_research_runs,
+)
+from qad.m6.research_contract import (
+    REQUEST_ISOLATION_UNVERIFIED,
+    S10_CAPABILITY,
+    ClosedCorpusEnforcement,
+    IsolationVerification,
+    RequestAuthorityViolation,
+    ResearchResultError,
+    ResearchResultStatus,
+    SourcePointer,
+    build_deep_research_request,
+    build_deep_research_result,
+    compute_result_sha256,
+    result_matches_hash,
+    validate_ledger_linkage,
+)
+from qad.m6.snapshot import (
+    PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
+    SEALED_PIT_MODE,
+    SealedInputSnapshot,
+    build_sealed_input_snapshot,
+)
+
+AS_OF = "2026-01-01"
+ADMITTED = "2025-12-15T00:00:00+00:00"
+_FIXED_NOW = dt.datetime(2026, 10, 7, 12, 0, 0, tzinfo=dt.timezone.utc)
+
+
+# =====================================================================
+# Fixtures / helpers
+# =====================================================================
+
+def _src(sid: str, raw: bytes) -> SourceRecord:
+    return SourceRecord(
+        source_id=sid,
+        source_tier=SourceRecordSource_tier.L1,
+        source_type=SourceRecordSource_type.SEC_FILING,
+        url_or_identifier=f"https://sec.gov/{sid}",
+        content_hash=hashlib.sha256(raw).hexdigest(),
+        retrieval_date="2025-12-01",
+        publication_date="2025-11-20",
+    )
+
+
+def _seed_case(store, case_id: str) -> None:
+    sm = SecurityMaster(
+        entity_id=f"SM-{case_id}", cik="0000998877", exchange="NYSE",
+        name="M64 Corp", primary_ticker="M64X",
+        security_type=SecurityMasterSecurity_type.COMMON_EQUITY,
+        status=SecurityMasterStatus.ACTIVE,
+    )
+    store.store(sm)
+    cand = CandidateRecord(
+        candidate_id=f"CR-{case_id}", entity_id=sm.entity_id,
+        entry_route=CandidateRecordEntry_route.QUALITY_FIRST,
+        entry_timestamp="2025-10-01T00:00:00", evidence_freshness="2025-11-01",
+        selection_state=CandidateRecordSelection_state.AUTO_RESEARCH_NOW, signal_ids=[],
+    )
+    store.store(cand)
+    store.store(CaseRecord(
+        case_id=case_id, entity_id=sm.entity_id, candidate_id=cand.candidate_id,
+        case_state=CaseRecordCase_state.CASE_OPEN, as_of_date=AS_OF,
+        opened_at="2025-10-02T08:00:00", research_director="Research Director",
+    ))
+
+
+def _snapshot(
+    sources=(("S1", b"alpha"), ("S2", b"beta")),
+    *,
+    case_id: str = "CASE-1",
+    case_version: str = "v1",
+    as_of: str = AS_OF,
+) -> SealedInputSnapshot:
+    """Build a REAL M6.2 SEALED snapshot (authoritative fixture)."""
+    archive = InMemoryRawSourceArchive(
+        clock=lambda: dt.datetime.fromisoformat(ADMITTED)
+    )
+    pit_store = InMemoryPITContextStore()
+    _seed_case(pit_store, case_id)
+    pit_store.store(PITContext(
+        pit_context_id="PITC-1", case_id=case_id, as_of_date=as_of,
+        mode=PITContextMode.SEALED_HISTORICAL_EVALUATION, created_by="founder",
+    ))
+    for sid, raw in sources:
+        archive.admit_source(_src(sid, raw), raw)
+    return build_sealed_input_snapshot(
+        pit_context_store=pit_store, archive=archive, pit_context_id="PITC-1",
+        case_version=case_version, source_ids=[s for s, _ in sources],
+    )
+
+
+def _request(snapshot: SealedInputSnapshot, **overrides):
+    kwargs = dict(
+        snapshot=snapshot,
+        request_id="REQ-1",
+        research_run_id="RR-1",
+        ledger_id="L-1",
+        rrm_manifest_id="RRM-2026-0001",
+        evidence_gap_id="EG-1",
+        research_question="Why is the moat durable?",
+        provider_surface="gemini_notebook",
+    )
+    kwargs.update(overrides)
+    return build_deep_research_request(**kwargs)
+
+
+def _result(**overrides):
+    payload = b"synthesis text [1][2]"
+    kwargs = dict(
+        request_id="REQ-1",
+        research_run_id="RR-1",
+        ledger_id="L-1",
+        status=ResearchResultStatus.SUCCESS,
+        provider_surface="gemini_notebook",
+        result_bytes=payload,
+        result_sha256=hashlib.sha256(payload).hexdigest(),
+        source_pointers=(SourcePointer(index=1, reference="https://a.example/1"),
+                         SourcePointer(index=2, reference="https://b.example/2")),
+        completed_at="2026-10-07T12:05:00+00:00",
+    )
+    kwargs.update(overrides)
+    return build_deep_research_result(**kwargs)
+
+
+def _ledger(tmp_path: Path) -> tuple[DeepResearchRunLedgerStore, str]:
+    store = DeepResearchRunLedgerStore(tmp_path / "ledger.sqlite3", clock=lambda: _FIXED_NOW)
+    store.create_run(
+        ledger_id="L-1", research_run_id="RR-1", rrm_manifest_id="RRM-2026-0001",
+        case_id="CASE-1", case_version="v1", evidence_gap_id="EG-1", request_id="REQ-1",
+        idempotency_key="IDEM-1", notebook_identity="nb-0193-1",
+        pit_context_id="PITC-1", pit_mode=SEALED_PIT_MODE, as_of=AS_OF,
+        input_snapshot_hash="a" * 64, provider_surface="gemini_notebook",
+        transport_type="BROWSER_UI_AUTOMATION",
+    )
+    return store, "L-1"
+
+
+# =====================================================================
+# 1–5: request built from / derived from the authoritative snapshot
+# =====================================================================
+
+
+class TestRequestAuthority:
+    def test_01_valid_snapshot_builds_valid_request(self):
+        snap = _snapshot()
+        req = _request(snap)
+        assert req.request_id == "REQ-1"
+        assert req.capability == S10_CAPABILITY
+        assert req.non_canonical is True
+
+    def test_02_case_id_derives_from_snapshot(self):
+        snap = _snapshot(case_id="CASE-77")
+        req = _request(snap)
+        assert req.case_id == snap.case_id == "CASE-77"
+
+    def test_03_case_version_derives_from_snapshot(self):
+        snap = _snapshot(case_version="v9")
+        req = _request(snap)
+        assert req.case_version == snap.case_version == "v9"
+
+    def test_04_pit_mode_and_as_of_derive_from_snapshot(self):
+        snap = _snapshot(as_of="2026-02-02")
+        req = _request(snap)
+        assert req.pit_mode == snap.pit_mode == SEALED_PIT_MODE
+        assert req.as_of == snap.as_of == "2026-02-02"
+        assert req.pit_context_id == snap.pit_context_id
+
+    def test_05_input_snapshot_hash_derives_from_snapshot(self):
+        snap = _snapshot()
+        req = _request(snap)
+        assert req.input_snapshot_hash == snap.input_snapshot_hash
+        assert req.snapshot_id == snap.snapshot_id
+
+
+# =====================================================================
+# 6–8: caller overrides fail closed
+# =====================================================================
+
+
+class TestCallerOverrideRefused:
+    def test_06_caller_cannot_override_source_corpus(self):
+        snap = _snapshot()
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_source_ids=["S1", "S9"])
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_source_ids=["S1", "S1"])  # duplicate
+        # a matching claim is accepted (assertion, not an override)
+        req = _request(snap, claimed_source_ids=["S2", "S1"])
+        assert set(req.source_ids) == {"S1", "S2"}
+
+    def test_07_caller_cannot_override_as_of(self):
+        snap = _snapshot()
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_as_of="2020-01-01")
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_pit_mode="LIVE_CASE_UPDATE")
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_input_snapshot_hash="b" * 64)
+        assert _request(snap, claimed_as_of=snap.as_of).as_of == snap.as_of
+
+    def test_08_caller_cannot_override_case_identity(self):
+        snap = _snapshot()
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_case_id="CASE-OTHER")
+        with pytest.raises(RequestAuthorityViolation):
+            _request(snap, claimed_case_version="v99")
+        # a non-snapshot object cannot be used as the authority at all
+        with pytest.raises(RequestAuthorityViolation):
+            _request("not-a-snapshot")
+
+
+# =====================================================================
+# 9–11: propagation, immutability
+# =====================================================================
+
+
+class TestPropagationAndImmutability:
+    def test_09_closed_corpus_required_propagates_true(self):
+        snap = _snapshot()
+        req = _request(snap)
+        assert snap.closed_corpus_required is True
+        assert req.corpus.closed_corpus_required is True
+        assert req.closed_corpus_required is True
+        assert req.provider.closed_corpus_required is True
+
+    def test_10_request_isolation_requirement_propagates(self):
+        req = _request(_snapshot())
+        assert req.request_isolation_required is True
+        assert req.provider.request_isolation_required is True
+        # the envelope exposes no accumulated-context input surface
+        for forbidden in ("notebook_chat", "previous_report", "workspace",
+                          "session_id", "chat_history", "prior_notebook_sources"):
+            assert not hasattr(req, forbidden)
+
+    def test_11_request_structures_are_immutable(self):
+        req = _request(_snapshot())
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            req.case_id = "TAMPERED"  # type: ignore[misc]
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            req.corpus.closed_corpus_required = False  # type: ignore[misc]
+        with pytest.raises(dataclasses.FrozenInstanceError):
+            req.provider.provider_surface = "other"  # type: ignore[misc]
+
+
+# =====================================================================
+# 12–16: deterministic request identity, injection refused
+# =====================================================================
+
+
+class TestRequestIdentity:
+    def test_12_same_semantic_request_same_payload_hash(self):
+        snap = _snapshot()
+        a = _request(snap, request_id="REQ-A")
+        b = _request(snap, request_id="REQ-B")
+        assert a.request_payload_hash == b.request_payload_hash
+
+    def test_13_volatile_identifiers_do_not_alter_payload_hash(self):
+        snap = _snapshot()
+        base = _request(snap)
+        # different request UUID / orchestration ids / provider surface / timeout
+        other = _request(
+            snap, request_id="REQ-ZZZ", research_run_id="RR-ZZZ", ledger_id="L-ZZZ",
+            rrm_manifest_id="RRM-ZZZ", provider_surface="another_surface",
+            timeout_seconds=123,
+        )
+        assert other.request_payload_hash == base.request_payload_hash
+
+    def test_14_changing_research_question_changes_payload_hash(self):
+        snap = _snapshot()
+        a = _request(snap, research_question="Q1")
+        b = _request(snap, research_question="Q2")
+        assert a.request_payload_hash != b.request_payload_hash
+
+    def test_15_changing_input_snapshot_hash_changes_payload_hash(self):
+        snap_a = _snapshot(sources=(("S1", b"alpha"), ("S2", b"beta")))
+        snap_b = _snapshot(sources=(("S1", b"alpha"), ("S2", b"GAMMA")))
+        assert snap_a.input_snapshot_hash != snap_b.input_snapshot_hash
+        req_a = _request(snap_a)
+        req_b = _request(snap_b)
+        assert req_a.request_payload_hash != req_b.request_payload_hash
+        # and the payload hash is a stable hex digest, not a memory/object id
+        assert len(req_a.request_payload_hash) == 64
+        assert req_a.request_payload_hash == _request(snap_a).request_payload_hash
+
+    def test_16_invalid_source_authority_cannot_be_injected(self):
+        snap = _snapshot(sources=(("S1", b"alpha"),))
+        # claimed corpus that disagrees (extra / duplicate / empty) fails closed
+        for bad in (["S1", "S2"], ["S1", "S1"], [], ["S1"], ["S2"]):
+            if bad == ["S1"]:
+                continue  # exact match is legitimate
+            with pytest.raises(RequestAuthorityViolation):
+                _request(snap, claimed_source_ids=bad)
+        # the request carries no caller-supplied bytes / hashes whatsoever
+        req = _request(snap)
+        assert req.corpus.exact_blob_hashes == (
+            ("S1", hashlib.sha256(b"alpha").hexdigest()),
+        )
+        for field in dataclasses.fields(req):
+            assert "bytes" not in field.name
+            assert field.name not in ("source_hashes", "content_hash")
+
+
+# =====================================================================
+# 17–22: result contract
+# =====================================================================
+
+
+class TestResultContract:
+    def test_17_success_requires_non_empty_content(self):
+        with pytest.raises(ResearchResultError):
+            _result(result_bytes=b"", result_sha256=hashlib.sha256(b"").hexdigest())
+        with pytest.raises(ResearchResultError):
+            _result(result_bytes=None, result_sha256="a" * 64)
+
+    def test_18_success_requires_exact_sha256(self):
+        with pytest.raises(ResearchResultError):
+            _result(result_sha256=None)
+        with pytest.raises(ResearchResultError):
+            _result(result_sha256="f" * 64)  # wrong digest
+        ok = _result()
+        assert result_matches_hash(ok) is True
+        assert ok.result_sha256 == compute_result_sha256(ok.result_bytes)
+
+    def test_19_changed_result_bytes_change_hash(self):
+        one = b"report one"
+        two = b"report two"
+        assert compute_result_sha256(one) != compute_result_sha256(two)
+        with pytest.raises(ResearchResultError):
+            _result(result_bytes=two,
+                    result_sha256=hashlib.sha256(one).hexdigest())
+        ok = _result(result_bytes=two, result_sha256=hashlib.sha256(two).hexdigest())
+        assert result_matches_hash(ok) is True
+
+    def test_20_source_pointers_preserved_and_non_canonical(self):
+        ok = _result()
+        assert [p.reference for p in ok.source_pointers] == [
+            "https://a.example/1", "https://b.example/2",
+        ]
+        assert ok.non_canonical is True
+        # a pointer is a DISCOVERED SOURCE REFERENCE, not canonical evidence
+        ptr = ok.source_pointers[0]
+        assert dataclasses.fields(ptr) and not hasattr(ptr, "src_id")
+        assert not hasattr(ptr, "evidence_id")
+        with pytest.raises(ResearchResultError):
+            _result(source_pointers=(SourcePointer(index=1, reference="   "),))
+
+    def test_21_result_cannot_self_declare_canonical_evidence(self):
+        ok = _result()
+        assert ok.non_canonical is True
+        assert not hasattr(ok, "to_canonical_evidence")
+        assert not hasattr(ok, "admit")
+        for field in dataclasses.fields(ok):
+            assert field.name not in (
+                "canonical", "is_canonical", "evidence_id", "src_id",
+                "validation_status", "canonical_truth",
+            )
+
+    def test_22_blank_provider_result_cannot_become_success(self):
+        with pytest.raises(ResearchResultError):
+            _result(result_bytes=b"")
+        # the correct representation of blank/absent output is a typed failure
+        failed = _result(
+            status=ResearchResultStatus.RESEARCH_UNAVAILABLE,
+            result_bytes=None, result_sha256=None,
+            failure_detail="provider returned no synthesis",
+        )
+        assert failed.status is ResearchResultStatus.RESEARCH_UNAVAILABLE
+        assert failed.is_success is False
+
+
+# =====================================================================
+# 23–27: failure vocabulary + linkage
+# =====================================================================
+
+
+class TestFailureVocabularyAndLinkage:
+    def test_23_failure_represents_research_unavailable(self):
+        r = _result(status=ResearchResultStatus.RESEARCH_UNAVAILABLE,
+                    result_bytes=None, result_sha256=None,
+                    failure_detail="retries exhausted")
+        assert r.status is ResearchResultStatus.RESEARCH_UNAVAILABLE
+        with pytest.raises(ResearchResultError):  # failure must be documented
+            _result(status=ResearchResultStatus.RESEARCH_UNAVAILABLE,
+                    result_bytes=None, result_sha256=None)
+        with pytest.raises(ResearchResultError):  # no fabricated hash
+            _result(status=ResearchResultStatus.RESEARCH_UNAVAILABLE,
+                    result_bytes=None, result_sha256="a" * 64,
+                    failure_detail="x")
+
+    def test_24_failure_represents_transport_failure(self):
+        r = _result(status=ResearchResultStatus.TRANSPORT_FAILURE,
+                    result_bytes=None, result_sha256=None,
+                    failure_detail="CSRF token not found; page structure changed")
+        assert r.status is ResearchResultStatus.TRANSPORT_FAILURE
+        assert r.is_success is False
+
+    def test_25_failure_represents_provider_cannot_enforce_sealed_input(self):
+        r = _result(
+            status=ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
+            result_bytes=None, result_sha256=None,
+            failure_detail="provider cannot disable uncontrolled discovery",
+            closed_corpus_enforcement=ClosedCorpusEnforcement.CANNOT_ENFORCE,
+        )
+        assert r.status.value == PROVIDER_CANNOT_ENFORCE_SEALED_INPUT
+        # cannot-enforce must never be dressed up as SUCCESS
+        with pytest.raises(ResearchResultError):
+            _result(closed_corpus_enforcement=ClosedCorpusEnforcement.CANNOT_ENFORCE)
+
+    def test_26_failure_represents_request_isolation_unverified(self):
+        r = _result(
+            status=ResearchResultStatus.REQUEST_ISOLATION_UNVERIFIED,
+            result_bytes=None, result_sha256=None,
+            failure_detail="no positive clean-context proof",
+            isolation_verification=IsolationVerification.UNVERIFIED,
+        )
+        assert r.status.value == REQUEST_ISOLATION_UNVERIFIED
+        with pytest.raises(ResearchResultError):
+            _result(isolation_verification=IsolationVerification.UNVERIFIED)
+
+    def test_27_result_retains_linkage_and_ledger_resolves(self, tmp_path):
+        store, ledger_id = _ledger(tmp_path)
+        ok = _result(ledger_id=ledger_id)
+        assert (ok.request_id, ok.research_run_id, ok.ledger_id) == ("REQ-1", "RR-1", ledger_id)
+        validate_ledger_linkage(store, ledger_id=ledger_id, research_run_id="RR-1")
+        with pytest.raises(Exception):
+            validate_ledger_linkage(store, ledger_id="L-MISSING", research_run_id="RR-1")
+        with pytest.raises(Exception):
+            validate_ledger_linkage(store, ledger_id=ledger_id, research_run_id="RR-OTHER")
+
+    def test_30_rrm_linkage_remains_list_of_ledger_id_strings(self, tmp_path):
+        store, ledger_id = _ledger(tmp_path)
+        refs = validate_rrm_deep_research_runs(store, [ledger_id])
+        assert refs == [ledger_id]
+        rrm = RunManifestRecord(
+            as_of_date=AS_OF, case_id="CASE-1", case_version="v1",
+            manifest_id="RRM-2026-0001", models_used=["NOT_EXPOSED_BY_PROVIDER"],
+            providers={"gemini_notebook": "gemini_notebook"},
+            run_state=RunManifestRecordRun_state.RUNNING,
+            selection_policy_version="v1", start_time=_FIXED_NOW.isoformat(),
+            universe_version="v1", deep_research_runs=refs,
+        )
+        assert rrm.deep_research_runs == [ledger_id]
+        assert all(isinstance(x, str) for x in rrm.deep_research_runs)
+        with pytest.raises(Exception):
+            validate_rrm_deep_research_runs(store, [{"not": "a string"}])  # type: ignore[list-item]
+
+
+# =====================================================================
+# 28–30: no schema change, no network
+# =====================================================================
+
+
+class TestBoundaries:
+    def test_28_no_canonical_schema_count_change(self):
+        assert len(CANONICAL_SCHEMAS) == 68
+        assert "M64-01" not in CANONICAL_SCHEMAS
+
+    def test_29_no_provider_transport_or_network_call(self, monkeypatch):
+        """Building request/result must not touch the network."""
+        def _boom(*a, **k):
+            raise AssertionError("network access attempted by M6.4")
+
+        monkeypatch.setattr(socket, "socket", _boom)
+        monkeypatch.setattr(socket, "create_connection", _boom)
+        snap = _snapshot()
+        req = _request(snap)
+        ok = _result()
+        assert req.non_canonical is True and ok.non_canonical is True
+        # static corroboration: the module imports no network/transport library
+        import qad.m6.research_contract as rc
+
+        source = Path(rc.__file__).read_text(encoding="utf-8").lower()
+        for banned in ("import requests", "import urllib", "import socket",
+                       "import httpx", "selenium", "playwright", "chromedriver"):
+            assert banned not in source
