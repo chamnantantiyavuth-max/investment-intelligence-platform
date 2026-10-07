@@ -964,8 +964,15 @@ _INVISIBLE_RANGES = (
 )
 
 
+#: Nonspacing/enclosing combining marks (Mn/Me) require a BASE character to render
+#: onto. A string made only of such marks has no visible content — this is the
+#: general rule that covers the Mongolian free variation selectors U+180B–U+180F
+#: and every other mark, rather than enumerating them one by one.
+_MARK_CATEGORIES = ("Mn", "Me")
+
+
 def _char_is_invisible(ch: str) -> bool:
-    """True when a single character renders as nothing."""
+    """True when a single character renders as nothing on its own."""
     if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
         return True
     cp = ord(ch)
@@ -975,8 +982,20 @@ def _char_is_invisible(ch: str) -> bool:
 
 
 def _is_blank_text(text: str) -> bool:
-    """True when every character renders as nothing."""
-    return all(_char_is_invisible(ch) for ch in text)
+    """True when ``text`` has no visible content.
+
+    A character contributes nothing when it is whitespace, an invisible category,
+    an enumerated blank glyph, in a blank range, or a combining mark (Mn/Me) that
+    has no preceding base character to attach to.
+    """
+    have_base = False
+    for ch in text:
+        if _char_is_invisible(ch):
+            continue
+        if unicodedata.category(ch) in _MARK_CATEGORIES and not have_base:
+            continue
+        have_base = True
+    return not have_base
 
 
 def _is_blank_text_bytes(raw: bytes) -> bool:

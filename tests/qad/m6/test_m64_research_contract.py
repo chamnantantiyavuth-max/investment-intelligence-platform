@@ -986,3 +986,29 @@ class TestReviewHardening:
             SourcePointer(index=-1, reference="https://a/1")
         with pytest.raises(ResearchResultError):
             SourcePointer(index=1, reference="\u3164")
+
+    def test_54_orphan_combining_marks_are_blank(self):
+        """A mark with no preceding base character has no visible content."""
+        orphans = [
+            "\u180b".encode("utf-8"),          # MONGOLIAN FREE VARIATION SELECTOR ONE
+            "\u180c\u180d".encode("utf-8"),    # … TWO + THREE
+            "\u180f".encode("utf-8"),          # … FOUR
+            "\u0301".encode("utf-8"),          # COMBINING ACUTE ACCENT
+            "\u20dd".encode("utf-8"),          # COMBINING ENCLOSING CIRCLE
+            "\u180b \u180c".encode("utf-8"),
+        ]
+        for orphan in orphans:
+            with pytest.raises(ResearchResultError):
+                _result(result_bytes=orphan, result_sha256=compute_result_sha256(orphan))
+        # … but a mark attached to a base character is real visible content
+        attached = "A\u0301".encode("utf-8")
+        assert _result(result_bytes=attached,
+                       result_sha256=compute_result_sha256(attached)).is_success is True
+        # and an orphan mark cannot stand in for contract text fields
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=1, reference="\u180b")
+        with pytest.raises(ResearchRequestError):
+            _request(_snapshot(), research_question="\u180b\u180c")
+        with pytest.raises(ResearchRequestError):
+            from qad.m6.research_contract import ProviderConfiguration
+            ProviderConfiguration(provider_surface="\u180b")
