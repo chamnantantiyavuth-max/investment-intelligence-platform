@@ -734,3 +734,39 @@ class TestReviewHardening:
         binary = b"\x00\x01\xff\xfe\x80"
         ok_bin = _result(result_bytes=binary, result_sha256=compute_result_sha256(binary))
         assert ok_bin.is_success is True
+
+    def test_43_interleaved_blank_characters_cannot_be_success(self):
+        blank_variants = [
+            "\u200b \u200c".encode("utf-8"),
+            " \u200b\n\ufeff".encode("utf-8"),
+            "\u3000\u200b\u3000".encode("utf-8"),
+            "\ufeff\u2060".encode("utf-8"),
+        ]
+        for blank in blank_variants:
+            with pytest.raises(ResearchResultError):
+                _result(result_bytes=blank, result_sha256=compute_result_sha256(blank))
+            with pytest.raises(ResearchResultError):
+                DeepResearchResult(
+                    request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                    status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                    result_bytes=blank, result_sha256=compute_result_sha256(blank),
+                )
+        # any visible character makes it real content
+        real = "\u200b x".encode("utf-8")
+        assert _result(result_bytes=real,
+                       result_sha256=compute_result_sha256(real)).is_success is True
+
+    def test_44_provider_metadata_is_immutable_after_construction(self):
+        caller_dict = {"model_reported": "gemini-x"}
+        r = _result(provider_reported_metadata=caller_dict)
+        with pytest.raises(TypeError):
+            r.provider_reported_metadata["model_reported"] = "tampered"  # type: ignore[index]
+        # mutating the caller's original mapping does not affect the result
+        caller_dict["model_reported"] = "tampered"
+        assert r.provider_reported_metadata["model_reported"] == "gemini-x"
+        assert r.provider_reported_metadata == {"model_reported": "gemini-x"}
+        # a result built without metadata normalizes to an immutable empty mapping
+        empty = _result().provider_reported_metadata
+        assert dict(empty) == {}
+        with pytest.raises(TypeError):
+            empty["x"] = "y"  # type: ignore[index]

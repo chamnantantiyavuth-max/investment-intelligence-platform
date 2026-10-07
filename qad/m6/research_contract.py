@@ -69,6 +69,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from enum import Enum
+from types import MappingProxyType
 from typing import Any, Mapping, Sequence
 
 from pydantic import BaseModel
@@ -730,6 +731,13 @@ class DeepResearchResult:
         # Immutable pointer collection: a caller-supplied list must not be able to
         # mutate the preserved source pointers after validation.
         object.__setattr__(self, "source_pointers", tuple(self.source_pointers))
+        # Immutable provider metadata: a caller-supplied dict must not be able to
+        # mutate the result envelope after validation.
+        if self.provider_reported_metadata is not None:
+            object.__setattr__(
+                self, "provider_reported_metadata",
+                MappingProxyType(dict(self.provider_reported_metadata)),
+            )
         for name in ("request_id", "research_run_id", "ledger_id", "provider_surface"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
@@ -783,14 +791,15 @@ def _is_blank_text_bytes(raw: bytes) -> bool:
     """True when ``raw`` decodes as text whose visible content is empty.
 
     Handles ASCII *and* Unicode whitespace (NBSP, em-space, ideographic space …)
-    plus zero-width/BOM-only content. Bytes that do NOT decode as UTF-8 are
-    treated as real (binary) payload, not blank text.
+    plus zero-width/BOM/format characters — order-independent, so interleaved
+    combinations such as ``"\\u200b \\u200c"`` are blank too. Bytes that do NOT
+    decode as UTF-8 are treated as real (binary) payload, not blank text.
     """
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
         return False
-    return text.strip().strip(_INVISIBLE_FORMAT_CHARS) == ""
+    return all(ch.isspace() or ch in _INVISIBLE_FORMAT_CHARS for ch in text)
 
 
 def result_matches_hash(result: DeepResearchResult) -> bool:
