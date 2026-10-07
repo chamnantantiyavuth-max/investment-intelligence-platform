@@ -937,3 +937,52 @@ class TestReviewHardening:
         req = _request(_snapshot())
         with pytest.raises(ResearchRequestError):
             dataclasses.replace(req, evidence_gap_id=invisible)
+
+    def test_52_blank_glyphs_cannot_be_success(self):
+        """Render-blank glyphs outside the invisible categories are blank too."""
+        blank_variants = [
+            "\u2800".encode("utf-8"),                 # BRAILLE PATTERN BLANK
+            "\u3164\u3164".encode("utf-8"),           # HANGUL FILLER
+            "\uffa0".encode("utf-8"),                 # HALFWIDTH HANGUL FILLER
+            "\ufe0f\ufe0e".encode("utf-8"),           # variation selectors
+            "\u115f\u1160".encode("utf-8"),           # hangul jamo fillers
+            "\u2800 \u3164".encode("utf-8"),
+        ]
+        for blank in blank_variants:
+            with pytest.raises(ResearchResultError):
+                _result(result_bytes=blank, result_sha256=compute_result_sha256(blank))
+        # a genuinely visible character is still real content
+        real = "\u2800\u0041".encode("utf-8")         # blank glyph + 'A'
+        assert _result(result_bytes=real,
+                       result_sha256=compute_result_sha256(real)).is_success is True
+        # and blank glyphs cannot stand in for contract text fields
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=1, reference="\u2800")
+        with pytest.raises(ResearchRequestError):
+            _request(_snapshot(), research_question="\u3164")
+
+    def test_53_provider_configuration_validated_on_direct_construction(self):
+        from qad.m6.research_contract import ProviderConfiguration
+
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="\u2800")      # invisible-only
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="p", capability="S9")
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="p", closed_corpus_required=False)
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="p", request_isolation_required=False)
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="p", timeout_seconds=0)
+        with pytest.raises(ResearchRequestError):
+            ProviderConfiguration(provider_surface="p", timeout_seconds=True)
+        ok = ProviderConfiguration(provider_surface="p", timeout_seconds=30)
+        assert ok.timeout_seconds == 30
+        # a request cannot smuggle an invalid capability either
+        req = _request(_snapshot())
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, capability="S9")
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=-1, reference="https://a/1")
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=1, reference="\u3164")

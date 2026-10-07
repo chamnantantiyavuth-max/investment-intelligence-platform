@@ -207,6 +207,26 @@ class ProviderConfiguration:
     request_isolation_required: bool = True
     timeout_seconds: int | None = None
 
+    def __post_init__(self) -> None:
+        if not _has_visible_text(self.provider_surface):
+            raise ResearchRequestError("provider_surface must be a non-blank string")
+        if self.capability != S10_CAPABILITY:
+            raise ResearchRequestError(
+                f"provider configuration capability must be {S10_CAPABILITY!r}"
+            )
+        if self.closed_corpus_required is not True:
+            raise ResearchRequestError("provider closed_corpus_required must be True")
+        if self.request_isolation_required is not True:
+            raise ResearchRequestError("provider request_isolation_required must be True")
+        if self.timeout_seconds is not None and (
+            not isinstance(self.timeout_seconds, int)
+            or isinstance(self.timeout_seconds, bool)
+            or self.timeout_seconds <= 0
+        ):
+            raise ResearchRequestError(
+                "timeout_seconds must be a positive integer or None"
+            )
+
 
 @dataclass(frozen=True)
 class SourceCorpusDescriptor:
@@ -655,6 +675,18 @@ class SourcePointer:
     reference: str
     title: str | None = None
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.index, int) or isinstance(self.index, bool) or self.index < 0:
+            raise ResearchResultError(
+                "a source pointer index must be a non-negative integer"
+            )
+        if not _has_visible_text(self.reference):
+            raise ResearchResultError("a source pointer requires a non-blank reference")
+        if self.title is not None and not _has_visible_text(self.title):
+            raise ResearchResultError(
+                "a source pointer title must be a non-blank string or None"
+            )
+
 
 def compute_citation_list_sha256(source_pointers: Sequence["SourcePointer"]) -> str:
     """Deterministic digest over the provider citation / source-pointer list.
@@ -905,14 +937,46 @@ def compute_result_sha256(result_bytes: bytes) -> str:
 #: means every invisible character is covered, not just enumerated ones.
 _INVISIBLE_CATEGORIES = ("Cf", "Cc", "Zs", "Zl", "Zp")
 
+#: Individual codepoints that render as nothing but are neither whitespace nor in
+#: an invisible general category (they are e.g. Lo/So/Mn): fillers and other
+#: blank glyphs. Enumerated explicitly because Unicode category alone would call
+#: them "visible".
+_INVISIBLE_CODEPOINTS = frozenset({
+    0x00AD,  # SOFT HYPHEN
+    0x034F,  # COMBINING GRAPHEME JOINER
+    0x115F,  # HANGUL CHOSEONG FILLER
+    0x1160,  # HANGUL JUNGSEONG FILLER
+    0x17B4,  # KHMER VOWEL INHERENT AQ
+    0x17B5,  # KHMER VOWEL INHERENT AA
+    0x180E,  # MONGOLIAN VOWEL SEPARATOR
+    0x2800,  # BRAILLE PATTERN BLANK
+    0x3164,  # HANGUL FILLER
+    0xFFA0,  # HALFWIDTH HANGUL FILLER
+})
+
+#: Codepoint RANGES that render as nothing (variation selectors, invisible
+#: operators, tag characters, interlinear annotation).
+_INVISIBLE_RANGES = (
+    (0xFE00, 0xFE0F),    # variation selectors
+    (0xE0100, 0xE01EF),  # variation selectors supplement
+    (0x2060, 0x206F),    # invisible operators / deprecated format controls
+    (0xFFF9, 0xFFFB),    # interlinear annotation
+)
+
+
+def _char_is_invisible(ch: str) -> bool:
+    """True when a single character renders as nothing."""
+    if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
+        return True
+    cp = ord(ch)
+    if cp in _INVISIBLE_CODEPOINTS:
+        return True
+    return any(low <= cp <= high for low, high in _INVISIBLE_RANGES)
+
 
 def _is_blank_text(text: str) -> bool:
-    """True when every character is whitespace or an invisible category."""
-    for ch in text:
-        if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
-            continue
-        return False
-    return True
+    """True when every character renders as nothing."""
+    return all(_char_is_invisible(ch) for ch in text)
 
 
 def _is_blank_text_bytes(raw: bytes) -> bool:
