@@ -22,6 +22,7 @@ Run:  pytest tests/qad/m6/test_m63_run_ledger.py -q
 from __future__ import annotations
 
 import datetime as dt
+import json
 import sqlite3
 from pathlib import Path
 
@@ -735,3 +736,124 @@ class TestReviewHardening:
         # the complete contract set is accepted
         _attempt(store, "L-001")
         assert len(store.load_run("L-001").attempts) == 1
+
+    def test_36_raw_replace_of_history_and_identity_rejected(self, tmp_path):
+        """REPLACE cannot rewrite attempt/candidate rows nor a run identity."""
+        store, path = _store(tmp_path)
+        _create(store, ledger_id="L-001", idem="IDEM-001", rr="RR-001")
+        _attempt(store, "L-001")
+        _candidate(store, "L-001", cid="C-1")
+        good_tel = json.dumps(_tel())
+
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            cases = [
+                # REPLACE an existing attempt (duplicate identity)
+                "INSERT OR REPLACE INTO ledger_attempt (ledger_id, attempt_number,"
+                " retry_mode, provider_surface, transport_type, started_at, outcome,"
+                " telemetry_json) VALUES ('L-001',1,'SAME_PROVIDER_RETRY','forged',"
+                f" 'X','t','FAILED','{good_tel}')",
+                # REPLACE an existing candidate (duplicate identity)
+                "INSERT OR REPLACE INTO ledger_candidate (ledger_id, source_candidate_id,"
+                " url_or_identifier, discovery_timestamp, verification_status,"
+                " pit_eligibility) VALUES ('L-001','C-1','forged-url','t','FORGED',"
+                " 'ELIGIBLE')",
+                # REPLACE the run by colliding on research_run_id (different ledger_id)
+                "INSERT OR REPLACE INTO ledger_run (ledger_id, research_run_id,"
+                " rrm_manifest_id, case_id, case_version, evidence_gap_id, request_id,"
+                " idempotency_key, notebook_identity, pit_context_id, pit_mode, as_of,"
+                " input_snapshot_hash, provider_surface, transport_type, started_at)"
+                " VALUES ('L-002','RR-001','RRM','CASE','v1','EG','REQ','IDEM-009','nb',"
+                " 'PITC','M','2026-10-01','h','p','t','2026-10-07T12:00:00+00:00')",
+                # REPLACE the run by colliding on idempotency_key
+                "INSERT OR REPLACE INTO ledger_run (ledger_id, research_run_id,"
+                " rrm_manifest_id, case_id, case_version, evidence_gap_id, request_id,"
+                " idempotency_key, notebook_identity, pit_context_id, pit_mode, as_of,"
+                " input_snapshot_hash, provider_surface, transport_type, started_at)"
+                " VALUES ('L-003','RR-009','RRM','CASE','v1','EG','REQ','IDEM-001','nb',"
+                " 'PITC','M','2026-10-01','h','p','t','2026-10-07T12:00:00+00:00')",
+            ]
+            for sql in cases:
+                with pytest.raises(sqlite3.IntegrityError):
+                    conn.execute(sql)
+        finally:
+            conn.close()
+
+        rec = DeepResearchRunLedgerStore(path, clock=_clock).load_run("L-001")
+        assert rec.attempts[0].provider_surface == "gemini_notebook"
+        assert rec.candidates[0].url_or_identifier == "https://example.com/a"
+        assert rec.candidates[0].original_source_verification_status == "VERIFIED"
+        assert [r for r in DeepResearchRunLedgerStore(path, clock=_clock).list_runs()] == ["L-001"]
+
+    def test_37_terminal_row_is_the_authority(self, tmp_path):
+        """An unbacked terminal event is rejected; post-terminal raw inserts blocked."""
+        store, path = _store(tmp_path)
+        _create(store)
+        _attempt(store, "L-001")
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            # phantom terminal event with no terminal record is rejected
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_event (ledger_id, event_type, payload_json,"
+                    " created_at) VALUES ('L-001','RUN_TERMINALIZED','{}','t')"
+                )
+        finally:
+            conn.close()
+        assert store.load_run("L-001").terminal_status is None
+        # legitimate terminalization still works, then raw attempt insert is blocked
+        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                    " provider_surface, transport_type, started_at, telemetry_json)"
+                    f" VALUES ('L-001',2,'SAME_PROVIDER_RETRY','p','X','t',"
+                    f"'{json.dumps(_tel())}')"
+                )
+        finally:
+            conn.close()
+        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [1]
+
+    def test_38_raw_empty_or_partial_telemetry_rejected_at_datastore(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store)
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            bad_telemetry = [
+                "{}",
+                "null",
+                '{"model_identity": {"status": "NOT_EXPOSED", "value": null}}',
+                '{"model_identity": {"status": "BOGUS", "value": 1},'
+                ' "prompt_tokens": {"status": "NOT_EXPOSED", "value": null, "reason": "r"},'
+                ' "completion_tokens": {"status": "NOT_EXPOSED", "value": null, "reason": "r"},'
+                ' "cost": {"status": "NOT_EXPOSED", "value": null, "reason": "r"},'
+                ' "model_version": {"status": "NOT_EXPOSED", "value": null, "reason": "r"}}',
+                # NOT_EXPOSED without a reason
+                json.dumps({**{k: {"status": "NOT_EXPOSED", "value": None} for k in
+                                ("model_identity", "prompt_tokens", "completion_tokens",
+                                 "cost", "model_version")}}),
+            ]
+            for i, tel in enumerate(bad_telemetry, start=1):
+                with pytest.raises(sqlite3.IntegrityError):
+                    conn.execute(
+                        "INSERT INTO ledger_attempt (ledger_id, attempt_number,"
+                        " retry_mode, provider_surface, transport_type, started_at,"
+                        f" telemetry_json) VALUES ('L-001',{i},'INITIAL_ATTEMPT','p','X',"
+                        f"'t','{tel}')"
+                    )
+            # a complete, valid truthful telemetry record is accepted at the boundary
+            conn.execute(
+                "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                " provider_surface, transport_type, started_at, telemetry_json)"
+                f" VALUES ('L-001',9,'INITIAL_ATTEMPT','p','X','t','{json.dumps(_tel())}')"
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [9]

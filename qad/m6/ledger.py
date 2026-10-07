@@ -27,6 +27,19 @@ This cluster performs **no** provider transport, **no** Gemini/Notebook call,
 **no** network I/O. It implements the durable *representation* of runs,
 attempts, telemetry, source-candidate dispositions and terminalization.
 
+Tamper boundary (explicit)
+--------------------------
+Immutable/append-only semantics are enforced (a) through the store API and
+(b) at the SQLite boundary via UNIQUE constraints plus BEFORE INSERT/UPDATE/
+DELETE guards, so ordinary and REPLACE-style writes cannot rewrite identity,
+rewrite append-only history, mutate terminal truth, or persist telemetry that
+violates the §7.2 contract. This is a **non-canonical operational store**: like
+the M5.2 reference adapter (§9.3 — "Isolation: NONE / NOT PROVIDED"), it does
+**not** claim to resist a privileged process that owns the database file and can
+rewrite bytes, drop triggers, or recompute content outside this interface. Such
+host-level tamper resistance would require a separately authorized mechanism
+(e.g. a keyed ledger) and is out of scope for M6.3.
+
 See: design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md §7, §8;
 FD #149, FD #150, FD #151.
 """
@@ -477,39 +490,52 @@ CREATE TRIGGER IF NOT EXISTS ledger_event_immutable_delete
     BEFORE DELETE ON ledger_event
     BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only (no silent GC)'); END;
 
--- Insert-path guards (round-2 hardening). UPDATE/DELETE triggers alone are not
--- sufficient: SQLite `INSERT OR REPLACE` performs an implicit delete that does
--- NOT fire those triggers by default, and a raw INSERT can append after
--- terminalization. These guards make REPLACE equivalent to a plain INSERT and
--- enforce the terminal/complete-disposition invariants at the datastore
+-- Insert-path guards (round-2/round-3 hardening). UPDATE/DELETE triggers alone
+-- are not sufficient: SQLite `INSERT OR REPLACE` performs an implicit delete
+-- that does NOT fire delete triggers by default, and raw INSERTs can append
+-- after terminalization. These guards make REPLACE equivalent to a plain INSERT
+-- and enforce the identity/terminal/completeness invariants at the datastore
 -- boundary. RAISE(ABORT) rolls back the whole statement, including any implicit
 -- delete, so an attempted REPLACE cannot alter persisted state.
+--
+-- Terminal-state authority is the `ledger_terminal` row (NOT the event log):
+-- an unbacked terminal event cannot control mutability, and a terminal event
+-- requires a matching terminal record.
 CREATE TRIGGER IF NOT EXISTS ledger_run_no_replace
     BEFORE INSERT ON ledger_run
     WHEN EXISTS (SELECT 1 FROM ledger_run WHERE ledger_id = NEW.ledger_id)
+      OR EXISTS (SELECT 1 FROM ledger_run WHERE research_run_id = NEW.research_run_id)
+      OR EXISTS (SELECT 1 FROM ledger_run WHERE idempotency_key = NEW.idempotency_key)
     BEGIN SELECT RAISE(ABORT, 'ledger_run identity already exists (no replace)'); END;
 CREATE TRIGGER IF NOT EXISTS ledger_event_no_replace
     BEFORE INSERT ON ledger_event
     WHEN NEW.seq IS NOT NULL
          AND EXISTS (SELECT 1 FROM ledger_event WHERE seq = NEW.seq)
     BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only (no replace)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_event_terminal_backed
+    BEFORE INSERT ON ledger_event
+    WHEN NEW.event_type = 'RUN_TERMINALIZED'
+         AND NOT EXISTS (SELECT 1 FROM ledger_terminal WHERE ledger_id = NEW.ledger_id)
+    BEGIN SELECT RAISE(ABORT, 'terminal event without a terminal record'); END;
 CREATE TRIGGER IF NOT EXISTS ledger_attempt_guard_insert
     BEFORE INSERT ON ledger_attempt
-    WHEN EXISTS (SELECT 1 FROM ledger_event
-                 WHERE ledger_id = NEW.ledger_id AND event_type = 'RUN_TERMINALIZED')
-    BEGIN SELECT RAISE(ABORT, 'run is terminal; attempt append rejected'); END;
+    WHEN EXISTS (SELECT 1 FROM ledger_attempt
+                 WHERE ledger_id = NEW.ledger_id
+                   AND attempt_number = NEW.attempt_number)
+      OR EXISTS (SELECT 1 FROM ledger_terminal WHERE ledger_id = NEW.ledger_id)
+    BEGIN SELECT RAISE(ABORT, 'attempt append rejected (duplicate identity or terminal run)'); END;
 CREATE TRIGGER IF NOT EXISTS ledger_candidate_guard_insert
     BEFORE INSERT ON ledger_candidate
-    WHEN EXISTS (SELECT 1 FROM ledger_event
-                 WHERE ledger_id = NEW.ledger_id AND event_type = 'RUN_TERMINALIZED')
-    BEGIN SELECT RAISE(ABORT, 'run is terminal; candidate registration rejected'); END;
+    WHEN EXISTS (SELECT 1 FROM ledger_candidate
+                 WHERE ledger_id = NEW.ledger_id
+                   AND source_candidate_id = NEW.source_candidate_id)
+      OR EXISTS (SELECT 1 FROM ledger_terminal WHERE ledger_id = NEW.ledger_id)
+    BEGIN SELECT RAISE(ABORT, 'candidate registration rejected (duplicate identity or terminal run)'); END;
 CREATE TRIGGER IF NOT EXISTS ledger_disposition_guard_insert
     BEFORE INSERT ON ledger_disposition
     BEGIN
         SELECT CASE
-            WHEN EXISTS (SELECT 1 FROM ledger_event
-                         WHERE ledger_id = NEW.ledger_id
-                           AND event_type = 'RUN_TERMINALIZED')
+            WHEN EXISTS (SELECT 1 FROM ledger_terminal WHERE ledger_id = NEW.ledger_id)
               THEN RAISE(ABORT, 'run is terminal; disposition append rejected')
             WHEN EXISTS (SELECT 1 FROM ledger_disposition
                          WHERE ledger_id = NEW.ledger_id
@@ -521,6 +547,8 @@ CREATE TRIGGER IF NOT EXISTS ledger_terminal_guard_insert
     BEFORE INSERT ON ledger_terminal
     BEGIN
         SELECT CASE
+            WHEN EXISTS (SELECT 1 FROM ledger_terminal WHERE ledger_id = NEW.ledger_id)
+              THEN RAISE(ABORT, 'run already terminalized (no replace)')
             WHEN EXISTS (SELECT 1 FROM ledger_event
                          WHERE ledger_id = NEW.ledger_id
                            AND event_type = 'RUN_TERMINALIZED')
@@ -535,6 +563,54 @@ CREATE TRIGGER IF NOT EXISTS ledger_terminal_guard_insert
         END;
     END;
 """
+
+
+def _build_telemetry_guard_sql() -> str:
+    """Datastore-level telemetry completeness trigger (M6.0 §7.2, round-3).
+
+    The public API validates telemetry, but a raw SQLite INSERT could otherwise
+    persist an attempt with an empty/invalid telemetry record. This BEFORE
+    INSERT trigger requires a well-formed truthful state for every required
+    contract metric directly at the datastore boundary.
+    """
+    bad: list[str] = [
+        "NEW.telemetry_json IS NULL",
+        "json_valid(NEW.telemetry_json) = 0",
+    ]
+    for m in REQUIRED_TELEMETRY_METRICS:
+        p = f"$.{m}"
+        bad.append(
+            f"(json_type(NEW.telemetry_json, '{p}') IS NULL"
+            f" OR json_type(NEW.telemetry_json, '{p}') <> 'object')"
+        )
+        bad.append(f"json_extract(NEW.telemetry_json, '{p}.status') IS NULL")
+        bad.append(
+            f"json_extract(NEW.telemetry_json, '{p}.status')"
+            f" NOT IN ('EXPOSED','NOT_EXPOSED')"
+        )
+        bad.append(
+            f"(json_extract(NEW.telemetry_json, '{p}.status') = 'EXPOSED'"
+            f" AND (json_type(NEW.telemetry_json, '{p}.value') IS NULL"
+            f" OR json_type(NEW.telemetry_json, '{p}.value') = 'null'))"
+        )
+        bad.append(
+            f"(json_extract(NEW.telemetry_json, '{p}.status') = 'NOT_EXPOSED'"
+            f" AND (json_type(NEW.telemetry_json, '{p}.value') IS NULL"
+            f" OR json_type(NEW.telemetry_json, '{p}.value') <> 'null'))"
+        )
+        bad.append(
+            f"(json_extract(NEW.telemetry_json, '{p}.status') = 'NOT_EXPOSED'"
+            f" AND (json_extract(NEW.telemetry_json, '{p}.reason') IS NULL"
+            f" OR trim(json_extract(NEW.telemetry_json, '{p}.reason')) = ''))"
+        )
+    when = "\n      OR ".join(bad)
+    return (
+        "CREATE TRIGGER IF NOT EXISTS ledger_attempt_telemetry_guard\n"
+        "    BEFORE INSERT ON ledger_attempt\n"
+        f"    WHEN {when}\n"
+        "    BEGIN SELECT RAISE(ABORT, 'attempt telemetry must carry a truthful"
+        " state for every required contract metric'); END;\n"
+    )
 
 
 def _utc_now() -> _dt.datetime:
@@ -579,6 +655,7 @@ class DeepResearchRunLedgerStore:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
             conn.executescript(_SCHEMA)
+            conn.executescript(_build_telemetry_guard_sql())
 
     # -- connection / transaction helpers --------------------------------
 
