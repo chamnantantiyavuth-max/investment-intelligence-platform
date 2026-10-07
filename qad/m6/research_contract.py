@@ -482,6 +482,15 @@ def _verify_snapshot_consistency(snapshot: SealedInputSnapshot) -> None:
                 f"SEALED source {src.source_id!r} byte length does not match the "
                 "declared length"
             )
+        # M6.2 source binding (rules F/H): the source's content hash and the raw
+        # blob SHA-256 are the same authority and must agree. The identity hash is
+        # computed from the blob hash, so a tampered content_hash alone would
+        # otherwise slip through as an internally inconsistent SEALED snapshot.
+        if src.source_content_hash != src.raw_blob_sha256:
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} content hash does not match its "
+                "raw blob SHA-256"
+            )
 
 
 def _deterministic_hash(payload: BaseModel) -> str:

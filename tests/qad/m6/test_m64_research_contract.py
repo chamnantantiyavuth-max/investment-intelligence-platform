@@ -1034,3 +1034,16 @@ class TestReviewHardening:
         binary = b"\xff\xfe\x00\x01"
         ok = _result(result_bytes=binary, result_sha256=compute_result_sha256(binary))
         assert ok.is_success is True
+
+    def test_56_snapshot_source_content_hash_must_match_blob_hash(self):
+        """M6.2 rules F/H: content_hash and raw_blob_sha256 are one authority."""
+        snap = _snapshot()
+        src = snap.ordered_sources[0]
+        tampered_src = dataclasses.replace(src, source_content_hash="0" * 64)
+        tampered = dataclasses.replace(
+            snap, ordered_sources=(tampered_src,) + tuple(snap.ordered_sources[1:])
+        )
+        with pytest.raises(RequestAuthorityViolation):
+            _request(tampered)
+        # the untouched snapshot is still accepted
+        assert _request(_snapshot()).case_id == snap.case_id
