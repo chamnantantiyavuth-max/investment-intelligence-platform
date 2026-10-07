@@ -85,6 +85,24 @@ class RetryMode(str, Enum):
 #: ledger must never add a 69th canonical schema.
 CANONICAL_SCHEMA_COUNT = 68
 
+#: Contract telemetry metrics (M6.0 §7.2). EVERY attempt must record a truthful
+#: state for each REQUIRED metric — an absent/unrecorded metric is not the same
+#: as a truthful "not collected" state, so the ledger requires an explicit
+#: ``NOT_EXPOSED`` + reason instead of silence. ``total_tokens`` is optional
+#: ("if applicable"). Metrics outside this set are rejected (fail closed) so an
+#: arbitrary ad-hoc metric cannot stand in for a contract metric.
+REQUIRED_TELEMETRY_METRICS: tuple[str, ...] = (
+    "model_identity",
+    "prompt_tokens",
+    "completion_tokens",
+    "cost",
+    "model_version",
+)
+OPTIONAL_TELEMETRY_METRICS: tuple[str, ...] = ("total_tokens",)
+CONTRACT_TELEMETRY_METRICS: tuple[str, ...] = (
+    REQUIRED_TELEMETRY_METRICS + OPTIONAL_TELEMETRY_METRICS
+)
+
 #: Environment variable naming the runtime data root. Ledger runtime state is
 #: written OUTSIDE the git repository.
 RUNTIME_DATA_DIR_ENV = "QAD_RUNTIME_DATA_DIR"
@@ -273,6 +291,17 @@ def _validate_telemetry(telemetry: Mapping[str, Any] | None) -> dict[str, Teleme
     out: dict[str, TelemetryMetric] = {}
     if not telemetry:
         return out
+    missing = [m for m in REQUIRED_TELEMETRY_METRICS if m not in telemetry]
+    if missing:
+        raise LedgerValidationError(
+            "telemetry must record an explicit truthful state for every contract "
+            f"metric; missing required metric(s): {missing}"
+        )
+    unknown = sorted(m for m in telemetry if m not in CONTRACT_TELEMETRY_METRICS)
+    if unknown:
+        raise LedgerValidationError(
+            f"telemetry contains non-contract metric(s): {unknown}"
+        )
     for metric, spec in telemetry.items():
         if not isinstance(spec, Mapping):
             raise LedgerValidationError(f"telemetry[{metric}] must be a mapping")
@@ -447,6 +476,64 @@ CREATE TRIGGER IF NOT EXISTS ledger_event_immutable_update
 CREATE TRIGGER IF NOT EXISTS ledger_event_immutable_delete
     BEFORE DELETE ON ledger_event
     BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only (no silent GC)'); END;
+
+-- Insert-path guards (round-2 hardening). UPDATE/DELETE triggers alone are not
+-- sufficient: SQLite `INSERT OR REPLACE` performs an implicit delete that does
+-- NOT fire those triggers by default, and a raw INSERT can append after
+-- terminalization. These guards make REPLACE equivalent to a plain INSERT and
+-- enforce the terminal/complete-disposition invariants at the datastore
+-- boundary. RAISE(ABORT) rolls back the whole statement, including any implicit
+-- delete, so an attempted REPLACE cannot alter persisted state.
+CREATE TRIGGER IF NOT EXISTS ledger_run_no_replace
+    BEFORE INSERT ON ledger_run
+    WHEN EXISTS (SELECT 1 FROM ledger_run WHERE ledger_id = NEW.ledger_id)
+    BEGIN SELECT RAISE(ABORT, 'ledger_run identity already exists (no replace)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_event_no_replace
+    BEFORE INSERT ON ledger_event
+    WHEN NEW.seq IS NOT NULL
+         AND EXISTS (SELECT 1 FROM ledger_event WHERE seq = NEW.seq)
+    BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only (no replace)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_attempt_guard_insert
+    BEFORE INSERT ON ledger_attempt
+    WHEN EXISTS (SELECT 1 FROM ledger_event
+                 WHERE ledger_id = NEW.ledger_id AND event_type = 'RUN_TERMINALIZED')
+    BEGIN SELECT RAISE(ABORT, 'run is terminal; attempt append rejected'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_candidate_guard_insert
+    BEFORE INSERT ON ledger_candidate
+    WHEN EXISTS (SELECT 1 FROM ledger_event
+                 WHERE ledger_id = NEW.ledger_id AND event_type = 'RUN_TERMINALIZED')
+    BEGIN SELECT RAISE(ABORT, 'run is terminal; candidate registration rejected'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_disposition_guard_insert
+    BEFORE INSERT ON ledger_disposition
+    BEGIN
+        SELECT CASE
+            WHEN EXISTS (SELECT 1 FROM ledger_event
+                         WHERE ledger_id = NEW.ledger_id
+                           AND event_type = 'RUN_TERMINALIZED')
+              THEN RAISE(ABORT, 'run is terminal; disposition append rejected')
+            WHEN EXISTS (SELECT 1 FROM ledger_disposition
+                         WHERE ledger_id = NEW.ledger_id
+                           AND source_candidate_id = NEW.source_candidate_id)
+              THEN RAISE(ABORT, 'candidate already has a final disposition (no replace)')
+        END;
+    END;
+CREATE TRIGGER IF NOT EXISTS ledger_terminal_guard_insert
+    BEFORE INSERT ON ledger_terminal
+    BEGIN
+        SELECT CASE
+            WHEN EXISTS (SELECT 1 FROM ledger_event
+                         WHERE ledger_id = NEW.ledger_id
+                           AND event_type = 'RUN_TERMINALIZED')
+              THEN RAISE(ABORT, 'run already terminalized (no replace)')
+            WHEN EXISTS (SELECT 1 FROM ledger_candidate c
+                         LEFT JOIN ledger_disposition d
+                           ON d.ledger_id = c.ledger_id
+                          AND d.source_candidate_id = c.source_candidate_id
+                         WHERE c.ledger_id = NEW.ledger_id
+                           AND d.source_candidate_id IS NULL)
+              THEN RAISE(ABORT, 'registered source candidate lacks a disposition')
+        END;
+    END;
 """
 
 

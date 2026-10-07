@@ -87,14 +87,28 @@ def _create(store: DeepResearchRunLedgerStore, ledger_id: str = "L-001",
     )
 
 
+def _tel(**overrides):
+    """A complete, truthful contract telemetry record (M6.0 §7.2).
+
+    All REQUIRED metrics default to NOT_EXPOSED (value=null + reason); override
+    any metric for a specific test case.
+    """
+    base = {
+        m: {"status": "NOT_EXPOSED", "value": None, "reason": "NOT_EXPOSED_BY_PROVIDER"}
+        for m in ("model_identity", "prompt_tokens", "completion_tokens",
+                  "cost", "model_version")
+    }
+    base.update(overrides)
+    return base
+
+
 def _attempt(store, ledger_id, n=1, **kw):
     base = dict(
         attempt_number=n,
         retry_mode=RetryMode.INITIAL_ATTEMPT,
         provider_surface="gemini_notebook",
         transport_type="BROWSER_UI_AUTOMATION",
-        telemetry={"model_identity": {"status": "NOT_EXPOSED", "value": None,
-                                      "reason": "NOT_EXPOSED_BY_PROVIDER"}},
+        telemetry=_tel(),
     )
     base.update(kw)
     return store.append_attempt(ledger_id, **base)
@@ -235,9 +249,9 @@ class TestTelemetryTruthfulness:
     def test_07_exposed_exact_value_round_trips(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001", telemetry={
-            "prompt_tokens": {"status": "EXPOSED", "value": 1234},
-        })
+        _attempt(store, "L-001", telemetry=_tel(
+            prompt_tokens={"status": "EXPOSED", "value": 1234},
+        ))
         reopened = DeepResearchRunLedgerStore(path, clock=_clock)
         m = reopened.load_run("L-001").attempts[0].telemetry["prompt_tokens"]
         assert m.status is TelemetryStatus.EXPOSED
@@ -247,13 +261,13 @@ class TestTelemetryTruthfulness:
         store, _ = _store(tmp_path)
         _create(store)
         with pytest.raises(LedgerValidationError):
-            _attempt(store, "L-001", telemetry={
-                "cost": {"status": "NOT_EXPOSED", "value": None},
-            })
-        _attempt(store, "L-001", telemetry={
-            "cost": {"status": "NOT_EXPOSED", "value": None,
-                     "reason": "NOT_EXPOSED_BY_PROVIDER"},
-        })
+            _attempt(store, "L-001", telemetry=_tel(
+                cost={"status": "NOT_EXPOSED", "value": None},
+            ))
+        _attempt(store, "L-001", telemetry=_tel(
+            cost={"status": "NOT_EXPOSED", "value": None,
+                  "reason": "NOT_EXPOSED_BY_PROVIDER"},
+        ))
         rec = store.load_run("L-001")
         assert rec.attempts[0].telemetry["cost"].reason == "NOT_EXPOSED_BY_PROVIDER"
 
@@ -261,20 +275,20 @@ class TestTelemetryTruthfulness:
         store, _ = _store(tmp_path)
         _create(store)
         with pytest.raises(LedgerValidationError):
-            _attempt(store, "L-001", telemetry={
-                "cost": {"status": "NOT_EXPOSED", "value": 0, "reason": "hidden"},
-            })
+            _attempt(store, "L-001", telemetry=_tel(
+                cost={"status": "NOT_EXPOSED", "value": 0, "reason": "hidden"},
+            ))
         with pytest.raises(LedgerValidationError):
-            _attempt(store, "L-001", telemetry={
-                "model": {"status": "EXPOSED", "value": None},
-            })
+            _attempt(store, "L-001", telemetry=_tel(
+                model_identity={"status": "EXPOSED", "value": None},
+            ))
 
     def test_10_zero_is_not_automatically_unknown(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001", telemetry={
-            "completion_tokens": {"status": "EXPOSED", "value": 0},
-        })
+        _attempt(store, "L-001", telemetry=_tel(
+            completion_tokens={"status": "EXPOSED", "value": 0},
+        ))
         reopened = DeepResearchRunLedgerStore(path, clock=_clock)
         m = reopened.load_run("L-001").attempts[0].telemetry["completion_tokens"]
         assert m.status is TelemetryStatus.EXPOSED
@@ -283,13 +297,17 @@ class TestTelemetryTruthfulness:
     def test_11_no_fabricated_mod_or_prov_records(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001", telemetry={
-            "model_identity": {"status": "NOT_EXPOSED", "value": None,
-                               "reason": "NOT_EXPOSED_BY_PROVIDER"},
-            "total_tokens": {"status": "NOT_EXPOSED", "value": None,
-                             "reason": "NOT_EXPOSED_BY_PROVIDER"},
-        })
+        _attempt(store, "L-001", telemetry=_tel(
+            model_identity={"status": "NOT_EXPOSED", "value": None,
+                            "reason": "NOT_EXPOSED_BY_PROVIDER"},
+            total_tokens={"status": "NOT_EXPOSED", "value": None,
+                          "reason": "NOT_EXPOSED_BY_PROVIDER"},
+        ))
         rec = store.load_run("L-001")
+        assert set(rec.attempts[0].telemetry) == {
+            "model_identity", "prompt_tokens", "completion_tokens",
+            "cost", "model_version", "total_tokens",
+        }
         for m in rec.attempts[0].telemetry.values():
             assert m.status is TelemetryStatus.NOT_EXPOSED
             assert m.value is None  # never a guessed value
@@ -635,3 +653,85 @@ class TestReviewHardening:
         m = store.load_run("L-001").attempts[0].telemetry["model_identity"]
         assert m.status is TelemetryStatus.NOT_EXPOSED
         assert m.value is None and m.reason == "NOT_EXPOSED_BY_PROVIDER"
+
+    def test_34_datastore_insert_replace_bypass_closed(self, tmp_path):
+        """INSERT OR REPLACE and raw post-terminal INSERTs cannot alter history."""
+        store, path = _store(tmp_path)
+        _create(store)
+        _attempt(store, "L-001")
+        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS,
+                          result_sha256="d" * 64)
+
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            bypasses = [
+                # REPLACE of the terminal row (implicit delete + insert)
+                "INSERT OR REPLACE INTO ledger_terminal (ledger_id, terminal_at,"
+                " terminal_status) VALUES ('L-001', '2020-01-01T00:00:00+00:00', 'FAILED')",
+                # raw attempt append after terminalization
+                "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                " provider_surface, transport_type, started_at) VALUES"
+                " ('L-001', 2, 'SAME_PROVIDER_RETRY', 'gemini_notebook', 'X',"
+                " '2026-10-07T12:00:00+00:00')",
+                # raw candidate insert after terminalization
+                "INSERT INTO ledger_candidate (ledger_id, source_candidate_id,"
+                " url_or_identifier, discovery_timestamp, verification_status,"
+                " pit_eligibility) VALUES ('L-001','C-9','u','t','VERIFIED','ELIGIBLE')",
+                # REPLACE of the run identity row
+                "INSERT OR REPLACE INTO ledger_run (ledger_id, research_run_id,"
+                " rrm_manifest_id, case_id, case_version, evidence_gap_id, request_id,"
+                " idempotency_key, notebook_identity, pit_context_id, pit_mode, as_of,"
+                " input_snapshot_hash, provider_surface, transport_type, started_at)"
+                " VALUES ('L-001','RR-001','RRM','TAMPERED','v1','EG','REQ','IDEM-001',"
+                " 'nb','PITC','M','2026-10-01','h','p','t','2026-10-07T12:00:00+00:00')",
+            ]
+            for sql in bypasses:
+                with pytest.raises(sqlite3.IntegrityError):
+                    conn.execute(sql)
+        finally:
+            conn.close()
+
+        rec = DeepResearchRunLedgerStore(path, clock=_clock).load_run("L-001")
+        assert rec.terminal_status is TerminalStatus.SUCCESS
+        assert rec.case_id == "CASE-2026-001"
+        assert [a.attempt_number for a in rec.attempts] == [1]
+
+    def test_34b_raw_terminal_insert_blocked_by_undisposed_candidate(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store)
+        _candidate(store, "L-001")  # registered, deliberately NOT disposed
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_terminal (ledger_id, terminal_at, terminal_status)"
+                    " VALUES ('L-001','2026-10-07T12:00:00+00:00','SUCCESS')"
+                )
+        finally:
+            conn.close()
+        assert store.load_run("L-001").terminal_status is None
+
+    def test_35_telemetry_metric_set_is_enforced(self, tmp_path):
+        store, _ = _store(tmp_path)
+        _create(store)
+        # an unlisted-only metric cannot stand in for the contract metrics
+        with pytest.raises(LedgerValidationError):
+            _attempt(store, "L-001", telemetry={
+                "unlisted_metric": {"status": "EXPOSED", "value": 7},
+            })
+        # a partial set (missing required metrics) is rejected
+        with pytest.raises(LedgerValidationError):
+            _attempt(store, "L-001", telemetry={
+                "model_identity": {"status": "NOT_EXPOSED", "value": None,
+                                   "reason": "NOT_EXPOSED_BY_PROVIDER"},
+            })
+        # a non-contract extra alongside a complete set is rejected
+        full = _tel()
+        full["extra_metric"] = {"status": "EXPOSED", "value": 1}
+        with pytest.raises(LedgerValidationError):
+            _attempt(store, "L-001", telemetry=full)
+        # the complete contract set is accepted
+        _attempt(store, "L-001")
+        assert len(store.load_run("L-001").attempts) == 1
