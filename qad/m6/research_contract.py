@@ -49,6 +49,19 @@ fabricated for absent output.
 Boundary: nothing here is a canonical M4A schema; nothing here may upgrade a
 result to canonical evidence. Canonical admission is M6.6 plus the existing
 Evidence Admission Gate.
+
+Process trust boundary (explicit)
+---------------------------------
+M6.4 CONSUMES, and does not build, the SEALED snapshot. It verifies that the
+snapshot is internally self-consistent by recomputing the accepted M6.0 identity
+from the snapshot's own fields (so a forged/corrupted case, corpus, AS_OF or hash
+fails closed) and requires the deterministic ``snapshot_id`` to equal that
+identity. A fully consistent in-process forgery by code that can already import
+this package is outside the process trust boundary — capability isolation is not
+provided by a plain Python dataclass, exactly as the accepted M6.2/M6.3 clusters
+already document. Positive enforcement/isolation PROOF claims are likewise not
+accepted at this cluster (evidence belongs to M6.7/M6.8); only ``NOT_VERIFIED``
+and the fail-closed states are expressible here.
 """
 
 from __future__ import annotations
@@ -69,6 +82,7 @@ from qad.m6.snapshot import (
     PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
     SEALED_PIT_MODE,
     SealedInputSnapshot,
+    _compute_input_snapshot_hash,
 )
 from qad.persistence.serialization import compute_canonical_hash
 
@@ -232,6 +246,67 @@ class DeepResearchRequest:
     request_payload_hash: str
     capability: str = S10_CAPABILITY
 
+    def __post_init__(self) -> None:
+        for name in (
+            "request_id", "research_run_id", "ledger_id", "rrm_manifest_id",
+            "case_id", "case_version", "evidence_gap_id", "research_question",
+            "pit_context_id", "pit_mode", "as_of", "input_snapshot_hash",
+            "snapshot_id", "request_payload_hash",
+        ):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise ResearchRequestError(f"{name} must be a non-empty string")
+        if self.capability != S10_CAPABILITY:
+            raise ResearchRequestError(
+                f"unsupported capability {self.capability!r}; M6.4 exposes {S10_CAPABILITY!r}"
+            )
+        if self.pit_mode != SEALED_PIT_MODE:
+            raise ResearchRequestError(f"request pit_mode must be {SEALED_PIT_MODE!r}")
+        if self.corpus.closed_corpus_required is not True:
+            raise ResearchRequestError("a SEALED request corpus must require a closed corpus")
+        if self.request_isolation_required is not True:
+            raise ResearchRequestError("a SEALED request must require request isolation")
+        if self.provider.closed_corpus_required is not True:
+            raise ResearchRequestError("provider configuration must require a closed corpus")
+        if self.provider.request_isolation_required is not True:
+            raise ResearchRequestError("provider configuration must require request isolation")
+        if self.provider.capability != S10_CAPABILITY:
+            raise ResearchRequestError("provider configuration capability must be S10")
+        if self.corpus.source_ids != tuple(s for s, _ in self.corpus.exact_blob_hashes):
+            raise ResearchRequestError(
+                "corpus source ids disagree with the exact blob-hash ordering"
+            )
+        for ref in self.authorized_prior_evidence_refs:
+            if not isinstance(ref, str) or not ref.strip():
+                raise ResearchRequestError(
+                    "authorized_prior_evidence_refs entries must be non-empty strings"
+                )
+        expected_corpus_hash = _deterministic_hash(_CorpusIdentity(
+            sources=[
+                _CorpusSource(source_id=s, exact_blob_hash=h)
+                for s, h in self.corpus.exact_blob_hashes
+            ]
+        ))
+        if self.corpus.corpus_hash != expected_corpus_hash:
+            raise ResearchRequestError("corpus_hash does not match the declared corpus")
+        expected_payload_hash = _deterministic_hash(_RequestPayloadIdentity(
+            research_question=self.research_question,
+            case_id=self.case_id,
+            case_version=self.case_version,
+            evidence_gap_id=self.evidence_gap_id,
+            input_snapshot_hash=self.input_snapshot_hash,
+            pit_mode=self.pit_mode,
+            as_of=self.as_of,
+            capability=self.capability,
+            closed_corpus_required=self.corpus.closed_corpus_required,
+            request_isolation_required=self.request_isolation_required,
+            authorized_prior_evidence_refs=sorted(self.authorized_prior_evidence_refs),
+        ))
+        if self.request_payload_hash != expected_payload_hash:
+            raise ResearchRequestError(
+                "request_payload_hash does not match the semantic request payload"
+            )
+
     @property
     def non_canonical(self) -> bool:
         """Always True: a request envelope is operational, never canonical."""
@@ -247,7 +322,13 @@ class DeepResearchRequest:
 
 
 class _RequestPayloadIdentity(BaseModel):
-    """Private deterministic hash payload (NOT a canonical M4A schema)."""
+    """Private deterministic hash payload (NOT a canonical M4A schema).
+
+    Covers the logical semantic request only: the research question, the
+    snapshot-derived authority fields, and the semantic request options. It
+    deliberately excludes volatile identity (request UUID, orchestration ids),
+    the provider surface, timeouts, wall clock and object identity.
+    """
 
     research_question: str
     case_id: str
@@ -259,6 +340,39 @@ class _RequestPayloadIdentity(BaseModel):
     capability: str
     closed_corpus_required: bool
     request_isolation_required: bool
+    authorized_prior_evidence_refs: list[str]
+
+
+def _verify_snapshot_consistency(snapshot: SealedInputSnapshot) -> None:
+    """Recompute the M6.0 snapshot identity from the snapshot's own fields.
+
+    M6.4 consumes — but does not build — the snapshot. This bounded check makes
+    an internally INCONSISTENT snapshot (forged/corrupted case, sources, AS_OF or
+    hash) fail closed using the accepted M6.2 identity definition, without
+    introducing a second PIT authority. A fully consistent in-process forgery is
+    outside the process trust boundary (documented in the module docstring).
+    """
+    try:
+        recomputed = _compute_input_snapshot_hash(
+            case_id=snapshot.case_id,
+            case_version=snapshot.case_version,
+            pit_mode=snapshot.pit_mode,
+            as_of=snapshot.as_of,
+            ordered=tuple(snapshot.ordered_sources),
+        )
+    except Exception as exc:  # noqa: BLE001 — unverifiable authority fails closed
+        raise RequestAuthorityViolation(
+            f"SEALED snapshot identity could not be verified: {type(exc).__name__}"
+        ) from exc
+    if recomputed != snapshot.input_snapshot_hash:
+        raise RequestAuthorityViolation(
+            "SEALED snapshot identity is not self-consistent: recomputed "
+            f"{recomputed} != declared {snapshot.input_snapshot_hash}"
+        )
+    if snapshot.snapshot_id != snapshot.input_snapshot_hash:
+        raise RequestAuthorityViolation(
+            "SEALED snapshot id does not equal its deterministic identity hash"
+        )
 
 
 def _deterministic_hash(payload: BaseModel) -> str:
@@ -314,6 +428,7 @@ def build_deep_research_request(
         raise RequestAuthorityViolation(
             "a SEALED request requires an authoritative SealedInputSnapshot"
         )
+    _verify_snapshot_consistency(snapshot)
     if snapshot.pit_mode != SEALED_PIT_MODE:
         raise RequestAuthorityViolation(
             f"snapshot PIT mode {snapshot.pit_mode!r} is not {SEALED_PIT_MODE!r}"
@@ -390,6 +505,9 @@ def build_deep_research_request(
             capability=S10_CAPABILITY,
             closed_corpus_required=True,
             request_isolation_required=True,
+            # Order-insensitive: the authorized prior-evidence reference set is
+            # semantically a set, so a different ordering must not change identity.
+            authorized_prior_evidence_refs=sorted(prior_refs),
         )
     )
 
@@ -445,12 +563,93 @@ class SourcePointer:
     title: str | None = None
 
 
+def _validate_result_invariants(
+    status: "ResearchResultStatus",
+    result_bytes: bytes | None,
+    result_sha256: str | None,
+    failure_detail: str | None,
+    corpus_enum: "ClosedCorpusEnforcement",
+    isolation_enum: "IsolationVerification",
+    source_pointers: Sequence["SourcePointer"],
+) -> None:
+    """The M6.4 result invariants — enforced on EVERY construction path."""
+    # fail-closed enforcement / isolation states can never be dressed as SUCCESS
+    if corpus_enum is ClosedCorpusEnforcement.CANNOT_ENFORCE and (
+        status is not ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT
+    ):
+        raise ResearchResultError(
+            "a provider that cannot enforce the closed corpus must fail closed "
+            "with PROVIDER_CANNOT_ENFORCE_SEALED_INPUT (never a fabricated success)"
+        )
+    if isolation_enum is IsolationVerification.UNVERIFIED and (
+        status is not ResearchResultStatus.REQUEST_ISOLATION_UNVERIFIED
+    ):
+        raise ResearchResultError(
+            "an unverified request-isolation state must fail closed with "
+            "REQUEST_ISOLATION_UNVERIFIED"
+        )
+    # M6.4 cannot substantiate a POSITIVE proof claim: enforcement/isolation
+    # evidence belongs to M6.7/M6.8. A bare caller assertion must not establish it.
+    if corpus_enum is ClosedCorpusEnforcement.ENFORCED:
+        raise ResearchResultError(
+            "closed-corpus ENFORCED cannot be claimed at M6.4 — positive "
+            "enforcement evidence belongs to the provider clusters (M6.7/M6.8)"
+        )
+    if isolation_enum is IsolationVerification.VERIFIED:
+        raise ResearchResultError(
+            "isolation VERIFIED cannot be claimed at M6.4 — positive isolation "
+            "proof belongs to the provider clusters (M6.7/M6.8)"
+        )
+
+    if status.is_success:
+        if result_bytes is None or len(bytes(result_bytes)) == 0:
+            raise ResearchResultError(
+                "SUCCESS requires non-empty result content (a blank provider "
+                "result must be represented as a typed failure)"
+            )
+        if not result_sha256:
+            raise ResearchResultError("SUCCESS requires the exact result_sha256")
+        actual = compute_result_sha256(bytes(result_bytes))
+        if actual != result_sha256:
+            raise ResearchResultError(
+                f"result_sha256 mismatch: recorded {result_sha256}, actual {actual}"
+            )
+        if failure_detail:
+            raise ResearchResultError("SUCCESS must not carry failure_detail")
+    else:
+        if not failure_detail or not str(failure_detail).strip():
+            raise ResearchResultError(
+                "a non-SUCCESS result requires a documented failure_detail "
+                "(failures are never a silent blank)"
+            )
+        if result_bytes is None and result_sha256 is not None:
+            raise ResearchResultError(
+                "a hash must never be recorded for absent result output"
+            )
+        if result_bytes is not None and result_sha256 is not None:
+            actual = compute_result_sha256(bytes(result_bytes))
+            if actual != result_sha256:
+                raise ResearchResultError(
+                    f"result_sha256 mismatch: recorded {result_sha256}, actual {actual}"
+                )
+
+    for ptr in source_pointers:
+        if not isinstance(ptr, SourcePointer):
+            raise ResearchResultError("source_pointers must contain SourcePointer values")
+        if not isinstance(ptr.reference, str) or not ptr.reference.strip():
+            raise ResearchResultError("a source pointer requires a non-empty reference")
+
+
 @dataclass(frozen=True)
 class DeepResearchResult:
     """Immutable logical Deep Research result (NON-CANONICAL, fail-closed).
 
     The envelope carries no field that could upgrade it to canonical evidence:
     canonical admission is M6.6 plus the existing Evidence Admission Gate.
+
+    Invariants are enforced at construction (``__post_init__``), so a directly
+    constructed instance cannot be invalid either — prefer
+    :func:`build_deep_research_result` for friendly error messages.
     """
 
     request_id: str
@@ -468,6 +667,30 @@ class DeepResearchResult:
     failure_detail: str | None = None
     closed_corpus_enforcement: ClosedCorpusEnforcement = ClosedCorpusEnforcement.NOT_VERIFIED
     isolation_verification: IsolationVerification = IsolationVerification.NOT_VERIFIED
+
+    def __post_init__(self) -> None:
+        for name in ("request_id", "research_run_id", "ledger_id", "provider_surface"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise ResearchResultError(f"{name} must be a non-empty string")
+        if not isinstance(self.status, ResearchResultStatus):
+            raise ResearchResultError(
+                "status must be a ResearchResultStatus (use build_deep_research_result)"
+            )
+        if not isinstance(self.closed_corpus_enforcement, ClosedCorpusEnforcement):
+            raise ResearchResultError(
+                "closed_corpus_enforcement must be a ClosedCorpusEnforcement"
+            )
+        if not isinstance(self.isolation_verification, IsolationVerification):
+            raise ResearchResultError(
+                "isolation_verification must be an IsolationVerification"
+            )
+        if self.result_bytes is not None and not isinstance(self.result_bytes, bytes):
+            raise ResearchResultError("result_bytes must be bytes or None")
+        _validate_result_invariants(
+            self.status, self.result_bytes, self.result_sha256, self.failure_detail,
+            self.closed_corpus_enforcement, self.isolation_verification, self.source_pointers,
+        )
 
     @property
     def non_canonical(self) -> bool:
@@ -543,70 +766,10 @@ def build_deep_research_result(
             f"unknown isolation verification state {isolation_verification!r}"
         ) from None
 
-    _require_non_empty(request_id, "request_id", ResearchResultError)
-    _require_non_empty(research_run_id, "research_run_id", ResearchResultError)
-    _require_non_empty(ledger_id, "ledger_id", ResearchResultError)
-    _require_non_empty(provider_surface, "provider_surface", ResearchResultError)
-
-    # ---- fail-closed enforcement states cannot masquerade as SUCCESS -------
-    if corpus_enum is ClosedCorpusEnforcement.CANNOT_ENFORCE and (
-        status_enum is not ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT
-    ):
-        raise ResearchResultError(
-            "a provider that cannot enforce the closed corpus must fail closed "
-            "with PROVIDER_CANNOT_ENFORCE_SEALED_INPUT (never a fabricated success)"
-        )
-    if isolation_enum is IsolationVerification.UNVERIFIED and (
-        status_enum is not ResearchResultStatus.REQUEST_ISOLATION_UNVERIFIED
-    ):
-        raise ResearchResultError(
-            "an unverified request-isolation state must fail closed with "
-            "REQUEST_ISOLATION_UNVERIFIED"
-        )
-
-    if status_enum.is_success:
-        if result_bytes is None or len(bytes(result_bytes)) == 0:
-            raise ResearchResultError(
-                "SUCCESS requires non-empty result content (a blank provider "
-                "result must be represented as a typed failure)"
-            )
-        if not result_sha256:
-            raise ResearchResultError("SUCCESS requires the exact result_sha256")
-        actual = compute_result_sha256(bytes(result_bytes))
-        if actual != result_sha256:
-            raise ResearchResultError(
-                f"result_sha256 mismatch: recorded {result_sha256}, actual {actual}"
-            )
-        if failure_detail:
-            raise ResearchResultError("SUCCESS must not carry failure_detail")
-        if isolation_enum is IsolationVerification.UNVERIFIED:
-            raise ResearchResultError(
-                "SUCCESS with unverified request isolation is refused"
-            )
-    else:
-        if not failure_detail or not str(failure_detail).strip():
-            raise ResearchResultError(
-                "a non-SUCCESS result requires a documented failure_detail "
-                "(failures are never a silent blank)"
-            )
-        if result_bytes is None and result_sha256 is not None:
-            raise ResearchResultError(
-                "a hash must never be recorded for absent result output"
-            )
-        if result_bytes is not None:
-            actual = compute_result_sha256(bytes(result_bytes))
-            if result_sha256 is not None and actual != result_sha256:
-                raise ResearchResultError(
-                    f"result_sha256 mismatch: recorded {result_sha256}, actual {actual}"
-                )
-
     pointers = tuple(source_pointers)
-    for ptr in pointers:
-        if not isinstance(ptr, SourcePointer):
-            raise ResearchResultError("source_pointers must contain SourcePointer values")
-        if not isinstance(ptr.reference, str) or not ptr.reference.strip():
-            raise ResearchResultError("a source pointer requires a non-empty reference")
-
+    # Every M6.4 result invariant is enforced by DeepResearchResult.__post_init__,
+    # which runs on ALL construction paths — a directly constructed instance
+    # cannot be invalid either.
     return DeepResearchResult(
         request_id=request_id,
         research_run_id=research_run_id,

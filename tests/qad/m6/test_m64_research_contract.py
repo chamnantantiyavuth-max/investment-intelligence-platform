@@ -54,10 +54,14 @@ from qad.m6.research_contract import (
     REQUEST_ISOLATION_UNVERIFIED,
     S10_CAPABILITY,
     ClosedCorpusEnforcement,
+    DeepResearchRequest,
+    DeepResearchResult,
     IsolationVerification,
     RequestAuthorityViolation,
+    ResearchRequestError,
     ResearchResultError,
     ResearchResultStatus,
+    SourceCorpusDescriptor,
     SourcePointer,
     build_deep_research_request,
     build_deep_research_result,
@@ -69,6 +73,7 @@ from qad.m6.snapshot import (
     PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
     SEALED_PIT_MODE,
     SealedInputSnapshot,
+    SealedSourceSnapshot,
     build_sealed_input_snapshot,
 )
 
@@ -524,3 +529,109 @@ class TestBoundaries:
         for banned in ("import requests", "import urllib", "import socket",
                        "import httpx", "selenium", "playwright", "chromedriver"):
             assert banned not in source
+
+
+# =====================================================================
+# 31–35: reviewer-driven hardening (round-2)
+# =====================================================================
+
+
+class TestReviewHardening:
+    def test_31_forged_snapshot_fails_closed(self):
+        """An inconsistent/forged SEALED snapshot must not become a request."""
+        good = _snapshot()
+        # a tampered authority field no longer matches the deterministic identity
+        for forged in (
+            dataclasses.replace(good, case_id="CASE-FORGED"),
+            dataclasses.replace(good, case_version="v-forged"),
+            dataclasses.replace(good, as_of="1900-01-01"),
+            dataclasses.replace(good, input_snapshot_hash="0" * 64),
+            dataclasses.replace(good, snapshot_id="1" * 64),
+        ):
+            with pytest.raises(RequestAuthorityViolation):
+                _request(forged)
+        # a hand-built snapshot claiming an arbitrary identity is refused
+        manual = SealedInputSnapshot(
+            snapshot_id="f" * 64, case_id="CASE-X", case_version="v1",
+            pit_context_id="PITC-X", pit_mode=SEALED_PIT_MODE, as_of="1900-01-01",
+            ordered_sources=(SealedSourceSnapshot(
+                source_id="SX", source_content_hash="a" * 64, raw_blob_sha256="a" * 64,
+                raw_byte_length=1, archive_attestation_id="ATT", archive_admitted_at=ADMITTED,
+                raw_bytes=b"x",
+            ),),
+            source_count=1, input_snapshot_hash="f" * 64,
+        )
+        with pytest.raises(RequestAuthorityViolation):
+            _request(manual)
+        # the unmodified authoritative snapshot still builds
+        assert _request(good).case_id == good.case_id
+
+    def test_32_positive_proof_claims_not_accepted(self):
+        """M6.4 cannot substantiate ENFORCED / VERIFIED — those belong to M6.7/M6.8."""
+        with pytest.raises(ResearchResultError):
+            _result(closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED)
+        with pytest.raises(ResearchResultError):
+            _result(isolation_verification=IsolationVerification.VERIFIED)
+        # a representational SUCCESS (proof pending) is allowed and says so
+        ok = _result()
+        assert ok.non_canonical is True
+        assert ok.closed_corpus_enforcement is ClosedCorpusEnforcement.NOT_VERIFIED
+        assert ok.isolation_verification is IsolationVerification.NOT_VERIFIED
+
+    def test_33_prior_evidence_refs_join_the_payload_identity(self):
+        snap = _snapshot()
+        base = _request(snap)
+        a = _request(snap, authorized_prior_evidence_refs=("EV-A",))
+        b = _request(snap, authorized_prior_evidence_refs=("EV-B",))
+        assert len({base.request_payload_hash, a.request_payload_hash,
+                    b.request_payload_hash}) == 3
+        # the reference SET is order-insensitive (semantically a set)
+        ab = _request(snap, authorized_prior_evidence_refs=("EV-A", "EV-B"))
+        ba = _request(snap, authorized_prior_evidence_refs=("EV-B", "EV-A"))
+        assert ab.request_payload_hash == ba.request_payload_hash
+        assert ab.authorized_prior_evidence_refs == ("EV-A", "EV-B")
+
+    def test_34_direct_result_construction_is_still_validated(self):
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+            )
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=b"payload", result_sha256="f" * 64,
+            )
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status="SUCCESS", provider_surface="p",  # type: ignore[arg-type]
+            )
+        payload = b"direct"
+        ok = DeepResearchResult(
+            request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+            status=ResearchResultStatus.SUCCESS, provider_surface="p",
+            result_bytes=payload, result_sha256=compute_result_sha256(payload),
+        )
+        assert result_matches_hash(ok) is True
+
+    def test_35_direct_request_construction_is_still_validated(self):
+        req = _request(_snapshot())
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, request_payload_hash="0" * 64)
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, capability="S9")
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, request_isolation_required=False)
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(
+                req, corpus=dataclasses.replace(req.corpus, closed_corpus_required=False)
+            )
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, case_id="")
+        # a consistent direct construction is accepted
+        assert dataclasses.replace(req).request_payload_hash == req.request_payload_hash
+        # the public descriptor type is present and honest
+        assert isinstance(req.corpus, SourceCorpusDescriptor)
+        assert isinstance(req, DeepResearchRequest)
