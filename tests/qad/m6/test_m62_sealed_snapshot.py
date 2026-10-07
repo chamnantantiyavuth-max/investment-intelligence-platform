@@ -14,6 +14,7 @@ import datetime as dt
 import hashlib
 
 import pytest
+from pydantic import BaseModel
 
 from qad.models.family_b import (
     SourceRecord,
@@ -23,11 +24,14 @@ from qad.models.family_b import (
 )
 from qad.models.family_i import PITContext, PITContextMode
 from qad.persistence.reference import InMemoryPITContextStore, InMemoryRawSourceArchive
+from qad.persistence.serialization import serialize_to_canonical_bytes
 from qad.m6.snapshot import (
     SealedInputSnapshot,
     SnapshotBuildError,
     SnapshotFailureCode,
+    _compute_input_snapshot_hash,
     build_sealed_input_snapshot,
+    input_snapshot_identity_payload,
 )
 
 
@@ -37,6 +41,41 @@ from qad.m6.snapshot import (
 
 AS_OF = "2026-01-01"
 ADMITTED = "2025-12-15T00:00:00+00:00"
+
+
+class _M6ContractSourceIdentity(BaseModel):
+    """Test-local M6.0 identity schema, independent of snapshot.py models."""
+
+    source_id: str
+    exact_blob_hash: str
+
+
+class _M6ContractSnapshotIdentity(BaseModel):
+    """Only the five approved M6.0 identity fields are serialized here."""
+
+    case_id: str
+    case_version: str
+    pit_mode: str
+    as_of: str
+    sources: list[_M6ContractSourceIdentity]
+
+
+def _assert_unavailable(error: SnapshotBuildError) -> None:
+    assert error.code is SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT
+
+
+def _contract_identity_hash() -> str:
+    """Hash the M6.0 contract shape via the approved serializer, not M6.2 code."""
+    identity = _M6ContractSnapshotIdentity(
+        case_id="CASE-1",
+        case_version="v1",
+        pit_mode="SEALED_HISTORICAL_EVALUATION",
+        as_of=AS_OF,
+        sources=[_M6ContractSourceIdentity(
+            source_id="S1", exact_blob_hash=hashlib.sha256(b"alpha").hexdigest(),
+        )],
+    )
+    return hashlib.sha256(serialize_to_canonical_bytes(identity)).hexdigest()
 
 
 def _src(sid: str, raw: bytes, retrieval_date: str = "2025-12-01",
@@ -167,7 +206,8 @@ class TestPITAuthority:
         _admit(a, "S1", b"a")
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id="NOPE")
-        assert exc.value.code is SnapshotFailureCode.PIT_CONTEXT_NOT_FOUND
+        _assert_unavailable(exc.value)
+        assert exc.value.reason_code is SnapshotFailureCode.PIT_CONTEXT_NOT_FOUND
 
     def test_non_sealed_pit_mode_rejected(self):
         a, p = _archive(), InMemoryPITContextStore()
@@ -175,7 +215,8 @@ class TestPITAuthority:
         pid = _pit(p, mode=PITContextMode.LIVE_CASE_UPDATE)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
-        assert exc.value.code is SnapshotFailureCode.PIT_MODE_NOT_SEALED
+        _assert_unavailable(exc.value)
+        assert exc.value.reason_code is SnapshotFailureCode.PIT_MODE_NOT_SEALED
 
     def test_unreadable_pit_context_fails_closed(self, monkeypatch):
         a, p = _archive(), InMemoryPITContextStore()
@@ -188,7 +229,8 @@ class TestPITAuthority:
         monkeypatch.setattr(p, "load", _boom)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
-        assert exc.value.code is SnapshotFailureCode.PIT_CONTEXT_UNAVAILABLE
+        _assert_unavailable(exc.value)
+        assert exc.value.reason_code is SnapshotFailureCode.PIT_CONTEXT_UNAVAILABLE
 
 
 # =====================================================================
@@ -201,6 +243,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["MISSING"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["MISSING"] is SnapshotFailureCode.SOURCE_NOT_FOUND
 
     def test_legacy_unattested_src01_blocked(self):
@@ -210,6 +253,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.LEGACY_UNATTESTED_SRC01
 
     def test_srcv_only_capture_proof_blocked(self):
@@ -224,6 +268,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SRCV_ONLY_CAPTURE_PROOF
 
     def test_admitted_after_as_of_blocked(self):
@@ -232,6 +277,7 @@ class TestSourceConditions:
         pid = _pit(p := InMemoryPITContextStore())
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF
 
     def test_corrupted_source_identity_blocked(self):
@@ -241,6 +287,29 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
+
+    def test_corrupted_attestation_source_ref_binding_blocked(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        a._attestations["S1"] = dataclasses.replace(a._attestations["S1"], source_ref="SRC-01:OTHER")
+        pid = _pit(p)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
+
+    def test_corrupted_attestation_source_content_binding_blocked(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        a._attestations["S1"] = dataclasses.replace(
+            a._attestations["S1"], source_content_hash="0" * 64,
+        )
+        pid = _pit(p)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
     def test_corrupted_raw_blob_hash_blocked(self):
@@ -250,6 +319,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
     def test_byte_length_mismatch_blocked(self):
@@ -259,6 +329,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
     def test_missing_publication_date_fails_closed(self):
@@ -267,6 +338,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_PUBLICATION_DATE_MISSING
 
     def test_timestamp_form_publication_date_accepted(self):
@@ -282,6 +354,7 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.SOURCE_PUBLISHED_AFTER_AS_OF
 
     def test_raw_blob_unavailable_blocked(self):
@@ -291,7 +364,22 @@ class TestSourceConditions:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.RAW_BLOB_UNAVAILABLE
+
+    def test_archive_read_failure_is_canonical_source_unavailability(self, monkeypatch):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        pid = _pit(p)
+
+        def unavailable(_sid):
+            raise RuntimeError("store offline")
+
+        monkeypatch.setattr(a, "load_raw_blob", unavailable)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ARCHIVE_UNAVAILABLE
 
 
 # =====================================================================
@@ -320,9 +408,9 @@ class TestByteAuthority:
         pid = _pit(p)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1", "S2", "S3"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is None          # S1 itself is fine
         assert exc.value.verdicts["S2"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
-        assert exc.value.code is SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
 
     def test_mutable_buffer_cannot_mutate_stored_or_snapshot_bytes(self):
         a, p = _archive(), InMemoryPITContextStore()
@@ -389,6 +477,73 @@ class TestDeterministicHash:
             a2.get_admission_attestation("S1").attestation_id
         assert h1 == h2
 
+    def test_pit_context_id_does_not_change_hash(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"alpha")
+        h1 = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p, pid="PIT-A")).input_snapshot_hash
+        h2 = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p, pid="PIT-B")).input_snapshot_hash
+        assert h1 == h2
+
+    def test_known_answer_uses_exact_m6_identity_contract_payload(self):
+        # Literal derived from the M6.0 payload and approved serializer, using
+        # the test-local model above rather than snapshot.py's private model.
+        expected = "00698eda5f5f86923d1954b43f17b784b250281db11861a90dbfdc2fa11f9830"
+        assert _contract_identity_hash() == expected
+
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"alpha")
+        snap = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p))
+        assert snap.input_snapshot_hash == expected
+
+    def test_identity_payload_has_only_m6_contract_fields(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"alpha")
+        snap = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p))
+        payload = input_snapshot_identity_payload(
+            case_id=snap.case_id,
+            case_version=snap.case_version,
+            pit_mode=snap.pit_mode,
+            as_of=snap.as_of,
+            ordered=snap.ordered_sources,
+        )
+        assert payload == {
+            "case_id": "CASE-1",
+            "case_version": "v1",
+            "pit_mode": "SEALED_HISTORICAL_EVALUATION",
+            "as_of": "2026-01-01",
+            "sources": [{
+                "source_id": "S1",
+                "exact_blob_hash": hashlib.sha256(b"alpha").hexdigest(),
+            }],
+        }
+
+    def test_each_contract_identity_dimension_changes_hash(self):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"same bytes")
+        baseline_snapshot = _build(a, p, source_ids=["S1"], pit_context_id=_pit(p))
+        base = baseline_snapshot.input_snapshot_hash
+        assert _compute_input_snapshot_hash(
+            case_id=baseline_snapshot.case_id,
+            case_version=baseline_snapshot.case_version,
+            pit_mode="OTHER_MODE",
+            as_of=baseline_snapshot.as_of,
+            ordered=baseline_snapshot.ordered_sources,
+        ) != base
+        other_case = _build(
+            a, p, source_ids=["S1"], pit_context_id=_pit(p, case_id="CASE-2", pid="PIT-2"),
+        ).input_snapshot_hash
+        other_version = _build(
+            a, p, source_ids=["S1"], pit_context_id="PITC-1", case_version="v2",
+        ).input_snapshot_hash
+        other_as_of = _build(
+            a, p, source_ids=["S1"], pit_context_id=_pit(p, as_of="2025-12-31", pid="PIT-3"),
+        ).input_snapshot_hash
+        _admit(a, "S2", b"same bytes")
+        other_source_id = _build(a, p, source_ids=["S2"], pit_context_id="PITC-1").input_snapshot_hash
+        assert all(value != base for value in (
+            other_case, other_version, other_as_of, other_source_id,
+        ))
+
     def test_changing_one_raw_byte_changes_hash(self):
         p = InMemoryPITContextStore()
         a1 = _archive(); _admit(a1, "S1", b"original")
@@ -448,9 +603,11 @@ class TestPolicyInvariants:
             return att if calls["n"] == 1 else dataclasses.replace(att, attestation_id="REPLACED")
 
         monkeypatch.setattr(a, "get_admission_attestation", swapped)
-        with pytest.raises(SnapshotBuildError):
+        with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert calls["n"] >= 2
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
     def test_finalization_revalidates_archive_authority(self, monkeypatch):
         """K must RELOAD/reverify at finalisation, not trust the earlier result."""
@@ -465,9 +622,29 @@ class TestPolicyInvariants:
             return real(sid) if calls["n"] == 1 else False
 
         monkeypatch.setattr(a, "verify_admission_attestation", flaky)
-        with pytest.raises(SnapshotBuildError):
+        with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
         assert calls["n"] >= 2          # resolution + finalisation revalidation
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
+
+    def test_finalization_rejects_bytes_changed_after_initial_resolution(self, monkeypatch):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"original")
+        pid = _pit(p)
+        real = a.load_raw_blob
+        calls = {"n": 0}
+
+        def changed_after_capture(sid):
+            calls["n"] += 1
+            return real(sid) if calls["n"] == 1 else b"changed"
+
+        monkeypatch.setattr(a, "load_raw_blob", changed_after_capture)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert calls["n"] >= 2
+        _assert_unavailable(exc.value)
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
 
     def test_verification_happens_during_construction(self, monkeypatch):
         """A false archive verification at build time must fail the build."""
@@ -477,4 +654,19 @@ class TestPolicyInvariants:
         monkeypatch.setattr(a, "verify_admission_attestation", lambda _sid: False)
         with pytest.raises(SnapshotBuildError) as exc:
             _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        _assert_unavailable(exc.value)
         assert exc.value.verdicts["S1"] is SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE
+
+    def test_unexpected_snapshot_implementation_failure_is_not_pit_unavailability(self, monkeypatch):
+        a, p = _archive(), InMemoryPITContextStore()
+        _admit(a, "S1", b"a")
+        pid = _pit(p)
+
+        def broken_resolver(*_args, **_kwargs):
+            raise RuntimeError("unexpected implementation defect")
+
+        monkeypatch.setattr("qad.m6.snapshot._resolve_source", broken_resolver)
+        with pytest.raises(SnapshotBuildError) as exc:
+            _build(a, p, source_ids=["S1"], pit_context_id=pid)
+        assert exc.value.code is SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
+        assert exc.value.verdicts["S1"] is SnapshotFailureCode.SNAPSHOT_BUILD_FAILED

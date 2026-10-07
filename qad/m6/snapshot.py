@@ -55,9 +55,11 @@ PROVIDER_CANNOT_ENFORCE_SEALED_INPUT = "PROVIDER_CANNOT_ENFORCE_SEALED_INPUT"
 class SnapshotFailureCode(str, Enum):
     """Deterministic typed outcomes for SEALED snapshot construction."""
 
+    UNAVAILABLE_FOR_SEALED_PIT = "UNAVAILABLE_FOR_SEALED_PIT"
     PIT_CONTEXT_NOT_FOUND = "PIT_CONTEXT_NOT_FOUND"
     PIT_CONTEXT_UNAVAILABLE = "PIT_CONTEXT_UNAVAILABLE"
     PIT_MODE_NOT_SEALED = "PIT_MODE_NOT_SEALED"
+    ARCHIVE_UNAVAILABLE = "ARCHIVE_UNAVAILABLE"
     SOURCE_NOT_FOUND = "SOURCE_NOT_FOUND"
     LEGACY_UNATTESTED_SRC01 = "LEGACY_UNATTESTED_SRC01"
     SRCV_ONLY_CAPTURE_PROOF = "SRCV_ONLY_CAPTURE_PROOF"
@@ -80,9 +82,11 @@ class SnapshotBuildError(Exception):
     """
 
     def __init__(self, code: SnapshotFailureCode, message: str,
-                 verdicts: dict[str, SnapshotFailureCode | None] | None = None) -> None:
+                 verdicts: dict[str, SnapshotFailureCode | None] | None = None,
+                 *, reason_code: SnapshotFailureCode | None = None) -> None:
         super().__init__(message)
         self.code = code
+        self.reason_code = reason_code or code
         self.verdicts: dict[str, SnapshotFailureCode | None] = dict(verdicts or {})
 
 
@@ -122,45 +126,37 @@ class SealedInputSnapshot:
 # ---------------------------------------------------------------------------
 
 class _OrderedSourceRef(BaseModel):
-    # NOTE: archive_attestation_id is deliberately NOT part of the identity hash.
-    # Attestation ids are random (uuid4); including one would break the required
-    # invariant "same authoritative inputs -> same input_snapshot_hash" across
-    # equivalent captures in separate archives. Attestation identity is retained
-    # as provenance on SealedSourceSnapshot, not as an identity input.
+    # M6.0 identity uses the exact hash of admitted bytes, not source metadata.
     source_id: str
-    source_content_hash: str
-    raw_blob_sha256: str
+    exact_blob_hash: str
 
 
 class _SealedInputSnapshotIdentity(BaseModel):
     case_id: str
     case_version: str
-    pit_context_id: str
     pit_mode: str
     as_of: str
     sources: list[_OrderedSourceRef]
 
 
 def input_snapshot_identity_payload(
-    *, case_id: str, case_version: str, pit_context_id: str, pit_mode: str,
+    *, case_id: str, case_version: str, pit_mode: str,
     as_of: str, ordered: tuple[SealedSourceSnapshot, ...],
 ) -> dict[str, Any]:
-    """The deterministic semantic inputs of ``input_snapshot_hash`` (for review/tests).
+    """The exact deterministic identity contract approved by M6.0.
 
-    Deliberately excludes volatile values: wall-clock creation time, object
-    identity, filesystem paths, memory addresses.
+    PIT context id remains snapshot provenance, not identity. Attestation ids,
+    source metadata hashes, and operational metadata are also excluded.
     """
     return {
         "case_id": case_id,
         "case_version": case_version,
-        "pit_context_id": pit_context_id,
         "pit_mode": pit_mode,
         "as_of": as_of,
         "sources": [
             {
                 "source_id": s.source_id,
-                "source_content_hash": s.source_content_hash,
-                "raw_blob_sha256": s.raw_blob_sha256,
+                "exact_blob_hash": s.raw_blob_sha256,
             }
             for s in ordered
         ],
@@ -168,18 +164,17 @@ def input_snapshot_identity_payload(
 
 
 def _compute_input_snapshot_hash(
-    *, case_id: str, case_version: str, pit_context_id: str, pit_mode: str,
+    *, case_id: str, case_version: str, pit_mode: str,
     as_of: str, ordered: tuple[SealedSourceSnapshot, ...],
 ) -> str:
     payload = input_snapshot_identity_payload(
-        case_id=case_id, case_version=case_version, pit_context_id=pit_context_id,
-        pit_mode=pit_mode, as_of=as_of, ordered=ordered,
+        case_id=case_id, case_version=case_version, pit_mode=pit_mode,
+        as_of=as_of, ordered=ordered,
     )
     # reuse the accepted deterministic canonical serializer
     return compute_canonical_hash(_SealedInputSnapshotIdentity(
         case_id=payload["case_id"],
         case_version=payload["case_version"],
-        pit_context_id=payload["pit_context_id"],
         pit_mode=payload["pit_mode"],
         as_of=payload["as_of"],
         sources=[_OrderedSourceRef(**s) for s in payload["sources"]],
@@ -241,12 +236,16 @@ def _resolve_source(
         att = archive.get_admission_attestation(source_id)
     except AttestationNotFound:
         return None, _classify_unattested(archive, source_id, as_of)
+    except Exception:  # noqa: BLE001 — adapter cannot provide authority
+        return None, SnapshotFailureCode.ARCHIVE_UNAVAILABLE
 
     # A — canonical SRC-01 exists
     try:
         src = archive.load("SRC-01", source_id)
     except KeyError:
         return None, SnapshotFailureCode.SOURCE_NOT_FOUND
+    except Exception:  # noqa: BLE001 — archive cannot provide canonical source
+        return None, SnapshotFailureCode.ARCHIVE_UNAVAILABLE
 
     # S7 SEALED source-time guard (publication_date required + pre-AS_OF)
     st = _sealed_source_time_check(src, as_of)
@@ -258,9 +257,17 @@ def _resolve_source(
         blob = bytes(archive.load_raw_blob(source_id))
     except KeyError:
         return None, SnapshotFailureCode.RAW_BLOB_UNAVAILABLE
+    except Exception:  # noqa: BLE001 — archive cannot provide exact bytes
+        return None, SnapshotFailureCode.ARCHIVE_UNAVAILABLE
 
     # K — re-verify bindings NOW (construction time), not from an earlier result
-    if not archive.verify_admission_attestation(source_id):
+    try:
+        verified = archive.verify_admission_attestation(source_id)
+    except AttestationNotFound:
+        return None, _INTEGRITY
+    except Exception:  # noqa: BLE001 — archive cannot verify authority
+        return None, SnapshotFailureCode.ARCHIVE_UNAVAILABLE
+    if not verified:
         return None, _INTEGRITY
 
     # E,H — identity + hash binding (explicit, independent of the archive helper)
@@ -284,7 +291,7 @@ def _resolve_source(
     # D — admitted_at <= AS_OF
     try:
         admitted_at = dt.datetime.fromisoformat(att.admitted_at)
-    except ValueError:
+    except (TypeError, ValueError):
         return None, _INTEGRITY
     if admitted_at.date() > as_of:
         return None, SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF
@@ -302,11 +309,13 @@ def _resolve_source(
     ), None
 
 
-def _fail(source_id: str, why: str) -> None:
+def _fail(source_id: str, why: str,
+          reason_code: SnapshotFailureCode = _INTEGRITY) -> None:
     raise SnapshotBuildError(
-        SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
+        SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT,
         f"{source_id}: {why}",
-        {source_id: SnapshotFailureCode.ATTESTATION_INTEGRITY_FAILURE},
+        {source_id: reason_code},
+        reason_code=reason_code,
     )
 
 
@@ -321,13 +330,36 @@ def _finalization_revalidation(archive, as_of: dt.date,
     for s in ordered:
         try:
             att = archive.get_admission_attestation(s.source_id)
+        except AttestationNotFound:
+            _fail(s.source_id, "archive attestation missing at finalisation", _INTEGRITY)
+        except Exception:
+            _fail(s.source_id, "archive attestation unavailable at finalisation",
+                  SnapshotFailureCode.ARCHIVE_UNAVAILABLE)
+        try:
             src = archive.load("SRC-01", s.source_id)
+        except KeyError:
+            _fail(s.source_id, "canonical SRC-01 missing at finalisation",
+                  SnapshotFailureCode.SOURCE_NOT_FOUND)
+        except Exception:
+            _fail(s.source_id, "canonical SRC-01 unavailable at finalisation",
+                  SnapshotFailureCode.ARCHIVE_UNAVAILABLE)
+        try:
             blob = bytes(archive.load_raw_blob(s.source_id))
-        except Exception as exc:  # noqa: BLE001 — fail closed
-            _fail(s.source_id, f"archive state unreadable at finalisation ({type(exc).__name__})")
-            return
-        if not archive.verify_admission_attestation(s.source_id):
-            _fail(s.source_id, "archive verification failed at finalisation")
+        except KeyError:
+            _fail(s.source_id, "raw blob missing at finalisation",
+                  SnapshotFailureCode.RAW_BLOB_UNAVAILABLE)
+        except Exception:
+            _fail(s.source_id, "raw blob unavailable at finalisation",
+                  SnapshotFailureCode.ARCHIVE_UNAVAILABLE)
+        try:
+            verified = archive.verify_admission_attestation(s.source_id)
+        except AttestationNotFound:
+            _fail(s.source_id, "archive attestation missing at finalisation", _INTEGRITY)
+        except Exception:
+            _fail(s.source_id, "archive verification unavailable at finalisation",
+                  SnapshotFailureCode.ARCHIVE_UNAVAILABLE)
+        if not verified:
+            _fail(s.source_id, "archive verification failed at finalisation", _INTEGRITY)
         # R1-1: bind the RELOADED SRC-01 to the finalised source, and bind the
         # reloaded attestation to the provenance captured in the snapshot so a
         # superseded/replaced attestation cannot silently pass finalisation.
@@ -341,7 +373,7 @@ def _finalization_revalidation(archive, as_of: dt.date,
             _fail(s.source_id, "attestation admission time changed at finalisation")
         st = _sealed_source_time_check(src, as_of)
         if st is not None:
-            _fail(s.source_id, f"SEALED source-time check failed at finalisation ({st.value})")
+            _fail(s.source_id, f"SEALED source-time check failed at finalisation ({st.value})", st)
         if att.source_id != s.source_id or att.source_ref != f"SRC-01:{s.source_id}":
             _fail(s.source_id, "attestation source identity broken at finalisation")
         if att.source_content_hash != src.content_hash:
@@ -352,11 +384,11 @@ def _finalization_revalidation(archive, as_of: dt.date,
             _fail(s.source_id, "attested byte length mismatch at finalisation")
         try:
             admitted = dt.datetime.fromisoformat(att.admitted_at)
-        except ValueError:
-            _fail(s.source_id, "admission timestamp unreadable at finalisation")
-            return
+        except (TypeError, ValueError):
+            _fail(s.source_id, "admission timestamp unreadable at finalisation", _INTEGRITY)
         if admitted.date() > as_of:
-            _fail(s.source_id, "source admitted after AS_OF at finalisation")
+            _fail(s.source_id, "source admitted after AS_OF at finalisation",
+                  SnapshotFailureCode.SOURCE_ADMITTED_AFTER_AS_OF)
         if blob != s.raw_bytes:
             _fail(s.source_id, "captured bytes differ from archive bytes at finalisation")
         if hashlib.sha256(s.raw_bytes).hexdigest() != s.raw_blob_sha256:
@@ -395,24 +427,34 @@ def build_sealed_input_snapshot(
         pitc = pit_context_store.load("PITC-01", pit_context_id)
     except KeyError:
         raise SnapshotBuildError(
-            SnapshotFailureCode.PIT_CONTEXT_NOT_FOUND,
+            SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT,
             f"PITC-01/{pit_context_id}: not found",
+            reason_code=SnapshotFailureCode.PIT_CONTEXT_NOT_FOUND,
         ) from None
     except Exception as exc:  # noqa: BLE001 — unreadable store fails closed
         raise SnapshotBuildError(
-            SnapshotFailureCode.PIT_CONTEXT_UNAVAILABLE,
+            SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT,
             f"PITC-01/{pit_context_id}: unavailable ({type(exc).__name__})",
+            reason_code=SnapshotFailureCode.PIT_CONTEXT_UNAVAILABLE,
         ) from exc
 
     mode = str(getattr(pitc, "mode", None) and getattr(pitc.mode, "value", pitc.mode))
     if mode != SEALED_PIT_MODE:
         raise SnapshotBuildError(
-            SnapshotFailureCode.PIT_MODE_NOT_SEALED,
+            SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT,
             f"PITC-01/{pit_context_id}: mode={mode} is not {SEALED_PIT_MODE}",
+            reason_code=SnapshotFailureCode.PIT_MODE_NOT_SEALED,
         )
 
     case_id = pitc.case_id
-    as_of = dt.date.fromisoformat(pitc.as_of_date)
+    try:
+        as_of = dt.date.fromisoformat(pitc.as_of_date)
+    except (TypeError, ValueError) as exc:
+        raise SnapshotBuildError(
+            SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT,
+            f"PITC-01/{pit_context_id}: invalid AS_OF date",
+            reason_code=SnapshotFailureCode.PIT_CONTEXT_UNAVAILABLE,
+        ) from exc
 
     # ---- duplicate policy (reject caller error, never silently dedupe) --
     requested = list(source_ids)
@@ -429,42 +471,68 @@ def build_sealed_input_snapshot(
 
     verdicts: dict[str, SnapshotFailureCode | None] = {}
     resolved: list[SealedSourceSnapshot] = []
+    internal_failure: Exception | None = None
     for sid in ordered_ids:
         try:
             snap, code = _resolve_source(archive, as_of, sid)
-        except Exception:  # noqa: BLE001 — every source must yield a typed verdict
+        except Exception as exc:  # noqa: BLE001 — preserve unexpected implementation failures
             snap, code = None, SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
+            if internal_failure is None:
+                internal_failure = exc
         verdicts[sid] = code
         if code is None and snap is not None:
             resolved.append(snap)
 
     if any(v is not None for v in verdicts.values()):
-        raise SnapshotBuildError(
-            SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
-            f"SEALED snapshot refused: {sum(1 for v in verdicts.values() if v)} "
-            f"of {len(ordered_ids)} requested sources ineligible",
-            verdicts,
+        internal_failed = any(
+            verdict is SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
+            for verdict in verdicts.values()
         )
+        outcome = (
+            SnapshotFailureCode.SNAPSHOT_BUILD_FAILED
+            if internal_failed else SnapshotFailureCode.UNAVAILABLE_FOR_SEALED_PIT
+        )
+        raise SnapshotBuildError(
+            outcome,
+            f"SEALED snapshot {('implementation failed' if internal_failed else 'unavailable')}: "
+            f"{sum(1 for v in verdicts.values() if v)} of {len(ordered_ids)} "
+            f"requested sources failed",
+            verdicts,
+        ) from internal_failure
 
     ordered = tuple(resolved)
-    _finalization_revalidation(archive, as_of, ordered)
+    try:
+        _finalization_revalidation(archive, as_of, ordered)
+    except SnapshotBuildError:
+        raise
+    except Exception as exc:  # noqa: BLE001 — unexpected finalization implementation failure
+        raise SnapshotBuildError(
+            SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
+            f"SEALED snapshot implementation failed during finalization ({type(exc).__name__})",
+        ) from exc
 
     as_of_str = as_of.isoformat()
-    snap_hash = _compute_input_snapshot_hash(
-        case_id=case_id, case_version=case_version, pit_context_id=pit_context_id,
-        pit_mode=mode, as_of=as_of_str, ordered=ordered,
-    )
-    created_at = (clock or utc_now)()
-    return SealedInputSnapshot(
-        snapshot_id=snap_hash,
-        case_id=case_id,
-        case_version=case_version,
-        pit_context_id=pit_context_id,
-        pit_mode=mode,
-        as_of=as_of_str,
-        ordered_sources=ordered,
-        source_count=len(ordered),
-        input_snapshot_hash=snap_hash,
-        closed_corpus_required=True,
-        created_at=created_at.isoformat() if isinstance(created_at, dt.datetime) else str(created_at),
-    )
+    try:
+        snap_hash = _compute_input_snapshot_hash(
+            case_id=case_id, case_version=case_version,
+            pit_mode=mode, as_of=as_of_str, ordered=ordered,
+        )
+        created_at = (clock or utc_now)()
+        return SealedInputSnapshot(
+            snapshot_id=snap_hash,
+            case_id=case_id,
+            case_version=case_version,
+            pit_context_id=pit_context_id,
+            pit_mode=mode,
+            as_of=as_of_str,
+            ordered_sources=ordered,
+            source_count=len(ordered),
+            input_snapshot_hash=snap_hash,
+            closed_corpus_required=True,
+            created_at=created_at.isoformat() if isinstance(created_at, dt.datetime) else str(created_at),
+        )
+    except Exception as exc:  # noqa: BLE001 — serializer/constructor failures are internal
+        raise SnapshotBuildError(
+            SnapshotFailureCode.SNAPSHOT_BUILD_FAILED,
+            f"SEALED snapshot implementation failed during identity construction ({type(exc).__name__})",
+        ) from exc
