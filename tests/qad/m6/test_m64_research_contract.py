@@ -679,3 +679,33 @@ class TestReviewHardening:
         req = _request(snap, authorized_prior_evidence_refs=("EV-A", "EV-B"))
         with pytest.raises(ResearchRequestError):
             dataclasses.replace(req, authorized_prior_evidence_refs=("EV-A", "EV-A"))
+
+    def test_39_whitespace_only_result_cannot_be_success(self):
+        blank = b" \n\t  "
+        with pytest.raises(ResearchResultError):
+            _result(result_bytes=blank, result_sha256=compute_result_sha256(blank))
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=blank, result_sha256=compute_result_sha256(blank),
+            )
+        # a real payload that merely contains whitespace still succeeds
+        ok = _result()
+        assert ok.is_success is True
+
+    def test_40_prior_evidence_refs_are_immutable_after_construction(self):
+        req = _request(_snapshot(), authorized_prior_evidence_refs=["EV-A", "EV-B"])
+        assert isinstance(req.authorized_prior_evidence_refs, tuple)
+        assert req.authorized_prior_evidence_refs == ("EV-A", "EV-B")
+        with pytest.raises(AttributeError):
+            req.authorized_prior_evidence_refs.append("EV-A")  # type: ignore[attr-defined]
+        # identical to supplying a tuple: the hash is stable and list-order-insensitive
+        as_tuple = _request(_snapshot(), authorized_prior_evidence_refs=("EV-A", "EV-B"))
+        assert req.request_payload_hash == as_tuple.request_payload_hash
+
+    def test_41_source_pointers_are_immutable_after_construction(self):
+        ok = _result(source_pointers=[SourcePointer(index=1, reference="https://a/1")])
+        assert isinstance(ok.source_pointers, tuple)
+        with pytest.raises(AttributeError):
+            ok.source_pointers.append(SourcePointer(index=2, reference="https://b/2"))  # type: ignore[attr-defined]

@@ -211,6 +211,15 @@ class SourceCorpusDescriptor:
     corpus_hash: str
     closed_corpus_required: bool
 
+    def __post_init__(self) -> None:
+        # Normalize to immutable tuples so a caller-supplied list cannot mutate
+        # the corpus (and silently invalidate corpus_hash) after construction.
+        object.__setattr__(self, "source_ids", tuple(self.source_ids))
+        object.__setattr__(
+            self, "exact_blob_hashes",
+            tuple((str(s), str(h)) for s, h in self.exact_blob_hashes),
+        )
+
     @property
     def source_count(self) -> int:
         return len(self.source_ids)
@@ -247,6 +256,12 @@ class DeepResearchRequest:
     capability: str = S10_CAPABILITY
 
     def __post_init__(self) -> None:
+        # Normalize BEFORE validating: a caller-supplied list must not be able to
+        # mutate the reference set (and stale request_payload_hash) afterwards.
+        object.__setattr__(
+            self, "authorized_prior_evidence_refs",
+            tuple(self.authorized_prior_evidence_refs),
+        )
         for name in (
             "request_id", "research_run_id", "ledger_id", "rrm_manifest_id",
             "case_id", "case_version", "evidence_gap_id", "research_question",
@@ -644,6 +659,11 @@ def _validate_result_invariants(
                 "SUCCESS requires non-empty result content (a blank provider "
                 "result must be represented as a typed failure)"
             )
+        if len(bytes(result_bytes).strip()) == 0:
+            raise ResearchResultError(
+                "SUCCESS requires non-blank result content (whitespace-only "
+                "provider output must be represented as a typed failure)"
+            )
         if not result_sha256:
             raise ResearchResultError("SUCCESS requires the exact result_sha256")
         actual = compute_result_sha256(bytes(result_bytes))
@@ -706,6 +726,9 @@ class DeepResearchResult:
     isolation_verification: IsolationVerification = IsolationVerification.NOT_VERIFIED
 
     def __post_init__(self) -> None:
+        # Immutable pointer collection: a caller-supplied list must not be able to
+        # mutate the preserved source pointers after validation.
+        object.__setattr__(self, "source_pointers", tuple(self.source_pointers))
         for name in ("request_id", "research_run_id", "ledger_id", "provider_surface"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
