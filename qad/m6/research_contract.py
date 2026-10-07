@@ -70,6 +70,7 @@ are likewise not accepted at this cluster (evidence belongs to M6.7/M6.8); only
 from __future__ import annotations
 
 import hashlib
+import unicodedata
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
@@ -116,6 +117,7 @@ __all__ = [
     "build_deep_research_request",
     "build_deep_research_result",
     "compute_result_sha256",
+    "compute_citation_list_sha256",
     "result_matches_hash",
     "validate_ledger_linkage",
     "validate_rrm_deep_research_runs",
@@ -654,6 +656,35 @@ class SourcePointer:
     title: str | None = None
 
 
+def compute_citation_list_sha256(source_pointers: Sequence["SourcePointer"]) -> str:
+    """Deterministic digest over the provider citation / source-pointer list.
+
+    M6.0 §3 defines the result hash as SHA-256 over the exact retrieved report
+    bytes **plus** a citation/source-list hash. ``result_sha256`` remains the
+    exact report-byte digest; this is the companion digest, computed over the
+    canonical ordering of the pointers (operational, NON-CANONICAL — it confers
+    no evidence status on the pointers).
+    """
+    identity = _CitationIdentity(
+        citations=[
+            _CitationRef(index=int(p.index), reference=str(p.reference),
+                         title=p.title if p.title is None else str(p.title))
+            for p in source_pointers
+        ]
+    )
+    return _deterministic_hash(identity)
+
+
+class _CitationRef(BaseModel):
+    index: int
+    reference: str
+    title: str | None = None
+
+
+class _CitationIdentity(BaseModel):
+    citations: list[_CitationRef]
+
+
 def _validate_result_invariants(
     status: "ResearchResultStatus",
     result_bytes: bytes | None,
@@ -662,9 +693,11 @@ def _validate_result_invariants(
     corpus_enum: "ClosedCorpusEnforcement",
     isolation_enum: "IsolationVerification",
     source_pointers: Sequence["SourcePointer"],
+    corpus_evidence_ref: str | None,
+    isolation_evidence_ref: str | None,
 ) -> None:
     """The M6.4 result invariants — enforced on EVERY construction path."""
-    # fail-closed enforcement / isolation states can never be dressed as SUCCESS
+    # negative fail-closed states must carry their matching status
     if corpus_enum is ClosedCorpusEnforcement.CANNOT_ENFORCE and (
         status is not ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT
     ):
@@ -679,18 +712,35 @@ def _validate_result_invariants(
             "an unverified request-isolation state must fail closed with "
             "REQUEST_ISOLATION_UNVERIFIED"
         )
-    # M6.4 cannot substantiate a POSITIVE proof claim: enforcement/isolation
-    # evidence belongs to M6.7/M6.8. A bare caller assertion must not establish it.
-    if corpus_enum is ClosedCorpusEnforcement.ENFORCED:
+    # a POSITIVE claim requires an explicit, non-empty evidence reference —
+    # a bare caller assertion is not proof.
+    if corpus_enum is ClosedCorpusEnforcement.ENFORCED and not (
+        corpus_evidence_ref or ""
+    ).strip():
         raise ResearchResultError(
-            "closed-corpus ENFORCED cannot be claimed at M6.4 — positive "
-            "enforcement evidence belongs to the provider clusters (M6.7/M6.8)"
+            "closed-corpus ENFORCED requires a non-empty closed_corpus_evidence_ref"
         )
-    if isolation_enum is IsolationVerification.VERIFIED:
+    if isolation_enum is IsolationVerification.VERIFIED and not (
+        isolation_evidence_ref or ""
+    ).strip():
         raise ResearchResultError(
-            "isolation VERIFIED cannot be claimed at M6.4 — positive isolation "
-            "proof belongs to the provider clusters (M6.7/M6.8)"
+            "isolation VERIFIED requires a non-empty isolation_evidence_ref"
         )
+    # M6.0 §5 / §11.2 R7: a PASS requires POSITIVE proof of closed-corpus
+    # enforcement and request isolation; otherwise the run must fail closed.
+    if status.is_success:
+        if corpus_enum is not ClosedCorpusEnforcement.ENFORCED:
+            raise ResearchResultError(
+                "SUCCESS requires proven closed-corpus enforcement (ENFORCED with an "
+                "evidence reference); otherwise fail closed with "
+                "PROVIDER_CANNOT_ENFORCE_SEALED_INPUT"
+            )
+        if isolation_enum is not IsolationVerification.VERIFIED:
+            raise ResearchResultError(
+                "SUCCESS requires proven request isolation (VERIFIED with an evidence "
+                "reference) per M6.0 R7; otherwise fail closed with "
+                "REQUEST_ISOLATION_UNVERIFIED"
+            )
 
     if status.is_success:
         if result_bytes is None or len(bytes(result_bytes)) == 0:
@@ -764,6 +814,15 @@ class DeepResearchResult:
     failure_detail: str | None = None
     closed_corpus_enforcement: ClosedCorpusEnforcement = ClosedCorpusEnforcement.NOT_VERIFIED
     isolation_verification: IsolationVerification = IsolationVerification.NOT_VERIFIED
+    #: Companion digest over the citation/source-pointer list (M6.0 §3); derived
+    #: from ``source_pointers`` and validated — a caller-supplied value that
+    #: disagrees is rejected.
+    citation_list_sha256: str | None = None
+    #: Opaque references to the positive enforcement/isolation evidence. Required
+    #: (non-empty) before ENFORCED / VERIFIED may be claimed, and therefore before
+    #: SUCCESS. M6.4 does not fabricate them; the provider clusters supply them.
+    closed_corpus_evidence_ref: str | None = None
+    isolation_evidence_ref: str | None = None
 
     def __post_init__(self) -> None:
         # Immutable pointer collection: a caller-supplied list must not be able to
@@ -805,9 +864,18 @@ class DeepResearchResult:
             )
         if self.result_bytes is not None and not isinstance(self.result_bytes, bytes):
             raise ResearchResultError("result_bytes must be bytes or None")
+        # Citation/source-list companion digest (M6.0 §3): derived and verified.
+        expected_citation = compute_citation_list_sha256(self.source_pointers)
+        if self.citation_list_sha256 is None:
+            object.__setattr__(self, "citation_list_sha256", expected_citation)
+        elif self.citation_list_sha256 != expected_citation:
+            raise ResearchResultError(
+                "citation_list_sha256 does not match the source-pointer list"
+            )
         _validate_result_invariants(
             self.status, self.result_bytes, self.result_sha256, self.failure_detail,
             self.closed_corpus_enforcement, self.isolation_verification, self.source_pointers,
+            self.closed_corpus_evidence_ref, self.isolation_evidence_ref,
         )
 
     @property
@@ -831,24 +899,30 @@ def compute_result_sha256(result_bytes: bytes) -> str:
     return hashlib.sha256(bytes(result_bytes)).hexdigest()
 
 
-#: Zero-width / format characters that render as nothing but are not Unicode
-#: whitespace (category Cf), so ``str.strip()`` alone would not remove them.
-_INVISIBLE_FORMAT_CHARS = "\ufeff\u200b\u200c\u200d\u2060"
+#: Unicode general categories that render as nothing: separators (Z*), format
+#: (Cf — includes the LRM/RLM marks, BOM, zero-width joiners/non-joiners) and
+#: control (Cc). Detecting by CATEGORY rather than a hand-listed character set
+#: means every invisible character is covered, not just enumerated ones.
+_INVISIBLE_CATEGORIES = ("Cf", "Cc", "Zs", "Zl", "Zp")
 
 
 def _is_blank_text_bytes(raw: bytes) -> bool:
     """True when ``raw`` decodes as text whose visible content is empty.
 
-    Handles ASCII *and* Unicode whitespace (NBSP, em-space, ideographic space …)
-    plus zero-width/BOM/format characters — order-independent, so interleaved
-    combinations such as ``"\\u200b \\u200c"`` are blank too. Bytes that do NOT
+    Every decoded character must be Unicode whitespace or belong to an invisible
+    general category (Cf/Cc/Zs/Zl/Zp) — so interleaved and unlisted invisible
+    characters (e.g. U+200E LEFT-TO-RIGHT MARK) are blank too. Bytes that do NOT
     decode as UTF-8 are treated as real (binary) payload, not blank text.
     """
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
         return False
-    return all(ch.isspace() or ch in _INVISIBLE_FORMAT_CHARS for ch in text)
+    for ch in text:
+        if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
+            continue
+        return False
+    return True
 
 
 def result_matches_hash(result: DeepResearchResult) -> bool:
@@ -879,6 +953,9 @@ def build_deep_research_result(
     isolation_verification: str | IsolationVerification = (
         IsolationVerification.NOT_VERIFIED
     ),
+    closed_corpus_evidence_ref: str | None = None,
+    isolation_evidence_ref: str | None = None,
+    citation_list_sha256: str | None = None,
 ) -> DeepResearchResult:
     """Build an immutable result envelope from provider output.
 
@@ -924,6 +1001,9 @@ def build_deep_research_result(
         failure_detail=failure_detail,
         closed_corpus_enforcement=corpus_enum,
         isolation_verification=isolation_enum,
+        closed_corpus_evidence_ref=closed_corpus_evidence_ref,
+        isolation_evidence_ref=isolation_evidence_ref,
+        citation_list_sha256=citation_list_sha256,
     )
 
 

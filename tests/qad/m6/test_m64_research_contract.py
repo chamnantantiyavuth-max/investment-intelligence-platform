@@ -173,6 +173,11 @@ def _result(**overrides):
         source_pointers=(SourcePointer(index=1, reference="https://a.example/1"),
                          SourcePointer(index=2, reference="https://b.example/2")),
         completed_at="2026-10-07T12:05:00+00:00",
+        # M6.0 §5 / §11.2 R7: a PASS must carry positive proof for both
+        closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+        isolation_verification=IsolationVerification.VERIFIED,
+        closed_corpus_evidence_ref="EVID-CORPUS-1",
+        isolation_evidence_ref="EVID-ISOLATION-1",
     )
     kwargs.update(overrides)
     return build_deep_research_result(**kwargs)
@@ -566,17 +571,28 @@ class TestReviewHardening:
         # the unmodified authoritative snapshot still builds
         assert _request(good).case_id == good.case_id
 
-    def test_32_positive_proof_claims_not_accepted(self):
-        """M6.4 cannot substantiate ENFORCED / VERIFIED — those belong to M6.7/M6.8."""
+    def test_32_success_requires_positive_proof_references(self):
+        """A bare ENFORCED/VERIFIED claim is not proof; no SUCCESS without proof."""
+        # bare positive claims (no evidence reference) are refused
         with pytest.raises(ResearchResultError):
-            _result(closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED)
+            _result(closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+                    closed_corpus_evidence_ref=None)
         with pytest.raises(ResearchResultError):
-            _result(isolation_verification=IsolationVerification.VERIFIED)
-        # a representational SUCCESS (proof pending) is allowed and says so
+            _result(isolation_verification=IsolationVerification.VERIFIED,
+                    isolation_evidence_ref=None)
+        # SUCCESS with no positive proof fails closed (M6.0 §5 / §11.2 R7)
+        with pytest.raises(ResearchResultError):
+            _result(closed_corpus_enforcement=ClosedCorpusEnforcement.NOT_VERIFIED,
+                    closed_corpus_evidence_ref=None)
+        with pytest.raises(ResearchResultError):
+            _result(isolation_verification=IsolationVerification.NOT_VERIFIED,
+                    isolation_evidence_ref=None)
+        # a PROVEN success is accepted and remains non-canonical
         ok = _result()
         assert ok.non_canonical is True
-        assert ok.closed_corpus_enforcement is ClosedCorpusEnforcement.NOT_VERIFIED
-        assert ok.isolation_verification is IsolationVerification.NOT_VERIFIED
+        assert ok.closed_corpus_enforcement is ClosedCorpusEnforcement.ENFORCED
+        assert ok.isolation_verification is IsolationVerification.VERIFIED
+        assert ok.closed_corpus_evidence_ref and ok.isolation_evidence_ref
 
     def test_33_prior_evidence_refs_join_the_payload_identity(self):
         snap = _snapshot()
@@ -613,6 +629,10 @@ class TestReviewHardening:
             request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
             status=ResearchResultStatus.SUCCESS, provider_surface="p",
             result_bytes=payload, result_sha256=compute_result_sha256(payload),
+            closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+            isolation_verification=IsolationVerification.VERIFIED,
+            closed_corpus_evidence_ref="EVID-CORPUS-1",
+            isolation_evidence_ref="EVID-ISO-1",
         )
         assert result_matches_hash(ok) is True
 
@@ -826,3 +846,58 @@ class TestReviewHardening:
         assert dict(ok.provider_reported_metadata) == {
             "model": "gemini-x", "tokens": "NOT_EXPOSED",
         }
+
+    def test_47_invisible_only_output_beyond_the_enumerated_set(self):
+        """Every invisible category is blank — not just enumerated characters."""
+        blank_variants = [
+            "\u200e".encode("utf-8"),          # LEFT-TO-RIGHT MARK (Cf)
+            "\u200f\u200e".encode("utf-8"),    # RLM + LRM
+            "\u061c".encode("utf-8"),          # ARABIC LETTER MARK (Cf)
+            "\u2066\u2069".encode("utf-8"),    # isolate controls (Cf)
+            "\x00\x01\x1f".encode("utf-8"),    # ASCII controls (Cc)
+            "\u200e \u00a0\u3000".encode("utf-8"),
+        ]
+        for blank in blank_variants:
+            with pytest.raises(ResearchResultError):
+                _result(result_bytes=blank, result_sha256=compute_result_sha256(blank))
+        # a single visible character makes it real content
+        real = "\u200eA".encode("utf-8")
+        assert _result(result_bytes=real,
+                       result_sha256=compute_result_sha256(real)).is_success is True
+
+    def test_48_result_hash_binds_the_citation_list(self):
+        from qad.m6.research_contract import compute_citation_list_sha256
+
+        ptrs_a = (SourcePointer(index=1, reference="https://a/1"),)
+        ptrs_b = (SourcePointer(index=1, reference="https://a/1"),
+                  SourcePointer(index=2, reference="https://b/2"))
+        # deterministic + pointer-sensitive
+        assert compute_citation_list_sha256(ptrs_a) == compute_citation_list_sha256(ptrs_a)
+        assert compute_citation_list_sha256(ptrs_a) != compute_citation_list_sha256(ptrs_b)
+        # the same report bytes with different citations yield a different companion digest
+        a = _result(source_pointers=ptrs_a)
+        b = _result(source_pointers=ptrs_b)
+        assert a.result_sha256 == b.result_sha256            # exact report bytes unchanged
+        assert a.citation_list_sha256 != b.citation_list_sha256
+        assert a.citation_list_sha256 == compute_citation_list_sha256(ptrs_a)
+        # a caller-supplied digest that disagrees is rejected
+        with pytest.raises(ResearchResultError):
+            _result(citation_list_sha256="f" * 64)
+
+    def test_49_success_requires_proof_on_direct_construction_too(self):
+        payload = b"content"
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=payload, result_sha256=compute_result_sha256(payload),
+            )
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=payload, result_sha256=compute_result_sha256(payload),
+                closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+                isolation_verification=IsolationVerification.VERIFIED,
+                closed_corpus_evidence_ref="EVID-C",  # isolation evidence missing
+            )
