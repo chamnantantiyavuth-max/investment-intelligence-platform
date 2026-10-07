@@ -69,6 +69,7 @@ are likewise not accepted at this cluster (evidence belongs to M6.7/M6.8); only
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import unicodedata
 from dataclasses import dataclass, field
@@ -83,6 +84,7 @@ from qad.m6.ledger import (
     LedgerError,
     validate_rrm_deep_research_runs,
 )
+from qad.m6.eligibility import SealedEligibility
 from qad.m6.snapshot import (
     PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
     SEALED_PIT_MODE,
@@ -490,6 +492,42 @@ def _verify_snapshot_consistency(snapshot: SealedInputSnapshot) -> None:
             raise RequestAuthorityViolation(
                 f"SEALED source {src.source_id!r} content hash does not match its "
                 "raw blob SHA-256"
+            )
+
+    # M6.2 structural invariants the authority path must re-check: a snapshot is
+    # only authoritative if it is internally consistent with its own build rules.
+    if snapshot.source_count != len(snapshot.ordered_sources):
+        raise RequestAuthorityViolation(
+            "SEALED snapshot source_count does not match its ordered sources"
+        )
+    ordered_ids = [s.source_id for s in snapshot.ordered_sources]
+    if ordered_ids != sorted(ordered_ids):
+        raise RequestAuthorityViolation(
+            "SEALED snapshot sources are not in canonical (sorted) order"
+        )
+    if len(set(ordered_ids)) != len(ordered_ids):
+        raise RequestAuthorityViolation(
+            "SEALED snapshot contains duplicate source ids"
+        )
+    try:
+        as_of_date = dt.date.fromisoformat(snapshot.as_of)
+    except (TypeError, ValueError):
+        raise RequestAuthorityViolation("SEALED snapshot AS_OF is not an ISO date")
+    for src in snapshot.ordered_sources:
+        if src.eligibility_verdict != SealedEligibility.ELIGIBLE.value:
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} is not ELIGIBLE "
+                f"({src.eligibility_verdict!r})"
+            )
+        try:
+            admitted = dt.datetime.fromisoformat(src.archive_admitted_at)
+        except (TypeError, ValueError):
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} admission timestamp is not ISO-8601"
+            )
+        if admitted.date() > as_of_date:
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} was admitted after AS_OF"
             )
 
 

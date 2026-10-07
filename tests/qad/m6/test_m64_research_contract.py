@@ -1047,3 +1047,42 @@ class TestReviewHardening:
             _request(tampered)
         # the untouched snapshot is still accepted
         assert _request(_snapshot()).case_id == snap.case_id
+
+    def test_57_snapshot_structural_invariants_are_reenforced(self):
+        """M6.2 build rules: count, order, uniqueness, eligibility, admitted<=AS_OF."""
+        snap = _snapshot()
+        src0 = snap.ordered_sources[0]
+        # source_count must match the ordered sources
+        with pytest.raises(RequestAuthorityViolation):
+            _request(dataclasses.replace(snap, source_count=19))
+        # a non-ELIGIBLE source is not authoritative input
+        with pytest.raises(RequestAuthorityViolation):
+            _request(dataclasses.replace(
+                snap,
+                ordered_sources=(dataclasses.replace(
+                    src0, eligibility_verdict="REJECTED"),) + tuple(snap.ordered_sources[1:]),
+            ))
+        # admission after AS_OF violates PIT (AS_OF is 2026-01-01 here)
+        with pytest.raises(RequestAuthorityViolation):
+            _request(dataclasses.replace(
+                snap,
+                ordered_sources=(dataclasses.replace(
+                    src0, archive_admitted_at="2099-01-01T00:00:00+00:00"),)
+                + tuple(snap.ordered_sources[1:]),
+            ))
+        # non-ISO admission timestamp fails closed
+        with pytest.raises(RequestAuthorityViolation):
+            _request(dataclasses.replace(
+                snap,
+                ordered_sources=(dataclasses.replace(
+                    src0, archive_admitted_at="not-a-timestamp"),)
+                + tuple(snap.ordered_sources[1:]),
+            ))
+        # duplicate source ids cannot be smuggled in (fails closed; the identity
+        # recomputation catches it as well as the explicit uniqueness check)
+        with pytest.raises(RequestAuthorityViolation):
+            _request(dataclasses.replace(
+                snap, ordered_sources=(src0, src0), source_count=2,
+            ))
+        # the untouched snapshot is still accepted
+        assert _request(snap).input_snapshot_hash == snap.input_snapshot_hash
