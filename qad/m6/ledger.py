@@ -367,22 +367,22 @@ def _telemetry_to_json(telemetry: Mapping[str, TelemetryMetric]) -> str:
 
 
 def _telemetry_from_json(raw: str | None) -> dict[str, TelemetryMetric]:
+    """Fail-closed read of a stored telemetry record.
+
+    Applies the SAME §7.2 contract rules as the write path (required-metric
+    completeness, contract metric set, and the status/value/reason invariants),
+    so a malformed foreign/legacy row raises a typed error instead of
+    materialising a semantically invalid metric.
+    """
     if not raw:
         return {}
-    data = json.loads(raw)
-    out: dict[str, TelemetryMetric] = {}
-    for k, v in data.items():
-        # Defence in depth: a durable record written by the store is always
-        # well-formed (the datastore trigger enforces it); a foreign/legacy row
-        # is rejected with a typed error rather than an unrelated TypeError.
-        if not isinstance(v, Mapping) or v.get("status") not in ("EXPOSED", "NOT_EXPOSED"):
-            raise LedgerValidationError(
-                f"stored telemetry[{k}] is not a well-formed metric record"
-            )
-        out[k] = TelemetryMetric(
-            status=TelemetryStatus(v["status"]), value=v.get("value"), reason=v.get("reason")
-        )
-    return out
+    try:
+        data = json.loads(raw)
+    except (TypeError, ValueError) as exc:
+        raise LedgerValidationError(f"stored telemetry is not valid JSON: {exc}") from None
+    if not isinstance(data, Mapping):
+        raise LedgerValidationError("stored telemetry must be a JSON object")
+    return _validate_telemetry(data)
 
 
 # ---------------------------------------------------------------------------

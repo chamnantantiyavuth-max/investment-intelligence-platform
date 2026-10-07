@@ -962,3 +962,52 @@ class TestReviewHardening:
             ledger_mod._telemetry_from_json('{"total_tokens": null}')
         with pytest.raises(ledger_mod.LedgerValidationError):
             ledger_mod._telemetry_from_json('{"cost": {"status": "BOGUS", "value": 1}}')
+
+    def test_44_reader_fails_closed_on_malformed_stored_telemetry(self, tmp_path):
+        """The read path applies the same §7.2 invariants as the write path."""
+        import qad.m6.ledger as ledger_mod
+        from qad.m6.ledger import _telemetry_from_json as read
+
+        good = {
+            "model_identity": {"status": "EXPOSED", "value": "gemini-x", "reason": None},
+            "prompt_tokens": {"status": "EXPOSED", "value": 5, "reason": None},
+            "completion_tokens": {"status": "EXPOSED", "value": 0, "reason": None},
+            "cost": {"status": "NOT_EXPOSED", "value": None, "reason": "NOT_EXPOSED_BY_PROVIDER"},
+            "model_version": {"status": "NOT_EXPOSED", "value": None, "reason": "hidden"},
+        }
+        ok = read(json.dumps(good))
+        assert ok["completion_tokens"].value == 0  # zero stays EXPOSED
+
+        malformed = [
+            '{"model_identity": {"status": "EXPOSED", "value": null},'
+            ' "prompt_tokens": {"status": "EXPOSED", "value": 1, "reason": null},'
+            ' "completion_tokens": {"status": "EXPOSED", "value": 1, "reason": null},'
+            ' "cost": {"status": "EXPOSED", "value": 1, "reason": null},'
+            ' "model_version": {"status": "EXPOSED", "value": 1, "reason": null}}',
+            json.dumps({**good, "cost": {"status": "NOT_EXPOSED", "value": None}}),
+            json.dumps({**good, "cost": {"status": "NOT_EXPOSED", "value": 0, "reason": "r"}}),
+            json.dumps({"model_identity": good["model_identity"]}),          # partial set
+            json.dumps({**good, "extra_metric": {"status": "EXPOSED", "value": 1}}),
+            "[]",                                                            # not an object
+            "{not json",                                                     # invalid JSON
+        ]
+        for raw in malformed:
+            with pytest.raises(ledger_mod.LedgerValidationError):
+                read(raw)
+
+        # and a malformed persisted row surfaces as a typed error via load_run
+        store, path = _store(tmp_path)
+        _create(store)
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute(
+                "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                " provider_surface, transport_type, started_at, telemetry_json)"
+                f" VALUES ('L-001',1,'INITIAL_ATTEMPT','p','X','t','{json.dumps(good)}')"
+            )
+            conn.commit()
+        finally:
+            conn.close()
+        assert store.load_run("L-001").attempts[0].telemetry["cost"].status is (
+            ledger_mod.TelemetryStatus.NOT_EXPOSED
+        )
