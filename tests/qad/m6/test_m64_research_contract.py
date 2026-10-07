@@ -635,3 +635,47 @@ class TestReviewHardening:
         # the public descriptor type is present and honest
         assert isinstance(req.corpus, SourceCorpusDescriptor)
         assert isinstance(req, DeepResearchRequest)
+
+    def test_36_snapshot_byte_integrity_is_verified(self):
+        """Captured bytes must match the declared blob hash and length."""
+        good = _snapshot()
+        first, second = good.ordered_sources
+        # bytes swapped while the recorded hash/length stay the original ones
+        tampered_bytes = dataclasses.replace(
+            good, ordered_sources=(dataclasses.replace(first, raw_bytes=b"TAMPERED"), second)
+        )
+        with pytest.raises(RequestAuthorityViolation):
+            _request(tampered_bytes)
+        # declared length altered while the bytes/hash are the originals
+        tampered_len = dataclasses.replace(
+            good,
+            ordered_sources=(dataclasses.replace(first, raw_byte_length=first.raw_byte_length + 1),
+                             second),
+        )
+        with pytest.raises(RequestAuthorityViolation):
+            _request(tampered_len)
+        # declared hash altered
+        tampered_hash = dataclasses.replace(
+            good,
+            ordered_sources=(dataclasses.replace(first, raw_blob_sha256="a" * 64), second),
+        )
+        with pytest.raises(RequestAuthorityViolation):
+            _request(tampered_hash)
+        # the untouched authoritative snapshot still builds
+        assert _request(good).source_ids == ("S1", "S2")
+
+    def test_37_direct_request_requires_consistent_snapshot_identity(self):
+        req = _request(_snapshot())
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, snapshot_id="f" * 64)
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, input_snapshot_hash="f" * 64)
+
+    def test_38_duplicate_prior_evidence_refs_rejected(self):
+        snap = _snapshot()
+        with pytest.raises(ResearchRequestError):
+            _request(snap, authorized_prior_evidence_refs=("EV-A", "EV-A"))
+        # direct construction cannot smuggle duplicates past the gate either
+        req = _request(snap, authorized_prior_evidence_refs=("EV-A", "EV-B"))
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, authorized_prior_evidence_refs=("EV-A", "EV-A"))

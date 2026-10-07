@@ -262,6 +262,10 @@ class DeepResearchRequest:
             )
         if self.pit_mode != SEALED_PIT_MODE:
             raise ResearchRequestError(f"request pit_mode must be {SEALED_PIT_MODE!r}")
+        if self.snapshot_id != self.input_snapshot_hash:
+            raise ResearchRequestError(
+                "snapshot_id must equal the deterministic input_snapshot_hash"
+            )
         if self.corpus.closed_corpus_required is not True:
             raise ResearchRequestError("a SEALED request corpus must require a closed corpus")
         if self.request_isolation_required is not True:
@@ -276,11 +280,18 @@ class DeepResearchRequest:
             raise ResearchRequestError(
                 "corpus source ids disagree with the exact blob-hash ordering"
             )
+        seen_refs: set[str] = set()
         for ref in self.authorized_prior_evidence_refs:
             if not isinstance(ref, str) or not ref.strip():
                 raise ResearchRequestError(
                     "authorized_prior_evidence_refs entries must be non-empty strings"
                 )
+            if ref in seen_refs:
+                raise ResearchRequestError(
+                    f"duplicate authorized prior-evidence reference {ref!r}; the "
+                    "reference set must be unique"
+                )
+            seen_refs.add(ref)
         expected_corpus_hash = _deterministic_hash(_CorpusIdentity(
             sources=[
                 _CorpusSource(source_id=s, exact_blob_hash=h)
@@ -373,6 +384,25 @@ def _verify_snapshot_consistency(snapshot: SealedInputSnapshot) -> None:
         raise RequestAuthorityViolation(
             "SEALED snapshot id does not equal its deterministic identity hash"
         )
+    # Byte-level integrity: the captured bytes must match the declared blob hash
+    # and length for every sealed source (the identity hash alone would not catch
+    # a byte swap that preserved the recorded hash).
+    for src in snapshot.ordered_sources:
+        blob = src.raw_bytes
+        if not isinstance(blob, (bytes, bytearray)):
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} does not carry exact bytes"
+            )
+        if hashlib.sha256(bytes(blob)).hexdigest() != src.raw_blob_sha256:
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} bytes do not match the declared "
+                "blob SHA-256"
+            )
+        if len(blob) != src.raw_byte_length:
+            raise RequestAuthorityViolation(
+                f"SEALED source {src.source_id!r} byte length does not match the "
+                "declared length"
+            )
 
 
 def _deterministic_hash(payload: BaseModel) -> str:
@@ -487,11 +517,18 @@ def build_deep_research_request(
     )
 
     prior_refs = tuple(authorized_prior_evidence_refs)
+    seen_refs: set[str] = set()
     for ref in prior_refs:
         if not isinstance(ref, str) or not ref.strip():
             raise ResearchRequestError(
                 "authorized_prior_evidence_refs entries must be non-empty strings"
             )
+        if ref in seen_refs:
+            raise ResearchRequestError(
+                f"duplicate authorized prior-evidence reference {ref!r}; the "
+                "reference set must be unique"
+            )
+        seen_refs.add(ref)
 
     payload_hash = _deterministic_hash(
         _RequestPayloadIdentity(
