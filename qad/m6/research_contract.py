@@ -659,10 +659,11 @@ def _validate_result_invariants(
                 "SUCCESS requires non-empty result content (a blank provider "
                 "result must be represented as a typed failure)"
             )
-        if len(bytes(result_bytes).strip()) == 0:
+        if len(bytes(result_bytes).strip()) == 0 or _is_blank_text_bytes(bytes(result_bytes)):
             raise ResearchResultError(
-                "SUCCESS requires non-blank result content (whitespace-only "
-                "provider output must be represented as a typed failure)"
+                "SUCCESS requires non-blank result content (blank / whitespace-only "
+                "provider output, including Unicode whitespace, must be represented "
+                "as a typed failure)"
             )
         if not result_sha256:
             raise ResearchResultError("SUCCESS requires the exact result_sha256")
@@ -771,6 +772,25 @@ def compute_result_sha256(result_bytes: bytes) -> str:
     if not isinstance(result_bytes, (bytes, bytearray)):
         raise ResearchResultError("result bytes must be bytes")
     return hashlib.sha256(bytes(result_bytes)).hexdigest()
+
+
+#: Zero-width / format characters that render as nothing but are not Unicode
+#: whitespace (category Cf), so ``str.strip()`` alone would not remove them.
+_INVISIBLE_FORMAT_CHARS = "\ufeff\u200b\u200c\u200d\u2060"
+
+
+def _is_blank_text_bytes(raw: bytes) -> bool:
+    """True when ``raw`` decodes as text whose visible content is empty.
+
+    Handles ASCII *and* Unicode whitespace (NBSP, em-space, ideographic space …)
+    plus zero-width/BOM-only content. Bytes that do NOT decode as UTF-8 are
+    treated as real (binary) payload, not blank text.
+    """
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    return text.strip().strip(_INVISIBLE_FORMAT_CHARS) == ""
 
 
 def result_matches_hash(result: DeepResearchResult) -> bool:

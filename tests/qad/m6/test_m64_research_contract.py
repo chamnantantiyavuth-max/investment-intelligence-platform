@@ -709,3 +709,28 @@ class TestReviewHardening:
         assert isinstance(ok.source_pointers, tuple)
         with pytest.raises(AttributeError):
             ok.source_pointers.append(SourcePointer(index=2, reference="https://b/2"))  # type: ignore[attr-defined]
+
+    def test_42_unicode_whitespace_only_result_cannot_be_success(self):
+        blank_variants = [
+            b"\xc2\xa0\xe2\x80\x83\xe3\x80\x80",   # NBSP + em space + ideographic space
+            b"\xef\xbb\xbf",                        # BOM only
+            b"\xe2\x80\x8b",                        # zero-width space
+            b" \xc2\xa0\n",
+        ]
+        for blank in blank_variants:
+            with pytest.raises(ResearchResultError):
+                _result(result_bytes=blank, result_sha256=compute_result_sha256(blank))
+            with pytest.raises(ResearchResultError):
+                DeepResearchResult(
+                    request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                    status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                    result_bytes=blank, result_sha256=compute_result_sha256(blank),
+                )
+        # real text containing Unicode whitespace still succeeds
+        real = "ผลการวิจัย gold \u00a0 outlook".encode("utf-8")
+        ok = _result(result_bytes=real, result_sha256=compute_result_sha256(real))
+        assert ok.is_success is True
+        # non-UTF-8 bytes are real (binary) payload, not blank text
+        binary = b"\x00\x01\xff\xfe\x80"
+        ok_bin = _result(result_bytes=binary, result_sha256=compute_result_sha256(binary))
+        assert ok_bin.is_success is True
