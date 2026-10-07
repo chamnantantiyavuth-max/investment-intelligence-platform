@@ -309,8 +309,8 @@ class DeepResearchRequest:
             "snapshot_id", "request_payload_hash",
         ):
             value = getattr(self, name)
-            if not isinstance(value, str) or not value.strip():
-                raise ResearchRequestError(f"{name} must be a non-empty string")
+            if not _has_visible_text(value):
+                raise ResearchRequestError(f"{name} must be a non-blank string")
         if self.capability != S10_CAPABILITY:
             raise ResearchRequestError(
                 f"unsupported capability {self.capability!r}; M6.4 exposes {S10_CAPABILITY!r}"
@@ -337,9 +337,9 @@ class DeepResearchRequest:
             )
         seen_refs: set[str] = set()
         for ref in self.authorized_prior_evidence_refs:
-            if not isinstance(ref, str) or not ref.strip():
+            if not _has_visible_text(ref):
                 raise ResearchRequestError(
-                    "authorized_prior_evidence_refs entries must be non-empty strings"
+                    "authorized_prior_evidence_refs entries must be non-blank strings"
                 )
             if ref in seen_refs:
                 raise ResearchRequestError(
@@ -439,6 +439,10 @@ def _verify_snapshot_consistency(snapshot: SealedInputSnapshot) -> None:
         raise RequestAuthorityViolation(
             "SEALED snapshot id does not equal its deterministic identity hash"
         )
+    if snapshot.closed_corpus_required is not True:
+        raise RequestAuthorityViolation(
+            "the SEALED snapshot must require a closed corpus"
+        )
     # Byte-level integrity: the captured bytes must match the declared blob hash
     # and length for every sealed source (the identity hash alone would not catch
     # a byte swap that preserved the recorded hash).
@@ -465,8 +469,8 @@ def _deterministic_hash(payload: BaseModel) -> str:
 
 
 def _require_non_empty(value: Any, name: str, error: type[ResearchContractError]) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise error(f"{name} must be a non-empty string")
+    if not _has_visible_text(value):
+        raise error(f"{name} must be a non-blank string")
     return value
 
 
@@ -517,10 +521,6 @@ def build_deep_research_request(
     if snapshot.pit_mode != SEALED_PIT_MODE:
         raise RequestAuthorityViolation(
             f"snapshot PIT mode {snapshot.pit_mode!r} is not {SEALED_PIT_MODE!r}"
-        )
-    if not snapshot.closed_corpus_required:
-        raise RequestAuthorityViolation(
-            "the SEALED snapshot must require a closed corpus"
         )
 
     _require_non_empty(request_id, "request_id", ResearchRequestError)
@@ -574,9 +574,9 @@ def build_deep_research_request(
     prior_refs = tuple(authorized_prior_evidence_refs)
     seen_refs: set[str] = set()
     for ref in prior_refs:
-        if not isinstance(ref, str) or not ref.strip():
+        if not _has_visible_text(ref):
             raise ResearchRequestError(
-                "authorized_prior_evidence_refs entries must be non-empty strings"
+                "authorized_prior_evidence_refs entries must be non-blank strings"
             )
         if ref in seen_refs:
             raise ResearchRequestError(
@@ -714,17 +714,17 @@ def _validate_result_invariants(
         )
     # a POSITIVE claim requires an explicit, non-empty evidence reference —
     # a bare caller assertion is not proof.
-    if corpus_enum is ClosedCorpusEnforcement.ENFORCED and not (
-        corpus_evidence_ref or ""
-    ).strip():
+    if corpus_enum is ClosedCorpusEnforcement.ENFORCED and not _has_visible_text(
+        corpus_evidence_ref
+    ):
         raise ResearchResultError(
-            "closed-corpus ENFORCED requires a non-empty closed_corpus_evidence_ref"
+            "closed-corpus ENFORCED requires a non-blank closed_corpus_evidence_ref"
         )
-    if isolation_enum is IsolationVerification.VERIFIED and not (
-        isolation_evidence_ref or ""
-    ).strip():
+    if isolation_enum is IsolationVerification.VERIFIED and not _has_visible_text(
+        isolation_evidence_ref
+    ):
         raise ResearchResultError(
-            "isolation VERIFIED requires a non-empty isolation_evidence_ref"
+            "isolation VERIFIED requires a non-blank isolation_evidence_ref"
         )
     # M6.0 §5 / §11.2 R7: a PASS requires POSITIVE proof of closed-corpus
     # enforcement and request isolation; otherwise the run must fail closed.
@@ -764,7 +764,7 @@ def _validate_result_invariants(
         if failure_detail:
             raise ResearchResultError("SUCCESS must not carry failure_detail")
     else:
-        if not failure_detail or not str(failure_detail).strip():
+        if not _has_visible_text(failure_detail):
             raise ResearchResultError(
                 "a non-SUCCESS result requires a documented failure_detail "
                 "(failures are never a silent blank)"
@@ -783,8 +783,8 @@ def _validate_result_invariants(
     for ptr in source_pointers:
         if not isinstance(ptr, SourcePointer):
             raise ResearchResultError("source_pointers must contain SourcePointer values")
-        if not isinstance(ptr.reference, str) or not ptr.reference.strip():
-            raise ResearchResultError("a source pointer requires a non-empty reference")
+        if not _has_visible_text(ptr.reference):
+            raise ResearchResultError("a source pointer requires a non-blank reference")
 
 
 @dataclass(frozen=True)
@@ -848,8 +848,8 @@ class DeepResearchResult:
             )
         for name in ("request_id", "research_run_id", "ledger_id", "provider_surface"):
             value = getattr(self, name)
-            if not isinstance(value, str) or not value.strip():
-                raise ResearchResultError(f"{name} must be a non-empty string")
+            if not _has_visible_text(value):
+                raise ResearchResultError(f"{name} must be a non-blank string")
         if not isinstance(self.status, ResearchResultStatus):
             raise ResearchResultError(
                 "status must be a ResearchResultStatus (use build_deep_research_result)"
@@ -906,6 +906,15 @@ def compute_result_sha256(result_bytes: bytes) -> str:
 _INVISIBLE_CATEGORIES = ("Cf", "Cc", "Zs", "Zl", "Zp")
 
 
+def _is_blank_text(text: str) -> bool:
+    """True when every character is whitespace or an invisible category."""
+    for ch in text:
+        if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
+            continue
+        return False
+    return True
+
+
 def _is_blank_text_bytes(raw: bytes) -> bool:
     """True when ``raw`` decodes as text whose visible content is empty.
 
@@ -918,11 +927,16 @@ def _is_blank_text_bytes(raw: bytes) -> bool:
         text = raw.decode("utf-8")
     except UnicodeDecodeError:
         return False
-    for ch in text:
-        if ch.isspace() or unicodedata.category(ch) in _INVISIBLE_CATEGORIES:
-            continue
-        return False
-    return True
+    return _is_blank_text(text)
+
+
+def _has_visible_text(value: Any) -> bool:
+    """True iff ``value`` is a string carrying at least one visible character.
+
+    Invisible-only strings (spaces, LRM/RLM, BOM, zero-width, controls) are NOT
+    acceptable for a contractually non-empty text field.
+    """
+    return isinstance(value, str) and not _is_blank_text(value)
 
 
 def result_matches_hash(result: DeepResearchResult) -> bool:

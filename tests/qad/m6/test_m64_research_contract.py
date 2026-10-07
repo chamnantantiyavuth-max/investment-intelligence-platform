@@ -901,3 +901,39 @@ class TestReviewHardening:
                 isolation_verification=IsolationVerification.VERIFIED,
                 closed_corpus_evidence_ref="EVID-C",  # isolation evidence missing
             )
+
+    def test_50_snapshot_closed_corpus_flag_cannot_be_bypassed(self):
+        """A snapshot that does not require a closed corpus is not authoritative."""
+        snap = _snapshot()
+        req = _request(snap)
+        tampered = dataclasses.replace(snap, closed_corpus_required=False)
+        # the builder refuses the tampered snapshot …
+        with pytest.raises(RequestAuthorityViolation):
+            _request(tampered)
+        # … and it cannot be attached to a request by direct construction
+        with pytest.raises(RequestAuthorityViolation):
+            dataclasses.replace(req, authority_snapshot=tampered)
+        # the untouched snapshot is still accepted
+        assert _request(_snapshot()).closed_corpus_required is True
+
+    def test_51_invisible_only_contract_text_fields_are_rejected(self):
+        invisible = "\u200e"                      # LRM
+        invisible_pair = "\u2066\u2069"           # isolate controls
+        # evidence references must carry visible content
+        with pytest.raises(ResearchResultError):
+            _result(isolation_evidence_ref=invisible)
+        with pytest.raises(ResearchResultError):
+            _result(closed_corpus_evidence_ref=invisible_pair)
+        # a failure_detail must be a real, readable statement
+        with pytest.raises(ResearchResultError):
+            _result(status=ResearchResultStatus.RESEARCH_UNAVAILABLE,
+                    result_bytes=None, result_sha256=None, failure_detail=f" {invisible} ")
+        # a source pointer must reference something readable, not just spaces/controls
+        with pytest.raises(ResearchResultError):
+            _result(source_pointers=(SourcePointer(index=1, reference=invisible),))
+        # request text fields obey the same rule (builder + direct construction)
+        with pytest.raises(ResearchRequestError):
+            _request(_snapshot(), research_question=invisible)
+        req = _request(_snapshot())
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, evidence_gap_id=invisible)
