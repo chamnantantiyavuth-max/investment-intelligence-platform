@@ -1,3 +1,81 @@
+# Session — 2026-10-07 (M6.4 Research Request/Result Adapter Contract — code GREEN, review round 13 = C, 1 open finding escalated)
+
+## QAD M6.4 REQUEST/RESULT CONTRACT — IMPLEMENTED; ROUND-13 FINDING 2 FIXED; FINDING 1 → FOUNDER DECISION
+
+Plain language: M6.4 is the "paperwork" layer that describes a Deep Research request
+and its result before any provider is called. It is built and all its tests pass. The
+independent reviewer went through it 13 times; rounds 1–12 found things and I fixed
+every one. Round 13 found two more: one I fixed, one is a policy question I must not
+decide alone — so I stopped and brought it to the Founder.
+
+Code state — `impl/m6-gemini-notebook`, branch head `1fae43b782166e20e17a606c2e049a4ae803f06d`
+(pushed; remote identical); main untouched at `5bf107774b29e5a5fe4dcec5846800b9b48361ba`.
+
+What M6.4 delivers (`qad/m6/research_contract.py`):
+- immutable `DeepResearchRequest` / `DeepResearchResult` — the S10 logical boundary;
+- the accepted M6.2 SEALED snapshot is AUTHORITATIVE: every derived field
+  (case_id/case_version/PIT mode/AS_OF/input_snapshot_hash/source corpus) must AGREE
+  with it, and the snapshot itself is re-verified (identity recomputation, byte/hash/
+  length, `source_content_hash == raw_blob_sha256`, canonical order, unique ids,
+  ELIGIBLE-only sources, admission ≤ AS_OF) — on the builder AND direct construction;
+- `request_payload_hash` is deterministic (no clock / UUID / path / provider surface);
+- `closed_corpus_required` and REQUEST-ISOLATED reconstruction are CARRIED as
+  requirements, NOT enforced (enforcement proof belongs to M6.7/M6.8);
+- results are ALWAYS NON-CANONICAL; blank output can never be SUCCESS; exact
+  result-byte SHA-256 plus a companion citation-list digest;
+- source pointers are DISCOVERED SOURCE REFERENCES only — never SRC-01 / EV-01;
+- ledger + RRM-01 linkage unchanged (`deep_research_runs[]` = ledger-id strings);
+- no canonical schema added (still 68); no provider transport, no network, no Gemini.
+
+Tests: M6.4 targeted **57/57 GREEN**; `tests/qad/m6` **165/165 GREEN** (M6.1–M6.3 stay
+GREEN); QAD **700 passed / 1 inherited pre-existing failure**
+(`test_contract_conformance.py::test_schema_build_identity` — reproduced on clean HEAD,
+unrelated to M6); ops **94 passed**; broad ops collection has 4 inherited
+`ModuleNotFoundError: fastapi` errors (environment, unrelated). No `.sqlite3` file left
+in any worktree. 5/5 cron PAUSED.
+
+Independent review (family-separated: DeepSeek producer, GPT-6 Luna High reviewer;
+read-only disposable copy with no `.git`, `--no-restore-cwd`, external basetemp — the
+reviewer wrote NOTHING into any governed worktree):
+- rounds 1–12: all C, **all findings fixed** (snapshot authenticity/byte integrity/
+  identity consistency/authority binding/content-hash binding; construction-time
+  invariants; immutable collections + metadata; citation-list digest; R7 SUCCESS-proof
+  rule; provider-config + SourcePointer validation; surrogates). The blank-output axis
+  is formally CLOSED — an exhaustive sweep of 1,112,064 Unicode scalar values plus an
+  independent Node Default_Ignorable_Code_Point scan found NO accepted blank character.
+- **round 13: C, 2 findings**
+  - finding 2 (FIXED, `1fae43b`): the authority path did not re-check M6.2's other
+    structural build rules → now enforces source_count, canonical order, uniqueness,
+    ELIGIBLE-only, and admission ≤ AS_OF.
+  - finding 1 (**NEW CONTRACT/POLICY ISSUE — ESCALATED, NOT fix-looped**): SUCCESS can
+    be built with invented (unresolved) ENFORCED/VERIFIED evidence references. Rounds
+    2, 7 and 13 have given CONTRADICTORY rulings on representational SUCCESS, and round
+    13's remedy (make SUCCESS unconstructible at M6.4) conflicts with the task brief's
+    §11 / §20 tests 17–22. Per AGENTS.md (same-authority conflict → stop and report)
+    and brief §23, this goes to the Founder.
+
+Decision package issued (one question): **A** refuse SUCCESS at M6.4 · **B** trusted
+proof-resolver seam with a refusing default (**recommended**) · **C** overrule the
+reviewer and carry the finding · **D** freeze and park.
+
+Not done, by design: no M6.5, no Gemini transport, no Notebook UI work, no live calls,
+no source ingestion, no cron resume, no merge to main, no production claim.
+
+## Recommended next action
+
+**Answer the round-13 finding-1 decision (recommended: B).** On that answer I implement
+the chosen option, push, run a round-14 bounded re-review, and only then emit
+`M6.4 RESEARCH REQUEST/RESULT CONTRACT GREEN / S10 NON-CANONICAL BOUNDARY VERIFIED /
+READY FOR M6.5`.
+
+Alternatives: (A) pick strict Option A and make SUCCESS unconstructible at M6.4 — needs
+the brief §11 / tests 17–22 expectations amended; (B) pick Option C — formally overrule
+the reviewer, record the finding as an accepted limitation closed in M6.7/M6.8, and mark
+M6.4 pass-with-carry; (C) pick Option D — freeze M6.4 with the finding open and park the
+whole M6 sequence.
+
+---
+
 # Session — 2026-10-07 (M6.3 state sync — Deep Research Run Ledger GREEN / READY FOR M6.4)
 
 ## QAD M6.3 DEEP RESEARCH RUN LEDGER — GREEN / DURABLE PROVENANCE VERIFIED / READY FOR M6.4
@@ -1459,3 +1537,5 @@ then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
 <!-- 2026-09-14 11:45 UTC+7 -->
 
 <!-- 2026-10-07 16:37 UTC+7 (M6.3 state sync — Deep Research Run Ledger GREEN / DURABLE PROVENANCE VERIFIED / READY FOR M6.4; no new FD; main 5bf1077 unchanged; 5/5 cron PAUSED) -->
+
+<!-- 2026-10-07 19:29 UTC+7 -->
