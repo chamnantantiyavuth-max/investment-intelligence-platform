@@ -1,3 +1,47 @@
+# Session — 2026-10-07 (M6.2 contract correction — family-independent review and closeout)
+
+## M6.2 CONTRACT CORRECTION PASS — TEST_VERIFIED / FAMILY-INDEPENDENT REVIEW PASS
+
+The original 6 Oct M6.2 GREEN acceptance below is preserved as historical
+evidence, but was later invalidated after the hash-identity mismatch and SEALED
+failure-mapping mismatch were reproduced. This bounded correction and its
+verified evidence supersede that earlier acceptance; no earlier record was
+deleted or rewritten.
+
+**Correction:** `qad/m6/snapshot.py` and
+`tests/qad/m6/test_m62_sealed_snapshot.py`, committed locally on
+`fix/m6.2-snapshot-identity-contract` as
+`f2d6b134380bc08d385c34d6b28c727b6401f674` (`fix(qad): align M6.2 sealed
+snapshot identity contract`). `input_snapshot_hash` now uses exactly
+`case_id`, `case_version`, `pit_mode`, `as_of`, and canonically ordered
+`{source_id, exact_blob_hash}` entries; it excludes PIT context identity and
+non-contract metadata. SEALED eligibility/binding failures map canonically to
+`UNAVAILABLE_FOR_SEALED_PIT`; unexpected internal failures remain distinct.
+
+**Family-independent review (FD #143):** producer = OpenAI-family
+Codex/ChatGPT; reviewer = Gemini 3.8 Flash, Google family, via OpenRouter
+(`google/gemini-3.8-flash`), HIGH reasoning. One-shot Hermes invocation used
+safe mode and the read-only `web` toolset only; MCP/plugins and repository
+access were unavailable to the reviewer. CLI exit 0; 0 tool calls; session
+`20261007_123332_824472`. Hermes emitted a pre-existing update-in-progress
+warning and ran with previous dependencies; no update or gateway restart was
+attempted. Verdict **A — PASS / NO BLOCKING FINDINGS**.
+Reviewer inputs and finding checklist are summarized in
+`evidence/m6.2/REVIEW-ROUND4-2026-10-07.txt`.
+
+**Final verification after review (no code changes between review and tests):**
+M6.2 targeted **41 passed**; M6.1 + persistence + M5.3/S7 PIT **336 passed,
+11 existing warnings**; `tests/qad` **594 passed, 4 failed, 11 warnings**.
+The four failures are `test_fk_count`, `test_fk_no_phantom`,
+`test_infrastructure_is_family_based`, and `test_schema_build_identity`;
+the same four were reproduced at the authorized base (101 passed, 4 failed),
+and the reviewer assessed them as inherited/non-regressions. The full QAD suite
+is **not** called PASS. Compile checks and `git diff --check` passed.
+
+**Boundaries:** local commit only; no push, merge, main modification,
+production access, live Gemini product canary, or cron change. Shared checkout
+untouched. **M6.3 NOT STARTED / NOT AUTHORIZED.**
+
 # Session — 2026-10-06 (interactive: QAD M6 IMPLEMENTATION AUTHORIZED — FD #151; clusters M6.1 Archive Admission Attestation + M6.2 SEALED Snapshot Builder / PIT Boundary)
 
 ## QAD M6.1 + M6.2 COMPLETE (6 Oct 2026) — branch `impl/m6-gemini-notebook`

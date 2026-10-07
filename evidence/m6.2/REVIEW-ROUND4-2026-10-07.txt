@@ -1,0 +1,62 @@
+M6.2 CONTRACT CORRECTION — FAMILY-INDEPENDENT REVIEW AND FINAL VERIFICATION
+Date: 2026-10-07 (UTC+7)
+Correction branch: fix/m6.2-snapshot-identity-contract
+Authorized base: 204438da26b15b07cb5b3c7d105c0613cac0746f
+Correction commit: f2d6b134380bc08d385c34d6b28c727b6401f674
+
+STATUS
+The original 2026-10-06 M6.2 GREEN acceptance was later invalidated after the
+hash-identity mismatch and SEALED failure-mapping mismatch were reproduced.
+This bounded correction and the evidence below supersede that earlier M6.2
+acceptance. The original closeout remains preserved in SESSION_CLOSEOUT.md.
+
+REVIEW
+Producer family: OpenAI (Codex/ChatGPT-backed context).
+Reviewer: Gemini 3.8 Flash, Google family, routed as
+google/gemini-3.8-flash through OpenRouter at HIGH reasoning.
+Execution: one-shot Hermes CLI invocation; safe mode; invocation toolset limited
+to read-only web; MCP/plugins disabled; reviewer received immutable text, not
+repository access. CLI completed with exit 0 and reported 0 tool calls. Hermes
+reported a pre-existing update-in-progress warning and ran with previous
+dependencies; no update or gateway restart was attempted. Review session:
+20261007_123332_824472.
+Inputs: authoritative QAD-M6.0-DESIGN-GATE-RECONCILIATION.md; exact
+base-to-correction diff; complete changed snapshot.py and M6.2 test file;
+unchanged M6 eligibility and persistence attestation dependencies; supplied
+targeted/regression/baseline test evidence.
+Verdict: A — PASS / NO BLOCKING FINDINGS.
+Findings: none.
+
+The review assessed all twelve authorized checks: exact identity payload and
+exclusions; verified admitted bytes; deterministic ordering; contract-derived
+known-answer test; PIT-context invariance; identity mutation sensitivity;
+canonical UNAVAILABLE_FOR_SEALED_PIT handling for A–K failures; distinction
+from internal failures; unchanged M6.1 and M5.3/S7 guarantees; and authorized
+scope. The reviewer also assessed the four QAD failures against the supplied
+base reproduction and found the evidence supports inherited/non-regression.
+
+IDENTITY CONTRACT
+input_snapshot_hash is based on exactly case_id, case_version, pit_mode, as_of,
+and ordered {source_id, exact_blob_hash} entries. It excludes pit_context_id,
+source_content_hash, attestation UUID, timestamps, paths, and object identity.
+The test-local known-answer hash is
+00698eda5f5f86923d1954b43f17b784b250281db11861a90dbfdc2fa11f9830.
+
+FINAL VERIFICATION (fresh after review; no implementation changes after review)
+- M6.2 targeted: 41 passed.
+- M6.1 + persistence + M5.3/S7 PIT: 336 passed, 11 existing warnings.
+- Full tests/qad: 594 passed, 4 failed, 11 warnings. The failures are:
+  tests/qad/test_contract_conformance.py::test_fk_count
+  tests/qad/test_contract_conformance.py::test_fk_no_phantom
+  tests/qad/test_contract_conformance.py::test_infrastructure_is_family_based
+  tests/qad/test_contract_conformance.py::test_schema_build_identity
+- At the authorized base, the same four failures were reproduced (101 passed,
+  4 failed); full QAD is NOT reported as passing.
+- Python compile checks: PASS.
+- git diff --check: PASS.
+
+SCOPE AND BOUNDARIES
+Only qad/m6/snapshot.py and tests/qad/m6/test_m62_sealed_snapshot.py were in
+the correction commit. The correction is local and not pushed or merged; main
+and the shared checkout remain untouched. Production access: NONE. Live Gemini
+product canary: NONE. Cron change: NONE. M6.3: NOT STARTED / NOT AUTHORIZED.
