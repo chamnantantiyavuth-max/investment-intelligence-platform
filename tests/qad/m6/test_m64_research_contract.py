@@ -1012,3 +1012,25 @@ class TestReviewHardening:
         with pytest.raises(ResearchRequestError):
             from qad.m6.research_contract import ProviderConfiguration
             ProviderConfiguration(provider_surface="\u180b")
+
+    def test_55_surrogates_are_never_valid_text(self):
+        """A Cs surrogate codepoint is not text — alone or embedded."""
+        lone = "\ud800"
+        embedded = "valid text \udfff more"
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=1, reference=lone)
+        with pytest.raises(ResearchResultError):
+            SourcePointer(index=1, reference=embedded)     # visible chars + surrogate
+        with pytest.raises(ResearchRequestError):
+            _request(_snapshot(), research_question=lone)
+        with pytest.raises(ResearchRequestError):
+            _request(_snapshot(), research_question=embedded)
+        with pytest.raises(ResearchRequestError):
+            from qad.m6.research_contract import ProviderConfiguration
+            ProviderConfiguration(provider_surface=lone)
+        with pytest.raises(ResearchResultError):
+            _result(provider_surface=embedded)
+        # a non-UTF-8 BINARY result payload is still accepted as real bytes
+        binary = b"\xff\xfe\x00\x01"
+        ok = _result(result_bytes=binary, result_sha256=compute_result_sha256(binary))
+        assert ok.is_success is True

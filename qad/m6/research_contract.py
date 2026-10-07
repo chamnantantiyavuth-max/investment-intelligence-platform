@@ -935,7 +935,7 @@ def compute_result_sha256(result_bytes: bytes) -> str:
 #: (Cf — includes the LRM/RLM marks, BOM, zero-width joiners/non-joiners) and
 #: control (Cc). Detecting by CATEGORY rather than a hand-listed character set
 #: means every invisible character is covered, not just enumerated ones.
-_INVISIBLE_CATEGORIES = ("Cf", "Cc", "Zs", "Zl", "Zp")
+_INVISIBLE_CATEGORIES = ("Cf", "Cc", "Cs", "Zs", "Zl", "Zp")
 
 #: Individual codepoints that render as nothing but are neither whitespace nor in
 #: an invisible general category (they are e.g. Lo/So/Mn): fillers and other
@@ -1017,9 +1017,15 @@ def _has_visible_text(value: Any) -> bool:
     """True iff ``value`` is a string carrying at least one visible character.
 
     Invisible-only strings (spaces, LRM/RLM, BOM, zero-width, controls) are NOT
-    acceptable for a contractually non-empty text field.
+    acceptable for a contractually non-empty text field. A surrogate codepoint
+    (category Cs) is never valid text — not even embedded next to visible
+    characters — so any string containing one is rejected.
     """
-    return isinstance(value, str) and not _is_blank_text(value)
+    if not isinstance(value, str):
+        return False
+    if any(unicodedata.category(ch) == "Cs" for ch in value):
+        return False
+    return not _is_blank_text(value)
 
 
 def result_matches_hash(result: DeepResearchResult) -> bool:
