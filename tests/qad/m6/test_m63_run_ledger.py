@@ -1011,3 +1011,29 @@ class TestReviewHardening:
         assert store.load_run("L-001").attempts[0].telemetry["cost"].status is (
             ledger_mod.TelemetryStatus.NOT_EXPOSED
         )
+
+    def test_45_reader_rejects_missing_or_empty_telemetry(self, tmp_path):
+        """A stored attempt record must carry complete telemetry — even on read."""
+        import qad.m6.ledger as ledger_mod
+        from qad.m6.ledger import _telemetry_from_json as read
+
+        for empty in (None, "", "{}", "null", "[]"):
+            with pytest.raises(ledger_mod.LedgerValidationError):
+                read(empty)
+
+    def test_46_datastore_rejects_unlisted_telemetry_metric_key(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store)
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                    " provider_surface, transport_type, started_at, telemetry_json)"
+                    f" VALUES ('L-001',1,'INITIAL_ATTEMPT','p','X','t',"
+                    f"'{json.dumps({**_tel(), 'unlisted_metric': {'status': 'EXPOSED', 'value': 1}})}')"
+                )
+        finally:
+            conn.close()
+        assert store.load_run("L-001").attempts == ()

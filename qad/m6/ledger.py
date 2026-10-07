@@ -375,14 +375,17 @@ def _telemetry_from_json(raw: str | None) -> dict[str, TelemetryMetric]:
     materialising a semantically invalid metric.
     """
     if not raw:
-        return {}
+        raise LedgerValidationError("stored telemetry record is missing or empty")
     try:
         data = json.loads(raw)
     except (TypeError, ValueError) as exc:
         raise LedgerValidationError(f"stored telemetry is not valid JSON: {exc}") from None
     if not isinstance(data, Mapping):
         raise LedgerValidationError("stored telemetry must be a JSON object")
-    return _validate_telemetry(data)
+    metrics = _validate_telemetry(data)
+    if not metrics:
+        raise LedgerValidationError("stored telemetry record is empty")
+    return metrics
 
 
 # ---------------------------------------------------------------------------
@@ -596,6 +599,9 @@ def _build_telemetry_guard_sql() -> str:
     bad: list[str] = [
         "NEW.telemetry_json IS NULL",
         "json_valid(NEW.telemetry_json) = 0",
+        # the contract metric key set is closed — an unlisted key is rejected
+        "EXISTS (SELECT 1 FROM json_each(NEW.telemetry_json)"
+        f" WHERE json_each.key NOT IN ({', '.join(repr(m) for m in CONTRACT_TELEMETRY_METRICS)}))",
     ]
 
     def _metric_violations(p: str) -> list[str]:
