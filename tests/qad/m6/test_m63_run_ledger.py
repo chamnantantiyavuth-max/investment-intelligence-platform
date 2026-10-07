@@ -825,6 +825,8 @@ class TestReviewHardening:
         conn = sqlite3.connect(str(path))
         try:
             conn.execute("PRAGMA foreign_keys = ON")
+            required = ("model_identity", "prompt_tokens", "completion_tokens",
+                        "cost", "model_version")
             bad_telemetry = [
                 "{}",
                 "null",
@@ -835,25 +837,72 @@ class TestReviewHardening:
                 ' "cost": {"status": "NOT_EXPOSED", "value": null, "reason": "r"},'
                 ' "model_version": {"status": "NOT_EXPOSED", "value": null, "reason": "r"}}',
                 # NOT_EXPOSED without a reason
-                json.dumps({**{k: {"status": "NOT_EXPOSED", "value": None} for k in
-                                ("model_identity", "prompt_tokens", "completion_tokens",
-                                 "cost", "model_version")}}),
+                json.dumps({k: {"status": "NOT_EXPOSED", "value": None} for k in required}),
+                # optional total_tokens present but invalid
+                json.dumps({**_tel(), "total_tokens": {"status": "BOGUS", "value": 1}}),
+                # optional total_tokens EXPOSED with null value
+                json.dumps({**_tel(), "total_tokens": {"status": "EXPOSED", "value": None}}),
             ]
-            for i, tel in enumerate(bad_telemetry, start=1):
+            for tel in bad_telemetry:
                 with pytest.raises(sqlite3.IntegrityError):
                     conn.execute(
                         "INSERT INTO ledger_attempt (ledger_id, attempt_number,"
                         " retry_mode, provider_surface, transport_type, started_at,"
-                        f" telemetry_json) VALUES ('L-001',{i},'INITIAL_ATTEMPT','p','X',"
+                        " telemetry_json) VALUES ('L-001',1,'INITIAL_ATTEMPT','p','X',"
                         f"'t','{tel}')"
                     )
             # a complete, valid truthful telemetry record is accepted at the boundary
+            good = _tel(total_tokens={"status": "EXPOSED", "value": 42})
             conn.execute(
                 "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
                 " provider_surface, transport_type, started_at, telemetry_json)"
-                f" VALUES ('L-001',9,'INITIAL_ATTEMPT','p','X','t','{json.dumps(_tel())}')"
+                f" VALUES ('L-001',2,'INITIAL_ATTEMPT','p','X','t','{json.dumps(good)}')"
             )
             conn.commit()
         finally:
             conn.close()
-        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [9]
+        rec = store.load_run("L-001")
+        assert [a.attempt_number for a in rec.attempts] == [2]
+        assert rec.attempts[0].telemetry["total_tokens"].value == 42
+
+    def test_39_attempt_number_range_enforced(self, tmp_path):
+        """M6.0 §3: attempt_number ∈ 1..3 — enforced in API and at the datastore."""
+        store, path = _store(tmp_path)
+        _create(store)
+        for bad in (0, 4, 9, -1, True):
+            with pytest.raises(LedgerValidationError):
+                _attempt(store, "L-001", n=bad)
+        for ok in (1, 2, 3):
+            _attempt(store, "L-001", n=ok)
+        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [1, 2, 3]
+        # the datastore CHECK also rejects an out-of-range raw insert
+        conn = sqlite3.connect(str(path))
+        try:
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                    " provider_surface, transport_type, started_at, telemetry_json)"
+                    f" VALUES ('L-001',4,'SAME_PROVIDER_RETRY','p','X','t',"
+                    f"'{json.dumps(_tel())}')"
+                )
+        finally:
+            conn.close()
+
+    def test_40_raw_disposition_enum_enforced_at_datastore(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store)
+        _candidate(store, "L-001")
+        conn = sqlite3.connect(str(path))
+        try:
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO ledger_disposition (ledger_id, source_candidate_id,"
+                    " disposition, reason, disposed_at) VALUES ('L-001','C-1','BOGUS',"
+                    " 'r','t')"
+                )
+        finally:
+            conn.close()
+        # the run stays readable and non-terminal with no bogus disposition
+        rec = store.load_run("L-001")
+        assert rec.dispositions == ()
+        assert rec.terminal_status is None

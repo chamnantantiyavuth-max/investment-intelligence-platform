@@ -116,6 +116,16 @@ CONTRACT_TELEMETRY_METRICS: tuple[str, ...] = (
     REQUIRED_TELEMETRY_METRICS + OPTIONAL_TELEMETRY_METRICS
 )
 
+#: M6.0 §3 retry identity: ``attempt_number ∈ 1..3`` (max 3 attempts).
+ATTEMPT_NUMBER_MIN = 1
+ATTEMPT_NUMBER_MAX = 3
+ATTEMPT_NUMBERS: tuple[int, ...] = tuple(
+    range(ATTEMPT_NUMBER_MIN, ATTEMPT_NUMBER_MAX + 1)
+)
+
+#: The exact permitted disposition set (M6.0 §7.5).
+DISPOSITION_VALUES: tuple[str, ...] = tuple(d.value for d in CandidateDisposition)
+
 #: Environment variable naming the runtime data root. Ledger runtime state is
 #: written OUTSIDE the git repository.
 RUNTIME_DATA_DIR_ENV = "QAD_RUNTIME_DATA_DIR"
@@ -362,7 +372,7 @@ def _telemetry_from_json(raw: str | None) -> dict[str, TelemetryMetric]:
     data = json.loads(raw)
     return {
         k: TelemetryMetric(
-            status=TelemetryStatus(v["status"]), value=v["value"], reason=v["reason"]
+            status=TelemetryStatus(v["status"]), value=v.get("value"), reason=v.get("reason")
         )
         for k, v in data.items()
     }
@@ -395,7 +405,7 @@ CREATE TABLE IF NOT EXISTS ledger_run (
 
 CREATE TABLE IF NOT EXISTS ledger_attempt (
     ledger_id       TEXT NOT NULL REFERENCES ledger_run(ledger_id),
-    attempt_number  INTEGER NOT NULL,
+    attempt_number  INTEGER NOT NULL CHECK (attempt_number BETWEEN 1 AND 3),
     retry_mode      TEXT NOT NULL,
     provider_surface TEXT NOT NULL,
     transport_type  TEXT NOT NULL,
@@ -421,7 +431,8 @@ CREATE TABLE IF NOT EXISTS ledger_candidate (
 CREATE TABLE IF NOT EXISTS ledger_disposition (
     ledger_id           TEXT NOT NULL,
     source_candidate_id TEXT NOT NULL,
-    disposition         TEXT NOT NULL,
+    disposition         TEXT NOT NULL
+        CHECK (disposition IN ('IMPORTED','REJECTED','UNAVAILABLE','DEFERRED')),
     reason              TEXT NOT NULL,
     src01_id            TEXT,
     evidence_ids_json   TEXT,
@@ -577,32 +588,35 @@ def _build_telemetry_guard_sql() -> str:
         "NEW.telemetry_json IS NULL",
         "json_valid(NEW.telemetry_json) = 0",
     ]
-    for m in REQUIRED_TELEMETRY_METRICS:
-        p = f"$.{m}"
-        bad.append(
-            f"(json_type(NEW.telemetry_json, '{p}') IS NULL"
-            f" OR json_type(NEW.telemetry_json, '{p}') <> 'object')"
-        )
-        bad.append(f"json_extract(NEW.telemetry_json, '{p}.status') IS NULL")
-        bad.append(
+
+    def _metric_violations(p: str) -> list[str]:
+        return [
+            f"json_type(NEW.telemetry_json, '{p}') IS NULL",
+            f"json_type(NEW.telemetry_json, '{p}') <> 'object'",
+            f"json_extract(NEW.telemetry_json, '{p}.status') IS NULL",
             f"json_extract(NEW.telemetry_json, '{p}.status')"
-            f" NOT IN ('EXPOSED','NOT_EXPOSED')"
-        )
-        bad.append(
+            f" NOT IN ('EXPOSED','NOT_EXPOSED')",
             f"(json_extract(NEW.telemetry_json, '{p}.status') = 'EXPOSED'"
             f" AND (json_type(NEW.telemetry_json, '{p}.value') IS NULL"
-            f" OR json_type(NEW.telemetry_json, '{p}.value') = 'null'))"
-        )
-        bad.append(
+            f" OR json_type(NEW.telemetry_json, '{p}.value') = 'null'))",
             f"(json_extract(NEW.telemetry_json, '{p}.status') = 'NOT_EXPOSED'"
             f" AND (json_type(NEW.telemetry_json, '{p}.value') IS NULL"
-            f" OR json_type(NEW.telemetry_json, '{p}.value') <> 'null'))"
-        )
-        bad.append(
+            f" OR json_type(NEW.telemetry_json, '{p}.value') <> 'null'))",
             f"(json_extract(NEW.telemetry_json, '{p}.status') = 'NOT_EXPOSED'"
             f" AND (json_extract(NEW.telemetry_json, '{p}.reason') IS NULL"
-            f" OR trim(json_extract(NEW.telemetry_json, '{p}.reason')) = ''))"
+            f" OR trim(json_extract(NEW.telemetry_json, '{p}.reason')) = ''))",
+        ]
+
+    for m in REQUIRED_TELEMETRY_METRICS:
+        bad.extend(_metric_violations(f"$.{m}"))
+    for m in OPTIONAL_TELEMETRY_METRICS:
+        p = f"$.{m}"
+        present = (
+            f"(json_type(NEW.telemetry_json, '{p}') IS NOT NULL"
+            f" AND json_type(NEW.telemetry_json, '{p}') <> 'null')"
         )
+        bad.append(f"({present} AND ({' OR '.join(_metric_violations(p))}))")
+
     when = "\n      OR ".join(bad)
     return (
         "CREATE TRIGGER IF NOT EXISTS ledger_attempt_telemetry_guard\n"
@@ -803,8 +817,16 @@ class DeepResearchRunLedgerStore:
         telemetry: Mapping[str, Any] | None = None,
     ) -> None:
         """Durably append one attempt. Append-only; prior attempts never rewritten."""
-        if not isinstance(attempt_number, int) or attempt_number < 1:
-            raise LedgerValidationError("attempt_number must be an integer >= 1")
+        if (
+            not isinstance(attempt_number, int)
+            or isinstance(attempt_number, bool)
+            or not (ATTEMPT_NUMBER_MIN <= attempt_number <= ATTEMPT_NUMBER_MAX)
+        ):
+            raise LedgerValidationError(
+                f"attempt_number must be an integer in "
+                f"{ATTEMPT_NUMBER_MIN}..{ATTEMPT_NUMBER_MAX} (M6.0 §3), "
+                f"got {attempt_number!r}"
+            )
         try:
             mode = RetryMode(retry_mode)
         except ValueError:
