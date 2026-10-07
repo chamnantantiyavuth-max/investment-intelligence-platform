@@ -89,13 +89,25 @@ CANONICAL_SCHEMA_COUNT = 68
 #: written OUTSIDE the git repository.
 RUNTIME_DATA_DIR_ENV = "QAD_RUNTIME_DATA_DIR"
 
+#: This project's source-tree root (``qad/m6/ledger.py`` -> repo root). Used to
+#: reject repository-internal runtime paths even when the tree carries no
+#: ``.git`` metadata (e.g. a source copy / archive export). Module-level so tests
+#: can substitute a synthetic root.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 
 def assert_outside_repository(path: str | Path) -> Path:
-    """Fail closed if ``path`` resolves inside a git working tree.
+    """Fail closed if ``path`` resolves inside the project source tree or inside
+    any git working tree.
 
     Runtime ledger state MUST NOT be written into the git repository
-    (M6.0 §7.3, task §15). Detection walks parent directories for a ``.git``
-    entry (file or directory) — robust to worktrees, where ``.git`` is a file.
+    (M6.0 §7.3, task §15). Two independent guards:
+
+    1. no ancestor may carry a ``.git`` entry (file or directory — robust to
+       worktrees, where ``.git`` is a file);
+    2. the path must not live under this project's source-tree root
+       (:data:`PROJECT_ROOT`) — this holds even when ``.git`` is absent, e.g. a
+       disposable source copy or an archive export.
     """
     resolved = Path(path).resolve()
     for parent in [resolved, *resolved.parents]:
@@ -104,6 +116,12 @@ def assert_outside_repository(path: str | Path) -> Path:
                 f"ledger runtime path {resolved} is inside a git repository "
                 f"({parent}); runtime ledger state must live outside the repo"
             )
+    root = Path(PROJECT_ROOT).resolve()
+    if resolved == root or root in resolved.parents:
+        raise LedgerStateError(
+            f"ledger runtime path {resolved} is inside the project source tree "
+            f"({root}); runtime ledger state must live outside the repo"
+        )
     return resolved
 
 
@@ -388,6 +406,47 @@ CREATE TABLE IF NOT EXISTS ledger_event (
     payload_json TEXT NOT NULL,
     created_at  TEXT NOT NULL
 );
+
+-- Datastore-level immutability (M6.0 §7.3): the durable tables are append-only.
+-- These triggers reject UPDATE/DELETE at the SQLite boundary, so terminal
+-- truth, disposition history and the event log cannot silently disappear even
+-- through a direct/adversarial connection — not merely through store methods.
+CREATE TRIGGER IF NOT EXISTS ledger_run_immutable_update
+    BEFORE UPDATE ON ledger_run
+    BEGIN SELECT RAISE(ABORT, 'ledger_run is immutable'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_run_immutable_delete
+    BEFORE DELETE ON ledger_run
+    BEGIN SELECT RAISE(ABORT, 'ledger_run is immutable (no silent GC)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_attempt_immutable_update
+    BEFORE UPDATE ON ledger_attempt
+    BEGIN SELECT RAISE(ABORT, 'ledger_attempt is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_attempt_immutable_delete
+    BEFORE DELETE ON ledger_attempt
+    BEGIN SELECT RAISE(ABORT, 'ledger_attempt is append-only (no silent GC)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_candidate_immutable_update
+    BEFORE UPDATE ON ledger_candidate
+    BEGIN SELECT RAISE(ABORT, 'ledger_candidate is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_candidate_immutable_delete
+    BEFORE DELETE ON ledger_candidate
+    BEGIN SELECT RAISE(ABORT, 'ledger_candidate is append-only (no silent GC)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_disposition_immutable_update
+    BEFORE UPDATE ON ledger_disposition
+    BEGIN SELECT RAISE(ABORT, 'ledger_disposition is immutable'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_disposition_immutable_delete
+    BEFORE DELETE ON ledger_disposition
+    BEGIN SELECT RAISE(ABORT, 'ledger_disposition is immutable (no silent GC)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_terminal_immutable_update
+    BEFORE UPDATE ON ledger_terminal
+    BEGIN SELECT RAISE(ABORT, 'terminal state is immutable'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_terminal_immutable_delete
+    BEFORE DELETE ON ledger_terminal
+    BEGIN SELECT RAISE(ABORT, 'terminal state is immutable (no silent GC)'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_event_immutable_update
+    BEFORE UPDATE ON ledger_event
+    BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS ledger_event_immutable_delete
+    BEFORE DELETE ON ledger_event
+    BEGIN SELECT RAISE(ABORT, 'ledger_event is append-only (no silent GC)'); END;
 """
 
 
@@ -593,6 +652,15 @@ class DeepResearchRunLedgerStore:
                 raise LedgerValidationError(f"unknown attempt outcome {outcome!r}") from None
 
         metrics = _validate_telemetry(telemetry)
+        if not metrics:
+            # M6.0 §7.2: an attempt must carry an explicit truthful state for
+            # each applicable metric. Silently storing "no metrics" makes
+            # un-recorded indistinguishable from not-collected.
+            raise LedgerValidationError(
+                "append_attempt requires explicit telemetry states; use "
+                "status=NOT_EXPOSED with value=null and a non-empty reason when "
+                "the provider does not expose a metric"
+            )
         started = _iso(started_at) if started_at is not None else self._now()
 
         conn = self._connect()

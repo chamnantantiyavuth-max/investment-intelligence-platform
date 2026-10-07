@@ -93,6 +93,8 @@ def _attempt(store, ledger_id, n=1, **kw):
         retry_mode=RetryMode.INITIAL_ATTEMPT,
         provider_surface="gemini_notebook",
         transport_type="BROWSER_UI_AUTOMATION",
+        telemetry={"model_identity": {"status": "NOT_EXPOSED", "value": None,
+                                      "reason": "NOT_EXPOSED_BY_PROVIDER"}},
     )
     base.update(kw)
     return store.append_attempt(ledger_id, **base)
@@ -561,3 +563,75 @@ class TestStorageAtomicityAndUniqueness:
             "RUN_CREATED", "CANDIDATE_REGISTERED", "CANDIDATE_REGISTERED",
             "CANDIDATE_DISPOSED", "CANDIDATE_DISPOSED",
         ]
+
+
+# =====================================================================
+# 31–33: reviewer-driven hardening (bounded re-review round)
+# =====================================================================
+
+
+class TestReviewHardening:
+    def test_31_repo_internal_path_fails_closed_without_git_metadata(
+        self, tmp_path, monkeypatch
+    ):
+        """A source copy without `.git` must still reject in-tree runtime paths."""
+        import qad.m6.ledger as ledger_mod
+
+        synthetic_root = tmp_path / "source_copy"
+        (synthetic_root / "qad" / "m6").mkdir(parents=True)
+        (synthetic_root / "AGENTS.md").write_text("copy", encoding="utf-8")
+        assert not (synthetic_root / ".git").exists()
+        monkeypatch.setattr(ledger_mod, "PROJECT_ROOT", synthetic_root)
+        with pytest.raises(LedgerStateError):
+            assert_outside_repository(synthetic_root / "runtime.sqlite3")
+        with pytest.raises(LedgerStateError):
+            DeepResearchRunLedgerStore(synthetic_root / "runtime.sqlite3")
+        # and no database was created by the refused call
+        assert list(synthetic_root.glob("*.sqlite3")) == []
+
+    def test_32_datastore_triggers_reject_update_and_delete(self, tmp_path):
+        """Immutability is enforced at the SQLite boundary, not only in Python."""
+        store, path = _store(tmp_path)
+        _create(store)
+        _attempt(store, "L-001")
+        _candidate(store, "L-001")
+        _dispose(store, "L-001")
+        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+
+        conn = sqlite3.connect(str(path))
+        try:
+            conn.execute("PRAGMA foreign_keys = ON")
+            mutations = [
+                ("UPDATE ledger_terminal SET terminal_status='FAILED' WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_terminal WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_disposition WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_event WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_run WHERE ledger_id='L-001'",),
+                ("UPDATE ledger_run SET case_id='TAMPERED' WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_attempt WHERE ledger_id='L-001'",),
+                ("DELETE FROM ledger_candidate WHERE ledger_id='L-001'",),
+            ]
+            for (sql,) in mutations:
+                with pytest.raises(sqlite3.IntegrityError):
+                    conn.execute(sql)
+        finally:
+            conn.close()
+
+        rec = DeepResearchRunLedgerStore(path, clock=_clock).load_run("L-001")
+        assert rec.terminal_status is TerminalStatus.SUCCESS
+        assert len(rec.dispositions) == 1
+        assert rec.case_id == "CASE-2026-001"
+
+    def test_33_attempt_requires_explicit_telemetry_state(self, tmp_path):
+        store, _ = _store(tmp_path)
+        _create(store)
+        with pytest.raises(LedgerValidationError):
+            store.append_attempt(
+                "L-001", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+            )
+        # an explicit truthful NOT_EXPOSED state is accepted and persisted
+        _attempt(store, "L-001", n=1)
+        m = store.load_run("L-001").attempts[0].telemetry["model_identity"]
+        assert m.status is TelemetryStatus.NOT_EXPOSED
+        assert m.value is None and m.reason == "NOT_EXPOSED_BY_PROVIDER"
