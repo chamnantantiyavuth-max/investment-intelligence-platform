@@ -52,22 +52,25 @@ Evidence Admission Gate.
 
 Process trust boundary (explicit)
 ---------------------------------
-M6.4 CONSUMES, and does not build, the SEALED snapshot. It verifies that the
-snapshot is internally self-consistent by recomputing the accepted M6.0 identity
-from the snapshot's own fields (so a forged/corrupted case, corpus, AS_OF or hash
-fails closed) and requires the deterministic ``snapshot_id`` to equal that
-identity. A fully consistent in-process forgery by code that can already import
-this package is outside the process trust boundary — capability isolation is not
-provided by a plain Python dataclass, exactly as the accepted M6.2/M6.3 clusters
-already document. Positive enforcement/isolation PROOF claims are likewise not
-accepted at this cluster (evidence belongs to M6.7/M6.8); only ``NOT_VERIFIED``
-and the fail-closed states are expressible here.
+M6.4 CONSUMES, and does not build, the SEALED snapshot. Every request is BOUND to
+the authoritative snapshot it was derived from: the envelope keeps the snapshot
+reference and re-verifies (a) that the snapshot is internally self-consistent
+(M6.0 identity recomputed from its own fields, plus per-source byte/hash/length
+integrity) and (b) that every derived field (case_id, case_version, pit_mode,
+as_of, input_snapshot_hash, snapshot_id, pit_context_id, corpus) agrees with that
+snapshot. So a direct construction cannot inject SEALED authority, even with a
+recomputed payload hash. A fully consistent in-process forgery by code that can
+already import this package is outside the process trust boundary — capability
+isolation is not provided by a plain Python dataclass, exactly as the accepted
+M6.2/M6.3 clusters already document. Positive enforcement/isolation PROOF claims
+are likewise not accepted at this cluster (evidence belongs to M6.7/M6.8); only
+``NOT_VERIFIED`` and the fail-closed states are expressible here.
 """
 
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
 from typing import Any, Mapping, Sequence
@@ -255,6 +258,12 @@ class DeepResearchRequest:
     authorized_prior_evidence_refs: tuple[str, ...]
     request_payload_hash: str
     capability: str = S10_CAPABILITY
+    #: The authoritative SEALED snapshot this request was derived from. Bound at
+    #: construction so a request with SEALED authority cannot be produced by
+    #: direct construction (the fields must agree with this snapshot).
+    authority_snapshot: "SealedInputSnapshot | None" = field(
+        default=None, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         # Normalize BEFORE validating: a caller-supplied list must not be able to
@@ -263,6 +272,34 @@ class DeepResearchRequest:
             self, "authorized_prior_evidence_refs",
             tuple(self.authorized_prior_evidence_refs),
         )
+        # ---- authority binding ------------------------------------------
+        snapshot = self.authority_snapshot
+        if not isinstance(snapshot, SealedInputSnapshot):
+            raise ResearchRequestError(
+                "a SEALED request must be bound to an authoritative "
+                "SealedInputSnapshot (build it with build_deep_research_request)"
+            )
+        _verify_snapshot_consistency(snapshot)
+        for bound_name, declared in (
+            ("case_id", self.case_id),
+            ("case_version", self.case_version),
+            ("pit_mode", self.pit_mode),
+            ("as_of", self.as_of),
+            ("input_snapshot_hash", self.input_snapshot_hash),
+            ("snapshot_id", self.snapshot_id),
+            ("pit_context_id", self.pit_context_id),
+        ):
+            if getattr(snapshot, bound_name) != declared:
+                raise ResearchRequestError(
+                    f"{bound_name} disagrees with the bound authoritative snapshot"
+                )
+        bound_hashes = tuple(
+            (s.source_id, s.raw_blob_sha256) for s in snapshot.ordered_sources
+        )
+        if bound_hashes != self.corpus.exact_blob_hashes:
+            raise ResearchRequestError(
+                "the request corpus disagrees with the bound authoritative snapshot"
+            )
         for name in (
             "request_id", "research_run_id", "ledger_id", "rrm_manifest_id",
             "case_id", "case_version", "evidence_gap_id", "research_question",
@@ -590,6 +627,7 @@ def build_deep_research_request(
         authorized_prior_evidence_refs=prior_refs,
         request_payload_hash=payload_hash,
         capability=S10_CAPABILITY,
+        authority_snapshot=snapshot,
     )
 
 
@@ -731,12 +769,23 @@ class DeepResearchResult:
         # Immutable pointer collection: a caller-supplied list must not be able to
         # mutate the preserved source pointers after validation.
         object.__setattr__(self, "source_pointers", tuple(self.source_pointers))
-        # Immutable provider metadata: a caller-supplied dict must not be able to
-        # mutate the result envelope after validation.
+        # Immutable provider metadata: keys/values must be strings (the declared
+        # Mapping[str, str]) and the copy is wrapped in an immutable proxy, so
+        # neither the caller's mapping nor a mutable value can change the result.
         if self.provider_reported_metadata is not None:
+            if not isinstance(self.provider_reported_metadata, Mapping):
+                raise ResearchResultError(
+                    "provider_reported_metadata must be a mapping of str to str"
+                )
+            metadata: dict[str, str] = {}
+            for key, value in self.provider_reported_metadata.items():
+                if not isinstance(key, str) or not isinstance(value, str):
+                    raise ResearchResultError(
+                        "provider_reported_metadata keys and values must be strings"
+                    )
+                metadata[key] = value
             object.__setattr__(
-                self, "provider_reported_metadata",
-                MappingProxyType(dict(self.provider_reported_metadata)),
+                self, "provider_reported_metadata", MappingProxyType(metadata)
             )
         for name in ("request_id", "research_run_id", "ledger_id", "provider_surface"):
             value = getattr(self, name)

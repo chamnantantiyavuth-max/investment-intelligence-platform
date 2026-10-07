@@ -770,3 +770,59 @@ class TestReviewHardening:
         assert dict(empty) == {}
         with pytest.raises(TypeError):
             empty["x"] = "y"  # type: ignore[index]
+
+    def test_45_request_authority_cannot_be_bypassed_by_direct_construction(self):
+        import qad.m6.research_contract as rc
+
+        req = _request(_snapshot())
+        # a request with no bound snapshot is refused outright
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, authority_snapshot=None)
+        # changing an authority field is refused …
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(req, case_id="UNAUTHORIZED-CASE", as_of="1900-01-01")
+        # … even when the caller also recomputes a matching payload hash
+        forged = rc._RequestPayloadIdentity(
+            research_question=req.research_question,
+            case_id="UNAUTHORIZED-CASE",
+            case_version=req.case_version,
+            evidence_gap_id=req.evidence_gap_id,
+            input_snapshot_hash=req.input_snapshot_hash,
+            pit_mode=req.pit_mode,
+            as_of="1900-01-01",
+            capability=req.capability,
+            closed_corpus_required=True,
+            request_isolation_required=True,
+            authorized_prior_evidence_refs=[],
+        )
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(
+                req, case_id="UNAUTHORIZED-CASE", as_of="1900-01-01",
+                request_payload_hash=rc._deterministic_hash(forged),
+            )
+        # the corpus cannot be swapped either
+        with pytest.raises(ResearchRequestError):
+            dataclasses.replace(
+                req, corpus=dataclasses.replace(
+                    req.corpus, exact_blob_hashes=(("S9", "a" * 64),)
+                )
+            )
+        # the unmodified request remains valid
+        assert req.authority_snapshot is not None
+
+    def test_46_provider_metadata_values_must_be_strings(self):
+        with pytest.raises(ResearchResultError):
+            _result(provider_reported_metadata={"model": ["m1"]})  # type: ignore[dict-item]
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=b"content", result_sha256=compute_result_sha256(b"content"),
+                provider_reported_metadata={"model": {"nested": "x"}},  # type: ignore[dict-item]
+            )
+        with pytest.raises(ResearchResultError):
+            _result(provider_reported_metadata={1: "x"})  # type: ignore[dict-item]
+        ok = _result(provider_reported_metadata={"model": "gemini-x", "tokens": "NOT_EXPOSED"})
+        assert dict(ok.provider_reported_metadata) == {
+            "model": "gemini-x", "tokens": "NOT_EXPOSED",
+        }
