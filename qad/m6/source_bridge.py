@@ -57,7 +57,7 @@ from qad.models.family_b import (
     SourceRecordSource_tier,
     SourceRecordSource_type,
 )
-from qad.persistence.errors import IntegrityConflict
+from qad.persistence.errors import IntegrityConflict, TransactionFailure
 from qad.persistence.serialization import compute_canonical_hash
 
 #: PIT modes (string values mirror ``PITContextMode``; compared as strings so the
@@ -1076,19 +1076,26 @@ def process_discovered_sources(
                             verified_source_id=admission.src01_id,
                             verification=admission.verification,
                         )
-                    except IntegrityConflict:
-                        # CROSS-STORE PARTIAL FAILURE (round-11 finding 2): a previous
-                        # attempt may already have committed these exact canonical
-                        # records (e.g. the ledger disposition write failed afterwards).
-                        # Reconcile ONLY for IDENTICAL canonical records — a stale or
-                        # conflicting record with the same id must SURFACE as a conflict
-                        # (round-12 finding 1), never be reported as this candidate's
-                        # evidence.
-                        if not (
-                            registry.contains("EV-01", ev.evidence_id)
-                            and registry.contains("EAR-01", ear.admission_id)
-                        ):
+                    except (IntegrityConflict, TransactionFailure):
+                        # CROSS-STORE PARTIAL FAILURE (rounds 11/12/13). Any canonical ID
+                        # COLLISION is a governance matter:
+                        #   * neither record exists  -> a GENUINE TRANSIENT failure
+                        #     (truthful source-imported / evidence-not-admitted outcome);
+                        #   * only ONE of the pair exists -> an INCOMPLETE pre-existing
+                        #     pair -> a PROPAGATED typed conflict (never settled);
+                        #   * both exist -> reconcile ONLY when BOTH match exactly.
+                        ev_exists = registry.contains("EV-01", ev.evidence_id)
+                        ear_exists = registry.contains("EAR-01", ear.admission_id)
+                        if not (ev_exists or ear_exists):
                             raise
+                        if not (ev_exists and ear_exists):
+                            raise SourceEvidenceConflict(
+                                "an INCOMPLETE canonical record already exists for "
+                                f"{ev.evidence_id!r}/{ear.admission_id!r} "
+                                f"(EV exists={ev_exists}, EAR exists={ear_exists}) — "
+                                "refusing to settle a candidate on a canonical identity "
+                                "collision"
+                            ) from None
                         stored_ev = registry.load("EV-01", ev.evidence_id)
                         stored_ear = registry.load("EAR-01", ear.admission_id)
                         if (

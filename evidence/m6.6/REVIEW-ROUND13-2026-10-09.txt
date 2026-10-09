@@ -1,0 +1,34 @@
+VERDICT: C
+
+PROBE RESULTS:
+1. VERIFIED — `source_bridge.py` admits sources through `archive.admit_source` and evidence through `registry.admit_evidence`; no direct canonical `store()` path is called.
+2. VERIFIED — default verification denies; verdicts are bound to run/candidate/source, direct construction and ordinary evidence mismatches are rejected, and no importable mint callable was found.
+3. DEFECT — identical-record re-entry and a fully pre-seeded conflicting pair behave as expected, but a conflicting pre-existing EV-only or EAR-only record is downgraded to an IMPORTED partial outcome and the candidate is disposed.
+4. VERIFIED — attestation-based SEALED eligibility rejects unattested/SRCV-only records; replay probes denied a new source for non-Founder or empty-reason PITC-01 and admitted it for authorized replay.
+5. VERIFIED — duplicate inputs yield one candidate outcome; settled dispositions are not rewritten, and pending candidates remain explicit.
+6. VERIFIED — opposing evidence is preserved with its contradiction link.
+7. VERIFIED — terminal runs reject mutation; incomplete dispositions block terminalization; the bridge does not terminalize the run.
+8. VERIFIED — the AST probe found no SUCCESS-writing calls or SUCCESS terminal attributes.
+9. VERIFIED — no gate-bypass call/reference was found in executable bridge code; the target gate test passed.
+10. VERIFIED — no banned network, browser, Gemini, Notebook, or provider imports were found; the target AST test passed.
+11. NOT VERIFIED — runtime registry count is 68, but RRM-01 cannot be compared with the prior revision because this copy has no Git metadata.
+
+MATERIAL FINDINGS:
+1. (a) In `qad/m6/source_bridge.py:1087-1113`, the reconciliation path raises `SourceEvidenceConflict` only when both requested records exist and their payloads differ. If either record is absent, the original persistence error escapes that block and is caught by the broad handler; `:1126-1134` then writes a disposition. The adversarial probe returned `IMPORTED`, with no evidence IDs and `pending= ()`, for both an EV-only same-ID/different-payload conflict (`IntegrityConflict`) and an EAR-only same-ID conflict (`TransactionFailure`). The stored records remained present. (b) This fails closed neither as a governance conflict nor as an undisposed candidate, contrary to the specified conflict behavior; it settles the candidate despite the canonical identity collision. (c) When a requested EV or EAR ID already exists, reconcile only if both records exist and both match exactly; convert a mismatched or incomplete pre-existing pair into a propagated typed conflict rather than the transient-partial path. (d) Add EV-only and EAR-only collision tests asserting `SourceEvidenceConflict`, unchanged stored records, and a still-pending candidate; retain the existing full-pair, identical-retry, and transient-builder tests, then rerun `tests/qad/m6`.
+
+NON-BLOCKING FINDINGS:
+1. (a) `tests/qad` returned `898 passed, 1 failed`: `tests/qad/test_contract_conformance.py::test_schema_build_identity` found `spec_source_sha256` `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd`, while the current schema file hashes to `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`. (b) This leaves the broader QAD suite red, though the complete M6 suite and M6.6 target suite pass; without Git metadata I cannot attribute the mismatch to this commit. (c) Reconcile the generated schema identity with its source artifact, or restore the matching artifact; do not alter M6.6 for this issue. (d) Rerun `tests/qad` and verify `test_schema_build_identity` passes.
+
+EVIDENCE GAPS: This copy has no Git repository metadata: `git status` and `git rev-parse` returned “not a git repository.” I cannot independently confirm HEAD `28c1ac4`, branch `impl/m6-gemini-notebook`, compare against `5bf1077`, or verify RRM-01’s diff from its baseline.
+
+COMMANDS RUN:
+- `git -C 'C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/repo' status --short --branch; git -C 'C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/repo' rev-parse HEAD; git -C 'C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/repo' rev-parse main` — each Git command returned `fatal: not a git repository`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/basetemp"` — `363 passed in 19.99s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/basetemp"` — `39 passed in 3.82s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/basetemp-qad"` — `898 passed, 1 failed, 11 warnings in 22.80s`; failure and hash values are recorded above.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r13/basetemp/m66_review_r13_probe.py"` — first run failed with `ModuleNotFoundError: No module named 'qad'`; after adding the working copy to the probe’s import path, the run reproduced both partial-conflict outcomes and confirmed replay denials/admission. The probe and its SQLite files are inside the authorized basetemp.
+- AST probe on `qad/m6/source_bridge.py` — `forbidden_calls=[]`, `banned_imports=[]`, `source_bridge_line_count=1174`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.models import SCHEMA_REGISTRY; import qad.models.family_a as a; import qad.models.family_b as b; print('canonical_schema_registry_count=',len(SCHEMA_REGISTRY)); print('RRM-01 in registry=', 'RRM-01' in SCHEMA_REGISTRY); print('RRM model fields=',list(SCHEMA_REGISTRY['RRM-01'].model_fields))"` — registry count `68`; RRM-01 present with its listed runtime fields.
+
+POLICY DISAGREEMENT: NONE.
+REVIEW_EXIT=0

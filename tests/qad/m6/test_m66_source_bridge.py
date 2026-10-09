@@ -53,6 +53,7 @@ from qad.persistence.errors import (
     CanonicalBoundaryViolation,
     IntegrityConflict,
     MissingForeignKey,
+    TransactionFailure,
 )
 from qad.persistence.reference import (
     InMemoryEvidenceRegistry,
@@ -1249,3 +1250,64 @@ def test_39_a_conflicting_canonical_evidence_record_is_not_reconciled(store):
     # the stored canonical record is preserved, never rewritten
     assert registry.load("EV-01", "EV-A").content == "DIFFERENT PAYLOAD"
     assert len(registry._data["EV-01"]) == 1
+
+
+# ======== 40-41 round-13 closure (incomplete pre-existing canonical pair is a conflict)
+
+
+def _simulate_collision(monkeypatch, registry, *, ev_exists, ear_exists, exc):
+    """Deterministically simulate an INCOMPLETE pre-existing canonical pair.
+
+    The accepted registry cannot be driven into holding a LONE EV-01 or EAR-01 through its
+    own admission gate, so the collision surface is simulated: `admit_evidence` raises the
+    given persistence error and `contains` reports the partial pre-existing pair.
+    """
+    real_contains = registry.contains
+
+    def _contains(schema_id, record_id):
+        if schema_id == "EV-01" and ev_exists:
+            return True
+        if schema_id == "EAR-01" and ear_exists:
+            return True
+        return real_contains(schema_id, record_id)
+
+    monkeypatch.setattr(registry, "contains", _contains, raising=False)
+    monkeypatch.setattr(
+        registry, "admit_evidence",
+        lambda e, a: (_ for _ in ()).throw(exc), raising=False,
+    )
+
+
+def _collision_run(store, monkeypatch, *, ev_exists, ear_exists, exc):
+    archive = _archive()
+    registry = _registry(archive)
+    _admit_direct_source(archive, "SRC-A", raw=b"seeded")
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    _simulate_collision(
+        monkeypatch, registry, ev_exists=ev_exists, ear_exists=ear_exists, exc=exc
+    )
+    with pytest.raises(SourceEvidenceConflict):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=_StubVerifier({cid: _verified("SRC-A", raw=b"seeded")}),
+            registry=registry, evidence_builder=_evidence_builder(),
+        )
+    # the candidate is NOT settled on a canonical identity collision
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+
+
+def test_40_an_ev_only_collision_is_a_propagated_conflict(store, monkeypatch):
+    _collision_run(
+        store, monkeypatch, ev_exists=True, ear_exists=False,
+        exc=IntegrityConflict("INJECTED EV-only canonical collision"),
+    )
+
+
+def test_41_an_ear_only_collision_is_a_propagated_conflict(store, monkeypatch):
+    _collision_run(
+        store, monkeypatch, ev_exists=False, ear_exists=True,
+        exc=TransactionFailure("INJECTED EAR-only canonical collision"),
+    )
