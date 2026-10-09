@@ -1037,3 +1037,61 @@ class TestReviewHardening:
         finally:
             conn.close()
         assert store.load_run("L-001").attempts == ()
+
+
+class TestIdempotencyKeyLookup:
+    """FD #148 §3 — the additive READ-ONLY idempotency resolver (M6.5).
+
+    No schema change, no mutation semantic change: the helper only resolves the
+    single logical run for a canonical idempotency key, relying on the existing
+    ``UNIQUE`` constraint on ``ledger_run.idempotency_key``.
+    """
+
+    def test_resolves_the_existing_logical_run_by_idempotency_key(self, tmp_path):
+        store, _ = _store(tmp_path)
+        _create(store, "L-001", idem="IDEM-AAA")
+        record = store.load_run_by_idempotency_key("IDEM-AAA")
+        assert record is not None
+        assert record.ledger_id == "L-001"
+        assert record.idempotency_key == "IDEM-AAA"
+
+    def test_returns_none_when_no_logical_run_exists(self, tmp_path):
+        store, _ = _store(tmp_path)
+        assert store.load_run_by_idempotency_key("IDEM-ABSENT") is None
+
+    def test_there_is_at_most_one_logical_run_per_key(self, tmp_path):
+        store, _ = _store(tmp_path)
+        _create(store, "L-001", idem="IDEM-AAA")
+        with pytest.raises(LedgerIdentityConflict):
+            _create(store, "L-002", idem="IDEM-AAA", rr="RR-002")
+        assert len(store.list_runs()) == 1
+        assert store.load_run_by_idempotency_key("IDEM-AAA").ledger_id == "L-001"
+
+    def test_distinct_keys_resolve_to_distinct_runs(self, tmp_path):
+        store, _ = _store(tmp_path)
+        _create(store, "L-001", idem="IDEM-AAA")
+        _create(store, "L-002", idem="IDEM-BBB", rr="RR-002")
+        assert store.load_run_by_idempotency_key("IDEM-AAA").ledger_id == "L-001"
+        assert store.load_run_by_idempotency_key("IDEM-BBB").ledger_id == "L-002"
+
+    def test_lookup_is_read_only_and_blank_keys_are_refused(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store, "L-001", idem="IDEM-AAA")
+        before = store.load_run("L-001")
+        events_before = store.events("L-001")
+        for _ in range(3):
+            assert store.load_run_by_idempotency_key("IDEM-AAA").ledger_id == "L-001"
+        after = store.load_run("L-001")
+        # the durable state and the append-only event stream are UNCHANGED by a read
+        assert after == before
+        assert store.events("L-001") == events_before
+        with pytest.raises(LedgerValidationError):
+            store.load_run_by_idempotency_key("   ")
+        with pytest.raises(LedgerValidationError):
+            store.load_run_by_idempotency_key(None)
+
+    def test_resolver_survives_process_reentry(self, tmp_path):
+        store, path = _store(tmp_path)
+        _create(store, "L-001", idem="IDEM-AAA")
+        reopened = DeepResearchRunLedgerStore(path, clock=_clock)
+        assert reopened.load_run_by_idempotency_key("IDEM-AAA").ledger_id == "L-001"

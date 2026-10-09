@@ -1170,6 +1170,30 @@ class DeepResearchRunLedgerStore:
         finally:
             conn.close()
 
+    def load_run_by_idempotency_key(self, idempotency_key: str) -> RunRecord | None:
+        """Resolve the single logical run for a canonical idempotency key (READ-ONLY).
+
+        FD #148 §3 / M6.0 §3: a repeat request carrying the same idempotency key is
+        the SAME logical request, so there must be at most one logical run per key.
+        Returns ``None`` when no logical run exists yet (the caller must then create
+        it). The M6.3 ``UNIQUE`` constraint on ``ledger_run.idempotency_key`` is what
+        makes "at most one logical run per key" mechanical and race-safe; this
+        helper only READS — it adds no schema, no mutation path and no new state.
+        """
+        if not isinstance(idempotency_key, str) or not idempotency_key.strip():
+            raise LedgerValidationError("idempotency_key must be a non-empty string")
+        conn = self._connect()
+        try:
+            row = conn.execute(
+                "SELECT ledger_id FROM ledger_run WHERE idempotency_key = ?",
+                (idempotency_key,),
+            ).fetchone()
+        finally:
+            conn.close()
+        if row is None:
+            return None
+        return self.load_run(row["ledger_id"])
+
     def contains(self, ledger_id: str) -> bool:
         conn = self._connect()
         try:
