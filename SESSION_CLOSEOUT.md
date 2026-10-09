@@ -1,3 +1,61 @@
+# Session — 2026-10-09 (QAD M6.5 Round-7 STOP → FD #153 M6.3 Atomic SUCCESS Finalization Amendment, Option A1)
+
+## WHAT HAPPENED (plain language)
+
+M6.5 ("retry / telemetry / idempotency") is the safety layer that decides how many times
+we may ask a provider, and what we are allowed to claim about the run. Six independent
+review rounds found real but narrow bugs; all were fixed. Round 7 found something
+DIFFERENT: not a bug inside M6.5, but a gap between M6.5 and the already-accepted M6.3
+ledger (the durable run record).
+
+The problem: when a run succeeds, we wrote (1) the "successful attempt" row, then
+(2) the "run is finished, here is the result hash" row — as TWO separate steps. If step 2
+failed, we were left with a saved success attempt that did NOT say which result it
+belonged to. Later, a repair path could attach a DIFFERENT result to it. That breaks the
+guarantee that a saved success always points to the exact result it came from.
+
+I could not fix this inside M6.5: two probes proved the accepted ledger refuses to write
+an attempt after a run is finished, and the attempt row has no place to store the result
+hash. So I STOPPED and returned a decision package instead of force-patching accepted
+governance. The Founder chose **Option A1**.
+
+## FOUNDER DECISION — FD #153: OPTION A1 (atomic success finalization, existing schema)
+
+- ONE new atomic ledger operation writes the success attempt AND the "finished + result
+  hash" row together, in ONE all-or-nothing transaction.
+- If anything fails → everything rolls back. No half-finished success.
+- NO database schema change, NO new column, NO migration. The existing ledger fields
+  (`result_sha256`, `result_artifact_ref`) remain the single place the result hash lives.
+- Run-finished immutability is KEPT: once a run is finished, nothing may be appended.
+  The alternative ("let one extra row be added after finishing") was REJECTED.
+- Old-style orphan success rows (success attempt saved, no result binding) are treated as
+  UNTRUSTED and refused — no guessing, no automatic repair.
+- M6.5 must use the ONE atomic call (not the old two-step pair).
+
+## WHERE WE ARE
+
+- Branch `impl/m6-gemini-notebook`; `main` NOT changed (`5bf107774b29e5a5fe4dcec5846800b9b48361ba`).
+- Verified at registration: `origin/impl/m6-gemini-notebook` =
+  `0abc41ff660cc2a9cdb4803d5863924630c65ecc`; register verified mechanically at 152 items
+  → this decision is FD #153 (fd_count 169).
+- M6.5 remains NOT CLOSED. M6.6 remains NOT STARTED. All 5 cron jobs remain PAUSED.
+- No Gemini / Notebook / browser / network / credential work.
+
+## NEXT (approved queue, to execute autonomously)
+
+1. Implement the ONE atomic M6.3 ledger method (existing schema; full rollback). 
+2. Switch M6.5 `accept_success_result` to the atomic call; make orphan success fail closed.
+3. RED→GREEN for atomicity (A1–A10) + result provenance (B1–B12) + retain M6.5 rounds 1–6.
+4. Full M6.3 regression + M6.5 + `tests/qad/m6` + `tests/qad` + `tests/ops` + gates.
+5. One family-independent Round-8 review; then facts-only closeout of M6.5.
+
+## Recommended next action
+**A (recommended):** proceed straight to Round-8 after GREEN (steps 1–5 above).
+**B:** after GREEN, hold for a Founder look at the atomic method before Round-8.
+**C:** after GREEN, run the M6.3 regression first and report before M6.5 integration.
+
+<!-- 2026-10-09 15:48 UTC+7 -->
+
 # Session — 2026-10-09 (QAD M6.4 Trusted Proof-Verification Seam — Founder Option B; FD #152)
 
 ## FOUNDER DECISION — FD #152: M6.4 TRUSTED PROOF-RESOLVER SEAM (OPTION B)
