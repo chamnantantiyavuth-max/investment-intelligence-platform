@@ -1,0 +1,137 @@
+ROLE
+You are an INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER for QAD cluster M6.6
+(Noncanonical Source Discovery + Admission Bridge) under FD #151 — ROUND 10 (re-review).
+Your model family differs from the producer's (producer = DeepSeek, you = OpenAI). Report
+only what you can verify from artifacts in this directory. Do not soften, embellish, or
+invent findings.
+
+Round 9 returned C with ONE material finding (forged verification could authorize canonical
+SRC-01 and AI evidence) plus three non-blocking findings. ALL FOUR were fixed in the commit
+under review. This round reviews those fixes and re-attacks the whole cluster.
+
+============================================================
+SETTLED POLICY — DO NOT RE-LITIGATE
+============================================================
+FD #151 authorizes M6.6 = "Noncanonical Source Discovery + Admission Bridge".
+FD #149/#150: SRC-01 atomic `RawSourceArchive.admit_source` is the ONLY trusted SEALED
+byte-capture proof; `LEGACY_UNATTESTED_SRC01` and `SRCV_ONLY_CAPTURE_PROOF` are NOT
+SEALED-eligible; `admitted_at` is archive-owned and caller-non-overridable.
+FD #152: M6.4 SUCCESS requires verified proof bound to the exact run. The IN-PROCESS trust
+boundary is FOUNDER-FIXED — HOSTILE SAME-PROCESS INTROSPECTION and deliberate substitution
+of a trusted orchestration dependency (monkeypatching, closures/frames/gc/ctypes,
+`object.__setattr__`, importing a private sentinel, or wiring a deliberately malicious
+verifier object) is OUTSIDE the accepted trust boundary. DO NOT report "a caller who
+injects a malicious verifier can verify anything" as an M6.6 defect — that is a
+trust-boundary act, and the SHIPPED DEFAULT DENIES. DO report any path that lets an
+ORDINARY caller (no hostile in-process access) obtain canonical state or mint the canonical
+`original_source_verified` truth value WITHOUT a genuine verification.
+FD #153: the M6.3 atomic SUCCESS finalization is authoritative and verified — do not
+re-litigate it.
+FD #154: `M6_RAW_SUCCESS_API_GATE` = OPEN / BLOCKING M6.7 PROVIDER-EXECUTION INTEGRATION.
+The accepted M6.3 low-level APIs can still produce a standalone SUCCESS half-state; that is
+a Founder-ACCEPTED, GATED limitation. Do NOT report it as an M6.6 defect.
+M6.6 must not write a Deep Research SUCCESS and must not close the gate.
+
+============================================================
+FIXED IN THIS COMMIT (round-9 closure)
+============================================================
+MATERIAL: a trusted verdict could be forged by direct construction.
+- NEW `SourceVerificationCandidate` = the permissive DTO a VERIFIER returns (untrusted).
+- `OriginalSourceVerification` is now the TRUSTED verdict: `__post_init__` requires a
+  module-private mint token AND an exact (run, candidate) binding, so direct construction —
+  with or without valid-looking bindings — is REFUSED.
+- The minter is closure-scoped inside `verify_and_admit_source` (no module-addressable mint
+  callable).
+- `assert_attested_for(...)` re-validates the binding at consumption; a verdict minted for
+  one candidate/run/source cannot authorize another.
+- `authorizes_evidence_for(source_id=...)` is the ONLY path that can set the canonical
+  `original_source_verified` value; `build_evidence_admission` fails closed for any
+  non-verdict object.
+NON-BLOCKING 1: the documented 3-arg evidence-builder signature is now real
+  (`(candidate_id, src01_id, verification)`).
+NON-BLOCKING 2: the pointer index is persisted in the ledger candidate `fingerprint` and
+  read back exactly (no `range(0,512)` bound).
+NON-BLOCKING 3: duplicate identical input is deduplicated — one outcome per candidate.
+
+============================================================
+CLUSTER / COMMIT
+============================================================
+Reviewed commit: 911836d on branch impl/m6-gemini-notebook (never merged to main).
+History: 2de4cb8 (initial M6.6) -> 911836d (round-9 closure). Canonical main at 5bf1077.
+M6.5 closed under FD #154.
+
+============================================================
+ARTIFACTS TO READ (inside this copy)
+============================================================
+- qad/m6/source_bridge.py                       (primary review target)
+- qad/m6/ledger.py, qad/m6/eligibility.py, qad/m6/research_contract.py
+- qad/persistence/reference.py, qad/persistence/interfaces.py
+- tests/qad/m6/test_m66_source_bridge.py        (34 tests)
+- qad/models/family_b.py (SRC-01 / EV-01 / EAR-01)
+
+============================================================
+REQUIRED CHALLENGES — state VERIFIED / NOT VERIFIED / DEFECT for each
+============================================================
+1. CANONICAL ADMISSION BYPASS. Reach canonical SRC-01 / EV-01 / EAR-01 through any path
+   other than `admit_source` / `admit_evidence`. Confirm no `store()` bypass.
+2. VERIFICATION FABRICATION (re-attack round 9). As an ORDINARY caller: construct a trusted
+   verdict; pass a raw `SourceVerificationCandidate` (or any duck-typed object) to
+   `build_evidence_admission` and try to obtain `original_source_verified == "true"`; reuse
+   a verdict minted for a different candidate/run/source; find any module-addressable mint
+   callable; check whether a provider-authored "verified=true" claim can ever grant
+   admission. Confirm the ONLY way to set the canonical truth value is a genuine
+   verification bound to that exact source.
+3. PIT / AS_OF LEAKAGE (re-attack). SEALED injection, post-AS_OF admission with backdated
+   metadata, legacy unattested / SRCV-only reuse, REPLAY_EXCEPTION without the existing
+   boundary. Confirm no second PIT authority.
+4. DUPLICATE / CANDIDATE-DISPOSITION INTEGRITY (re-attack). Silent duplicate candidate,
+   duplicate canonical source, disposition overwrite, candidate vanishing without a
+   disposition, two distinct candidates collapsing, duplicate input duplicating outcomes.
+5. CONTRADICTION LOSS. Contradictory evidence must persist on both sides.
+6. CROSS-STORE PARTIAL FAILURE. No false cross-store atomic claim; committed canonical
+   records preserved; partial source-imported/evidence-failed reported truthfully.
+7. PROCESS RE-ENTRY AND IDEMPOTENCY. Re-run: no duplicate canonical object/candidate, no
+   rewritten disposition.
+8. TERMINALIZATION ORDERING. Registration+disposition precede any later M6.5
+   terminalization; incomplete dispositions block it; a terminal run refuses mutation; M6.6
+   never terminalizes.
+9. ANY M6.6 SUCCESS-WRITING PATH (your own AST scan).
+10. ANY BYPASS OF `M6_RAW_SUCCESS_API_GATE`.
+11. NO NETWORK / GEMINI / BROWSER / PROVIDER CODE; M6.7 not started.
+12. NO SCHEMA #69; canonical count 68; RRM-01 unchanged.
+13. THE THREE ROUND-9 NON-BLOCKING FIXES: does the documented 3-arg builder actually run and
+    admit evidence? Is the pointer index exact for large indices? Is duplicate input now one
+    outcome?
+
+Also RUN the suites and report ACTUAL counts:
+- tests/qad/m6 (expected 358 passed)
+- tests/qad/m6/test_m66_source_bridge.py (expected 34 passed)
+- if cheap: tests/qad
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r10/basetemp"
+- Read/write ONLY inside this disposable copy and the basetemp above. Do NOT touch any other
+  repository/worktree. Do NOT run state-mutating git commands.
+- Write your own throwaway probe scripts INSIDE this copy.
+- Report the exact commands you ran and their real observed output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.6 PASS / READY FOR PRE-M6.7 GATE RESOLUTION
+  B = M6.6 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..13 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: what you could not verify and why. "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT (if any): if you believe an authoritative policy above is wrong, say so
+   here — it does NOT change your verdict; the policy is Founder-set.

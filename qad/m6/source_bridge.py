@@ -84,6 +84,10 @@ REASON_ADMITTED = "ORIGINAL_SOURCE_VERIFIED_AND_ADMITTED"
 REASON_REUSED = "ORIGINAL_SOURCE_ALREADY_ADMITTED_AND_ELIGIBLE"
 REASON_IDENTITY_CONFLICT = "SOURCE_IDENTITY_CONFLICT"
 
+#: Exact canonical FOUNDER authorization role required for REPLAY_EXCEPTION
+#: (mirrors the accepted runtime token in ``PITEnforcementService``).
+FOUNDER_ROLE_TOKEN = "FOUNDER"
+
 
 class SourceBridgeError(Exception):
     """Base class for M6.6 bridge errors."""
@@ -323,17 +327,33 @@ class OriginalSourceVerification:
                 f"verdict source_id {self.source_id!r} does not match {source_id!r}"
             )
 
-    def authorizes_evidence_for(self, *, source_id: str) -> bool:
-        """True ONLY for a minted VERIFIED verdict for exactly this source.
+    def is_verified_verdict_for(self, *, source_id: str) -> bool:
+        """True ONLY for a MINTED VERIFIED verdict for exactly this source.
 
-        This is the sole path that can set the canonical ``original_source_verified``
-        truth value, so an unverified or forged verdict can never mint it.
+        This gates the HONEST construction of the canonical
+        ``original_source_verified`` truth value. The authoritative RUN/CANDIDATE
+        binding is additionally enforced at the evidence-admission boundary via
+        :meth:`authorizes_evidence_for`.
         """
         return bool(
             self._minted is _MINT_TOKEN
             and self.verified
             and not self.mismatches
             and self.source_id == source_id
+        )
+
+    def authorizes_evidence_for(
+        self, *, ledger_id: str, source_candidate_id: str, source_id: str,
+    ) -> bool:
+        """FULL consumption-boundary check: minted + verified + exact run/candidate/source.
+
+        A verdict minted for run A / candidate A can never authorize evidence for run B
+        / candidate B, even when both cite the same underlying source.
+        """
+        return bool(
+            self.is_verified_verdict_for(source_id=source_id)
+            and self.bound_ledger_id == ledger_id
+            and self.bound_source_candidate_id == source_candidate_id
         )
 
 
@@ -529,6 +549,7 @@ def verify_and_admit_source(
     source_candidate_id: str,
     verifier: OriginalSourceVerifier | None = None,
     archive: Any,
+    pit_context_store: Any | None = None,
 ) -> SourceAdmissionOutcome:
     """Independently verify ONE discovered candidate, then selectively admit it.
 
@@ -624,15 +645,7 @@ def verify_and_admit_source(
             src01_id=source_id,
         )
 
-    if mode in (_SEALED, _REPLAY_EXCEPTION):
-        if mode == _REPLAY_EXCEPTION and not already:
-            # The REPLAY_EXCEPTION positive path requires the EXISTING explicit
-            # authorization/provenance boundary. M6.6 does not invent one.
-            return SourceAdmissionOutcome(
-                source_candidate_id=source_candidate_id,
-                disposition=CandidateDisposition.DEFERRED,
-                reason=REASON_REPLAY_EXCEPTION_BOUNDARY,
-            )
+    if mode == _SEALED:
         if not already:
             # A discovered CURRENT source is post-AS_OF by construction: it can
             # never be injected into a closed SEALED corpus.
@@ -657,8 +670,39 @@ def verify_and_admit_source(
             verification=verification,
         )
 
-    # LIVE_CASE_UPDATE (or any future live mode): selective admission through the
-    # authoritative archive boundary only.
+    if mode == _REPLAY_EXCEPTION:
+        # The EXISTING explicit authorization/provenance boundary is REQUIRED —
+        # verified against the authoritative PITC-01, never invented here. This
+        # applies to ALREADY-ADMITTED sources too (round-10 finding 3).
+        if not _replay_exception_authorized(record, pit_context_store=pit_context_store):
+            return SourceAdmissionOutcome(
+                source_candidate_id=source_candidate_id,
+                disposition=CandidateDisposition.DEFERRED,
+                reason=REASON_REPLAY_EXCEPTION_BOUNDARY,
+                verification=verification,
+            )
+        if already:
+            if not _sealed_eligible(archive, source_id, record.as_of):
+                return SourceAdmissionOutcome(
+                    source_candidate_id=source_candidate_id,
+                    disposition=CandidateDisposition.UNAVAILABLE,
+                    reason=REASON_SEALED_NOT_ELIGIBLE,
+                    src01_id=source_id,
+                    verification=verification,
+                )
+            return SourceAdmissionOutcome(
+                source_candidate_id=source_candidate_id,
+                disposition=CandidateDisposition.IMPORTED,
+                reason=REASON_REUSED,
+                src01_id=source_id,
+                reused=True,
+                verification=verification,
+            )
+        # authorized replay of a not-yet-admitted source: the exception is what
+        # authorizes using the post-AS_OF bytes, so admission proceeds below through
+        # the authoritative archive boundary only.
+
+    # LIVE_CASE_UPDATE (and an AUTHORIZED replay of a new source)
     if already:
         return SourceAdmissionOutcome(
             source_candidate_id=source_candidate_id,
@@ -724,6 +768,31 @@ def _pointer_index_for(record: RunRecord, source_candidate_id: str) -> int:
     return 0
 
 
+def _replay_exception_authorized(
+    record: RunRecord, *, pit_context_store: Any | None,
+) -> bool:
+    """Reuse the EXISTING REPLAY_EXCEPTION rule — no second PIT authority.
+
+    Requires the AUTHORITATIVE PITC-01 (resolved by the run's ``pit_context_id``) to be
+    in REPLAY_EXCEPTION mode, to carry the Founder authorization role, and to have a
+    non-empty ``exception_reason``. Any missing surface or mismatch fails closed — the
+    same rule the accepted runtime enforces (``PITEnforcementService``/FD #148).
+    """
+    if pit_context_store is None:
+        return False
+    try:
+        if not pit_context_store.contains("PITC-01", record.pit_context_id):
+            return False
+        pitc = pit_context_store.load("PITC-01", record.pit_context_id)
+    except Exception:
+        return False
+    return bool(
+        getattr(pitc, "mode", None) == _REPLAY_EXCEPTION
+        and getattr(pitc, "created_by", None) == FOUNDER_ROLE_TOKEN
+        and bool(getattr(pitc, "exception_reason", None))
+    )
+
+
 def _build_source_record(
     verification: OriginalSourceVerification,
 ) -> SourceRecord | None:
@@ -787,7 +856,7 @@ def build_evidence_admission(
     # canonical truth value; a forged, unverified, candidate-shaped or cross-source
     # verdict never can (fail closed).
     if isinstance(verification, OriginalSourceVerification):
-        verified_here = verification.authorizes_evidence_for(source_id=evidence.source_id)
+        verified_here = verification.is_verified_verdict_for(source_id=evidence.source_id)
     else:
         verified_here = False
     return EvidenceAdmissionRecord(
@@ -812,12 +881,55 @@ def build_evidence_admission(
     )
 
 
-def admit_candidate_evidence(registry: Any, *, evidence: EvidenceRecord, admission: EvidenceAdmissionRecord):
+def admit_candidate_evidence(
+    registry: Any,
+    *,
+    evidence: EvidenceRecord,
+    admission: EvidenceAdmissionRecord,
+    ledger_id: str,
+    source_candidate_id: str,
+    verified_source_id: str,
+    verification: OriginalSourceVerification | None = None,
+):
     """Admit EV-01 + EAR-01 through the EXISTING authoritative gate only.
 
-    No canonical bypass: the registry applies its own source-FK, tombstone,
-    byte-binding, EAR<->EV identity and AI-method verification checks.
+    PROOF-BOUND: the bridge re-derives the truth value at this boundary. A caller-authored
+    EAR is accepted ONLY when it does not assert verification, or when it asserts the
+    canonical ``"true"`` AND the bridge's OWN minted verdict authorizes exactly this
+    run + candidate + source. Everything else fails closed BEFORE any canonical write —
+    an ordinary caller cannot hand-build a verified EAR, and cannot admit evidence for a
+    source that was not the one independently verified and admitted for this candidate.
     """
+    if admission.evidence_id != evidence.evidence_id:
+        raise SourceBridgeError(
+            "EAR-01.evidence_id must equal EV-01.evidence_id "
+            f"({admission.evidence_id!r} != {evidence.evidence_id!r})"
+        )
+    if evidence.source_id != verified_source_id:
+        raise SourceBridgeError(
+            f"evidence source {evidence.source_id!r} is not the source independently "
+            f"verified and admitted for this candidate ({verified_source_id!r})"
+        )
+    claimed = getattr(admission, "original_source_verified", None)
+    if claimed is not None and claimed != ORIGINAL_SOURCE_VERIFIED_TRUE:
+        raise SourceBridgeError(
+            "EAR-01.original_source_verified must be the canonical "
+            f"{ORIGINAL_SOURCE_VERIFIED_TRUE!r} or unset, got {claimed!r}"
+        )
+    if claimed is not None:
+        authorized = bool(
+            isinstance(verification, OriginalSourceVerification)
+            and verification.authorizes_evidence_for(
+                ledger_id=ledger_id,
+                source_candidate_id=source_candidate_id,
+                source_id=evidence.source_id,
+            )
+        )
+        if not authorized:
+            raise SourceBridgeError(
+                "an EAR-01 asserting original_source_verified may be admitted ONLY when "
+                "the bridge's own verdict verifies exactly this run/candidate/source"
+            )
     return registry.admit_evidence(evidence, admission)
 
 
@@ -862,6 +974,7 @@ def process_discovered_sources(
     verifier: OriginalSourceVerifier | None = None,
     registry: Any | None = None,
     evidence_builder: Any | None = None,
+    pit_context_store: Any | None = None,
 ) -> BridgeOutcome:
     """Full bounded pipeline for the run's discovered sources.
 
@@ -916,7 +1029,7 @@ def process_discovered_sources(
 
         admission = verify_and_admit_source(
             store, ledger_id=ledger_id, source_candidate_id=reg.source_candidate_id,
-            verifier=verifier, archive=archive,
+            verifier=verifier, archive=archive, pit_context_store=pit_context_store,
         )
         evidence_ids: tuple[str, ...] = ()
         ear_ids: tuple[str, ...] = ()
@@ -930,7 +1043,13 @@ def process_discovered_sources(
                 )
                 if built is not None:
                     ev, ear = built
-                    admit_candidate_evidence(registry, evidence=ev, admission=ear)
+                    admit_candidate_evidence(
+                        registry, evidence=ev, admission=ear,
+                        ledger_id=ledger_id,
+                        source_candidate_id=reg.source_candidate_id,
+                        verified_source_id=admission.src01_id,
+                        verification=admission.verification,
+                    )
                     evidence_ids = (ev.evidence_id,)
                     ear_ids = (ear.admission_id,)
             except Exception as exc:  # cross-store boundary: preserve committed state

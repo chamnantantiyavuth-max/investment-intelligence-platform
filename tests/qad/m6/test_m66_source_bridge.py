@@ -30,6 +30,7 @@ from qad.m6.source_bridge import (
     SourceBridgeError,
     SourceFailureKind,
     SourceVerificationCandidate,
+    admit_candidate_evidence,
     build_evidence_admission,
     coerce_discovered_reference,
     compute_source_candidate_id,
@@ -913,9 +914,19 @@ def test_31_a_verdict_cannot_authorize_another_candidate_run_or_source(store):
         verdict.assert_attested_for(
             ledger_id="L-1", source_candidate_id=cid, source_id="SRC-DIFFERENT"
         )
-    # and it can authorize canonical evidence ONLY for its own source
-    assert verdict.authorizes_evidence_for(source_id="SRC-A") is True
-    assert verdict.authorizes_evidence_for(source_id="SRC-B") is False
+    # and it can authorize canonical evidence ONLY for its own run+candidate+source
+    assert verdict.authorizes_evidence_for(
+        ledger_id="L-1", source_candidate_id=cid, source_id="SRC-A"
+    ) is True
+    assert verdict.authorizes_evidence_for(
+        ledger_id="L-1", source_candidate_id="SC-someone-else", source_id="SRC-A"
+    ) is False
+    assert verdict.authorizes_evidence_for(
+        ledger_id="L-OTHER", source_candidate_id=cid, source_id="SRC-A"
+    ) is False
+    assert verdict.authorizes_evidence_for(
+        ledger_id="L-1", source_candidate_id=cid, source_id="SRC-B"
+    ) is False
 
 
 def test_32_no_importable_mint_path_can_forge_a_trusted_verdict():
@@ -977,3 +988,153 @@ def test_34_duplicate_input_yields_one_outcome_per_candidate(store):
     assert len(out.outcomes) == 1
     assert len(store.load_run("L-1").candidates) == 1
     assert len(store.load_run("L-1").dispositions) == 1
+
+
+# ======================== 35-37 round-10 closure (proof-bound evidence, binding, replay)
+
+
+def test_35_a_caller_authored_verified_ear_is_refused(store):
+    archive = _archive()
+    _admit_direct_source(archive, "SRC-A")
+    registry = _registry(archive)
+    # an ordinary caller hand-builds the canonical truth value without any verification
+    forged = _ear(
+        "EV-A", "EAR-A",
+        admission_method=EvidenceAdmissionRecordAdmission_method.AI_EXTRACTION, osv="true",
+    )
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-A", "SRC-A"), admission=forged,
+            ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
+            verification=None,
+        )
+    assert registry._data.get("EV-01", {}) == {}
+    assert registry._data.get("EAR-01", {}) == {}
+
+    # evidence for a source that was NOT the independently verified/admitted one is refused
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-C", "SRC-C"), admission=_ear("EV-C", "EAR-C"),
+            ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
+            verification=None,
+        )
+    assert registry._data.get("EV-01", {}) == {}
+
+    # the EAR/EV identity must agree
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-A", "SRC-A"), admission=_ear("EV-OTHER", "EAR-A"),
+            ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
+        )
+    assert registry._data.get("EV-01", {}) == {}
+
+
+def test_36_a_verdict_from_one_run_cannot_authorize_another(store):
+    archive = _archive()
+    _admit_direct_source(archive, "SRC-A", raw=b"alpha")
+    _make_run(store, ledger_id="L-1", run_id="RR-1", request_id="REQ-1")
+    _make_run(store, ledger_id="L-2", run_id="RR-2", request_id="REQ-2")
+    c1 = _cid("L-1", 0, "https://sec.gov/a")
+    c2 = _cid("L-2", 0, "https://sec.gov/a")
+    for lid in ("L-1", "L-2"):
+        register_discovered_candidates(
+            store, ledger_id=lid, references=[_ptr(0, "https://sec.gov/a")],
+            discovery_timestamp=DISCOVERED_AT,
+        )
+    v1 = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=c1,
+        verifier=_StubVerifier({c1: _verified("SRC-A")}), archive=archive,
+    ).verification
+    assert v1 is not None
+    assert v1.authorizes_evidence_for(
+        ledger_id="L-1", source_candidate_id=c1, source_id="SRC-A"
+    ) is True
+    # NEVER for another run/candidate even when both cite the same source
+    assert v1.authorizes_evidence_for(
+        ledger_id="L-2", source_candidate_id=c2, source_id="SRC-A"
+    ) is False
+    assert v1.authorizes_evidence_for(
+        ledger_id="L-2", source_candidate_id=c1, source_id="SRC-A"
+    ) is False
+    registry = _registry(archive)
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-B", "SRC-A"),
+            admission=_ear("EV-B", "EAR-B", osv="true"),
+            ledger_id="L-2", source_candidate_id=c2, verified_source_id="SRC-A",
+            verification=v1,
+        )
+    assert registry._data.get("EV-01", {}) == {}
+
+
+class _StubPitStore:
+    """Deterministic test double for the AUTHORITATIVE PITC-01 resolution surface.
+
+    Only the resolution contract the bridge needs (contains/load) is provided; the
+    slope of authorization truth is the PITC record itself, which mirrors the accepted
+    runtime rule (mode + Founder role + non-empty exception_reason).
+    """
+
+    def __init__(self, pitc):
+        self._pitc = pitc
+
+    def contains(self, schema_id, record_id):
+        return schema_id == "PITC-01" and record_id == self._pitc.pit_context_id
+
+    def load(self, schema_id, record_id):
+        return self._pitc
+
+
+def test_37_replay_exception_requires_the_authoritative_boundary(store):
+    from qad.models.family_i import PITContext, PITContextMode
+
+    def _pitc(*, created_by, exception_reason=None):
+        return PITContext(
+            pit_context_id="PITC-1", case_id="CASE-1", as_of_date=AS_OF,
+            mode=PITContextMode.REPLAY_EXCEPTION, created_by=created_by,
+            exception_reason=exception_reason,
+        )
+
+    archive = _archive()  # admitted_at <= AS_OF, so the source IS sealed-eligible
+    _admit_direct_source(archive, "SRC-OLD", raw=b"seeded")
+    _make_run(store, pit_mode=REPLAY_EXCEPTION, as_of=AS_OF)
+    register_discovered_candidates(
+        store, ledger_id="L-1", references=[_ptr(0, "https://sec.gov/old")],
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    cid = _cid("L-1", 0, "https://sec.gov/old")
+    verifier = _StubVerifier({cid: _verified("SRC-OLD", raw=b"seeded")})
+
+    # (a) no authorization surface at all -> fail closed
+    out = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid, verifier=verifier, archive=archive
+    )
+    assert out.disposition.value == "DEFERRED"
+    assert out.reason == "REPLAY_EXCEPTION_AUTHORIZATION_BOUNDARY_REQUIRED"
+
+    # (b) PITC present but NOT Founder-authorized (no exception reason) -> refused
+    out2 = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid, verifier=verifier,
+        archive=archive,
+        pit_context_store=_StubPitStore(_pitc(created_by="Research Director")),
+    )
+    assert out2.disposition.value == "DEFERRED"
+
+    # (b2) Founder role but EMPTY exception reason -> still refused
+    out2b = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid, verifier=verifier,
+        archive=archive,
+        pit_context_store=_StubPitStore(_pitc(created_by="FOUNDER", exception_reason="")),
+    )
+    assert out2b.disposition.value == "DEFERRED"
+
+    # (c) properly authorized -> the existing labelled path proceeds (eligible reuse)
+    out3 = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid, verifier=verifier,
+        archive=archive,
+        pit_context_store=_StubPitStore(_pitc(
+            created_by="FOUNDER", exception_reason="Founder-authorized re-evaluation",
+        )),
+    )
+    assert out3.disposition.value == "IMPORTED"
+    assert out3.reused is True

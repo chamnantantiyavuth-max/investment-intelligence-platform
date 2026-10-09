@@ -1,0 +1,59 @@
+VERDICT: C
+
+PROBE RESULTS:
+1. VERIFIED — The bridge has no `store()`/`store_batch()` calls; its canonical admission calls are `admit_source` and `admit_evidence`. The archive and registry implementations reject direct and batch admission bypasses.
+2. DEFECT — Direct verdict construction and raw/duck-typed inputs to `build_evidence_admission` are denied, and a provider claim alone gets the default DENY. But a caller-authored EAR with `original_source_verified="true"` was admitted without a verification object; a caller-supplied builder also admitted evidence for a different source. A genuine verdict was additionally reusable across registered runs/candidates for the same source.
+3. DEFECT — Post-AS_OF/backdated and unattested/SRCV-only eligibility paths fail closed through the existing eligibility evaluator. However, a pre-AS_OF attested source in a REPLAY_EXCEPTION run with no checked Founder authorization, exception reason, or provenance was returned as IMPORTED.
+4. VERIFIED — Duplicate/replayed candidates, distinct candidates pointing to the same source, disposition immutability, and duplicate-input deduplication are covered by the passing tests; the probe also confirmed one outcome for identical input.
+5. VERIFIED — Test 21 preserves both sides of contradictory evidence.
+6. VERIFIED — Test 23 confirms source admission remains committed and evidence failure is reported without claiming evidence was admitted.
+7. VERIFIED — Test 25 confirms re-entry does not duplicate canonical state or rewrite the disposition; test 11 confirms same-source reuse.
+8. VERIFIED — Tests 24, 26, and 27 cover terminalization constraints; AST scan found no terminalization call in the bridge.
+9. VERIFIED — AST scan found no SUCCESS-writer calls.
+10. VERIFIED — AST scan found no gate reference or bypass; test 29 confirms the gate remains OPEN in the recorded decision.
+11. VERIFIED — AST import scan found no provider, network, browser, Gemini, or Notebook imports.
+12. NOT VERIFIED — Runtime schema count is 68 and current `RRM-01.deep_research_runs` is `Optional[list[str]]`; without Git metadata I could not establish that either is unchanged relative to the reviewed commit’s parent.
+13. VERIFIED — The documented three-argument builder runs and admits evidence (test 13); the pointer index was delivered exactly at 1,000,000,000 in the probe; duplicate identical input yielded one outcome (test 34).
+
+MATERIAL FINDINGS:
+1. Caller-authored evidence admission can assert the canonical verification truth without source verification.
+   (a) `qad/m6/source_bridge.py:815-821` forwards a caller-supplied EAR directly to the registry; `process_discovered_sources` accepts the caller-supplied builder result at lines 925-934. The registry gate at `qad/persistence/reference.py:1242-1256` checks only whether the EAR string equals `"true"`. Probe results: `manual_ear_without_verification ... canonical_EV_admitted=True`; `builder_wrong_source SRC-C ... canonical_EV_admitted=True`.
+   (b) An ordinary caller can mint canonical AI evidence marked verified without genuine verification of that evidence’s source, violating the verification-truth requirement.
+   (c) Require proof-bound admission at the canonical evidence-admission boundary; do not accept caller-authored `"true"` EARs or unvalidated builder tuples. Bind the verification to the evidence’s exact source.
+   (d) Repeat the probe with no verification and with a builder returning evidence for a different, unverified source; both must be rejected with no EV-01/EAR-01 persisted.
+
+2. A genuine verdict can be replayed across candidates/runs when the source ID is the same.
+   (a) `OriginalSourceVerification.authorizes_evidence_for` at `qad/m6/source_bridge.py:326-337` checks the token, verification status, mismatches, and source ID—but not its bound ledger/candidate. `build_evidence_admission` at lines 786-792 calls that method without revalidating the binding. Probe: a verdict from candidate A/run A produced `original_source_verified=true` and a persisted EV for separately registered candidate B/run B.
+   (b) This defeats the explicit no-cross-candidate/run-replay binding; a new candidate/run can obtain the canonical truth without verification for that candidate/run.
+   (c) Revalidate `assert_attested_for` at evidence consumption against the active ledger, candidate, and source; pass the needed context into the builder/admission boundary.
+   (d) Verify that an A/run-A verdict is refused for B/run-B, while a verdict minted and consumed for the exact same run/candidate/source still succeeds.
+
+3. REPLAY_EXCEPTION accepts an existing source without its required authorization boundary.
+   (a) `qad/m6/source_bridge.py:627-658` permits an already-present source after `_sealed_eligible` succeeds; it does not resolve the PIT context or check Founder authorization, non-empty `exception_reason`, or provenance. The design reconciliation requires these at `design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md:111-113`; runtime enforcement checks Founder role and reason at `qad/m53/pit_enforcement.py:267-273`. Probe: an existing pre-AS_OF attested source in an unauthenticated REPLAY_EXCEPTION run returned `IMPORTED ORIGINAL_SOURCE_ALREADY_ADMITTED_AND_ELIGIBLE`.
+   (b) An unauthorized replay can be treated as imported, weakening the required PIT/replay boundary.
+   (c) Resolve and validate the authoritative PITC authorization/provenance before returning IMPORTED; fail closed otherwise.
+   (d) Test existing eligible sources with missing/wrong Founder authority, empty reason, and absent provenance; each must be blocked, while a properly authorized replay follows the existing labelled path.
+
+NON-BLOCKING FINDINGS: NONE.
+
+EVIDENCE GAPS:
+1. This copy has no `.git` directory. Branch, HEAD, remote, and the claimed commit/parent relationship could not be independently verified.
+2. The broader `tests/qad` run had one failure in `test_schema_build_identity`: the generated `spec_source_sha256` differs from the hash of the current schema file. Without Git metadata I could not establish whether it predates this review. The M6 suites passed.
+3. The reviewed bridge defines a verifier Protocol and a default-deny verifier; the actual trusted verification implementation is not present in the reviewed bridge artifacts. I verified bridge behavior with deterministic test verifiers, not the correctness of an external production verifier.
+
+COMMANDS RUN:
+1. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r10/basetemp"`
+   Result: exit 0; `358 passed in 14.99s`.
+2. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r10/basetemp"`
+   Result: exit 0; `34 passed in 2.56s`.
+3. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r10/basetemp"`
+   Result: exit 1; `893 passed, 1 failed, 11 warnings in 17.61s`. Failure: `tests/qad/test_contract_conformance.py::test_schema_build_identity` — `spec_source_sha256 mismatch`.
+4. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" review_m66_r10_probe.py`
+   Result: `canonical_schema_count 68`; `rrm_deep_research_runs_annotation typing.Optional[list[str]]`; direct trusted verdict denied; provider claim default result `DEFERRED`; cross-run reuse admitted canonical EV with `original_source_verified=true`; manual EAR without verification admitted canonical EV; builder admitted evidence for a different source; unauthorized REPLAY_EXCEPTION returned IMPORTED; pointer index `1000000000` observed; AST results: `success_writer_calls []`, `direct_store_calls []`, canonical calls `['admit_evidence', 'admit_source']`, `raw_success_gate_ast_names []`, `banned_imports []`.
+5. `git status --short && git branch --show-current && git rev-parse HEAD && git remote -v`
+   Result: exit 128; `fatal: not a git repository`.
+6. `pwd; python -c "import os, pathlib; p=pathlib.Path.cwd(); print('cwd=',p); print('git=',(p/'.git').exists()); print('source=',(p/'qad/m6/source_bridge.py').exists()); print('venv=',pathlib.Path('C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe').exists())"`
+   Result: cwd was the supplied `m66-review-r10/repo`; `.git=False`, source file exists, specified Python executable exists.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0
