@@ -96,7 +96,58 @@ no `.sqlite3` residue in any worktree):
 - `main` unchanged `5bf107774b29e5a5fe4dcec5846800b9b48361ba`; 5/5 cron PAUSED;
   M6.5 NOT started; no provider transport; canonical schema count still 68.
 
-Round-14 family-independent review: see the verdict recorded below.
+Independent review — ROUNDS 14–17 (family-separated: DeepSeek producer, GPT-6 Luna High
+reviewer; provenance verdict `INDEPENDENT`; read-only disposable copy with no `.git`,
+`--no-restore-cwd`, external basetemp — the reviewer wrote NOTHING into any governed
+worktree):
+
+- **round 14 = C — 3 material implementation defects.** SUCCESS was reachable without
+  trusted verification via (a) a subclass overriding `__post_init__`, (b) the
+  module-importable `_ATTESTATION_TOKEN`, (c) `object.__new__`; and (d) a SUCCESS
+  result's validated bytes could be replaced post-construction with `object.__setattr__`
+  (a frozen dataclass does NOT prevent that) while the result still reported SUCCESS.
+- **FIX 1 (`b2a259f`):** `DeepResearchResult` is now FINAL (`__init_subclass__` refuses
+  subclassing); the attestation guard is captured in a CLOSURE — no module-level token
+  attribute exists; and a new consumption-boundary revalidation
+  `DeepResearchResult.assert_proof_verified()` re-derives the checks (attestation present
+  + identity-bound + exact bytes/hash + citation digest) so an `object.__new__` artifact
+  or a mutated result is refused when CONSUMED. The docstring records explicitly that this
+  is a BOUNDED in-process control and NOT a security guarantee (FD #152 §7: no
+  cryptographic/process isolation is claimed; the accepted M6.2/M6.3 in-process trust
+  boundary stands).
+- **round 15 = C — 1 material defect.** Removing the importable TOKEN was not enough: the
+  minting CALLABLE itself was still a module attribute, so it could be called with bare
+  identity strings to mint an attestation → SUCCESS with no resolver (the reviewer
+  demonstrated exactly that).
+- **FIX 2 (`841bdc0`):** the minter is now closure-scoped only. The module exposes exactly
+  two objects — the private attestation TYPE and `_verify_success_proofs`, the FULL
+  verification entry point requiring the authoritative request + a resolver that verifies
+  BOTH proofs bound to the run. The reviewer's exact exploit now raises `AttributeError`.
+- **round 16 = C — 1 material defect.** The attestation bound run identity + evidence
+  references but NOT the validated result/citation digests, so replacing the bytes AND
+  setting the matching `result_sha256` still passed consumption revalidation.
+- **FIX 3 (`877511d`):** the validated `result_sha256` + `citation_list_sha256` are bound
+  INTO the attestation (derived from the actual payload/pointers, never from caller
+  assertions) and compared at the consumption boundary; the builder also refuses a
+  caller-supplied digest that disagrees with the payload.
+- **round 17 = B — M6.4 PASS WITH BOUNDED NON-BLOCKING FINDINGS.** Material findings
+  NONE · required changes NONE · POLICY DISAGREEMENT NONE. The single non-blocking finding
+  is the PRE-EXISTING INHERITED `tests/qad/test_contract_conformance.py::test_schema_build_identity`
+  failure (reproduced identically at clean HEAD in a detached worktree) — NOT an M6.4
+  defect. Probe K was NOT VERIFIED only because the disposable copy has no `.git`
+  metadata (an evidence gap); RRM-01 was independently verified unchanged
+  (`Optional[list[str]]`).
+
+Every fix was RED→GREEN demonstrated: neutering the new guard made the seam suite fail
+(5 failed / 29 passed for fix 1) and restoring it made it pass.
+
+Required status reached:
+`M6.4 RESEARCH REQUEST/RESULT CONTRACT GREEN / TRUSTED PROOF-VERIFICATION SEAM VERIFIED /
+S10 NON-CANONICAL BOUNDARY VERIFIED / READY FOR M6.5`
+
+**M6.5 (Retry / Telemetry / Idempotency) NOT started** — it begins only on a later
+explicit instruction. No Gemini/provider/network execution; `main` untouched; 5/5 cron
+PAUSED.
 
 # Session — 2026-10-07 (M6.4 Research Request/Result Adapter Contract — code GREEN, review round 13 = C, 1 open finding escalated)
 
@@ -1639,3 +1690,5 @@ then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
 <!-- 2026-10-07 16:37 UTC+7 (M6.3 state sync — Deep Research Run Ledger GREEN / DURABLE PROVENANCE VERIFIED / READY FOR M6.4; no new FD; main 5bf1077 unchanged; 5/5 cron PAUSED) -->
 
 <!-- 2026-10-07 19:29 UTC+7 -->
+
+<!-- 2026-10-09 12:35 UTC+7 (M6.4 trusted proof-verification seam CLOSED — rounds 14/15/16 C → fixed; round 17 = B M6.4 PASS; FD #152; branch impl/m6-gemini-notebook; main 5bf1077 unchanged; M6.5 NOT started; 5/5 cron PAUSED) -->

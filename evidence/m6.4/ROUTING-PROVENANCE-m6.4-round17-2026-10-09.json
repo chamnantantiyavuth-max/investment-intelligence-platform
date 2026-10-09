@@ -1,0 +1,1 @@
+{"producer_model": "deepseek/deepseek-v4.1-flash", "producer_family": "deepseek", "reviewer_model": "openai/gpt-6-luna", "reviewer_family": "openai", "reasoning_effort": "high", "provider": "openrouter", "fallback_used": false, "escalation_reason": null, "family_independent": true, "verdict": "INDEPENDENT"}

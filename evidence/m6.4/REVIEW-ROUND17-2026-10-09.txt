@@ -1,0 +1,59 @@
+VERDICT: B
+
+PROBE RESULTS:
+A1 VERIFIED — Subclassing `DeepResearchResult` is refused.
+A2 VERIFIED — No importable attestation token; a fabricated guard is refused.
+A3 VERIFIED — No importable mint function; `_verify_success_proofs` refused missing/deny-all and one-proof resolvers.
+A4 VERIFIED — A SUCCESS-shaped `object.__new__` object is refused at consumption.
+A5 VERIFIED — Replacing result bytes alone is caught.
+A6 VERIFIED — Replacing bytes and setting the matching new `result_sha256` is caught against the attested digest.
+A7 VERIFIED — Replacing citation pointers and their matching digest is caught against the attestation.
+A8 VERIFIED — Copying a genuine attestation onto a different run is refused.
+A9 VERIFIED — Builder SUCCESS passes revalidation; mismatched result and citation digests are refused.
+B VERIFIED — Omitted resolver, explicit `None`, and `DEFAULT_PROOF_RESOLVER` all refuse SUCCESS.
+C VERIFIED — Mismatches in request ID, run ID, ledger ID, snapshot hash, provider surface, proof kind, and evidence reference were each refused.
+D VERIFIED — Enum claims and evidence-reference strings without resolver verification do not authorize SUCCESS.
+E VERIFIED — Verifying only either one of the two required proofs is insufficient.
+F VERIFIED — Replaying proof verification from another request is refused.
+G VERIFIED — Accepted SUCCESS retains matching result-byte and citation-list digests, passes consumption revalidation, and remains non-canonical without canonical-admission methods.
+H VERIFIED — No provider transport, network, browser, Gemini, or Google-specific implementation was found in the contract module; provider names appear only as descriptive data/documentation.
+I VERIFIED — No M6.5 retry, telemetry, or idempotency implementation was found in the M6.4 contract. M6.5 was not started.
+J VERIFIED — Runtime registry count is 68; the M6.4 tests also assert 68.
+K NOT VERIFIED — The current RRM field is `Optional[list[str]]` and tests exercise ledger-ID strings, but no Git metadata is available to compare the field against the baseline.
+L VERIFIED — The authority check recomputes snapshot identity and checks source count, sorted unique IDs, eligibility, admission timestamp and AS_OF, content/raw hash equality, exact byte hash and length, and closed-corpus requirement. Relevant M6.2/M6.4 regression tests passed.
+M VERIFIED — The result contains no resolver, transport, connection, or callable capability.
+N VERIFIED — `tests/qad/m6`: 203 passed. Broader `tests/qad`: 738 passed, 1 failed, 11 warnings.
+
+MATERIAL FINDINGS: NONE.
+
+NON-BLOCKING FINDINGS:
+1. Broader QAD suite has one failure.
+   (a) `tests/qad/test_contract_conformance.py::test_schema_build_identity` observed the generated `spec_source_sha256` as `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd`, while the checked-in spec file hashes to `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`.
+   (b) This leaves the broader QAD suite without a clean pass signal; the M6.4 suite itself passed. Baseline attribution is unverified.
+   (c) Reconcile the generated build identity with the checked-in spec artifact.
+   (d) Rerun `tests/qad/test_contract_conformance.py::test_schema_build_identity` and `tests/qad`.
+
+EVIDENCE GAPS:
+- This copy has no `.git` metadata. I could not independently verify branch, HEAD, commit `877511d`, ancestry, whether canonical main is unchanged, or compare the RRM field against its baseline.
+- No production consumer call site for `assert_proof_verified` was found in the copy; the method and its consumption checks are covered by the M6.4 tests.
+
+COMMANDS RUN:
+- `pwd && git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git show --no-patch --format='%H%n%P%n%s' 877511d`
+  Observed: working directory is the specified copy; command stopped at `fatal: not a git repository`.
+- `git -C 'C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round17-review/repo' rev-parse --show-toplevel; git -C 'C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round17-review/repo' status --short --branch`
+  Observed: both commands reported `fatal: not a git repository`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round17-review/basetemp"`
+  Observed: `203 passed in 5.28s`.
+- `TZ=Asia/Bangkok date '+%Y-%m-%d %H:%M UTC+7'`
+  Observed: `2026-10-09 05:30 UTC+7` (also `05:31 UTC+7` on the later call).
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round17-review/basetemp/qad"`
+  Observed: `1 failed, 738 passed, 11 warnings in 8.06s`; failure was `test_schema_build_identity` with the hash mismatch above.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.contract.canonical_boundary import CANONICAL_SCHEMAS; from qad.models.family_i import RunManifestRecord; print('canonical_schema_count=', len(CANONICAL_SCHEMAS)); print('RRM_deep_research_runs_annotation=', RunManifestRecord.model_fields['deep_research_runs'].annotation)"`
+  Observed: `canonical_schema_count= 68`; `RRM_deep_research_runs_annotation= typing.Optional[list[str]]`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" tests/qad/m6/_round17_reviewer_probes.py`
+  First run observed `ModuleNotFoundError: No module named 'qad'` due to the probe script’s initial import path. After correcting the script, the same command exited 0; all scripted A1–A9, B–G, and C mismatch probes passed.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; p=Path('tests/qad/m6/_round17_reviewer_probes.py'); p.unlink(); print('throwaway_probe_removed=', not p.exists())"`
+  Observed: `throwaway_probe_removed= True`.
+
+POLICY DISAGREEMENT: NONE.
+REVIEW_EXIT=0
