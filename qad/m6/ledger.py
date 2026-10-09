@@ -831,6 +831,35 @@ class DeepResearchRunLedgerStore:
         telemetry: Mapping[str, Any] | None = None,
     ) -> None:
         """Durably append one attempt. Append-only; prior attempts never rewritten."""
+        mode, outcome_value, metrics = self._validate_attempt_args(
+            attempt_number, retry_mode, outcome, telemetry
+        )
+        started = _iso(started_at) if started_at is not None else self._now()
+
+        conn = self._connect()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            self._require_run(conn, ledger_id)
+            self._require_mutable(conn, ledger_id)
+            self._insert_attempt_in_transaction(
+                conn, ledger_id, attempt_number, mode, provider_surface,
+                transport_type, started, completed_at, outcome_value, error, metrics,
+            )
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+        finally:
+            conn.close()
+
+    def _validate_attempt_args(
+        self,
+        attempt_number: int,
+        retry_mode: str | RetryMode,
+        outcome: str | TerminalStatus | None,
+        telemetry: Mapping[str, Any] | None,
+    ) -> tuple[RetryMode, str | None, dict[str, Any]]:
+        """Shared attempt validation (used by append_attempt and the atomic path)."""
         if (
             not isinstance(attempt_number, int)
             or isinstance(attempt_number, bool)
@@ -845,9 +874,10 @@ class DeepResearchRunLedgerStore:
             mode = RetryMode(retry_mode)
         except ValueError:
             raise LedgerValidationError(f"unknown retry_mode {retry_mode!r}") from None
+        outcome_value: str | None = None
         if outcome is not None:
             try:
-                outcome = TerminalStatus(outcome).value
+                outcome_value = TerminalStatus(outcome).value
             except ValueError:
                 raise LedgerValidationError(f"unknown attempt outcome {outcome!r}") from None
 
@@ -861,40 +891,44 @@ class DeepResearchRunLedgerStore:
                 "status=NOT_EXPOSED with value=null and a non-empty reason when "
                 "the provider does not expose a metric"
             )
-        started = _iso(started_at) if started_at is not None else self._now()
+        return mode, outcome_value, metrics
 
-        conn = self._connect()
+    def _insert_attempt_in_transaction(
+        self,
+        conn: sqlite3.Connection,
+        ledger_id: str,
+        attempt_number: int,
+        mode: RetryMode,
+        provider_surface: str,
+        transport_type: str,
+        started: str,
+        completed_at: str | None,
+        outcome_value: str | None,
+        error: str | None,
+        metrics: Mapping[str, Any],
+    ) -> None:
+        """Insert one attempt row + its event INSIDE a caller-owned transaction."""
         try:
-            conn.execute("BEGIN IMMEDIATE")
-            self._require_run(conn, ledger_id)
-            self._require_mutable(conn, ledger_id)
-            try:
-                conn.execute(
-                    "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
-                    " provider_surface, transport_type, started_at, completed_at, outcome,"
-                    " error, telemetry_json) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (
-                        ledger_id, attempt_number, mode.value, provider_surface,
-                        transport_type, started,
-                        _iso(completed_at) if completed_at is not None else None,
-                        outcome, error, _telemetry_to_json(metrics),
-                    ),
-                )
-            except sqlite3.IntegrityError as exc:
-                raise LedgerIdentityConflict(
-                    f"duplicate attempt identity ({ledger_id!r}, {attempt_number}): {exc}"
-                ) from None
-            self._write_event(conn, ledger_id, "ATTEMPT_APPENDED", {
-                "attempt_number": attempt_number,
-                "retry_mode": mode.value,
-                "outcome": outcome,
-            })
-            conn.execute("COMMIT")
-        except Exception:
-            conn.execute("ROLLBACK")
-            raise
-        finally:
-            conn.close()
+            conn.execute(
+                "INSERT INTO ledger_attempt (ledger_id, attempt_number, retry_mode,"
+                " provider_surface, transport_type, started_at, completed_at, outcome,"
+                " error, telemetry_json) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    ledger_id, attempt_number, mode.value, provider_surface,
+                    transport_type, started,
+                    _iso(completed_at) if completed_at is not None else None,
+                    outcome_value, error, _telemetry_to_json(metrics),
+                ),
+            )
+        except sqlite3.IntegrityError as exc:
+            raise LedgerIdentityConflict(
+                f"duplicate attempt identity ({ledger_id!r}, {attempt_number}): {exc}"
+            ) from None
+        self._write_event(conn, ledger_id, "ATTEMPT_APPENDED", {
+            "attempt_number": attempt_number,
+            "retry_mode": mode.value,
+            "outcome": outcome_value,
+        })
 
     # -- source candidates + dispositions ---------------------------------
 
@@ -1036,42 +1070,126 @@ class DeepResearchRunLedgerStore:
         try:
             conn.execute("BEGIN IMMEDIATE")
             self._require_run(conn, ledger_id)
-            if self._terminal_status(conn, ledger_id) is not None:
-                raise LedgerTerminalError(
-                    f"ledger run {ledger_id!r} is already terminalized"
-                )
-            undisposed = conn.execute(
-                "SELECT c.source_candidate_id FROM ledger_candidate c"
-                " LEFT JOIN ledger_disposition d"
-                "   ON d.ledger_id = c.ledger_id AND d.source_candidate_id = c.source_candidate_id"
-                " WHERE c.ledger_id = ? AND d.source_candidate_id IS NULL"
-                " ORDER BY c.source_candidate_id",
-                (ledger_id,),
-            ).fetchall()
-            if undisposed:
-                ids = [r["source_candidate_id"] for r in undisposed]
-                raise LedgerValidationError(
-                    f"cannot terminalize: {len(ids)} registered source candidate(s) "
-                    f"lack a disposition: {ids}"
-                )
-            try:
-                conn.execute(
-                    "INSERT INTO ledger_terminal (ledger_id, terminal_at, terminal_status,"
-                    " result_artifact_ref, result_sha256, failure_detail) VALUES (?,?,?,?,?,?)",
-                    (
-                        ledger_id,
-                        _iso(terminal_at) if terminal_at is not None else self._now(),
-                        status.value, result_artifact_ref, result_sha256, failure_detail,
-                    ),
-                )
-            except sqlite3.IntegrityError as exc:
-                raise LedgerTerminalError(
-                    f"ledger run {ledger_id!r} already terminal: {exc}"
-                ) from None
-            self._write_event(conn, ledger_id, "RUN_TERMINALIZED", {
-                "terminal_status": status.value,
-                "result_sha256": result_sha256,
-            })
+            self._terminalize_in_transaction(
+                conn, ledger_id, status, terminal_at, result_artifact_ref,
+                result_sha256, failure_detail,
+            )
+            conn.execute("COMMIT")
+        except Exception:
+            conn.execute("ROLLBACK")
+            raise
+        finally:
+            conn.close()
+
+    def _terminalize_in_transaction(
+        self,
+        conn: sqlite3.Connection,
+        ledger_id: str,
+        status: TerminalStatus,
+        terminal_at: str | None,
+        result_artifact_ref: str | None,
+        result_sha256: str | None,
+        failure_detail: str | None,
+    ) -> None:
+        """Terminal prerequisites + terminal row + event INSIDE a caller transaction.
+
+        Extracted so the atomic SUCCESS finalization boundary reuses the EXACT accepted
+        terminalization validation instead of duplicating (or re-inventing) it.
+        """
+        if self._terminal_status(conn, ledger_id) is not None:
+            raise LedgerTerminalError(
+                f"ledger run {ledger_id!r} is already terminalized"
+            )
+        undisposed = conn.execute(
+            "SELECT c.source_candidate_id FROM ledger_candidate c"
+            " LEFT JOIN ledger_disposition d"
+            "   ON d.ledger_id = c.ledger_id AND d.source_candidate_id = c.source_candidate_id"
+            " WHERE c.ledger_id = ? AND d.source_candidate_id IS NULL"
+            " ORDER BY c.source_candidate_id",
+            (ledger_id,),
+        ).fetchall()
+        if undisposed:
+            ids = [r["source_candidate_id"] for r in undisposed]
+            raise LedgerValidationError(
+                f"cannot terminalize: {len(ids)} registered source candidate(s) "
+                f"lack a disposition: {ids}"
+            )
+        try:
+            conn.execute(
+                "INSERT INTO ledger_terminal (ledger_id, terminal_at, terminal_status,"
+                " result_artifact_ref, result_sha256, failure_detail) VALUES (?,?,?,?,?,?)",
+                (
+                    ledger_id,
+                    _iso(terminal_at) if terminal_at is not None else self._now(),
+                    status.value, result_artifact_ref, result_sha256, failure_detail,
+                ),
+            )
+        except sqlite3.IntegrityError as exc:
+            raise LedgerTerminalError(
+                f"ledger run {ledger_id!r} already terminal: {exc}"
+            ) from None
+        self._write_event(conn, ledger_id, "RUN_TERMINALIZED", {
+            "terminal_status": status.value,
+            "result_sha256": result_sha256,
+        })
+
+    # -- atomic success finalization (FD #153) ----------------------------
+
+    def finalize_success_attempt_atomic(
+        self,
+        ledger_id: str,
+        *,
+        attempt_number: int,
+        retry_mode: str | RetryMode,
+        provider_surface: str,
+        transport_type: str,
+        result_sha256: str,
+        result_artifact_ref: str | None = None,
+        started_at: str | None = None,
+        completed_at: str | None = None,
+        telemetry: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Atomically record the final SUCCESS attempt AND the SUCCESS terminal record.
+
+        FD #153: a `SUCCESS` attempt and its run-terminal result binding must never be
+        separable by a partial failure. In ONE ``BEGIN IMMEDIATE`` transaction this
+        writes (a) the exact SUCCESS attempt and (b) the SUCCESS terminal record carrying
+        ``result_artifact_ref`` + ``result_sha256``, plus the attempt/terminal audit
+        events, then COMMITs. If ANY step fails the ENTIRE transaction ROLLS BACK, so
+        ``attempt.outcome == SUCCESS`` can never be durable while the terminal record is
+        absent.
+
+        Terminal immutability is unchanged: the run must still be mutable/non-terminal,
+        and the existing terminalization prerequisites (including every registered source
+        candidate having a disposition) are enforced through the same extracted
+        validation as :meth:`terminalize`.
+        """
+        if not isinstance(result_sha256, str) or not result_sha256.strip():
+            raise LedgerValidationError(
+                "finalize_success_attempt_atomic requires a non-empty result_sha256 "
+                "(a SUCCESS must carry its exact result binding)"
+            )
+        mode, _outcome, metrics = self._validate_attempt_args(
+            attempt_number, retry_mode, TerminalStatus.SUCCESS, telemetry
+        )
+        started = _iso(started_at) if started_at is not None else self._now()
+
+        conn = self._connect()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            self._require_run(conn, ledger_id)
+            self._require_mutable(conn, ledger_id)
+            # 5. the exact final SUCCESS attempt
+            self._insert_attempt_in_transaction(
+                conn, ledger_id, attempt_number, mode, provider_surface,
+                transport_type, started, completed_at,
+                TerminalStatus.SUCCESS.value, None, metrics,
+            )
+            # 6-7. the SUCCESS terminal record (+ both audit events)
+            self._terminalize_in_transaction(
+                conn, ledger_id, TerminalStatus.SUCCESS, None,
+                result_artifact_ref, result_sha256, None,
+            )
             conn.execute("COMMIT")
         except Exception:
             conn.execute("ROLLBACK")

@@ -1075,11 +1075,13 @@ def accept_success_result(
     SUCCESS. ``status == SUCCESS`` / ``is_success`` alone is NEVER sufficient.
 
     The attempt label/provider come from a validated :class:`AttemptPlan` (round-2
-    reviewer finding). If a SUCCESS attempt is ALREADY persisted but the run is not
-    terminal — i.e. a previous terminalization failed or was interrupted — this call
-    is a **recovery finalization**: it never appends a second attempt and never
-    permits a retry, it only completes the terminalization. A persisted SUCCESS
-    attempt is never retryable.
+    reviewer finding). The final SUCCESS attempt and the SUCCESS terminal record (with
+    the exact result binding) are written through ONE atomic M6.3 boundary
+    (:meth:`DeepResearchRunLedgerStore.finalize_success_attempt_atomic`, FD #153), so a
+    partial failure can never leave a SUCCESS attempt without its terminal result
+    binding. A pre-amendment ORPHAN SUCCESS attempt (persisted attempt, no terminal
+    record) is UNTRUSTED and is REFUSED fail-closed — it is never repaired and never
+    given a caller-supplied result hash.
 
     M6.5 itself produces no provider SUCCESS: it only ACCEPTS a result that the
     trusted M6.4 verification path already produced (provider execution is
@@ -1100,89 +1102,17 @@ def accept_success_result(
     # this one as SUCCESS (round-3 reviewer finding).
     _require_result_run_binding(record, result)
     if any(a.outcome == TerminalStatus.SUCCESS.value for a in record.attempts):
-        # RECOVERY FINALIZATION: a SUCCESS attempt is already durable. Never append
-        # a second attempt and never retry — just complete the terminalization.
-        persisted = next(
-            a for a in record.attempts
-            if a.outcome == TerminalStatus.SUCCESS.value
+        # FD #153 §7 — PRE-AMENDMENT ORPHAN SUCCESS STATE. A persisted SUCCESS attempt
+        # with NO terminal record is impossible through the atomic SUCCESS-finalization
+        # boundary, so it can only be a legacy/foreign inconsistent state. It is
+        # UNTRUSTED: FAIL CLOSED rather than attach an arbitrary newly supplied result
+        # to it. No migration scheme, no inferred/missing result hash.
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} has a persisted SUCCESS attempt but no terminal "
+            "record — a pre-amendment ORPHAN SUCCESS state. Recovery is REFUSED "
+            "(fail-closed): a newly supplied result must never be attached to an orphan "
+            "SUCCESS attempt"
         )
-        # Recovery must respect the SAME lifecycle rules as normal acceptance
-        # (round-4 reviewer finding): contiguous 1..N history, the persisted SUCCESS as
-        # the LAST attempt, and a plan that validates and matches that attempt exactly.
-        used_numbers = [a.attempt_number for a in record.attempts]
-        if used_numbers != list(range(1, len(used_numbers) + 1)):
-            raise RetryPolicyError(
-                "recovery finalization requires the contiguous 1..N attempt history "
-                f"{used_numbers}"
-            )
-        if persisted.attempt_number != len(used_numbers):
-            raise RetryPolicyError(
-                "recovery finalization requires the persisted SUCCESS attempt to be the "
-                f"LAST attempt (it is attempt {persisted.attempt_number} of "
-                f"{len(used_numbers)})"
-            )
-        validate_attempt_plan(plan, provider_set)
-        # every attempt PRECEDING the persisted SUCCESS must be retryable, and the
-        # PERSISTED SUCCESS attempt must itself be the DETERMINISTIC plan for this run —
-        # otherwise recovery would finalize provenance that normal recording rejects.
-        _require_all_attempts_retryable(record, before_number=persisted.attempt_number)
-        preceding = [
-            a for a in record.attempts if a.attempt_number < persisted.attempt_number
-        ]
-        previous_provider = (
-            preceding[-1].provider_surface if preceding else record.provider_surface
-        )
-        deterministic = plan_attempt(
-            provider_set=provider_set,
-            attempt_number=persisted.attempt_number,
-            previous_provider_surface=(
-                None
-                if persisted.attempt_number == ATTEMPT_NUMBER_MIN
-                else previous_provider
-            ),
-        )
-        if (
-            persisted.retry_mode != deterministic.retry_mode
-            or persisted.provider_surface != deterministic.provider_surface
-        ):
-            raise RetryPolicyError(
-                "recovery finalization refused: the PERSISTED SUCCESS attempt is not the "
-                f"deterministic plan for this run (persisted attempt "
-                f"{persisted.attempt_number} {persisted.retry_mode.value}/"
-                f"{persisted.provider_surface!r} vs deterministic "
-                f"{deterministic.retry_mode.value}/{deterministic.provider_surface!r})"
-            )
-        # an INITIAL attempt is additionally bound to the ledger run's own configured
-        # provider surface (the same binding normal recording enforces)
-        if (
-            persisted.attempt_number == ATTEMPT_NUMBER_MIN
-            and deterministic.provider_surface != record.provider_surface
-        ):
-            raise RetryPolicyError(
-                "recovery finalization refused: the INITIAL SUCCESS attempt provider "
-                f"surface {deterministic.provider_surface!r} does not match the ledger "
-                f"run's configured provider surface {record.provider_surface!r}"
-            )
-        if (
-            plan.attempt_number != persisted.attempt_number
-            or plan.retry_mode != persisted.retry_mode
-            or plan.provider_surface != persisted.provider_surface
-            or result.provider_surface != persisted.provider_surface
-        ):
-            raise RetryPolicyError(
-                "recovery finalization requires the result and the attempt plan to "
-                "match the ALREADY PERSISTED SUCCESS attempt exactly (attempt "
-                f"{persisted.attempt_number}, mode {persisted.retry_mode.value}, "
-                f"provider {persisted.provider_surface!r})"
-            )
-        store.terminalize(
-            ledger_id,
-            terminal_status=TerminalStatus.SUCCESS,
-            terminal_at=completed_at,
-            result_artifact_ref=result.result_artifact_ref,
-            result_sha256=result.result_sha256,
-        )
-        return store.load_run(ledger_id)
 
     _, expected = _next_attempt_guard(store, ledger_id)
     _validate_plan_against_record(record, plan, provider_set, expected)
@@ -1191,24 +1121,20 @@ def accept_success_result(
             "the successful result's provider surface must equal the validated attempt "
             f"plan provider ({result.provider_surface!r} != {plan.provider_surface!r})"
         )
-    store.append_attempt(
+    # FD #153: ONE atomic boundary — the final SUCCESS attempt and the SUCCESS terminal
+    # record carrying the exact result binding can never be separated by a partial
+    # failure (no `append_attempt(SUCCESS)` + separate `terminalize(SUCCESS)` pair).
+    store.finalize_success_attempt_atomic(
         ledger_id,
         attempt_number=plan.attempt_number,
         retry_mode=plan.retry_mode,
         provider_surface=plan.provider_surface,
         transport_type=transport_type,
+        result_sha256=result.result_sha256,
+        result_artifact_ref=result.result_artifact_ref,
         started_at=started_at,
         completed_at=completed_at,
-        outcome=TerminalStatus.SUCCESS,
-        error=None,
         telemetry=telemetry,
-    )
-    store.terminalize(
-        ledger_id,
-        terminal_status=TerminalStatus.SUCCESS,
-        terminal_at=completed_at,
-        result_artifact_ref=result.result_artifact_ref,
-        result_sha256=result.result_sha256,
     )
     return store.load_run(ledger_id)
 

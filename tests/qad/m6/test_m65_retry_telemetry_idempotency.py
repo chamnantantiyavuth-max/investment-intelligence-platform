@@ -44,6 +44,8 @@ from qad.persistence.reference import InMemoryPITContextStore, InMemoryRawSource
 from qad.m6.ledger import (
     DeepResearchRunLedgerStore,
     LedgerIdentityConflict,
+    LedgerTerminalError,
+    LedgerValidationError,
     RetryMode,
     TerminalStatus,
 )
@@ -245,6 +247,28 @@ def _snapshot():
     return build_sealed_input_snapshot(
         pit_context_store=pit_store, archive=archive, pit_context_id="PITC-1",
         case_version="v1", source_ids=["S1", "S2"],
+    )
+
+
+def _snapshot_alt():
+    """A DIFFERENT sealed snapshot (one extra admitted source).
+
+    Same case / PIT context, different source set -> a different deterministic
+    ``input_snapshot_hash``. Used to prove the accepted SUCCESS result is bound to the
+    TARGET run's exact input snapshot (FD #152 / FD #153).
+    """
+    archive = InMemoryRawSourceArchive(clock=lambda: dt.datetime.fromisoformat(ADMITTED))
+    pit_store = InMemoryPITContextStore()
+    _seed_case(pit_store, "CASE-1")
+    pit_store.store(PITContext(
+        pit_context_id="PITC-1", case_id="CASE-1", as_of_date=AS_OF,
+        mode=PITContextMode.SEALED_HISTORICAL_EVALUATION, created_by="founder",
+    ))
+    for sid, raw in (("S1", b"alpha"), ("S2", b"beta"), ("S3", b"gamma")):
+        archive.admit_source(_src(sid, raw), raw)
+    return build_sealed_input_snapshot(
+        pit_context_store=pit_store, archive=archive, pit_context_id="PITC-1",
+        case_version="v1", source_ids=["S1", "S2", "S3"],
     )
 
 
@@ -1193,9 +1217,9 @@ class TestRound2Closure:
         assert resolved.next_attempt_number is None
         assert resolved.retry_budget_remaining == 0
 
-    def test_r2_05_persisted_success_is_never_retryable_and_finalizes(self, store):
+    def test_r2_05_failed_atomic_finalization_leaves_no_partial_success(self, store):
         ok, key = _success_run(store)
-        # make terminalization fail: a registered candidate with no disposition
+        # make the ATOMIC finalization fail: a registered candidate with no disposition
         store.register_candidate(
             "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
             discovery_timestamp=_FIXED_NOW.isoformat(),
@@ -1207,23 +1231,16 @@ class TestRound2Closure:
                 transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
         record = store.load_run("L-1")
-        assert [a.outcome for a in record.attempts] == [TerminalStatus.SUCCESS.value]
+        # FD #153 atomicity: NO partial SUCCESS — neither the attempt nor the terminal
+        assert record.attempts == ()
         assert record.is_terminal is False
+        assert record.result_sha256 is None
         resolved = resolve_or_create_logical_run(
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
-        assert resolved.unfinalized_success is True
-        assert resolved.next_attempt_number is None
-        assert resolved.retry_budget_remaining == 0
-        assert resolved.may_attempt is False
-        # a persisted SUCCESS attempt can never be retried
-        with pytest.raises(RetryPolicyError):
-            record_failed_attempt(
-                store, ledger_id="L-1", plan=_plan(2, "gemini_notebook"),
-                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
-                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
-            )
-        # recovery finalization: never a second attempt
+        assert resolved.unfinalized_success is False
+        assert resolved.may_attempt is True
+        # the whole transition rolled back, so disposal + a fresh acceptance succeeds
         store.dispose_candidate(
             "L-1", "SC-1", disposition="REJECTED", reason="unused in this test"
         )
@@ -1233,6 +1250,7 @@ class TestRound2Closure:
         )
         assert finalized.terminal_status is TerminalStatus.SUCCESS
         assert [a.attempt_number for a in finalized.attempts] == [1]
+        assert finalized.result_sha256 == ok.result_sha256
 
     def test_r2_06_decide_retry_rejects_invalid_attempt_numbers(self):
         for bad in (0, 4, True, False, "2", 2.0, None):
@@ -1480,15 +1498,9 @@ class TestRound4Closure:
             )
         assert store.load_run("L-1").is_terminal is False
 
-    def test_r4_06_recovery_requires_the_plan_to_match_the_persisted_success(self, store):
+    def test_r4_06_an_orphan_success_history_is_refused_by_every_plan(self, store):
         ok, _ = _success_run(store)  # run provider surface: gemini_notebook
-        # terminalization will fail: a registered candidate with no disposition
-        store.register_candidate(
-            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
-            discovery_timestamp=_FIXED_NOW.isoformat(),
-            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
-        )
-        # a persisted SUCCESS attempt on the run's own surface / initial attempt
+        # a legacy/foreign ORPHAN: a durable SUCCESS attempt with no terminal record
         store.append_attempt(
             "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
             provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
@@ -1497,8 +1509,9 @@ class TestRound4Closure:
         )
         from qad.m6.orchestration import AttemptPlan
 
-        # the reviewer's case: an impossible Mode-B fallback plan for the persisted
-        # INITIAL attempt must be refused by recovery
+        # FD #153 §7: recovery is REFUSED for an orphan SUCCESS state — regardless of
+        # whether the supplied plan would otherwise be well-formed, and even for the
+        # plan that would have matched under the pre-amendment recovery path
         for wrong in (
             AttemptPlan(attempt_number=1, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
                         provider_surface="gemini_notebook", fallback_used=False,
@@ -1509,21 +1522,18 @@ class TestRound4Closure:
             AttemptPlan(attempt_number=2, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
                         provider_surface="gemini_notebook", fallback_used=False,
                         provider_changed=False),
+            _plan(1),
         ):
-            with pytest.raises(RetryPolicyError):
+            with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
                 accept_success_result(
                     store, ledger_id="L-1", result=ok, plan=wrong, provider_set=_PS,
                     transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
                 )
-        assert store.load_run("L-1").is_terminal is False
-        # the matching recovery still finalizes (dispose the candidate first)
-        store.dispose_candidate("L-1", "SC-1", disposition="REJECTED", reason="test")
-        finalized = accept_success_result(
-            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
-            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
-        )
-        assert finalized.terminal_status is TerminalStatus.SUCCESS
-        assert [a.attempt_number for a in finalized.attempts] == [1]
+        # the orphan is untouched: never terminalized, never given a result hash
+        after = store.load_run("L-1")
+        assert after.is_terminal is False
+        assert after.result_sha256 is None
+        assert [a.outcome for a in after.attempts] == [TerminalStatus.SUCCESS.value]
 
 
 # =====================================================================
@@ -1608,7 +1618,7 @@ class TestRound5Closure:
             )
         assert store.load_run("L-1").is_terminal is False
 
-    def test_r5_05_a_deterministic_persisted_success_still_recovers(self, store):
+    def test_r5_05_a_deterministic_orphan_success_is_still_refused(self, store):
         from qad.m6.orchestration import ProviderSet as _PSet
 
         ps = _PSet(("surface_a", "surface_b"))
@@ -1637,13 +1647,17 @@ class TestRound5Closure:
             provider_set=ps, attempt_number=2, previous_provider_surface="surface_a"
         )
         result = _build_success(req)
-        finalized = accept_success_result(
-            store, ledger_id="L-1", result=result, plan=deterministic,
-            provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
-        )
-        assert finalized.terminal_status is TerminalStatus.SUCCESS
-        assert [a.attempt_number for a in finalized.attempts] == [1, 2]
-        assert finalized.result_sha256 == result.result_sha256
+        # FD #153 §7: even a perfectly deterministic-looking orphan is an UNTRUSTED
+        # pre-amendment state — refusal is not conditional on the plan's shape
+        with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
+            accept_success_result(
+                store, ledger_id="L-1", result=result, plan=deterministic,
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        after = store.load_run("L-1")
+        assert after.is_terminal is False
+        assert after.result_sha256 is None
+        assert len(after.attempts) == 2
 
 
 # =====================================================================
@@ -1728,12 +1742,12 @@ class TestRound6Closure:
             )
         assert store.load_run("L-1").is_terminal is False
 
-    def test_r6_04_recovery_binds_an_initial_success_to_the_run_surface(self, store):
+    def test_r6_04_an_orphan_initial_success_is_refused_for_any_run_surface(self, store):
         from qad.m6.orchestration import ProviderSet as _PSet
 
         ps = _PSet(("surface_a",))
         req = _build_success(_request(provider_surface="surface_a"))
-        # the RUN is configured for surface_z; the persisted INITIAL SUCCESS is surface_a
+        # the RUN is configured for surface_z; the orphan INITIAL attempt is surface_a
         self._run_with(store, provider_surface="surface_z", ps_provider="surface_a")
         store.append_attempt(
             "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
@@ -1741,22 +1755,19 @@ class TestRound6Closure:
             completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
             error=None, telemetry=_tel(),
         )
-        with pytest.raises(RetryPolicyError):
+        # FD #153 §7: the orphan refusal fires FIRST — the provider-surface provenance
+        # question never even arises, because an orphan is never recoverable
+        with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
             accept_success_result(
                 store, ledger_id="L-1", result=req,
                 plan=plan_attempt(provider_set=ps, attempt_number=1),
                 provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
-        assert store.load_run("L-1").is_terminal is False
-        # the refusal reason is the RUN-surface binding, not an unrelated plan error
-        with pytest.raises(RetryPolicyError, match="configured provider surface"):
-            accept_success_result(
-                store, ledger_id="L-1", result=req,
-                plan=plan_attempt(provider_set=ps, attempt_number=1),
-                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
-            )
+        after = store.load_run("L-1")
+        assert after.is_terminal is False
+        assert after.result_sha256 is None
 
-    def test_r6_05_a_matching_initial_success_still_recovers(self, store):
+    def test_r6_05_a_matching_initial_orphan_is_still_refused(self, store):
         from qad.m6.orchestration import ProviderSet as _PSet
 
         ps = _PSet(("surface_a",))
@@ -1768,10 +1779,354 @@ class TestRound6Closure:
             completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
             error=None, telemetry=_tel(),
         )
-        finalized = accept_success_result(
-            store, ledger_id="L-1", result=req,
-            plan=plan_attempt(provider_set=ps, attempt_number=1),
-            provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        # a perfectly matching run/provider/plan pair does NOT make an orphan recoverable
+        with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
+            accept_success_result(
+                store, ledger_id="L-1", result=req,
+                plan=plan_attempt(provider_set=ps, attempt_number=1),
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        after = store.load_run("L-1")
+        assert after.is_terminal is False
+        assert after.result_sha256 is None
+
+
+# =====================================================================
+# FD #153 — ATOMIC SUCCESS FINALIZATION (M6.3 ledger amendment)
+# =====================================================================
+
+class _FailOn:
+    """Connection proxy that raises when a statement CONTAINS `needle` (injection seam)."""
+
+    def __init__(self, conn, needle):
+        self._c = conn
+        self._needle = needle.upper()
+
+    def execute(self, sql, *args):
+        if self._needle in sql.upper():
+            raise RuntimeError(f"INJECTED FAILURE on {self._needle}")
+        return self._c.execute(sql, *args)
+
+    def __getattr__(self, name):
+        return getattr(self._c, name)
+
+
+def _inject(monkeypatch, store, needle):
+    real = store._connect
+    monkeypatch.setattr(
+        store, "_connect", lambda: _FailOn(real(), needle), raising=False
+    )
+
+
+class TestAtomicSuccessFinalization:
+    """A1-A10 — the atomic boundary (attempt + terminal + events in ONE transaction)."""
+
+    def test_a1_normal_success_is_fully_atomic(self, store):
+        ok, _ = _success_run(store)
+        rec = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
         )
-        assert finalized.terminal_status is TerminalStatus.SUCCESS
-        assert finalized.result_sha256 == req.result_sha256
+        assert [a.attempt_number for a in rec.attempts] == [1]
+        assert [a.outcome for a in rec.attempts] == [TerminalStatus.SUCCESS.value]
+        assert rec.terminal_status is TerminalStatus.SUCCESS
+        assert rec.result_sha256 == ok.result_sha256            # exact hash
+        assert rec.result_artifact_ref == ok.result_artifact_ref  # exact artifact ref
+        kinds = [e[1] for e in store.events("L-1")]
+        assert "ATTEMPT_APPENDED" in kinds and "RUN_TERMINALIZED" in kinds
+
+    def test_a2_undisposed_candidate_rolls_the_whole_transition_back(self, store):
+        ok, _ = _success_run(store)
+        store.register_candidate(
+            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
+            discovery_timestamp=_FIXED_NOW.isoformat(),
+            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+        )
+        with pytest.raises(LedgerValidationError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == ()                 # ZERO SUCCESS attempts
+        assert rec.is_terminal is False           # ZERO terminal record
+        kinds = [e[1] for e in store.events("L-1")]
+        assert "ATTEMPT_APPENDED" not in kinds and "RUN_TERMINALIZED" not in kinds
+
+    def test_a3_failure_after_attempt_insert_before_terminal_rolls_back(
+        self, store, monkeypatch
+    ):
+        ok, _ = _success_run(store)
+
+        def _boom(*args, **kwargs):
+            raise RuntimeError("INJECTED FAILURE after attempt insert")
+
+        monkeypatch.setattr(store, "_terminalize_in_transaction", _boom, raising=False)
+        with pytest.raises(RuntimeError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == ()
+        assert rec.is_terminal is False
+
+    def test_a4_failure_before_commit_rolls_back(self, store, monkeypatch):
+        ok, _ = _success_run(store)
+        _inject(monkeypatch, store, "COMMIT")
+        with pytest.raises(RuntimeError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == ()
+        assert rec.is_terminal is False
+
+    def test_a5_attempt_event_failure_rolls_back(self, store, monkeypatch):
+        ok, _ = _success_run(store)
+        real = store._write_event
+        monkeypatch.setattr(
+            store, "_write_event",
+            lambda conn, lid, et, payload: (_ for _ in ()).throw(
+                RuntimeError("INJECTED FAILURE writing attempt event")
+            ) if et == "ATTEMPT_APPENDED" else real(conn, lid, et, payload),
+            raising=False,
+        )
+        with pytest.raises(RuntimeError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == ()
+        assert rec.is_terminal is False
+
+    def test_a5b_terminal_event_failure_rolls_back_everything(self, store, monkeypatch):
+        ok, _ = _success_run(store)
+        real = store._write_event
+        monkeypatch.setattr(
+            store, "_write_event",
+            lambda conn, lid, et, payload: (_ for _ in ()).throw(
+                RuntimeError("INJECTED FAILURE writing terminal event")
+            ) if et == "RUN_TERMINALIZED" else real(conn, lid, et, payload),
+            raising=False,
+        )
+        with pytest.raises(RuntimeError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == ()
+        assert rec.is_terminal is False
+
+    def test_a6_success_commits_attempt_terminal_and_events_together(self, store):
+        ok, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        rec = store.load_run("L-1")
+        assert len(rec.attempts) == 1 and rec.is_terminal
+        kinds = [e[1] for e in store.events("L-1")]
+        assert kinds.count("ATTEMPT_APPENDED") == 1
+        assert kinds.count("RUN_TERMINALIZED") == 1
+
+    def test_a7_a_second_success_finalization_is_refused(self, store):
+        ok, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        before = store.load_run("L-1")
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        after = store.load_run("L-1")
+        assert len(after.attempts) == len(before.attempts) == 1
+        assert after.result_sha256 == before.result_sha256 == ok.result_sha256
+
+    def test_a8_ordinary_append_after_terminalization_is_refused(self, store):
+        ok, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        with pytest.raises(LedgerTerminalError):
+            _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        with pytest.raises(LedgerTerminalError):
+            store.finalize_success_attempt_atomic(
+                "L-1", attempt_number=2, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+                result_sha256="a" * 64, telemetry=_tel(),
+            )
+        assert len(store.load_run("L-1").attempts) == 1
+
+    def test_a9_terminal_immutability_is_unchanged(self, store):
+        ok, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        with pytest.raises(LedgerTerminalError):
+            store.terminalize("L-1", terminal_status=TerminalStatus.SUCCESS)
+        with pytest.raises(LedgerTerminalError):
+            store.register_candidate(
+                "L-1", source_candidate_id="SC-9",
+                url_or_identifier="https://x.example/9",
+                discovery_timestamp=_FIXED_NOW.isoformat(),
+                original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+            )
+
+    def test_a10_candidate_disposition_gate_is_retained_exactly(self, store):
+        # the plain terminalize path still enforces it...
+        _key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=_key, create_run_kwargs=_create_kwargs(_key)
+        )
+        store.register_candidate(
+            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
+            discovery_timestamp=_FIXED_NOW.isoformat(),
+            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+        )
+        with pytest.raises(LedgerValidationError):
+            store.terminalize("L-1", terminal_status=TerminalStatus.RESEARCH_UNAVAILABLE)
+        # ...and the atomic path enforces the SAME gate (A2)
+        with pytest.raises(LedgerValidationError):
+            store.finalize_success_attempt_atomic(
+                "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+                result_sha256="b" * 64, telemetry=_tel(),
+            )
+        # an empty result hash is refused before anything else
+        with pytest.raises(LedgerValidationError):
+            store.finalize_success_attempt_atomic(
+                "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+                result_sha256="   ", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+
+
+class TestResultProvenance:
+    """B1-B12 — the durable result binding cannot be substituted or inferred."""
+
+    def test_b1_result_a_finalizes_with_hash_a(self, store):
+        ok, _ = _success_run(store)
+        rec = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert rec.result_sha256 == ok.result_sha256
+
+    def test_b2_result_b_cannot_replace_hash_a_after_terminalization(self, store):
+        ok_a, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok_a, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        other_a = _build_success(_request())
+        # a different proof-verified result for the SAME run cannot re-finalize
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=other_a, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").result_sha256 == ok_a.result_sha256
+
+    def test_b3_a_precommit_failure_leaves_no_orphan_success(self, store, monkeypatch):
+        ok, _ = _success_run(store)
+        _inject(monkeypatch, store, "COMMIT")
+        with pytest.raises(RuntimeError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert not any(a.outcome == TerminalStatus.SUCCESS.value for a in rec.attempts)
+        assert rec.is_terminal is False
+
+    def test_b4_a_legacy_orphan_cannot_be_recovery_finalized(self, store):
+        ok, _ = _success_run(store)
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        other = _build_success(_request())
+        with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
+            accept_success_result(
+                store, ledger_id="L-1", result=other, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_b5_an_orphan_never_acquires_a_caller_supplied_hash(self, store):
+        ok, _ = _success_run(store)
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        for candidate in (_build_success(_request()), ok):
+            with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
+                accept_success_result(
+                    store, ledger_id="L-1", result=candidate, plan=_plan(1),
+                    provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                    telemetry=_tel(),
+                )
+        rec = store.load_run("L-1")
+        assert rec.result_sha256 is None            # never inferred
+        assert rec.result_artifact_ref is None
+
+    @pytest.mark.parametrize("field,value,needle", [
+        ("request_id", "REQ-OTHER", "request_id"),
+        ("research_run_id", "RR-OTHER", "research_run_id"),
+        ("ledger_id", "L-OTHER", "ledger_id"),
+    ])
+    def test_b6_b8_b9_identity_mismatch_is_refused(self, store, field, value, needle):
+        _success_run(store)  # run identity = the _request() defaults
+        other = _build_success(_request(**{field: value}))
+        with pytest.raises(RetryPolicyError, match=needle):
+            accept_success_result(
+                store, ledger_id="L-1", result=other, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == () and rec.is_terminal is False
+
+    def test_b10_snapshot_hash_mismatch_is_refused(self, store):
+        _success_run(store)
+        other = _build_success(_request(snapshot=_snapshot_alt()))
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=other, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").attempts == ()
+
+    def test_b11_provider_surface_mismatch_is_refused(self, store):
+        _success_run(store)  # run provider surface = gemini_notebook
+        other = _build_success(_request(provider_surface="surface_other"))
+        with pytest.raises(RetryPolicyError, match="provider surface"):
+            accept_success_result(
+                store, ledger_id="L-1", result=other, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").attempts == ()
+
+    def test_b12_post_construction_tampered_result_is_refused(self, store):
+        ok, _ = _success_run(store)
+        object.__setattr__(ok, "result_sha256", "f" * 64)
+        with pytest.raises(Exception):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.attempts == () and rec.is_terminal is False
