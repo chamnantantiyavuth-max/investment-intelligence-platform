@@ -425,6 +425,8 @@ class TestIdempotentResolution:
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
         _append(store, n=1)
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
         terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="exhausted")
         again = resolve_or_create_logical_run(
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
@@ -1371,3 +1373,154 @@ class TestRound3Closure:
             forged = _IdentityStub(**{**bound, field: "NOT-BOUND"})
             with pytest.raises(RetryPolicyError):
                 _require_result_run_binding(record, forged)
+
+
+# =====================================================================
+# Round-4 reviewer closure — exhaustion guard, planner binding, recovery rules
+# =====================================================================
+
+class TestRound4Closure:
+    def _run(self, store, *, provider_surface="gemini_notebook",
+             ledger_id="L-1", request_id="REQ-1", run_id="RR-1"):
+        key = compute_idempotency_key(**_keys())
+        kw = _create_kwargs(
+            key, ledger_id=ledger_id, request_id=request_id, research_run_id=run_id,
+            provider_surface=provider_surface,
+        )
+        resolve_or_create_logical_run(store, idempotency_key=key, create_run_kwargs=kw)
+        return key
+
+    def test_r4_01_exhaustion_requires_an_actually_exhausted_budget(self, store):
+        self._run(store)
+        # 0 attempts
+        with pytest.raises(RetryPolicyError):
+            terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="x")
+        for n in (1, 2):
+            _append(store, n=n, mode=RetryMode.SAME_PROVIDER_RETRY)
+            with pytest.raises(RetryPolicyError):
+                terminalize_research_unavailable(
+                    store, ledger_id="L-1", failure_detail="x"
+                )
+        assert store.load_run("L-1").is_terminal is False
+        # the full retryable budget is exhausted -> allowed
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
+        record = terminalize_research_unavailable(
+            store, ledger_id="L-1", failure_detail="exhausted"
+        )
+        assert record.terminal_status is TerminalStatus.RESEARCH_UNAVAILABLE
+
+    def test_r4_02_exhaustion_refuses_a_fail_closed_last_outcome(self, store):
+        self._run(store)
+        _append(store, n=1)
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY, outcome="PIT_BLOCK")
+        with pytest.raises(RetryPolicyError):
+            terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="x")
+
+    def test_r4_03_initial_attempt_must_match_the_run_provider_surface(self, store):
+        # the run is configured for a DIFFERENT surface than the deterministic default
+        self._run(store, provider_surface="other_surface")
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").attempts == ()
+
+    def test_r4_04_a_plan_that_is_not_the_deterministic_selection_is_refused(self, store):
+        from qad.m6.orchestration import AttemptPlan, ProviderSet as _PSet
+
+        ps = _PSet(("surface_a", "surface_b", "surface_c"))
+        self._run(store, provider_surface="surface_a")
+        first = plan_attempt(provider_set=ps, attempt_number=1)
+        record_failed_attempt(
+            store, ledger_id="L-1", plan=first, provider_set=ps,
+            transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+        )
+        # the deterministic retry is surface_b; surface_c is individually well-formed
+        forged = AttemptPlan(
+            attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
+            provider_surface="surface_c", fallback_used=True, provider_changed=True,
+        )
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", plan=forged, provider_set=ps,
+                transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1]
+        # the deterministic plan itself records fine
+        record_failed_attempt(
+            store, ledger_id="L-1",
+            plan=plan_attempt(provider_set=ps, attempt_number=2,
+                              previous_provider_surface="surface_a"),
+            provider_set=ps, transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+        )
+        assert [a.provider_surface for a in store.load_run("L-1").attempts] == [
+            "surface_a", "surface_b"
+        ]
+
+    def test_r4_05_recovery_refuses_a_gapped_success_history(self, store):
+        ok, _ = _success_run(store)
+        # a gapped durable history: attempt 3 is the only SUCCESS attempt
+        store.append_attempt(
+            "L-1", attempt_number=3, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(3, "gemini_notebook"),
+                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_r4_06_recovery_requires_the_plan_to_match_the_persisted_success(self, store):
+        ok, _ = _success_run(store)  # run provider surface: gemini_notebook
+        # terminalization will fail: a registered candidate with no disposition
+        store.register_candidate(
+            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
+            discovery_timestamp=_FIXED_NOW.isoformat(),
+            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+        )
+        # a persisted SUCCESS attempt on the run's own surface / initial attempt
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        from qad.m6.orchestration import AttemptPlan
+
+        # the reviewer's case: an impossible Mode-B fallback plan for the persisted
+        # INITIAL attempt must be refused by recovery
+        for wrong in (
+            AttemptPlan(attempt_number=1, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                        provider_surface="gemini_notebook", fallback_used=False,
+                        provider_changed=False),
+            AttemptPlan(attempt_number=1, retry_mode=RetryMode.PROVIDER_FALLBACK,
+                        provider_surface="gemini_notebook", fallback_used=True,
+                        provider_changed=True),
+            AttemptPlan(attempt_number=2, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                        provider_surface="gemini_notebook", fallback_used=False,
+                        provider_changed=False),
+        ):
+            with pytest.raises(RetryPolicyError):
+                accept_success_result(
+                    store, ledger_id="L-1", result=ok, plan=wrong, provider_set=_PS,
+                    transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+                )
+        assert store.load_run("L-1").is_terminal is False
+        # the matching recovery still finalizes (dispose the candidate first)
+        store.dispose_candidate("L-1", "SC-1", disposition="REJECTED", reason="test")
+        finalized = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert finalized.terminal_status is TerminalStatus.SUCCESS
+        assert [a.attempt_number for a in finalized.attempts] == [1]

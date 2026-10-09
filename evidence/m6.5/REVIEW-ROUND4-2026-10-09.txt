@@ -1,0 +1,102 @@
+VERDICT: C
+  C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A..M — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+
+A — DEFECT — Round 1–2 guards passed; recovery finalization still accepts an invalid plan and a gapped SUCCESS history `[3]`.
+B — VERIFIED — The four result/run identity fields are checked; normal and recovery cross-run tests refuse acceptance without mutating the target run; matching SUCCESS retains its exact hash.
+C — VERIFIED — The key uses the six specified fields; clock, random/process identity, cwd, provider, and request/run/ledger IDs do not affect it.
+D — VERIFIED — Duplicate suppression, UNIQUE preservation, and re-entry budget continuity passed; a real two-thread create race resolved to one durable run.
+E — DEFECT — The recording boundary accepted an initial attempt on `surface_a` for a run recorded as `surface_b`; it also accepts caller plans without enforcing the deterministic selection produced by `plan_attempt`.
+F — DEFECT — Exhaustion produces the correct `RESEARCH_UNAVAILABLE` / EG-01 `DEFERRED` instruction, but the terminalization helper also succeeds with zero attempts.
+G — VERIFIED — Fail-closed outcomes are classified non-retryable and the recording guard refuses a later retry after a fail-closed attempt.
+H — VERIFIED — Exact exposed values, real zeroes, `NOT_EXPOSED` null/reason, required metrics, and undeclared metrics are covered and pass; no estimation path found.
+I — DEFECT — Recovery finalization terminalized a persisted SUCCESS with attempt history `[3]`, violating contiguous `1..N` history.
+J — NOT VERIFIED — The current proof gate runs before consumption and the M6.5 proof/tamper/hash tests pass; whether `research_contract.py` is unchanged cannot be checked without Git history.
+K — VERIFIED — AST scan found no provider-transport imports or M6.6+ definitions in orchestration; the current `qad/m6` module list contains no M6.6 module.
+L — NOT VERIFIED — The current idempotency lookup is SELECT-only and its tests check state/event invariance; “only ledger change” cannot be verified without a baseline diff. Current canonical count is 68.
+M — VERIFIED — `tests/qad/m6`: 286 passed. The M6.5 test file itself: 77 passed. `tests/qad`: 821 passed, 1 failed, 11 warnings.
+
+MATERIAL FINDINGS:
+
+1. Premature `RESEARCH_UNAVAILABLE` terminalization.
+   (a) `qad/m6/orchestration.py:1114–1130` terminalizes directly without checking attempt count or outcomes. My probe terminalized a run with zero attempts as `RESEARCH_UNAVAILABLE`.
+   (b) This can consume the retry budget before the FD #148 / M6.0 exhaustion condition is met.
+   (c) Before terminalizing, require a contiguous, exhausted retry history with retryable outcomes; refuse early or fail-closed histories.
+   (d) Verify that zero-, one-, and two-attempt histories are refused, three retryable attempts can be terminalized, and fail-closed histories cannot.
+
+2. The normal attempt-recording boundary does not bind the initial provider to the run identity or enforce the planned selection.
+   (a) `qad/m6/orchestration.py:391–423` returns early when there are no prior attempts and never compares the initial plan with `record.provider_surface`. My probe recorded attempt 1 on `surface_a` while the run identity says `surface_b`. The boundary also accepted `surface_c` where `plan_attempt()` deterministically selected `surface_b`.
+   (b) The durable run and attempt history can disagree about the provider; caller-supplied plans can bypass the deterministic planner.
+   (c) Validate the initial provider against the persisted run provider, and validate retry plans against the selected plan before appending.
+   (d) Verify that mismatched initial providers and plans inconsistent with the selection are refused, while valid Mode A and Mode B sequences still record.
+
+3. Recovery finalization bypasses lifecycle and full plan validation.
+   (a) `qad/m6/orchestration.py:1058–1083` checks the recovery plan’s provider and attempt number, but not its retry mode or history contiguity. My probes finalized a persisted initial SUCCESS using an impossible Mode B `PROVIDER_FALLBACK` plan, and finalized SUCCESS with history `[3]`.
+   (b) Recovery can terminalize an inconsistent durable history and accept a plan that does not match the persisted SUCCESS attempt.
+   (c) Require contiguous history and validate/compare the recovery plan’s attempt number, retry mode, and provider against the persisted SUCCESS attempt before terminalizing.
+   (d) Verify that both invalid recovery cases are refused, while a matching recovery still finalizes and preserves the exact result hash.
+
+NON-BLOCKING FINDINGS:
+
+1. Project status artifacts are stale.
+   (a) `SESSION_CLOSEOUT.md:46–48, 96–97, 148–150` and `PROJECT_STATE.md:8` say M6.5 is “NOT started,” while this copy contains `qad/m6/orchestration.py` and the M6.5 tests.
+   (b) The documented phase state does not describe the artifacts under review.
+   (c) After the review disposition is recorded, update the state/closeout to accurately report M6.5’s implementation and review status.
+   (d) Read back both files and verify their status and test counts against the final reviewed artifacts.
+
+2. Test-file count differs from the brief.
+   (a) The brief describes the M6.5 test file as 86 tests; the actual run reported 77 passed.
+   (b) The mismatch makes the stated test-count expectation ambiguous; it does not by itself establish missing coverage.
+   (c) Reconcile the documented expected count with the collected suite.
+   (d) Re-run the file and report the resulting collected/passed count.
+
+EVIDENCE GAPS:
+
+- This copy has no `.git` directory. `git status` failed with “not a git repository”; therefore I could not verify branch, HEAD, commit `31ad508`, commit ancestry, or compare file changes. In particular, `research_contract.py` being unchanged and the ledger helper being the only ledger delta remain unverified.
+- The QAD-wide failure baseline cannot be independently established in this copy. The observed failure was `tests/qad/test_contract_conformance.py::test_schema_build_identity` with a `spec_source_sha256` mismatch.
+- Current files show no M6.6 module or provider transport in the M6.5 orchestration layer; branch-history claims are not verifiable without Git metadata.
+
+COMMANDS RUN: exact commands + observed results.
+
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v`
+  Result: exit 128, `fatal: not a git repository (or any of the parent directories): .git`.
+
+- `pwd && python -c "import os; print(os.getcwd()); print(os.path.isdir('.git')); print(os.listdir('.')[:20])"`
+  Result: working directory was the supplied review copy; `.git` reported `False`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round4-review/basetemp"`
+  Result: `286 passed in 10.19s`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m65_retry_telemetry_idempotency.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round4-review/basetemp"`
+  Result: `77 passed in 2.78s`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round4-review/basetemp"`
+  Result: `821 passed, 1 failed, 11 warnings in 12.05s`. The failure was `test_schema_build_identity`, reporting a `spec_source_sha256` mismatch.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" m65_round4_probe.py`
+  Final result: exit 0. Output:
+  `A.ProviderSet: PASS rejected 6/6 malformed values`
+  `A.gapped-history: PASS fail-closed; no next attempt and recording refused`
+  `C.non-dependencies: PASS request_id/research_run_id/ledger_id do not change key`
+  `D.real-race: PASS two concurrent resolutions returned one durable logical run`
+  `E.deterministic-recording: DEFECT: boundary accepted surface_c; deterministic plan selects surface_b`
+  `E.initial-provider-binding: DEFECT: attempt 1 surface_a recorded against run surface_b`
+  `F.exhaustion-guard: DEFECT: terminalized RESEARCH_UNAVAILABLE with 0/3 attempts`
+  `A/B.recovery-plan: DEFECT: recovery finalized despite plan claiming impossible Mode-B fallback`
+  `A/I.recovery-gap: DEFECT: recovery terminalized SUCCESS with attempt history [3]`
+  `PROBE SCRIPT COMPLETE`
+  Note: the first probe-script run printed its findings but exited 1 during Windows temporary-directory cleanup (`WinError 32`); the script was adjusted to keep probe databases under the permitted basetemp, then rerun successfully.
+
+- AST scan command:
+  `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "import ast,pathlib; t=ast.parse(pathlib.Path('qad/m6/orchestration.py').read_text(encoding='utf-8')); im=sorted({a.name.split('.')[0] for n in ast.walk(t) if isinstance(n,ast.Import) for a in n.names}|{(n.module or '').split('.')[0] for n in ast.walk(t) if isinstance(n,ast.ImportFrom)}); bad={'requests','urllib','socket','httpx','aiohttp','selenium','playwright','webbrowser','subprocess','google','gemini','notebooklm'}; defs=[n.name for n in t.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef))]; print('imports=',im); print('forbidden_imports=',sorted(set(im)&bad)); print('M6.6+_names=',[x for x in defs if any(k in x.lower() for k in ('adapter','discovery','bridge','transport','canary','admit'))]); print('module_definitions=',len(defs))"`
+  Result: imports `['__future__', 'dataclasses', 'enum', 'hashlib', 'qad', 'typing']`; forbidden imports `[]`; M6.6+ names `[]`; module definitions `32`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.contract.canonical_boundary import CANONICAL_SCHEMAS; from qad.models.family_i import RunManifestRecord; f=RunManifestRecord.model_fields['deep_research_runs']; print('canonical_schema_count=',len(CANONICAL_SCHEMAS)); print('deep_research_runs_annotation=',f.annotation); print('default=',f.default)"`
+  Result: canonical schema count `68`; annotation `typing.Optional[list[str]]`; default `None`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; print('qad/m6 modules:', ', '.join(sorted(p.name for p in Path('qad/m6').glob('*.py'))))"`
+  Result: `__init__.py, eligibility.py, ledger.py, orchestration.py, research_contract.py, snapshot.py`.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0

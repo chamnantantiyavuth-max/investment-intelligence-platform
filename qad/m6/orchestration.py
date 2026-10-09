@@ -80,6 +80,7 @@ __all__ = [
     "not_exposed_telemetry",
     "record_failed_attempt",
     "accept_success_result",
+    "terminalize_research_unavailable",
 ]
 
 
@@ -402,8 +403,29 @@ def _validate_plan_against_record(
             f"{expected} for ledger run {record.ledger_id!r}, got {plan.attempt_number}"
         )
     if not record.attempts:
+        # Attempt 1 must use the deterministic default AND agree with the ledger run's
+        # own configured provider surface — otherwise the durable run and its attempt
+        # history would disagree about the provider (round-4 reviewer finding).
+        if plan.provider_surface != record.provider_surface:
+            raise RetryPolicyError(
+                "the initial attempt provider must equal the ledger run's configured "
+                f"provider surface {record.provider_surface!r}, got "
+                f"{plan.provider_surface!r}"
+            )
         return
     previous = record.attempts[-1].provider_surface
+    # The plan must be the DETERMINISTIC plan for this run — a caller cannot bypass the
+    # planner by supplying a different (but individually well-formed) plan.
+    expected_plan = plan_attempt(
+        provider_set=provider_set,
+        attempt_number=expected,
+        previous_provider_surface=previous,
+    )
+    if plan != expected_plan:
+        raise RetryPolicyError(
+            "the attempt plan must be the deterministic plan for this run "
+            f"({expected_plan!r}), got {plan!r}"
+        )
     if provider_set.mode is OrchestrationMode.MODE_B:
         if plan.provider_surface != previous:
             raise RetryPolicyError(
@@ -1062,16 +1084,33 @@ def accept_success_result(
             a for a in record.attempts
             if a.outcome == TerminalStatus.SUCCESS.value
         )
+        # Recovery must respect the SAME lifecycle rules as normal acceptance
+        # (round-4 reviewer finding): contiguous 1..N history, the persisted SUCCESS as
+        # the LAST attempt, and a plan that validates and matches that attempt exactly.
+        used_numbers = [a.attempt_number for a in record.attempts]
+        if used_numbers != list(range(1, len(used_numbers) + 1)):
+            raise RetryPolicyError(
+                "recovery finalization requires the contiguous 1..N attempt history "
+                f"{used_numbers}"
+            )
+        if persisted.attempt_number != len(used_numbers):
+            raise RetryPolicyError(
+                "recovery finalization requires the persisted SUCCESS attempt to be the "
+                f"LAST attempt (it is attempt {persisted.attempt_number} of "
+                f"{len(used_numbers)})"
+            )
+        validate_attempt_plan(plan, provider_set)
         if (
-            result.provider_surface != persisted.provider_surface
+            plan.attempt_number != persisted.attempt_number
+            or plan.retry_mode != persisted.retry_mode
             or plan.provider_surface != persisted.provider_surface
-            or plan.attempt_number != persisted.attempt_number
+            or result.provider_surface != persisted.provider_surface
         ):
             raise RetryPolicyError(
                 "recovery finalization requires the result and the attempt plan to "
-                "match the ALREADY PERSISTED SUCCESS attempt "
-                f"(attempt {persisted.attempt_number}, provider "
-                f"{persisted.provider_surface!r})"
+                "match the ALREADY PERSISTED SUCCESS attempt exactly (attempt "
+                f"{persisted.attempt_number}, mode {persisted.retry_mode.value}, "
+                f"provider {persisted.provider_surface!r})"
             )
         store.terminalize(
             ledger_id,
@@ -1122,6 +1161,26 @@ def terminalize_research_unavailable(
     The linked EG-01 instruction is emitted by :func:`decide_retry`; this function
     performs only the run terminalization the ledger already owns.
     """
+    record = store.load_run(ledger_id)
+    if record.is_terminal:
+        raise RetryPolicyError(f"ledger run {ledger_id!r} is already terminal")
+    used = [a.attempt_number for a in record.attempts]
+    if used != list(range(1, len(used) + 1)):
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} has a non-contiguous attempt history {used}"
+        )
+    if len(used) != MAX_ATTEMPTS:
+        raise RetryPolicyError(
+            "RESEARCH_UNAVAILABLE requires the retry budget to be ACTUALLY exhausted "
+            f"({MAX_ATTEMPTS} attempts); ledger run {ledger_id!r} has {len(used)} "
+            "attempt(s) — use the appropriate typed failure instead"
+        )
+    last = record.attempts[-1].outcome
+    if classify_attempt_outcome(last) is not AttemptClassification.RETRYABLE:
+        raise RetryPolicyError(
+            f"the last attempt outcome {last!r} is fail-closed, not retry exhaustion; "
+            "it must not be recorded as RESEARCH_UNAVAILABLE"
+        )
     store.terminalize(
         ledger_id,
         terminal_status=TerminalStatus.RESEARCH_UNAVAILABLE,
