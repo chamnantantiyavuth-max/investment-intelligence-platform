@@ -1,3 +1,77 @@
+# Session — 2026-10-09 (QAD M6.6 Noncanonical Source Discovery + Admission Bridge — IMPLEMENTED, REVIEW INCOMPLETE)
+
+## WHAT HAPPENED (plain language)
+
+M6.5 was already closed earlier today (FD #154). This session built **M6.6**: the bridge
+that takes the loose "sources" a research provider mentions and decides, one by one, whether
+they can become real archived sources and real evidence — or must be rejected, marked
+unavailable, or deferred.
+
+The rule the whole thing rests on: **a citation is just a lead, not proof.** The provider's
+own "I verified this" claim means nothing. Only an independent check of the actual original
+document (its identity, its exact bytes, their hash, its tier) can let a source through.
+And the shipped default is to say NO — nothing gets in unless a real verification says so.
+
+## WHAT WAS BUILT
+
+- `qad/m6/source_bridge.py` — the bridge.
+- `tests/qad/m6/test_m66_source_bridge.py` — 30 focused tests (the brief's 30 required cases).
+- `qad/m6/__init__.py` — exports.
+
+## SAFETY PROPERTIES (all tested)
+
+- A source pointer cannot declare itself verified; the default verifier DENIES.
+- Verified verdicts must carry the real bytes and a hash that matches them exactly.
+- A current source can never be slipped into a sealed historical corpus; backdated
+  publication dates cannot fake an older capture time.
+- Canonical sources only via the archive's own admission door; evidence only via the
+  evidence registry's own admission gate; no side doors.
+- "AI extracted this" without a real verification is rejected by the existing gate.
+- Contradicting evidence is kept, not merged or averaged away.
+- Every discovered candidate ends with exactly one durable disposition.
+- Re-running the whole pipeline changes nothing and creates no duplicates.
+- **M6.6 never finishes a research run and never writes a SUCCESS.**
+
+## PROOF (real runs)
+
+- `tests/qad/m6` **354 passed** · M6.6 targeted **30** · M6.3 ledger **52** ·
+  M5.2 persistence **292** · M5.3 PIT **116** · `tests/qad` **889 passed / 1 inherited**.
+- Two independent RED demonstrations, each restored: neutering the default verifier into a
+  self-verifying one fails test_05; removing the SEALED/replay guard fails test_17/18/19.
+- `gate-check.sh` exit 0 · `isolation-scan.sh` exit 0 · no `.sqlite3` residue · schema 68.
+
+## ⚠ NOT FINISHED (honest status)
+
+The independent family-separated reviewer for M6.6 was launched against `2de4cb8` but **did not
+finish before this session ended** and was terminated. It **must be re-run next session and the
+verdict (A / B / C) obtained BEFORE any M6.6 closeout.** No M6.6 closeout was committed.
+M6.6 is therefore: **IMPLEMENTED / COMMITTED / REVIEW PENDING** — not "done".
+`tests/ops` DID complete: **94 passed**.
+
+Commits this session (branch `impl/m6-gemini-notebook`):
+`db88a27` (FD #153 governance) → `cc34484` (M6.3 atomic amendment) → `7a965dc` (round-8 stop
++ package) → `7adc370` (FD #154 M6.5 closeout) → `2de4cb8` (M6.6 implementation).
+
+`main` unchanged (`5bf107774b29e5a5fe4dcec5846800b9b48361ba`). All 5 cron PAUSED.
+`M6_RAW_SUCCESS_API_GATE` remains OPEN (blocks M6.7+).
+
+## NEXT SESSION — first actions
+
+1. Re-run the M6.6 Round-9 independent reviewer (disposable no-`.git` copy of `2de4cb8`,
+   external basetemp) and capture the verdict.
+2. Re-run `tests/ops` (reference baseline: 94 passed).
+3. Then: A/B ⇒ facts-only M6.6 closeout; C bounded ⇒ fix + re-review; C needing new policy ⇒
+   STOP for a Founder decision.
+4. Prepare the pre-M6.7 `M6_RAW_SUCCESS_API_GATE` resolution package (Path H preferred) when
+   directed.
+
+## Recommended next action
+**A (recommended):** next session opens by re-running the M6.6 reviewer + ops, then closes M6.6.
+**B:** review the M6.6 code together with the Founder before re-running the reviewer.
+**C:** jump straight to the `M6_RAW_SUCCESS_API_GATE` resolution package.
+
+<!-- 2026-10-09 17:20 UTC+7 -->
+
 # Session — 2026-10-09 (QAD M6.5 CLOSED — FD #154 raw-success-API carry-forward gate)
 
 ## WHAT HAPPENED (plain language)
