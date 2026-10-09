@@ -1,3 +1,55 @@
+# Session — 2026-10-09 (QAD M6.4 Trusted Proof-Verification Seam — Founder Option B; FD #152)
+
+## FOUNDER DECISION — FD #152: M6.4 TRUSTED PROOF-RESOLVER SEAM (OPTION B)
+
+Plain language: M6.4 is the "paperwork" layer that describes a Deep Research request
+and its result before any provider is called. The independent reviewer found (Round 13)
+that a result could be stamped SUCCESS just by writing ENFORCED / VERIFIED plus any text
+in an evidence field — with no actual proof behind it. I stopped and brought it to the
+Founder. The Founder chose **Option B**: keep SUCCESS possible, but SUCCESS must now be
+backed by REAL verified proof through a trusted "proof resolver" seam. Nothing about
+Gemini / Notebook is built here — that is M6.7 / M6.8.
+
+Branch `impl/m6-gemini-notebook`; `main` NOT changed
+(`5bf107774b29e5a5fe4dcec5846800b9b48361ba`).
+
+STATE CHECK AT SESSION START (verified against the real remote, not memory): the actual
+`origin/impl/m6-gemini-notebook` head was `4f89d56dfd70135e148172fcb7fa980c088cdccb` — a
+7 Oct 2026 "M6.4 closeout" commit — i.e. one commit AHEAD of the
+`1fae43b782166e20e17a606c2e049a4ae803f06d` named in the incoming task brief. Work
+proceeded from the REAL head (`4f89d56`), not the stale SHA.
+
+The FD #152 ruling (authoritative for the remainder of M6.4):
+- M6.4 keeps a REPRESENTABLE and TESTABLE `SUCCESS`.
+- A non-empty evidence-reference string is an IDENTIFIER only — never proof.
+- Enum values alone (`ENFORCED` / `VERIFIED`) never authorize `SUCCESS`.
+- `SUCCESS` requires BOTH proofs VERIFIED through a trusted, provider-neutral seam:
+  (A) closed-corpus enforcement; (B) request isolation.
+- Direct `DeepResearchResult(...)` construction cannot bypass proof verification.
+- Verification binds the EXACT run: request_id / research_run_id / ledger_id /
+  provider_surface / input_snapshot_hash / proof reference / proof kind — a proof for
+  Request A can never authorize Request B.
+- Default = `proof_resolver = NONE / DENY` (fail-closed). Real `SUCCESS` is therefore
+  impossible inside M6.4 alone — EXPECTED. A deterministic TEST-ONLY stub resolver may
+  be injected by the test boundary; it is NOT a production resolver.
+- The real proof-producing / proof-resolving implementation is DEFERRED to M6.7 / M6.8.
+
+Governance surfaces written (first commit of this session): Founder Decision register
+item 152 + Constitution §21 amendment chain + `PROJECT_STATE.md` + this session log + the
+co-touched locked audit-register date (`tests/locked/test_audit_api.py` → expected
+register-tail date **9 Oct 2026**; Acceptance-Lock Rule / locked-test-governance
+procedure — every FD append co-touches this expected date). Explicit-path staging only —
+never `git add -A`.
+
+Not changed: no provider transport (Gemini / Notebook / browser / CDP / network /
+credentials); no canonical M4A schema (still 68); RRM-01 unchanged; no production
+activation; no claim that enforcement or isolation has been proven live. **M6.5 (Retry /
+Telemetry / Idempotency) NOT started — blocked until M6.4 passes independent review.**
+All 5 cron PAUSED. O3 CLOSED. FD #142–151 not reopened.
+
+IMPLEMENTATION + VERIFICATION RESULTS: pending — appended below in this session after the
+Option-B seam is implemented, tested, and independently reviewed.
+
 # Session — 2026-10-07 (M6.4 Research Request/Result Adapter Contract — code GREEN, review round 13 = C, 1 open finding escalated)
 
 ## QAD M6.4 REQUEST/RESULT CONTRACT — IMPLEMENTED; ROUND-13 FINDING 2 FIXED; FINDING 1 → FOUNDER DECISION
