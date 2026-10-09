@@ -158,6 +158,17 @@ def _append(store, ledger_id="L-1", n=1, mode=RetryMode.INITIAL_ATTEMPT,
     )
 
 
+#: The single compliant provider used by the recording-boundary tests (Mode B).
+_PS = ProviderSet(("gemini_notebook",))
+
+
+def _plan(n: int, previous: str | None = None):
+    """A validated attempt plan for the Mode-B recording tests."""
+    return plan_attempt(
+        provider_set=_PS, attempt_number=n, previous_provider_surface=previous
+    )
+
+
 # ---- M6.4 SUCCESS fixture (test-only resolver; never production) -------------
 
 def _src(sid: str, raw: bytes) -> SourceRecord:
@@ -626,14 +637,12 @@ class TestFailureHandling:
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
         record_failed_attempt(
-            store, ledger_id="L-1", attempt_number=1,
-            retry_mode=RetryMode.INITIAL_ATTEMPT, provider_surface="gemini_notebook",
+            store, ledger_id="L-1", plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", outcome=TerminalStatus.TRANSPORT_FAILURE,
             error="boom", telemetry=_tel(), completed_at=_FIXED_NOW.isoformat(),
         )
         record_failed_attempt(
-            store, ledger_id="L-1", attempt_number=2,
-            retry_mode=RetryMode.SAME_PROVIDER_RETRY, provider_surface="gemini_notebook",
+            store, ledger_id="L-1", plan=_plan(2, "gemini_notebook"), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", outcome=TerminalStatus.TRANSPORT_FAILURE,
             error="boom again", telemetry=_tel(), completed_at=_FIXED_NOW.isoformat(),
         )
@@ -840,8 +849,7 @@ class TestSuccessConsumption:
         monkeypatch.setattr(DeepResearchResult, "assert_proof_verified", _gate_called)
         with pytest.raises(RuntimeError):
             accept_success_result(
-                store, ledger_id="L-1", result=ok, attempt_number=1,
-                retry_mode=RetryMode.INITIAL_ATTEMPT,
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
         assert calls == {"append": 0, "terminal": 0}
@@ -856,8 +864,7 @@ class TestSuccessConsumption:
         )
         with pytest.raises(ResearchResultError):
             accept_success_result(
-                store, ledger_id="L-1", result=ok, attempt_number=1,
-                retry_mode=RetryMode.INITIAL_ATTEMPT,
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
         record = store.load_run("L-1")
@@ -876,8 +883,7 @@ class TestSuccessConsumption:
         )
         with pytest.raises(ResearchResultError):
             accept_success_result(
-                store, ledger_id="L-1", result=ok, attempt_number=1,
-                retry_mode=RetryMode.INITIAL_ATTEMPT,
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
         record = store.load_run("L-1")
@@ -892,8 +898,7 @@ class TestSuccessConsumption:
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
         record = accept_success_result(
-            store, ledger_id="L-1", result=ok, attempt_number=1,
-            retry_mode=RetryMode.INITIAL_ATTEMPT,
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             completed_at=_FIXED_NOW.isoformat(),
         )
@@ -911,8 +916,7 @@ class TestSuccessConsumption:
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
         accept_success_result(
-            store, ledger_id="L-1", result=ok, attempt_number=1,
-            retry_mode=RetryMode.INITIAL_ATTEMPT,
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
         )
         assert ok.non_canonical is True
@@ -929,9 +933,7 @@ class TestSuccessConsumption:
         )
         with pytest.raises(OrchestrationError):
             record_failed_attempt(
-                store, ledger_id="L-1", attempt_number=1,
-                retry_mode=RetryMode.INITIAL_ATTEMPT,
-                provider_surface="gemini_notebook",
+                store, ledger_id="L-1", plan=_plan(1), provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION",
                 outcome=TerminalStatus.SUCCESS, error=None, telemetry=_tel(),
             )
@@ -1038,30 +1040,20 @@ class TestRound1Closure:
         resolve_or_create_logical_run(
             store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
         )
-        with pytest.raises(RetryPolicyError):
+
+        def _rec(plan):
             record_failed_attempt(
-                store, ledger_id="L-1", attempt_number=2,
-                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
-                provider_surface="gemini_notebook",
+                store, ledger_id="L-1", plan=plan, provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION",
                 outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
             )
+
+        with pytest.raises(RetryPolicyError):
+            _rec(_plan(2, "gemini_notebook"))  # out of order (expected 1)
         assert store.load_run("L-1").attempts == ()
-        # attempt 1 is accepted, attempt 3 (out of order) is refused
-        record_failed_attempt(
-            store, ledger_id="L-1", attempt_number=1,
-            retry_mode=RetryMode.INITIAL_ATTEMPT, provider_surface="gemini_notebook",
-            transport_type="BROWSER_UI_AUTOMATION",
-            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
-        )
+        _rec(_plan(1))  # in order -> accepted
         with pytest.raises(RetryPolicyError):
-            record_failed_attempt(
-                store, ledger_id="L-1", attempt_number=3,
-                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
-                provider_surface="gemini_notebook",
-                transport_type="BROWSER_UI_AUTOMATION",
-                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
-            )
+            _rec(_plan(3, "gemini_notebook"))  # gap -> refused
         assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1]
 
     def test_r1_05_accept_success_enforces_contiguity_and_the_budget(self, store):
@@ -1072,16 +1064,15 @@ class TestRound1Closure:
         ok = _build_success(_request())
         with pytest.raises(RetryPolicyError):
             accept_success_result(
-                store, ledger_id="L-1", result=ok, attempt_number=2,
-                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                store, ledger_id="L-1", result=ok, plan=_plan(2, "gemini_notebook"),
+                provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
             )
         record = store.load_run("L-1")
         assert record.attempts == () and record.is_terminal is False
         # attempt 1 is accepted (§15 tests 51/52 cover the success semantics)
         assert accept_success_result(
-            store, ledger_id="L-1", result=ok, attempt_number=1,
-            retry_mode=RetryMode.INITIAL_ATTEMPT,
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
         ).terminal_status is TerminalStatus.SUCCESS
 
@@ -1103,12 +1094,190 @@ class TestRound1Closure:
             else:
                 assert resolved.next_attempt_number is None
                 assert resolved.retry_budget_remaining == 0
-        # the 4th attempt is unrecordable through the M6.5 boundary
+        # the 4th attempt is unrecordable through the M6.5 boundary (and unplannable)
+        with pytest.raises(RetryPolicyError):
+            plan_attempt(provider_set=_PS, attempt_number=4,
+                         previous_provider_surface="gemini_notebook")
         with pytest.raises(RetryPolicyError):
             record_failed_attempt(
-                store, ledger_id="L-1", attempt_number=4,
-                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
-                provider_surface="gemini_notebook",
+                store, ledger_id="L-1", plan=_plan(3, "gemini_notebook"),
+                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+
+
+# =====================================================================
+# Round-2 reviewer closure — five bounded implementation defects
+# =====================================================================
+
+class TestRound2Closure:
+    def test_r2_01_provider_set_rejects_byte_members(self):
+        for bad in ((b"",), (b"a", b"b"), (b"gemini_notebook",)):
+            with pytest.raises(RetryPolicyError):
+                ProviderSet(bad)
+        assert ProviderSet(("gemini_notebook",)).mode is OrchestrationMode.MODE_B
+
+    def test_r2_02_plan_validation_rejects_fabricated_labels_and_providers(self):
+        from qad.m6.orchestration import AttemptPlan, validate_attempt_plan
+
+        with pytest.raises(RetryPolicyError):
+            validate_attempt_plan(
+                AttemptPlan(attempt_number=1, retry_mode=RetryMode.PROVIDER_FALLBACK,
+                            provider_surface="gemini_notebook", fallback_used=True,
+                            provider_changed=True),
+                _PS,
+            )
+        with pytest.raises(RetryPolicyError):
+            validate_attempt_plan(
+                AttemptPlan(attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                            provider_surface="not-configured", fallback_used=False,
+                            provider_changed=False),
+                _PS,
+            )
+        # Mode B may never be labelled a provider fallback
+        with pytest.raises(RetryPolicyError):
+            validate_attempt_plan(
+                AttemptPlan(attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
+                            provider_surface="gemini_notebook", fallback_used=True,
+                            provider_changed=True),
+                _PS,
+            )
+        # a truthful initial plan validates
+        assert validate_attempt_plan(_plan(1), _PS).attempt_number == 1
+
+    def test_r2_03_recording_refuses_unconfigured_provider_and_bad_label(self, store):
+        from qad.m6.orchestration import AttemptPlan
+
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        forged = AttemptPlan(attempt_number=1, retry_mode=RetryMode.PROVIDER_FALLBACK,
+                             provider_surface="not-configured", fallback_used=True,
+                             provider_changed=True)
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", plan=forged, provider_set=_PS,
                 transport_type="BROWSER_UI_AUTOMATION",
                 outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
             )
+        assert store.load_run("L-1").attempts == ()
+
+    def test_r2_04_recording_refuses_retry_after_a_fail_closed_outcome(self, store):
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        record_failed_attempt(
+            store, ledger_id="L-1", plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.PIT_BLOCK, error="sealed pit block", telemetry=_tel(),
+        )
+        # decide_retry already says no; the recording boundary must enforce it too
+        decision = decide_retry(
+            provider_set=_PS, attempt_number=1, outcome=TerminalStatus.PIT_BLOCK,
+            previous_provider_surface="gemini_notebook", evidence_gap_id="EG-1",
+        )
+        assert decision.should_retry is False
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", plan=_plan(2, "gemini_notebook"),
+                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1]
+        # …and a fail-closed history never offers a next attempt
+        resolved = resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        assert resolved.next_attempt_number is None
+        assert resolved.retry_budget_remaining == 0
+
+    def test_r2_05_persisted_success_is_never_retryable_and_finalizes(self, store):
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        # make terminalization fail: a registered candidate with no disposition
+        store.register_candidate(
+            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
+            discovery_timestamp=_FIXED_NOW.isoformat(),
+            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+        )
+        ok = _build_success(_request())
+        with pytest.raises(Exception):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        record = store.load_run("L-1")
+        assert [a.outcome for a in record.attempts] == [TerminalStatus.SUCCESS.value]
+        assert record.is_terminal is False
+        resolved = resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        assert resolved.unfinalized_success is True
+        assert resolved.next_attempt_number is None
+        assert resolved.retry_budget_remaining == 0
+        assert resolved.may_attempt is False
+        # a persisted SUCCESS attempt can never be retried
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", plan=_plan(2, "gemini_notebook"),
+                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        # recovery finalization: never a second attempt
+        store.dispose_candidate(
+            "L-1", "SC-1", disposition="REJECTED", reason="unused in this test"
+        )
+        finalized = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert finalized.terminal_status is TerminalStatus.SUCCESS
+        assert [a.attempt_number for a in finalized.attempts] == [1]
+
+    def test_r2_06_decide_retry_rejects_invalid_attempt_numbers(self):
+        for bad in (0, 4, True, False, "2", 2.0, None):
+            with pytest.raises(RetryPolicyError):
+                decide_retry(
+                    provider_set=_PS, attempt_number=bad,
+                    outcome=TerminalStatus.TRANSPORT_FAILURE,
+                    previous_provider_surface="gemini_notebook", evidence_gap_id="EG-1",
+                )
+        for good in (1, 2, 3):
+            decide_retry(
+                provider_set=_PS, attempt_number=good,
+                outcome=TerminalStatus.TRANSPORT_FAILURE,
+                previous_provider_surface="gemini_notebook", evidence_gap_id="EG-1",
+            )
+
+    def test_r2_07_mode_a_fallback_provenance_is_recorded_truthfully(self, store):
+        ps = ProviderSet(("surface_a", "surface_b"))
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key,
+            create_run_kwargs=_create_kwargs(key, provider_surface="surface_a"),
+        )
+        first = plan_attempt(provider_set=ps, attempt_number=1)
+        record_failed_attempt(
+            store, ledger_id="L-1", plan=first, provider_set=ps,
+            transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+        )
+        second = plan_attempt(
+            provider_set=ps, attempt_number=2,
+            previous_provider_surface=first.provider_surface,
+        )
+        assert second.retry_mode is RetryMode.PROVIDER_FALLBACK
+        record_failed_attempt(
+            store, ledger_id="L-1", plan=second, provider_set=ps,
+            transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom again", telemetry=_tel(),
+        )
+        recorded = store.load_run("L-1").attempts
+        assert [a.retry_mode for a in recorded] == [
+            RetryMode.INITIAL_ATTEMPT, RetryMode.PROVIDER_FALLBACK
+        ]
+        assert recorded[0].provider_surface != recorded[1].provider_surface

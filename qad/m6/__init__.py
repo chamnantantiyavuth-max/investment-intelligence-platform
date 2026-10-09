@@ -86,6 +86,7 @@ from qad.m6.orchestration import (
     record_failed_attempt,
     resolve_or_create_logical_run,
     terminalize_research_unavailable,
+    validate_attempt_plan,
 )
 from qad.m6.snapshot import (
     PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
@@ -178,4 +179,5 @@ __all__ = [
     "record_failed_attempt",
     "resolve_or_create_logical_run",
     "terminalize_research_unavailable",
+    "validate_attempt_plan",
 ]

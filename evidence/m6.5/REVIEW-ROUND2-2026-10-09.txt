@@ -1,0 +1,90 @@
+VERDICT: C
+
+PROBE RESULTS: A..O — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+
+A — DEFECT — Bare str/bytes, int, empty collection, and duplicate names are refused; a string singleton is MODE_B, but byte-valued members—including `b""`—are accepted, and `(b"a", b"b")` becomes MODE_A.
+B — VERIFIED — M6.5 recording refuses out-of-order 2/3/4 attempts and further attempts after terminalization or exhaustion; valid SUCCESS attempts 2/3/4 were each refused with no attempt persisted.
+C — VERIFIED — The independently reconstructed six-field length-prefixed SHA-256 matched; code/tests show no clock, random/UUID, process, cwd, notebook, attempt-number, or provider-surface dependency.
+D — VERIFIED — Duplicate-key suppression and UNIQUE are tested; the race-reconciliation branch was exercised with an injected `LedgerIdentityConflict`, not a concurrent-process stress test.
+E — DEFECT — Normal failed-run re-entry preserves the budget, but after a verified SUCCESS append followed by terminalization failure, re-entry offered attempt 2.
+F — DEFECT — `plan_attempt()` produces truthful Mode B plans, but the recording API permits persisting `PROVIDER_FALLBACK` for a Mode B run.
+G — DEFECT — `plan_attempt()` selects deterministically from the explicit set, but the recording API permits an unconfigured provider and false fallback label.
+H — VERIFIED — Exhaustion returns `RESEARCH_UNAVAILABLE` and an unapplied EG-01 `DEFERRED` instruction; the canonical schema count remains 68 and no canonical EG write API is added.
+I — DEFECT — `decide_retry()` correctly rejects retry after PIT_BLOCK, but `record_failed_attempt()` accepted attempt 2 after a recorded PIT_BLOCK.
+J — VERIFIED — Exact exposed values, including zero, are preserved; NOT_EXPOSED requires null and a reason; missing/undeclared metrics fail closed; no estimation path was found.
+K — VERIFIED — M6.5 records contiguous attempts; M6.3 duplicate identity protection, append-only history, and telemetry survival after reopening a fresh store passed.
+L — NOT VERIFIED — Current proof-gate behavior and success/hash tests pass, but without Git metadata I could not verify `research_contract.py` is unchanged from the accepted M6.4 commit.
+M — NOT VERIFIED — AST/import scan found no provider/network/browser imports and no `m6.6` module in `qad/m6`; without Git metadata, “no M6.6 start” cannot be established beyond this copy.
+N — NOT VERIFIED — The lookup implementation is SELECT-only and its tests compare durable run/event state; without a baseline diff I could not verify it is the only ledger change.
+O — DEFECT — `tests/qad/m6`: 275 passed. Broader `tests/qad`: 810 passed, 1 failed; the failure is a canonical-schema source-hash mismatch, not attributed to M6.5.
+
+MATERIAL FINDINGS:
+
+1. ProviderSet accepts byte-valued provider names.
+(a) `qad/m6/orchestration.py:406-427` accepts `bytes` members. My probe observed `ProviderSet((b"",))` accepted as MODE_B and `ProviderSet((b"a", b"b"))` accepted as MODE_A.
+(b) These are not string provider identifiers; they can produce byte-valued provider surfaces and make malformed configuration count as multiple compliant providers.
+(c) Reject every member that is not `str`; test blankness on the string itself.
+(d) Verify byte-valued members, including `b""`, raise `RetryPolicyError`; retain MODE_B for a one-string collection.
+
+2. Attempt recording does not enforce provider-set or retry-label truthfulness.
+(a) `qad/m6/orchestration.py:796-833` accepts caller-supplied `retry_mode` and `provider_surface` without a `ProviderSet` or prior-provider check. My probe persisted attempt 1 as `PROVIDER_FALLBACK` on `"not-configured"` while the run’s configured surface was `gemini_notebook`.
+(b) A durable record can contradict Mode B rules and claim fallback to a provider outside the explicit set.
+(c) Record from a validated `AttemptPlan`, or otherwise validate mode, provider membership, and whether the provider actually changed before appending.
+(d) Verify malformed initial/fallback combinations and unconfigured providers fail before any durable attempt appears; verify valid Mode A/B transitions still persist accurately.
+
+3. The recording boundary allows retry after a fail-closed outcome.
+(a) `qad/m6/orchestration.py:297-323, 796-833` checks terminality, sequence, and budget but not the previous attempt outcome. I recorded attempt 1 as `PIT_BLOCK`; attempt 2 as `TRANSPORT_FAILURE` was then accepted. `decide_retry()` itself correctly said not to retry.
+(b) M6.5 can persist a retry that its own classification says is forbidden, violating the fail-closed outcome policy.
+(c) At the M6.5 recording boundary, refuse a new attempt after a prior non-retryable/SUCCESS outcome unless the run has been resolved through an authorized terminal/recovery path.
+(d) For PIT_BLOCK, INCOMPLETE, FAILED, PROVIDER_CANNOT_ENFORCE_SEALED_INPUT, and REQUEST_ISOLATION_UNVERIFIED, verify the next append is rejected; retain the permitted retry path for retryable outcomes.
+
+4. SUCCESS append and terminalization are not atomic; a persisted SUCCESS can be retried.
+(a) `qad/m6/orchestration.py:863-889` appends SUCCESS before terminalizing in a separate store operation. I triggered a real terminalization rejection using a registered candidate without a disposition. The resulting durable record had a SUCCESS attempt but no terminal status; resolution returned `next_attempt_number=2`, `retry_budget_remaining=2`, and a subsequent failed attempt was accepted.
+(b) A terminalization failure or interruption can turn a verified successful attempt into an active run that permits another attempt.
+(c) Make successful-attempt append plus terminalization one atomic operation. If that requires changing the accepted M6.3 boundary, obtain that authority; do not weaken its semantics. At minimum, recovery must treat persisted SUCCESS as non-retryable and provide a safe finalization path.
+(d) Inject terminalization failure and verify state is either wholly unmodified or terminal SUCCESS; any persisted SUCCESS must never yield an allowed next attempt, including after reopening the store.
+
+5. `decide_retry()` accepts invalid attempt numbers.
+(a) `qad/m6/orchestration.py:633-692` has no strict 1..3/non-bool validation. A probe passed `True` and received a retry plan for attempt 2; attempt 4 returned `RESEARCH_UNAVAILABLE` instead of being rejected.
+(b) Invalid identity input can produce a retry or false exhaustion/DEFERRED decision outside the authorized 1..3 attempt range.
+(c) Validate `attempt_number` as an integer, excluding bool, in 1..3 before classifying or deciding.
+(d) Verify 0, True, 4, and non-integers are rejected without a retry or exhaustion instruction; retain correct decisions for attempts 1–3.
+
+NON-BLOCKING FINDINGS: NONE
+
+EVIDENCE GAPS:
+- This copy has no `.git` directory. Git status, branch, HEAD, remote, and commit-diff checks failed with “not a git repository”; I cannot bind the artifacts to `a0b287e`, verify the stated branch/main state, or compare `research_contract.py` and `ledger.py` against their prior commits.
+- `SESSION_CLOSEOUT.md` says M6.5 was “NOT started” at lines 44–47, 96–98, and 148–150, while this copy contains M6.5 implementation and tests. It does not establish the reviewed commit’s provenance.
+- The broader-suite failure was `tests/qad/test_contract_conformance.py::test_schema_build_identity`: recorded SHA-256 `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd` versus actual `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`. I could not attribute it to this commit without a baseline diff.
+
+COMMANDS RUN:
+
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v`
+  Observed: `fatal: not a git repository` (exit 128).
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round2-review/basetemp"`
+  Observed: `275 passed in 6.78s`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" _m65_round2_probe.py`
+  Observed key results: malformed top-level ProviderSet inputs refused; byte members accepted; retry after PIT_BLOCK accepted; invalid Mode-B fallback/provider persisted; terminalization rejection left SUCCESS active with attempt 2 available; AST scan reported no banned provider/transport imports. The throwaway script was removed afterward.
+
+- Gapped-history probe using the supplied test helpers and the authorized basetemp:
+  Observed: `attempts=1 history_consistent=False next=None remaining=0 may_attempt=False`.
+
+- Verified-SUCCESS attempt-bound probe using the supplied test helpers and the authorized basetemp:
+  Observed: attempts 2, 3, and 4 each `refused RetryPolicyError`; `persisted_attempts=0`.
+
+- `decide_retry` invalid-number probe:
+  Observed: `True accepted True 2 None`; `4 accepted False None TerminalStatus.RESEARCH_UNAVAILABLE`.
+
+- AST/import scan over `qad/m6/*.py`:
+  Observed six files (`__init__.py`, `eligibility.py`, `ledger.py`, `orchestration.py`, `research_contract.py`, `snapshot.py`); `banned_imports=[]`.
+
+- Independent idempotency formula check:
+  Observed `manual_formula_matches=True`; both keys were `idem-030dff734da2e58c707af7d9391d701305d622f455065e8f4387baa5e775448a`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round2-review/basetemp/qad-suite"`
+  Observed: `810 passed, 1 failed, 11 warnings in 10.93s`; failure was the schema build identity hash mismatch above.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0

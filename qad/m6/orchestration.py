@@ -67,6 +67,7 @@ __all__ = [
     "ProviderSet",
     "AttemptPlan",
     "plan_attempt",
+    "validate_attempt_plan",
     "AttemptClassification",
     "classify_attempt_outcome",
     "classify_result_status",
@@ -252,6 +253,7 @@ class LogicalRunResolution:
     next_attempt_number: int | None
     retry_budget_remaining: int
     history_consistent: bool = True
+    unfinalized_success: bool = False
     terminal_status: TerminalStatus | None = None
     record: RunRecord | None = field(default=None, repr=False, compare=False)
 
@@ -265,6 +267,24 @@ class LogicalRunResolution:
         return self.next_attempt_number is not None
 
 
+def _last_attempt_blocks_retry(record: RunRecord) -> bool:
+    """True when the recorded history forbids another attempt (fail closed).
+
+    Two cases block: a persisted SUCCESS attempt (a successful attempt is never
+    retried — round-2 finding 4), and a previous attempt whose outcome is not
+    RETRYABLE (round-2 finding 3).
+    """
+    outcomes = [a.outcome for a in record.attempts]
+    if any(o == TerminalStatus.SUCCESS.value for o in outcomes):
+        return True
+    if not outcomes:
+        return False
+    try:
+        return classify_attempt_outcome(outcomes[-1]) is not AttemptClassification.RETRYABLE
+    except OrchestrationError:
+        return True
+
+
 def _resolution_from_record(
     outcome: ResolutionOutcome, key: str, record: RunRecord
 ) -> LogicalRunResolution:
@@ -274,8 +294,9 @@ def _resolution_from_record(
     # permitted, so the resolution can never report a self-contradictory pair such
     # as "no next attempt but two attempts remaining".
     consistent = used == list(range(1, len(used) + 1))
+    blocked = _last_attempt_blocks_retry(record)
     next_attempt: int | None
-    if record.is_terminal or not consistent:
+    if record.is_terminal or not consistent or blocked:
         next_attempt = None
     else:
         candidate = len(used) + 1
@@ -289,19 +310,25 @@ def _resolution_from_record(
         next_attempt_number=next_attempt,
         retry_budget_remaining=remaining,
         history_consistent=consistent,
+        unfinalized_success=(
+            not record.is_terminal
+            and any(a.outcome == TerminalStatus.SUCCESS.value for a in record.attempts)
+        ),
         terminal_status=record.terminal_status,
         record=record,
     )
 
 
-def _require_next_attempt_number(
+def _next_attempt_guard(
     store: DeepResearchRunLedgerStore, ledger_id: str
-) -> int:
-    """The M6.5 recording boundary requires a CONTIGUOUS 1..N attempt history.
+) -> tuple[RunRecord, int]:
+    """The M6.5 recording boundary gate.
 
     M6.3's ledger deliberately validates only the 1..3 RANGE and duplicate identity;
-    lifecycle ORDERING is owned here by the orchestrator, so this does not change the
-    accepted M6.3 ledger semantics. A gapped or exhausted history is refused.
+    lifecycle ORDERING and outcome discipline are owned here by the orchestrator, so
+    this does not change the accepted M6.3 ledger semantics. Refused: a terminal run,
+    a non-contiguous history, an exhausted budget, a persisted SUCCESS attempt, and a
+    retry after a fail-closed (non-retryable) outcome.
     """
     record = store.load_run(ledger_id)
     if record.is_terminal:
@@ -315,12 +342,65 @@ def _require_next_attempt_number(
             f"ledger run {ledger_id!r} has a non-contiguous attempt history "
             f"{used}; M6.5 requires the contiguous sequence 1..N"
         )
+    outcomes = [a.outcome for a in record.attempts]
+    if any(o == TerminalStatus.SUCCESS.value for o in outcomes):
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} already has a persisted SUCCESS attempt; a "
+            "successful attempt is never retried — finalize it through "
+            "accept_success_result (recovery path)"
+        )
+    if outcomes:
+        try:
+            classification = classify_attempt_outcome(outcomes[-1])
+        except OrchestrationError:
+            classification = AttemptClassification.NON_RETRYABLE
+        if classification is not AttemptClassification.RETRYABLE:
+            raise RetryPolicyError(
+                f"the previous attempt outcome {outcomes[-1]!r} is fail-closed "
+                f"({classification.value}); M6 retry is forbidden even though "
+                "budget remains"
+            )
     expected = len(used) + 1
     if expected > MAX_ATTEMPTS:
         raise RetryPolicyError(
             f"ledger run {ledger_id!r} has exhausted the {MAX_ATTEMPTS}-attempt budget"
         )
-    return expected
+    return record, expected
+
+
+def _validate_plan_against_record(
+    record: RunRecord,
+    plan: AttemptPlan,
+    provider_set: ProviderSet,
+    expected: int,
+) -> None:
+    """Validate the plan against BOTH the policy and the previous durable attempt."""
+    validate_attempt_plan(plan, provider_set)
+    if plan.attempt_number != expected:
+        raise RetryPolicyError(
+            "attempt history must be the contiguous sequence 1..N: expected attempt "
+            f"{expected} for ledger run {record.ledger_id!r}, got {plan.attempt_number}"
+        )
+    if not record.attempts:
+        return
+    previous = record.attempts[-1].provider_surface
+    if provider_set.mode is OrchestrationMode.MODE_B:
+        if plan.provider_surface != previous:
+            raise RetryPolicyError(
+                "a Mode B retry must stay on the same provider "
+                f"({previous!r}), got {plan.provider_surface!r}"
+            )
+        return
+    if plan.provider_changed:
+        if plan.provider_surface == previous:
+            raise RetryPolicyError(
+                "PROVIDER_FALLBACK requires the provider to ACTUALLY change"
+            )
+    elif plan.provider_surface != previous:
+        raise RetryPolicyError(
+            "a SAME_PROVIDER_RETRY must keep the previous provider "
+            f"({previous!r}), got {plan.provider_surface!r}"
+        )
 
 
 def resolve_or_create_logical_run(
@@ -420,7 +500,7 @@ class ProviderSet:
         if not providers:
             raise RetryPolicyError("at least one compliant provider is required")
         for name in providers:
-            if isinstance(name, (str, bytes)) is False or not str(name).strip():
+            if not isinstance(name, str) or not name.strip():
                 raise RetryPolicyError("provider names must be non-blank strings")
         if len(set(providers)) != len(providers):
             raise RetryPolicyError("compliant provider names must be unique")
@@ -541,6 +621,72 @@ def plan_attempt(
 # 3. Failure classification + bounded retry decision (M6.0 §8)
 # ---------------------------------------------------------------------------
 
+def validate_attempt_plan(plan: AttemptPlan, provider_set: ProviderSet) -> AttemptPlan:
+    """Validate an attempt plan's TRUTHFULNESS before it is durably recorded.
+
+    Recording a caller-supplied label is not enough (round-2 reviewer finding): the
+    label, the provider membership and the fallback flag must all be mechanically
+    consistent with the committed Mode A / Mode B policy, otherwise a durable record
+    could claim a provider fallback that never happened or name a provider outside
+    the explicit configured set.
+    """
+    if not isinstance(plan, AttemptPlan):
+        raise RetryPolicyError("validate_attempt_plan requires an AttemptPlan")
+    if not isinstance(provider_set, ProviderSet):
+        raise RetryPolicyError("validate_attempt_plan requires a ProviderSet")
+    if (
+        not isinstance(plan.attempt_number, int)
+        or isinstance(plan.attempt_number, bool)
+        or not (ATTEMPT_NUMBER_MIN <= plan.attempt_number <= MAX_ATTEMPTS)
+    ):
+        raise RetryPolicyError(
+            f"attempt_number must be an integer in {ATTEMPT_NUMBER_MIN}.."
+            f"{MAX_ATTEMPTS}, got {plan.attempt_number!r}"
+        )
+    if plan.provider_surface not in provider_set.compliant_providers:
+        raise RetryPolicyError(
+            f"attempt provider {plan.provider_surface!r} is not in the explicit "
+            f"compliant provider set {provider_set.compliant_providers!r}"
+        )
+    truthful = (
+        plan.fallback_used
+        == plan.provider_changed
+        == (plan.retry_mode is RetryMode.PROVIDER_FALLBACK)
+    )
+    if not truthful:
+        raise RetryPolicyError(
+            "attempt labels must be truthful: fallback_used, provider_changed and "
+            "PROVIDER_FALLBACK must agree"
+        )
+    if plan.attempt_number == ATTEMPT_NUMBER_MIN:
+        if (
+            plan.retry_mode is not RetryMode.INITIAL_ATTEMPT
+            or plan.fallback_used
+            or plan.provider_changed
+        ):
+            raise RetryPolicyError(
+                "the initial attempt must be INITIAL_ATTEMPT with no fallback"
+            )
+        if plan.provider_surface != provider_set.default_provider:
+            raise RetryPolicyError(
+                "the initial attempt must use the deterministic default provider"
+            )
+        return plan
+    if plan.retry_mode is RetryMode.INITIAL_ATTEMPT:
+        raise RetryPolicyError("only attempt 1 may be INITIAL_ATTEMPT")
+    if provider_set.mode is OrchestrationMode.MODE_B:
+        if plan.retry_mode is not RetryMode.SAME_PROVIDER_RETRY:
+            raise RetryPolicyError(
+                "a one-provider (Mode B) run may only SAME_PROVIDER_RETRY — it can "
+                "never be labelled a provider fallback"
+            )
+        if plan.provider_surface != provider_set.default_provider:
+            raise RetryPolicyError(
+                "a Mode B retry must stay on the same (only) compliant provider"
+            )
+    return plan
+
+
 class AttemptClassification(str, Enum):
     """Whether a terminal attempt outcome may be retried."""
 
@@ -646,6 +792,16 @@ def decide_retry(
     3-attempt budget allows; exhaustion ends ``RESEARCH_UNAVAILABLE`` and emits the
     EG-01 ``DEFERRED`` instruction without weakening any gate.
     """
+    if (
+        not isinstance(attempt_number, int)
+        or isinstance(attempt_number, bool)
+        or not (ATTEMPT_NUMBER_MIN <= attempt_number <= MAX_ATTEMPTS)
+    ):
+        raise RetryPolicyError(
+            "attempt_number must be an integer in "
+            f"{ATTEMPT_NUMBER_MIN}..{MAX_ATTEMPTS} (retry identity is "
+            f"(idempotency_key, attempt_number)); got {attempt_number!r}"
+        )
     classification = classify_attempt_outcome(outcome)
 
     if classification is AttemptClassification.SUCCESS:
@@ -797,9 +953,8 @@ def record_failed_attempt(
     store: DeepResearchRunLedgerStore,
     *,
     ledger_id: str,
-    attempt_number: int,
-    retry_mode: str | RetryMode,
-    provider_surface: str,
+    plan: AttemptPlan,
+    provider_set: ProviderSet,
     transport_type: str,
     outcome: str | TerminalStatus,
     error: str | None,
@@ -807,23 +962,25 @@ def record_failed_attempt(
     started_at: str | None = None,
     completed_at: str | None = None,
 ) -> None:
-    """Durably append ONE failed attempt (append-only; never rewrites history)."""
+    """Durably append ONE failed attempt from a VALIDATED plan (append-only).
+
+    The attempt identity and its truthful labels come from the plan, which is
+    validated against the committed Mode A / Mode B policy AND against the previous
+    durable attempt — so a caller can no longer persist a fabricated provider
+    fallback label or an unconfigured provider (round-2 reviewer finding).
+    """
     if classify_attempt_outcome(outcome) is AttemptClassification.SUCCESS:
         raise OrchestrationError(
             "record_failed_attempt refuses SUCCESS — a successful attempt must go "
             "through accept_success_result (FD #152 proof gate)"
         )
-    expected = _require_next_attempt_number(store, ledger_id)
-    if attempt_number != expected:
-        raise RetryPolicyError(
-            "attempt history must be the contiguous sequence 1..N: expected attempt "
-            f"{expected} for ledger run {ledger_id!r}, got {attempt_number}"
-        )
+    record, expected = _next_attempt_guard(store, ledger_id)
+    _validate_plan_against_record(record, plan, provider_set, expected)
     store.append_attempt(
         ledger_id,
-        attempt_number=attempt_number,
-        retry_mode=retry_mode,
-        provider_surface=provider_surface,
+        attempt_number=plan.attempt_number,
+        retry_mode=plan.retry_mode,
+        provider_surface=plan.provider_surface,
         transport_type=transport_type,
         started_at=started_at,
         completed_at=completed_at,
@@ -838,8 +995,8 @@ def accept_success_result(
     *,
     ledger_id: str,
     result: DeepResearchResult,
-    attempt_number: int,
-    retry_mode: str | RetryMode,
+    plan: AttemptPlan,
+    provider_set: ProviderSet,
     transport_type: str,
     telemetry: Mapping[str, Any],
     started_at: str | None = None,
@@ -853,6 +1010,13 @@ def accept_success_result(
     post-construction-tampered SUCCESS can therefore never terminalize a run as
     SUCCESS. ``status == SUCCESS`` / ``is_success`` alone is NEVER sufficient.
 
+    The attempt label/provider come from a validated :class:`AttemptPlan` (round-2
+    reviewer finding). If a SUCCESS attempt is ALREADY persisted but the run is not
+    terminal — i.e. a previous terminalization failed or was interrupted — this call
+    is a **recovery finalization**: it never appends a second attempt and never
+    permits a retry, it only completes the terminalization. A persisted SUCCESS
+    attempt is never retryable.
+
     M6.5 itself produces no provider SUCCESS: it only ACCEPTS a result that the
     trusted M6.4 verification path already produced (provider execution is
     M6.7/M6.8).
@@ -863,17 +1027,34 @@ def accept_success_result(
     result.assert_proof_verified()
     if not result.status.is_success:  # defensive: assert_proof_verified guards this
         raise OrchestrationError("accept_success_result requires a SUCCESS result")
-    expected = _require_next_attempt_number(store, ledger_id)
-    if attempt_number != expected:
+
+    record = store.load_run(ledger_id)
+    if record.is_terminal:
+        raise RetryPolicyError(f"ledger run {ledger_id!r} is already terminal")
+    if any(a.outcome == TerminalStatus.SUCCESS.value for a in record.attempts):
+        # RECOVERY FINALIZATION: a SUCCESS attempt is already durable. Never append
+        # a second attempt and never retry — just complete the terminalization.
+        store.terminalize(
+            ledger_id,
+            terminal_status=TerminalStatus.SUCCESS,
+            terminal_at=completed_at,
+            result_artifact_ref=result.result_artifact_ref,
+            result_sha256=result.result_sha256,
+        )
+        return store.load_run(ledger_id)
+
+    _, expected = _next_attempt_guard(store, ledger_id)
+    _validate_plan_against_record(record, plan, provider_set, expected)
+    if result.provider_surface != plan.provider_surface:
         raise RetryPolicyError(
-            "attempt history must be the contiguous sequence 1..N: expected attempt "
-            f"{expected} for ledger run {ledger_id!r}, got {attempt_number}"
+            "the successful result's provider surface must equal the validated attempt "
+            f"plan provider ({result.provider_surface!r} != {plan.provider_surface!r})"
         )
     store.append_attempt(
         ledger_id,
-        attempt_number=attempt_number,
-        retry_mode=retry_mode,
-        provider_surface=result.provider_surface,
+        attempt_number=plan.attempt_number,
+        retry_mode=plan.retry_mode,
+        provider_surface=plan.provider_surface,
         transport_type=transport_type,
         started_at=started_at,
         completed_at=completed_at,
@@ -884,6 +1065,7 @@ def accept_success_result(
     store.terminalize(
         ledger_id,
         terminal_status=TerminalStatus.SUCCESS,
+        terminal_at=completed_at,
         result_artifact_ref=result.result_artifact_ref,
         result_sha256=result.result_sha256,
     )
