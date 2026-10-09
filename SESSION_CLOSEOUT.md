@@ -1,3 +1,65 @@
+# Session — 2026-10-09 (QAD M6.5 CLOSED — FD #154 raw-success-API carry-forward gate)
+
+## WHAT HAPPENED (plain language)
+
+M6.5 is finished and correct where it was authorized to be. One thing is left open ON
+PURPOSE, with a hard gate in front of it.
+
+The story: a run's "finished, here is the result hash" record and its "successful attempt"
+record used to be written in two separate steps. If the second step failed, we could be left
+with a success attempt that did not say which result it belonged to — and a later repair
+could attach a DIFFERENT result. Round 7 caught this; the Founder authorized a fix (FD #153)
+that writes both together in ONE all-or-nothing step.
+
+Round 8 confirmed that fix works — including under two processes racing at once, and under
+injected failures at every point. But it also found something else: someone calling the
+low-level ledger directly can STILL write half of the pair on its own (a success attempt with
+no finish record, or a finish record with no success attempt). The Founder's ruling: that is
+a real hazard, but it is OUTSIDE what M6.5 is allowed to do anything about right now, because
+closing it would change behavior the already-accepted M6.3 layer promised, and would break
+tests that were already accepted.
+
+So M6.5 closes, and the hazard is written down as a NAMED GATE that must be closed BEFORE any
+future layer is allowed to actually talk to a provider and produce successes.
+
+## FOUNDER DECISION — FD #154
+
+- `M6.5 = CORRECT AT ITS AUTHORIZED SUCCESS-WRITING BOUNDARY`.
+- Round-8 reviewer verdict stays `C — one material finding`. It is NOT erased and NOT
+  upgraded to a pass.
+- Disposition: ACCEPTED AS A BOUNDED OUT-OF-M6.5 RAW-API LIMITATION WITH A HARD PRE-M6.7 GATE.
+- `M6_RAW_SUCCESS_API_GATE` = `OPEN / BLOCKING M6.7 PROVIDER-EXECUTION INTEGRATION`.
+- M6.6 (Noncanonical Source Discovery + Admission Bridge) MAY proceed — but only if it never
+  writes or finishes a Deep Research SUCCESS. If it needs to, STOP; the gate blocks.
+- M6.7 / M6.8 / M6.9 / any production-live claim may NOT cross the gate.
+- Before M6.7: come back with the smallest fix package. Preferred candidate is "Path H"
+  (make the low-level API refuse a standalone success write) — deliberately NOT implemented
+  now, because it changes accepted M6.3 behavior.
+
+Honest one-line status: **M6.5 atomic SUCCESS acceptance path verified; raw generic SUCCESS
+writes remain a bounded gated limitation.**
+
+## M6.5 FINAL STATUS
+
+`M6.5 RETRY / TELEMETRY / IDEMPOTENCY GREEN / ATOMIC SUCCESS FINALIZATION VERIFIED /
+DETERMINISTIC ATTEMPT LIFECYCLE VERIFIED / READY FOR M6.6`
+
+with the mandatory qualifier:
+
+`M6_RAW_SUCCESS_API_GATE OPEN — MUST CLOSE BEFORE M6.7 SUCCESS EXECUTION INTEGRATION`
+
+## NEXT (NOT started in this task)
+
+M6.6 — Noncanonical Source Discovery + Admission Bridge. No Gemini, no Notebook, no provider
+execution, no browser/CDP, no network, no cron resume, no merge to main.
+
+## Recommended next action
+**A (recommended):** start M6.6 under FD #151, watching the open raw-success-API gate.
+**B:** first prepare the smallest `M6_RAW_SUCCESS_API_GATE` resolution package (Path H
+analysis) even though M6.7 is not imminent.
+**C:** hold; M6.5 is closed and the branch is stable.
+
+
 # Session — 2026-10-09 (QAD M6.5 Round-7 STOP → FD #153 M6.3 Atomic SUCCESS Finalization Amendment, Option A1)
 
 ## WHAT HAPPENED (plain language)
