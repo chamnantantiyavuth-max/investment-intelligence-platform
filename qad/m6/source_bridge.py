@@ -58,6 +58,7 @@ from qad.models.family_b import (
     SourceRecordSource_type,
 )
 from qad.persistence.errors import IntegrityConflict
+from qad.persistence.serialization import compute_canonical_hash
 
 #: PIT modes (string values mirror ``PITContextMode``; compared as strings so the
 #: bridge never invents a second PIT vocabulary).
@@ -98,6 +99,15 @@ class CandidateIdentityConflict(SourceBridgeError):
 
     Candidate identity is deterministic, so this indicates corruption or a
     hostile/replayed identifier — never a silent overwrite.
+    """
+
+
+class SourceEvidenceConflict(SourceBridgeError):
+    """A canonical EV-01/EAR-01 with the requested id already exists with a DIFFERENT payload.
+
+    Reconciliation must NOT report such a stale/conflicting record as the evidence produced
+    by this candidate. This is a governance failure and propagates (the candidate stays
+    undisposed) instead of being downgraded to an ordinary partial-admission outcome.
     """
 
 
@@ -1070,17 +1080,34 @@ def process_discovered_sources(
                         # CROSS-STORE PARTIAL FAILURE (round-11 finding 2): a previous
                         # attempt may already have committed these exact canonical
                         # records (e.g. the ledger disposition write failed afterwards).
-                        # Reconcile by READ-BACK rather than recording a false failure.
+                        # Reconcile ONLY for IDENTICAL canonical records — a stale or
+                        # conflicting record with the same id must SURFACE as a conflict
+                        # (round-12 finding 1), never be reported as this candidate's
+                        # evidence.
                         if not (
                             registry.contains("EV-01", ev.evidence_id)
                             and registry.contains("EAR-01", ear.admission_id)
                         ):
                             raise
                         stored_ev = registry.load("EV-01", ev.evidence_id)
-                        if getattr(stored_ev, "source_id", None) != admission.src01_id:
-                            raise
+                        stored_ear = registry.load("EAR-01", ear.admission_id)
+                        if (
+                            getattr(stored_ev, "source_id", None) != admission.src01_id
+                            or compute_canonical_hash(stored_ev) != compute_canonical_hash(ev)
+                            or compute_canonical_hash(stored_ear) != compute_canonical_hash(ear)
+                        ):
+                            raise SourceEvidenceConflict(
+                                f"canonical evidence {ev.evidence_id!r} / "
+                                f"{ear.admission_id!r} already exists with a DIFFERENT "
+                                "payload — refusing to reconcile a conflicting record"
+                            ) from None
                     evidence_ids = (ev.evidence_id,)
                     ear_ids = (ear.admission_id,)
+            except SourceBridgeError:
+                # A proof/binding/conflict failure is a GOVERNANCE failure, not a
+                # transient partial admission: propagate it so the candidate stays
+                # undisposed and nothing false is recorded.
+                raise
             except Exception as exc:  # cross-store boundary: preserve committed state
                 evidence_error = f"{type(exc).__name__}: {exc}"
 
@@ -1132,6 +1159,7 @@ __all__ = [
     "OriginalSourceVerifier",
     "SourceAdmissionOutcome",
     "SourceBridgeError",
+    "SourceEvidenceConflict",
     "SourceFailureKind",
     "SourceVerificationCandidate",
     "SourceVerificationRequest",

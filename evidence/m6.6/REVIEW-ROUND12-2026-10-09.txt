@@ -1,0 +1,38 @@
+VERDICT: C
+
+PROBE RESULTS:
+1. VERIFIED — `source_bridge.py:724` uses `archive.admit_source`; `:941` routes through `registry.admit_evidence`; the bridge has no `store()` or `store_batch()` admission path.
+2. VERIFIED — Tests 31/32/35/36 and the bridge checks confirm verdicts must be minted and bound to the exact ledger, candidate, and source; no ordinary importable mint callable was found.
+3. DEFECT — The normal disposition-failure retry passes, but a genuine same-ID/same-source evidence conflict is falsely reconciled as success; see Material Finding 1.
+4. VERIFIED — SEALED admission uses the existing attestation-based eligibility evaluator; backdated, legacy-unattested, and SRCV-only cases are ineligible. Replay authorization checks PITC mode, exact FOUNDER role, and a non-empty reason; an authorized new-source replay probe admitted successfully.
+5. VERIFIED — Candidate deduplication and single-disposition constraints are covered by the passing M6 suite; repeated references do not create duplicate outcomes or dispositions.
+6. VERIFIED — Test 21 preserves contradictory evidence rather than dropping either side.
+7. VERIFIED — The bridge does not terminalize runs; ledger terminalization requires every registered candidate to have a disposition.
+8. VERIFIED — AST test 28 passed; no M6.6 SUCCESS-writing call or SUCCESS terminal-status path was found.
+9. VERIFIED — Test 29 passed; no M6.6 path to close or bypass `M6_RAW_SUCCESS_API_GATE` was found.
+10. VERIFIED — The reviewed M6 files contain no provider/network/browser execution path; the available code marks that work as future M6.7/M6.8 scope.
+11. VERIFIED — M6 tests passed with canonical schema count 68 and RRM-01 linkage checks intact.
+
+MATERIAL FINDINGS:
+1. Cross-store reconciliation accepts conflicting canonical evidence as a successful retry.
+   (a) `qad/m6/source_bridge.py:1074-1082` treats the conflict as reconciled when both IDs exist and the stored EV has the expected source; it does not compare the stored EV/EAR payloads with the requested records. I seeded canonical `EV-A`/`EAR-A` through the existing admission gate, then requested `EV-A` with the same source but different content. The bridge returned `evidence_ids=('EV-A',)`, `evidence_admission_error=None`, and recorded that ID in the disposition, although the stored content differed from the requested content. The conflict did not raise.
+   (b) A stale or conflicting canonical record can be reported as the evidence produced by this candidate. This defeats the round-11 reconciliation guarantee and hides a genuine identity conflict.
+   (c) Reconcile only after reading back and comparing both stored EV and EAR records against the requested canonical records (or their canonical hashes); propagate any mismatch as a conflict. Do not let the outer broad exception handler convert that conflict into an ordinary evidence-admission failure.
+   (d) Add a regression that pre-seeds the same EV/EAR IDs with a different EV payload and expects the conflict to raise, leave the candidate undisposed, and preserve stored records. Retain the exact-record retry test to verify successful reconciliation still records the existing IDs once without rewriting them.
+
+NON-BLOCKING FINDINGS: NONE
+
+EVIDENCE GAPS:
+- This copy has no `.git` directory: Git status failed with “not a git repository.” I could not verify that its contents exactly match commit `a9f0370`, inspect the branch/HEAD, or establish whether other observed failures predate that commit.
+- `tests/qad` had one failure in `test_schema_build_identity`: stored `spec_source_sha256` was `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd`, while the current schema source hashed to `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`. Without Git metadata, I cannot attribute that mismatch to this review commit or determine whether it is pre-existing.
+
+COMMANDS RUN:
+1. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r12/basetemp"` — `362 passed in 19.19s`.
+2. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r12/basetemp"` — `38 passed in 3.72s`.
+3. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r12/basetemp"` — `1 failed, 897 passed, 11 warnings in 23.21s`; failure was `test_schema_build_identity`.
+4. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r12/basetemp/reconcile_conflict_probe.py"` — exit 0; output: `outcome_evidence_ids=('EV-A',)`, `outcome_error=None`, stored content `Verified extract from the original document.`, requested content `DIFFERENT PAYLOAD`, disposition IDs `('EV-A',)`.
+5. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c 'import runpy; from pathlib import Path; from qad.m6.ledger import DeepResearchRunLedgerStore; from qad.models.family_i import PITContext,PITContextMode; ns=runpy.run_path("tests/qad/m6/test_m66_source_bridge.py"); base=Path("C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r12/basetemp"); store=DeepResearchRunLedgerStore(base/"round12-replay-new.sqlite3"); ns["_make_run"](store,pit_mode="REPLAY_EXCEPTION"); archive=ns["_archive"](); ref=ns["_ptr"](0,"https://sec.gov/new-replay"); cid=ns["_cid"]("L-1",0,ref.reference); ns["register_discovered_candidates"](store,ledger_id="L-1",references=[ref],discovery_timestamp=ns["DISCOVERED_AT"]); pitc=PITContext(pit_context_id="PITC-1",case_id="CASE-1",as_of_date=ns["AS_OF"],mode=PITContextMode.REPLAY_EXCEPTION,created_by="FOUNDER",exception_reason="authorized replay"); out=ns["verify_and_admit_source"](store,ledger_id="L-1",source_candidate_id=cid,verifier=ns["_StubVerifier"]({cid:ns["_verified"]("SRC-NEW")}),archive=archive,pit_context_store=ns["_StubPitStore"](pitc)); print("disposition=",out.disposition.value,"admitted=",out.admitted,"archive_contains=",archive.contains("SRC-01","SRC-NEW"))'` — `disposition=IMPORTED admitted=True archive_contains=True`.
+6. `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git log --oneline -5` — failed: `fatal: not a git repository (or any of the parent directories): .git`.
+
+POLICY DISAGREEMENT: NONE.
+REVIEW_EXIT=0

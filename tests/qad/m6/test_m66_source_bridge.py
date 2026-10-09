@@ -28,6 +28,7 @@ from qad.m6.source_bridge import (
     DiscoveredSourceReference,
     OriginalSourceVerification,
     SourceBridgeError,
+    SourceEvidenceConflict,
     SourceFailureKind,
     SourceVerificationCandidate,
     admit_candidate_evidence,
@@ -1213,3 +1214,38 @@ def test_38_disposition_failure_after_evidence_admission_is_reconciled_on_retry(
     # exactly ONE canonical object each — reconciliation did not duplicate anything
     assert len(registry._data["EV-01"]) == 1
     assert len(registry._data["EAR-01"]) == 1
+
+# ================== 39 round-12 closure (conflicting canonical record is NOT reconciled)
+
+
+def test_39_a_conflicting_canonical_evidence_record_is_not_reconciled(store):
+    archive = _archive()
+    registry = _registry(archive)
+    _admit_direct_source(archive, "SRC-A", raw=b"seeded")
+    # pre-seed the SAME canonical ids (through the existing gate) with a DIFFERENT payload
+    seed_ev = EvidenceRecord(
+        admitting_role="Research Director", as_of=AS_OF,
+        content="DIFFERENT PAYLOAD", evidence_id="EV-A",
+        evidence_type=EvidenceRecordEvidence_type.CLAIM,
+        extractor="seeded fixture", source_id="SRC-A", source_tier="L1",
+        validation_status=EvidenceRecordValidation_status.RAW,
+    )
+    registry.admit_evidence(seed_ev, _ear("EV-A", "EAR-A"))
+    assert registry.load("EV-01", "EV-A").content == "DIFFERENT PAYLOAD"
+
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    # a same-id / different-payload conflict must SURFACE, never be reconciled as success
+    with pytest.raises(SourceEvidenceConflict):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=_StubVerifier({cid: _verified("SRC-A", raw=b"seeded")}),
+            registry=registry, evidence_builder=_evidence_builder(),
+        )
+    # the candidate stays UNDISPOSED and no false linkage is recorded
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+    # the stored canonical record is preserved, never rewritten
+    assert registry.load("EV-01", "EV-A").content == "DIFFERENT PAYLOAD"
+    assert len(registry._data["EV-01"]) == 1
