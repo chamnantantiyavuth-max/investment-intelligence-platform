@@ -1,0 +1,150 @@
+ROLE
+You are an INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER (round 16, re-review #2).
+Your model family differs from the producer's (producer = DeepSeek, you = OpenAI).
+Report only what you can verify from artifacts in this directory. Do not soften,
+embellish, or invent findings. "No findings" is an acceptable outcome.
+
+============================================================
+AUTHORITATIVE POLICY (FOUNDER-RESOLVED) — DO NOT RE-LITIGATE
+============================================================
+FD #152 selected OPTION B verbatim:
+
+  "M6.4 retains a representable/testable SUCCESS state, but SUCCESS requires verified
+   proof through the trusted proof-resolver seam. Evidence-reference strings alone are
+   never proof. Actual real proof resolution remains M6.7/M6.8."
+
+Settled consequences (NOT open questions):
+- SUCCESS stays constructible and testable in M6.4.
+- SUCCESS requires BOTH the closed-corpus enforcement proof AND the request-isolation
+  proof VERIFIED through a trusted provider-neutral seam bound to the exact run.
+- An evidence-reference string is an IDENTIFIER, never proof. Enum values alone never
+  authorize SUCCESS.
+- The default resolver DENIES. M6.4 ships NO production resolver; real proof
+  production/resolution belongs to M6.7/M6.8.
+- NO provider transport, Gemini, Notebook, browser/CDP, live calls, network calls,
+  credentials, canonical schema change, or RRM-01 change in M6.4.
+- M6.5 (Retry / Telemetry / Idempotency) must NOT be started.
+
+FD #152 §7 fixes the TRUST BOUNDARY (Founder policy):
+M6.4 must NOT claim cryptographic or process isolation inside Python. Pure Python
+cannot make an object immune to arbitrary SAME-PROCESS attacks, and hostile same-process
+code is OUTSIDE the accepted M6.2/M6.3 IN-PROCESS trust boundary. Accordingly:
+
+  EXCLUDED (do NOT report as a material finding — state under POLICY DISAGREEMENT only
+  if you think the Founder boundary itself is wrong):
+    - deliberate introspection of private closures/cells/frames/globals
+      (e.g. reading a function's __closure__ cell to recover a guard object);
+    - gc / ctypes / frame tricks;
+    - monkeypatching module internals from hostile same-process code;
+    - asserting that a pure-Python object cannot resist such an attacker at all.
+
+  THE ENFORCEABLE STANDARD you MUST hold the implementation to:
+    (i)  NO NAME-ADDRESSABLE / library-API construction path may produce a SUCCESS
+         result without the trusted verification seam participating — this includes
+         subclassing, direct constructor calls, any importable mint MINTER or TOKEN,
+         and any second constructor;
+    (ii) EVERY consumer of a SUCCESS result must be able to REVALIDATE it at the
+         consumption boundary (assert_proof_verified) so that an artifact that never
+         came through the trusted path, or whose validated bytes were replaced after
+         construction, is refused when consumed.
+
+============================================================
+VERIFIED CHANGE HISTORY (this is a re-review)
+============================================================
+Round 14 (commit b3c8dfc) returned C: SUCCESS reachable without trusted verification
+via (a) a subclass overriding __post_init__, (b) the module-importable
+_ATTESTATION_TOKEN, (c) object.__new__; plus post-construction byte replacement via
+object.__setattr__.
+Round 15 (commit b2a259f) after the first fix returned C with ONE finding: the
+importable TOKEN was gone, but the MINTING CALLABLE was still a module attribute
+(_mint_verified_proof_attestation), so it could be called directly with bare identity
+strings and mint an attestation -> SUCCESS with no resolver.
+Fixed in the commit under review (841bdc0): the minting callable is now closure-scoped
+only; the module exposes exactly the private attestation TYPE and _verify_success_proofs
+(the FULL verification entry point requiring the authoritative request + a resolver that
+verifies BOTH proofs bound to the run).
+
+============================================================
+CLUSTER / COMMITS
+============================================================
+QAD M6.4 — Deep Research request/result contract + trusted proof-verification seam.
+Branch impl/m6-gemini-notebook (never merged to main).
+Reviewed commit: 841bdc0. History: b2a259f -> b3c8dfc -> e13a64e (governance) -> 4f89d56.
+Canonical main is UNCHANGED at 5bf1077.
+
+============================================================
+ARTIFACTS TO READ (inside this copy)
+============================================================
+- qad/m6/research_contract.py
+- tests/qad/m6/test_m64_proof_seam.py
+- tests/qad/m6/test_m64_research_contract.py
+- tests/qad/m6/test_m61_*.py, test_m62_*.py, test_m63_*.py
+- qad/contract/canonical_boundary.py (registry must still be 68)
+- qad/m6/ledger.py (RRM-01 deep_research_runs is list[str] ids only)
+- SESSION_CLOSEOUT.md (top entry)
+
+============================================================
+REQUIRED PROBES — state VERIFIED / NOT VERIFIED / DEFECT for each
+============================================================
+A  RE-PROBE EVERY PRIOR BYPASS (all must now be refused):
+   A1 subclass of DeepResearchResult overriding __post_init__ -> not constructible;
+   A2 no importable mint TOKEN; a fabricated guard value refused;
+   A3 no importable mint FUNCTION (round-15 finding): confirm
+      hasattr(module, "_mint_verified_proof_attestation") is False and that no
+      module-level name-addressable callable can mint an attestation from bare
+      identity strings + invented references;
+   A4 a SUCCESS-shaped object built with object.__new__ is refused when consumed;
+   A5 post-construction byte replacement (object.__setattr__) is caught at consumption;
+   A6 a genuine attestation copied onto a DIFFERENT run's result is refused;
+   A7 an ordinary builder SUCCESS passes consumption revalidation;
+   A8 the only exposed seam entry (_verify_success_proofs) refuses SUCCESS when the
+      resolver is omitted/None/deny-all, and when only one proof verifies.
+B  No-resolver fail closed: omitted resolver, explicit None, and DEFAULT_PROOF_RESOLVER
+   each refuse SUCCESS.
+C  Resolver results mismatched on request_id / research_run_id / ledger_id /
+   input_snapshot_hash / provider_surface / proof_kind / evidence_ref are all refused.
+D  Evidence references alone, and ENFORCED/VERIFIED enum claims alone, never authorize
+   SUCCESS (no code path tests only bool(evidence_ref) / non-empty string as proof).
+E  Only ONE of the two proofs verified never authorizes SUCCESS.
+F  Proof replay across requests is blocked.
+G  Accepted SUCCESS retains the exact result-byte SHA-256 and citation-list digest and
+   remains non_canonical == True with no canonical admission capability.
+H  No provider transport / network / browser / Gemini / Google-specific logic.
+I  No M6.5 scope creep.
+J  Canonical registry is exactly 68; no 69th schema; proof structures NON-CANONICAL.
+K  No RRM-01 change (deep_research_runs list[str] ids only).
+L  Round-13 Finding 2 remains FIXED (source_count exact, canonical sorted ordering,
+   duplicate source IDs rejected, every source ELIGIBLE, admitted_at valid ISO-8601 and
+   <= AS_OF, source_content_hash == raw_blob_sha256, raw bytes/hash/length exact,
+   closed_corpus_required true, snapshot identity exact).
+M  The resolver (or any callable/transport/connection) is never stored on the result.
+N  Run the suite and report ACTUAL counts: tests/qad/m6 (expect 200 passed) and, if
+   cheap, tests/qad.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round16-review/basetemp"
+- Read/write ONLY inside this disposable copy and the basetemp above. Do NOT touch any
+  other repository/worktree. Do NOT run state-mutating git commands.
+- Write your own throwaway probe scripts INSIDE this copy.
+- Report the exact commands you ran and their real observed output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.4 PASS / READY FOR M6.5
+  B = M6.4 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.4 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A1..A8, B..N — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: what you could not verify and why. "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT (if any): if you believe Option B policy or the FD #152 §7 in-process
+   trust boundary is wrong, say so here — it does NOT change your verdict.

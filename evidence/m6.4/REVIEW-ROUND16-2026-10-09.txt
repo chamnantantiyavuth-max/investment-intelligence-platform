@@ -1,0 +1,57 @@
+VERDICT: C — M6.4 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A1..A8, B..N — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+A1 — VERIFIED: Subclassing `DeepResearchResult` is refused.
+A2 — VERIFIED: No importable attestation token; a fabricated guard is refused.
+A3 — VERIFIED: No importable minter function or token name; the exposed verification entry requires a request and resolver.
+A4 — VERIFIED: A SUCCESS-shaped `object.__new__` result without an attestation is refused at consumption.
+A5 — DEFECT: Replacing bytes alone is caught, but replacing the bytes and updating `result_sha256` to match also passes consumption revalidation.
+A6 — VERIFIED: Copying a genuine attestation onto a different run’s result is refused.
+A7 — VERIFIED: SUCCESS from the ordinary builder passes consumption revalidation.
+A8 — VERIFIED: The seam refuses `None` and a resolver that verifies only one proof.
+B — VERIFIED: Omitted resolver, explicit `None`, and `DEFAULT_PROOF_RESOLVER` all refuse SUCCESS.
+C — VERIFIED: Mismatches in request ID, run ID, ledger ID, snapshot hash, provider surface, proof kind, and evidence reference are refused.
+D — VERIFIED: Invented evidence references and positive enum claims without a resolver do not authorize SUCCESS.
+E — VERIFIED: Verifying only one of the two proofs does not authorize SUCCESS.
+F — VERIFIED: Replaying a proof from another request is refused.
+G — VERIFIED: A normally built SUCCESS retains matching byte and citation digests, is non-canonical, and exposes no canonical-admission capability.
+H — VERIFIED: AST import scan found no provider, network, browser, Gemini, Google, or Notebook imports in `research_contract.py`.
+I — VERIFIED: The M6.4 request/result API has no retry, telemetry, idempotency, or attempt fields. Commit-level scope attribution is unavailable without Git metadata.
+J — VERIFIED: Runtime canonical registry has exactly 68 entries; no proof-related schema ID was added.
+K — VERIFIED: `deep_research_runs` is `Optional[list[str]]`; the M6 suite validates ledger-ID strings.
+L — VERIFIED: Round-13 snapshot structural, byte/hash, eligibility, admission-time, closed-corpus, and identity regression checks are present and passed in the M6 suite.
+M — VERIFIED: The result stores no resolver or executable callable.
+N — VERIFIED: `tests/qad/m6`: 200 passed in 5.12s.
+
+MATERIAL FINDINGS:
+1. Result bytes can be replaced after construction, together with their digest, and the artifact still passes `assert_proof_verified()`.
+   (a) Evidence: `round16_probe.py` observed bytes-only tampering refused, but bytes plus matching `result_sha256` accepted. `qad/m6/research_contract.py:539-543` binds run identity and proof references, but not result/citation digests; `:1480-1492` compares bytes to the result’s current, replaceable digest.
+   (b) Material because a consumer can accept different bytes from those validated at construction, violating the consumption-boundary requirement.
+   (c) Smallest correction: bind the validated result-byte SHA-256 and citation-list digest into the private attestation, then compare both against the result at consumption.
+   (d) Verify by adding tests that replace bytes and update the matching digest after construction, and similarly replace citations and their digest; both must be refused by `assert_proof_verified()`. Retain the existing ordinary-builder acceptance test.
+
+NON-BLOCKING FINDINGS:
+NONE.
+
+EVIDENCE GAPS:
+The supplied directory has no `.git` metadata. The requested Git status command failed, so I could not independently verify branch, HEAD, reviewed commit `841bdc0`, changed-file diff, or whether the broader-suite failure is inherited. `SESSION_CLOSEOUT.md` records the schema-build-identity failure as inherited, but that claim could not be independently checked against a baseline here. The broader QAD run observed that failure: `test_schema_build_identity` reports a `spec_source_sha256` mismatch.
+
+COMMANDS RUN:
+1. `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git log --oneline -8`
+   Observed: `fatal: not a git repository` (exit 128).
+
+2. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round16-review/basetemp"`
+   Observed: `200 passed in 5.12s` (exit 0).
+
+3. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" round16_probe.py`
+   Observed: A1–A4 verified; A5 defect (bytes-only refused, bytes plus matching updated digest not refused); A6–A8 and B–N verified as listed above (exit 0). Probe file: `C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m64-round16-review\repo\round16_probe.py`.
+
+4. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round16-review/basetemp"`
+   Observed: `1 failed, 735 passed, 11 warnings in 8.29s` (exit 1). Failure: `tests/qad/test_contract_conformance.py::test_schema_build_identity`, `spec_source_sha256 mismatch`.
+
+5. `python -c "from pathlib import Path; import qad.contract.canonical_boundary as c; print('canonical len',len(c.CANONICAL_SCHEMAS)); print('contract exists',Path('qad/m6/research_contract.py').stat().st_size)"`
+   Observed: `canonical len 68`; contract file exists.
+
+POLICY DISAGREEMENT (if any):
+NONE.
+REVIEW_EXIT=0

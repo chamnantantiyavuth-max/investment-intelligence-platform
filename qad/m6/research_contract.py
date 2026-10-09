@@ -392,6 +392,8 @@ def _make_proof_attestation_seam():
             "input_snapshot_hash",
             "closed_corpus_evidence_ref",
             "isolation_evidence_ref",
+            "result_sha256",
+            "citation_list_sha256",
         )
 
         def __init__(
@@ -405,6 +407,8 @@ def _make_proof_attestation_seam():
             input_snapshot_hash: str,
             closed_corpus_evidence_ref: str,
             isolation_evidence_ref: str,
+            result_sha256: str,
+            citation_list_sha256: str,
         ) -> None:
             if _guard is not guard:
                 raise ResearchResultError(
@@ -424,6 +428,8 @@ def _make_proof_attestation_seam():
             object.__setattr__(
                 self, "isolation_evidence_ref", isolation_evidence_ref
             )
+            object.__setattr__(self, "result_sha256", result_sha256)
+            object.__setattr__(self, "citation_list_sha256", citation_list_sha256)
 
         def __setattr__(self, name: str, value: Any) -> None:
             raise AttributeError("a verified-proof attestation is immutable")
@@ -440,6 +446,8 @@ def _make_proof_attestation_seam():
         input_snapshot_hash: str,
         closed_corpus_evidence_ref: str,
         isolation_evidence_ref: str,
+        result_sha256: str,
+        citation_list_sha256: str,
     ) -> _VerifiedProofAttestation:
         """Mint the capability.
 
@@ -458,6 +466,8 @@ def _make_proof_attestation_seam():
             input_snapshot_hash=input_snapshot_hash,
             closed_corpus_evidence_ref=closed_corpus_evidence_ref,
             isolation_evidence_ref=isolation_evidence_ref,
+            result_sha256=result_sha256,
+            citation_list_sha256=citation_list_sha256,
         )
 
     def _verify_success_proofs(
@@ -466,6 +476,8 @@ def _make_proof_attestation_seam():
         proof_resolver: "DeepResearchProofResolver | None",
         corpus_evidence_ref: str | None,
         isolation_evidence_ref: str | None,
+        result_sha256: str,
+        citation_list_sha256: str,
     ) -> _VerifiedProofAttestation:
         """Run the trusted seam for BOTH proofs and mint the attestation.
 
@@ -522,6 +534,8 @@ def _make_proof_attestation_seam():
             input_snapshot_hash=request.input_snapshot_hash,
             closed_corpus_evidence_ref=resolved_refs[0],
             isolation_evidence_ref=resolved_refs[1],
+            result_sha256=result_sha256,
+            citation_list_sha256=citation_list_sha256,
         )
 
     return _VerifiedProofAttestation, _verify_success_proofs
@@ -536,10 +550,14 @@ def _make_proof_attestation_seam():
 ) = _make_proof_attestation_seam()
 
 
-#: The identity fields a verified-proof attestation must bind to the result.
+#: The fields a verified-proof attestation must bind to the result. Round 16
+#: (reviewer finding): the validated digests are bound TOO, so replacing the
+#: result bytes AND the matching result_sha256 after construction is detected at
+#: the consumption boundary (the attested digest no longer matches).
 _ATTESTED_IDENTITY_FIELDS = (
     "request_id", "research_run_id", "ledger_id", "provider_surface",
     "input_snapshot_hash", "closed_corpus_evidence_ref", "isolation_evidence_ref",
+    "result_sha256", "citation_list_sha256",
 )
 
 
@@ -1390,11 +1408,22 @@ class DeepResearchResult:
             )
         if self.result_bytes is not None and not isinstance(self.result_bytes, bytes):
             raise ResearchResultError("result_bytes must be bytes or None")
+        # Citation/source-list companion digest (M6.0 §3): derived and verified.
+        # Derived BEFORE the proof gate below because the attestation binds this
+        # digest (round-16 reviewer finding).
+        expected_citation = compute_citation_list_sha256(self.source_pointers)
+        if self.citation_list_sha256 is None:
+            object.__setattr__(self, "citation_list_sha256", expected_citation)
+        elif self.citation_list_sha256 != expected_citation:
+            raise ResearchResultError(
+                "citation_list_sha256 does not match the source-pointer list"
+            )
         # ---- trusted proof-verification seam (FD #152) --------------------
         # SUCCESS is only constructible through the trusted verification path:
         # it must carry a private attestation, and that attestation must bind the
-        # exact identity of THIS result. A direct construction carries none, so it
-        # can never fabricate a SUCCESS from bare enum claims + invented references.
+        # exact identity of THIS result — including the validated result-byte and
+        # citation-list digests. A direct construction carries none, so it can never
+        # fabricate a SUCCESS from bare enum claims + invented references.
         if self.status.is_success:
             attestation = self._proof_attestation
             if not isinstance(attestation, _VerifiedProofAttestation):
@@ -1410,14 +1439,6 @@ class DeepResearchResult:
                     "SUCCESS refused: the verified-proof attestation does not bind "
                     f"this result ({mismatch})"
                 )
-        # Citation/source-list companion digest (M6.0 §3): derived and verified.
-        expected_citation = compute_citation_list_sha256(self.source_pointers)
-        if self.citation_list_sha256 is None:
-            object.__setattr__(self, "citation_list_sha256", expected_citation)
-        elif self.citation_list_sha256 != expected_citation:
-            raise ResearchResultError(
-                "citation_list_sha256 does not match the source-pointer list"
-            )
         _validate_result_invariants(
             self.status, self.result_bytes, self.result_sha256, self.failure_detail,
             self.closed_corpus_enforcement, self.isolation_verification, self.source_pointers,
@@ -1704,11 +1725,36 @@ def build_deep_research_result(
                 "a claim alone is never enough — it must also be verified by the "
                 "trusted proof resolver"
             )
+        # The validated digests are bound INTO the attestation (round-16 reviewer
+        # finding), so a post-construction byte/digest replacement is detected at
+        # the consumption boundary. Derive them from the actual payload/pointers —
+        # never from caller-asserted strings.
+        if result_bytes is None:
+            raise ResearchResultError(
+                "SUCCESS requires non-empty result content"
+            )
+        payload = bytes(result_bytes)
+        validated_result_sha256 = compute_result_sha256(payload)
+        if result_sha256 is not None and result_sha256 != validated_result_sha256:
+            raise ResearchResultError(
+                "SUCCESS refused: result_sha256 does not match the supplied result bytes"
+            )
+        validated_citation_sha256 = compute_citation_list_sha256(pointers)
+        if (
+            citation_list_sha256 is not None
+            and citation_list_sha256 != validated_citation_sha256
+        ):
+            raise ResearchResultError(
+                "SUCCESS refused: citation_list_sha256 does not match the "
+                "source-pointer list"
+            )
         attestation = _verify_success_proofs(
             request=request,
             proof_resolver=proof_resolver,
             corpus_evidence_ref=closed_corpus_evidence_ref,
             isolation_evidence_ref=isolation_evidence_ref,
+            result_sha256=validated_result_sha256,
+            citation_list_sha256=validated_citation_sha256,
         )
         input_snapshot_hash = request.input_snapshot_hash
 

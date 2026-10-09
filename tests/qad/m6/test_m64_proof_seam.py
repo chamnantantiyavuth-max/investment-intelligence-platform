@@ -693,7 +693,8 @@ class TestRound14BypassClosure:
                 provider_surface="gemini_notebook", input_snapshot_hash="a" * 64,
                 closed_corpus_evidence_ref="EVID-CORPUS-1",
                 isolation_evidence_ref="EVID-ISOLATION-1",
-            )
+                result_sha256="c" * 64, citation_list_sha256="d" * 64,
+        )
 
     def test_r15_08_no_importable_minting_function_exists(self):
         """Round 15: removing the token was not enough — the MINTER itself must not
@@ -712,12 +713,14 @@ class TestRound14BypassClosure:
                 request=req, proof_resolver=None,
                 corpus_evidence_ref="EVID-CORPUS-1",
                 isolation_evidence_ref="EVID-ISOLATION-1",
+                result_sha256="c" * 64, citation_list_sha256="d" * 64,
             )
         with pytest.raises(ResearchResultError):
             rc._verify_success_proofs(
                 request=req, proof_resolver=_StubProofResolver(closed_corpus=False),
                 corpus_evidence_ref="EVID-CORPUS-1",
                 isolation_evidence_ref="EVID-ISOLATION-1",
+                result_sha256="c" * 64, citation_list_sha256="d" * 64,
             )
         # … and the sanctioned builder path still works
         assert _build_result(
@@ -779,3 +782,46 @@ class TestRound14BypassClosure:
         assert fail.is_success is False
         with pytest.raises(ResearchResultError):
             fail.assert_proof_verified()
+
+    def test_r16_09_bytes_and_matching_digest_replacement_is_refused(self):
+        """Round 16: replacing the bytes AND the matching digest must still be caught.
+
+        The validated digests are bound into the private attestation, so a
+        consistently re-written (bytes, result_sha256) pair no longer agrees with
+        what the trusted path validated.
+        """
+        ok = _build_result(request=_request(_snapshot()), proof_resolver=_StubProofResolver())
+        ok.assert_proof_verified()
+        tampered = b"replaced payload"
+        object.__setattr__(ok, "result_bytes", tampered)
+        object.__setattr__(ok, "result_sha256", compute_result_sha256(tampered))
+        # the bytes and the digest now agree with each other …
+        assert result_matches_hash(ok) is True
+        # … but they do not agree with the attested, trusted-path-validated digest
+        with pytest.raises(ResearchResultError):
+            ok.assert_proof_verified()
+
+    def test_r16_10_citation_digest_replacement_is_refused(self):
+        ok = _build_result(request=_request(_snapshot()), proof_resolver=_StubProofResolver())
+        ok.assert_proof_verified()
+        new_pointers = (SourcePointer(index=1, reference="https://evil.example/1"),)
+        object.__setattr__(ok, "source_pointers", new_pointers)
+        object.__setattr__(
+            ok, "citation_list_sha256", compute_citation_list_sha256(new_pointers)
+        )
+        with pytest.raises(ResearchResultError):
+            ok.assert_proof_verified()
+
+    def test_r16_11_builder_rejects_caller_digest_that_disagrees(self):
+        """A caller-asserted digest that disagrees with the payload is refused."""
+        req = _request(_snapshot())
+        with pytest.raises(ResearchResultError):
+            _build_result(
+                request=req, proof_resolver=_StubProofResolver(),
+                result_sha256="e" * 64,
+            )
+        with pytest.raises(ResearchResultError):
+            _build_result(
+                request=req, proof_resolver=_StubProofResolver(),
+                citation_list_sha256="f" * 64,
+            )
