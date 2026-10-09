@@ -1524,3 +1524,123 @@ class TestRound4Closure:
         )
         assert finalized.terminal_status is TerminalStatus.SUCCESS
         assert [a.attempt_number for a in finalized.attempts] == [1]
+
+
+# =====================================================================
+# Round-5 reviewer closure — whole-history exhaustion + deterministic recovery
+# =====================================================================
+
+class TestRound5Closure:
+    def _run(self, store, *, provider_surface="gemini_notebook"):
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key,
+            create_run_kwargs=_create_kwargs(key, provider_surface=provider_surface),
+        )
+        return key
+
+    def test_r5_01_exhaustion_refuses_a_history_with_an_earlier_fail_closed_outcome(
+        self, store
+    ):
+        self._run(store)
+        # a legacy/foreign durable history the M6.5 recording path would never produce
+        _append(store, n=1, outcome="PIT_BLOCK")
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
+        with pytest.raises(RetryPolicyError):
+            terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="x")
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_r5_02_exhaustion_refuses_a_history_containing_success(self, store):
+        self._run(store)
+        _append(store, n=1)
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY, outcome="SUCCESS")
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
+        with pytest.raises(RetryPolicyError):
+            terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="x")
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_r5_03_a_full_retryable_history_still_terminalizes(self, store):
+        self._run(store)
+        for n in (1, 2, 3):
+            _append(store, n=n, mode=RetryMode.SAME_PROVIDER_RETRY)
+        record = terminalize_research_unavailable(
+            store, ledger_id="L-1", failure_detail="exhausted"
+        )
+        assert record.terminal_status is TerminalStatus.RESEARCH_UNAVAILABLE
+
+    def test_r5_04_recovery_refuses_a_non_deterministic_persisted_success(self, store):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("surface_a", "surface_b", "surface_c"))
+        req = _request(provider_surface="surface_c")
+        key = idempotency_key_for_request(req)
+        resolve_or_create_logical_run(
+            store, idempotency_key=key,
+            create_run_kwargs=_create_kwargs(
+                key, provider_surface="surface_a",
+                input_snapshot_hash=req.input_snapshot_hash,
+            ),
+        )
+        # attempt 1 legitimate; attempt 2 SUCCESS but NOT the deterministic selection
+        # (the deterministic retry from surface_a is surface_b, not surface_c)
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.TRANSPORT_FAILURE,
+            error="boom", telemetry=_tel(),
+        )
+        store.append_attempt(
+            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
+            provider_surface="surface_c", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        deterministic_plan = plan_attempt(
+            provider_set=ps, attempt_number=2, previous_provider_surface="surface_a"
+        )
+        assert deterministic_plan.provider_surface == "surface_b"
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=_build_success(req),
+                plan=deterministic_plan, provider_set=ps,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_r5_05_a_deterministic_persisted_success_still_recovers(self, store):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("surface_a", "surface_b"))
+        req = _request(provider_surface="surface_b")
+        key = idempotency_key_for_request(req)
+        resolve_or_create_logical_run(
+            store, idempotency_key=key,
+            create_run_kwargs=_create_kwargs(
+                key, provider_surface="surface_a",
+                input_snapshot_hash=req.input_snapshot_hash,
+            ),
+        )
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.TRANSPORT_FAILURE,
+            error="boom", telemetry=_tel(),
+        )
+        store.append_attempt(
+            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
+            provider_surface="surface_b", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        deterministic = plan_attempt(
+            provider_set=ps, attempt_number=2, previous_provider_surface="surface_a"
+        )
+        result = _build_success(req)
+        finalized = accept_success_result(
+            store, ledger_id="L-1", result=result, plan=deterministic,
+            provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert finalized.terminal_status is TerminalStatus.SUCCESS
+        assert [a.attempt_number for a in finalized.attempts] == [1, 2]
+        assert finalized.result_sha256 == result.result_sha256

@@ -1100,6 +1100,35 @@ def accept_success_result(
                 f"{len(used_numbers)})"
             )
         validate_attempt_plan(plan, provider_set)
+        # The PERSISTED SUCCESS attempt must itself be the DETERMINISTIC plan for this
+        # run — otherwise recovery would finalize provider provenance that normal
+        # recording would reject (round-5 reviewer finding).
+        preceding = [
+            a for a in record.attempts if a.attempt_number < persisted.attempt_number
+        ]
+        previous_provider = (
+            preceding[-1].provider_surface if preceding else record.provider_surface
+        )
+        deterministic = plan_attempt(
+            provider_set=provider_set,
+            attempt_number=persisted.attempt_number,
+            previous_provider_surface=(
+                None
+                if persisted.attempt_number == ATTEMPT_NUMBER_MIN
+                else previous_provider
+            ),
+        )
+        if (
+            persisted.retry_mode != deterministic.retry_mode
+            or persisted.provider_surface != deterministic.provider_surface
+        ):
+            raise RetryPolicyError(
+                "recovery finalization refused: the PERSISTED SUCCESS attempt is not the "
+                f"deterministic plan for this run (persisted attempt "
+                f"{persisted.attempt_number} {persisted.retry_mode.value}/"
+                f"{persisted.provider_surface!r} vs deterministic "
+                f"{deterministic.retry_mode.value}/{deterministic.provider_surface!r})"
+            )
         if (
             plan.attempt_number != persisted.attempt_number
             or plan.retry_mode != persisted.retry_mode
@@ -1175,12 +1204,19 @@ def terminalize_research_unavailable(
             f"({MAX_ATTEMPTS} attempts); ledger run {ledger_id!r} has {len(used)} "
             "attempt(s) — use the appropriate typed failure instead"
         )
-    last = record.attempts[-1].outcome
-    if classify_attempt_outcome(last) is not AttemptClassification.RETRYABLE:
-        raise RetryPolicyError(
-            f"the last attempt outcome {last!r} is fail-closed, not retry exhaustion; "
-            "it must not be recorded as RESEARCH_UNAVAILABLE"
-        )
+    # EVERY attempt must be retryable: an earlier fail-closed outcome (or a SUCCESS)
+    # makes "retry exhaustion" the wrong disposition (round-5 reviewer finding).
+    for attempt in record.attempts:
+        try:
+            classification = classify_attempt_outcome(attempt.outcome)
+        except OrchestrationError:
+            classification = AttemptClassification.NON_RETRYABLE
+        if classification is not AttemptClassification.RETRYABLE:
+            raise RetryPolicyError(
+                f"attempt {attempt.attempt_number} outcome {attempt.outcome!r} is "
+                f"{classification.value}; the retry budget cannot be treated as "
+                "exhausted (fail-closed and SUCCESS outcomes are never retry exhaustion)"
+            )
     store.terminalize(
         ledger_id,
         terminal_status=TerminalStatus.RESEARCH_UNAVAILABLE,

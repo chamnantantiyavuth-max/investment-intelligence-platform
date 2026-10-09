@@ -1,0 +1,57 @@
+VERDICT: C — M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS:
+A — DEFECT — The listed R1–R3 cases are covered and pass; independent R4 probes found gaps in exhaustion and recovery validation.
+B — VERIFIED — Cross-run SUCCESS was refused without mutating either run; matching-run SUCCESS retained the exact result hash.
+C — VERIFIED — The six-field formula and stated non-dependencies are covered; provider selection does not change the logical key.
+D — VERIFIED — Duplicate suppression, race reconciliation, retry-budget continuity, and the M6.3 UNIQUE behavior passed the M6 suite.
+E — DEFECT — Normal recording rejects invalid plans, but recovery accepted a persisted Mode A SUCCESS plan that differed from the deterministic plan.
+F — DEFECT — A contiguous three-attempt history ending in a retryable outcome was terminalized as RESEARCH_UNAVAILABLE despite an earlier PIT_BLOCK.
+G — DEFECT — The recording boundary rejects retries after PIT_BLOCK, but the M6.5 terminalizer misclassifies such persisted history as RESEARCH_UNAVAILABLE.
+H — VERIFIED — Exact exposed values, real zeroes, NOT_EXPOSED nulls with reasons, and the closed metric set passed.
+I — VERIFIED — Attempt telemetry and history persisted across fresh store instances; append-only tests passed.
+J — NOT VERIFIED — Proof-gate ordering, forged/tampered rejection, exact hash retention, non-canonical status, and the count of 68 passed; unchanged-versus-baseline cannot be checked without Git history.
+K — NOT VERIFIED — Current M6.5 modules contain no forbidden transport imports or observed scope creep; absence of any M6.6 start cannot be verified without Git history.
+L — NOT VERIFIED — The current helper is read-only, canonical count is 68, and RRM-01 is Optional[list[str]]; the claim that these are the only ledger changes cannot be checked without a baseline diff.
+M — DEFECT — tests/qad/m6: 292 passed. The broader tests/qad run: 827 passed, 1 failed on a schema-build hash mismatch.
+
+MATERIAL FINDINGS:
+1. M6.5 exhaustion terminalization accepts a history that includes a fail-closed attempt.
+   (a) In qad/m6/orchestration.py:1167-1183, terminalize_research_unavailable checks contiguity, three attempts, and only the LAST outcome. My probe persisted [PIT_BLOCK, TRANSPORT_FAILURE, TRANSPORT_FAILURE] through the accepted ledger API; the M6.5 terminalizer returned RESEARCH_UNAVAILABLE.
+   (b) PIT_BLOCK is fail-closed and cannot be followed by retries under M6.5. Treating this history as retry exhaustion can obscure the actual failure and produce the wrong terminal disposition.
+   (c) Before terminalizing, reject any history containing a non-retryable outcome or SUCCESS; require the full history to satisfy retry lifecycle rules. Leave M6.3 ledger semantics unchanged.
+   (d) Add a regression test for a prior PIT_BLOCK/FAILED/SUCCESS followed by later attempts; require refusal and no terminal record. Keep the valid three-retryable-attempt case passing.
+
+2. Recovery finalization accepts a non-deterministic persisted SUCCESS plan.
+   (a) In qad/m6/orchestration.py:1102-1113, recovery calls validate_attempt_plan and compares the caller plan with the persisted attempt, but does not recompute the plan from the preceding attempt. My probe’s prior provider was gemini_notebook; plan_attempt selected surface_b, while the persisted attempt and matching plan used surface_c. Recovery accepted and terminalized SUCCESS.
+   (b) The recovery boundary can finalize provider provenance that the normal M6.5 recording path would reject as non-deterministic.
+   (c) During recovery, recompute the deterministic plan using the provider from the preceding attempt and require the persisted SUCCESS attempt to match it exactly. Do not alter the accepted M6.3 ledger.
+   (d) Add a regression test where the ledger contains a non-deterministic SUCCESS attempt; recovery must refuse without terminalizing. Confirm the deterministic persisted plan still recovers successfully.
+
+NON-BLOCKING FINDINGS:
+1. Broader QAD suite schema-build identity mismatch.
+   (a) tests/qad/test_contract_conformance.py:509 failed because SCHEMA_BUILD_IDENTITY.spec_source_sha256 was 7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd, while the current schema source hashed to 3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473. The isolated test reproduced the failure.
+   (b) This prevents the broader QAD suite from passing, but is outside the M6.5-specific suite; the missing Git baseline prevents attribution to d3332ca.
+   (c) Reconcile the generated identity metadata against the authoritative schema source; do not change either blindly.
+   (d) Rerun the isolated test and the full tests/qad suite.
+
+EVIDENCE GAPS:
+- This copy has no .git directory. I could not independently verify branch/HEAD/commit ancestry, compare qad/m6/research_contract.py against the prior revision, or establish that the ledger helper is the only ledger delta.
+- For the same reason, I cannot verify from history that M6.6 was not started or attribute the broader schema-hash failure to the reviewed commit. Current M6.5 source and tests show no provider transport or M6.6 implementation.
+
+COMMANDS RUN:
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round5-review/basetemp"
+  Observed: 292 passed in 9.15s.
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m65_retry_telemetry_idempotency.py --collect-only -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round5-review/basetemp"
+  Observed: 83 tests collected in 0.28s.
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" round5_review_probe.py
+  Observed: prior_fail_closed_history_terminalization=ACCEPTED RESEARCH_UNAVAILABLE; deterministic_expected_retry_provider=surface_b; nondeterministic_persisted_success_recovery=ACCEPTED SUCCESS with result hash ff71f55f2511e947669525e2885205d29fd0218cccf0d2908840c4658aa31522; AST parse passed; forbidden transport imports=[]; canonical_schema_count=68; RRM-01 annotation=typing.Optional[list[str]]; git_metadata_present=False.
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round5-review/basetemp"
+  Observed: 827 passed, 1 failed, 11 warnings in 10.11s; failure was test_schema_build_identity.
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/test_contract_conformance.py::test_schema_build_identity -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round5-review/basetemp"
+  Observed: 1 failed in 0.18s; same schema-source hash mismatch.
+- git status --short && git branch --show-current && git rev-parse HEAD && git remote -v
+  Observed: fatal: not a git repository (or any of the parent directories): .git.
+
+POLICY DISAGREEMENT (if any): NONE
+REVIEW_EXIT=0
