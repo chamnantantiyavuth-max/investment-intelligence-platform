@@ -1,0 +1,143 @@
+ROLE
+You are an INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER for QAD cluster M6.5
+(round 7, re-review #6). Your model family differs from the producer's (producer =
+DeepSeek, you = OpenAI). Report only what you can verify from artifacts in this
+directory. Do not soften, embellish, or invent findings.
+
+============================================================
+AUTHORITATIVE POLICY — SETTLED, DO NOT RE-LITIGATE
+============================================================
+FD #148 §1 (R-1): Mode A (>=2 explicit compliant providers) = a retry may use a
+DIFFERENT compliant provider, recorded, fallback_used truthful. Mode B (exactly one
+compliant provider) = bounded SAME-PROVIDER retry, MAX 3 ATTEMPTS recorded as
+SAME_PROVIDER_RETRY, NEVER labelled provider fallback; exhaustion ->
+RESEARCH_UNAVAILABLE + linked EG-01 DEFERRED (or appropriate unresolved state);
+quality/evidence gates never weakened.
+
+FD #148 §3: idempotency key = deterministic hash(case_id, case_version, stage,
+evidence_gap_id, request_payload_hash, input_snapshot_hash); retry identity =
+(idempotency_key, attempt_number), attempt_number in 1..3. Two requests differing ONLY in
+request_id / ledger_id / research_run_id are the SAME LOGICAL REQUEST by this formula —
+intended, not a defect.
+
+FD #148 §2: telemetry truthfulness — exact value when exposed; otherwise NOT_EXPOSED with
+a reason. Never zero-as-unknown; never estimate; never fabricate model identity.
+
+FD #152 (settled): M6.4 SUCCESS requires verified proof bound to the exact run; the
+IN-PROCESS trust boundary is FOUNDER-FIXED — hostile same-process introspection
+(closures/frames/gc/ctypes/monkeypatching/object.__setattr__ on private attestation
+objects) is OUTSIDE the accepted trust boundary. Do NOT report "pure Python cannot resist
+a hostile in-process attacker" as a defect.
+
+FD #151: M6.5 = Retry / Telemetry / Idempotency. NOT a provider adapter: no Gemini,
+Notebook, browser/CDP, network, credentials or live execution (M6.7/M6.8). M6.6+ must not
+be started.
+
+M6.3 ledger (FD #149) is ACCEPTED: `append_attempt` validates only the 1..3 RANGE and
+duplicate identity, NOT ordering or outcome discipline. Lifecycle ORDERING and outcome
+discipline are owned by the M6.5 orchestrator, and M6.5 must enforce them on its OWN
+boundaries (recording, acceptance, exhaustion, recovery). Do not report "the bare M6.3
+ledger alone still permits X" as an M6.5 defect.
+
+============================================================
+FIXED IN THE COMMIT UNDER REVIEW (d3332ca -> 53d6193 -> d197c3c)
+============================================================
+R1: bare-string ProviderSet; incoherent gapped-history budget.
+R2 (five): byte provider members; unvalidated recorded labels/providers; retry after a
+    fail-closed outcome; non-atomic SUCCESS append+terminalization; invalid decide_retry
+    attempt numbers.
+R3 (one): an accepted SUCCESS was not bound to the TARGET ledger run.
+R4 (three): premature RESEARCH_UNAVAILABLE; initial provider not bound to the run identity
+    and the deterministic planner not enforced; recovery bypassed lifecycle + plan checks.
+R5 (two): exhaustion accepted a history containing an EARLIER fail-closed attempt; recovery
+    did not re-derive the DETERMINISTIC plan.
+R6 (two, fixed in THIS commit): history discipline was applied only to the LATEST outcome
+    (so [PIT_BLOCK, TRANSPORT_FAILURE] still allowed a later attempt and a SUCCESS
+    acceptance); recovery did not bind an INITIAL SUCCESS attempt to the run's configured
+    provider surface. Fixes: a shared `_require_all_attempts_retryable(record,
+    before_number=None)` now requires EVERY attempt to classify as RETRYABLE and is used at
+    ALL FOUR boundaries (recording, normal SUCCESS acceptance, exhaustion, recovery —
+    recovery via before_number=<persisted attempt>); recovery additionally requires
+    `deterministic.provider_surface == record.provider_surface` for an INITIAL attempt.
+
+KNOWN, ACCEPTED NON-BLOCKING ITEM (do not report as material): PROJECT_STATE.md /
+SESSION_CLOSEOUT.md still describe M6.5 as "NOT started"; the closeout is a separate
+facts-only step performed AFTER an independent PASS and will correct them.
+
+============================================================
+CLUSTER / COMMITS
+============================================================
+QAD M6.5 on branch impl/m6-gemini-notebook (never merged to main).
+Reviewed commit: d197c3c. History: 53d6193 -> d3332ca -> 31ad508 -> 9a86701 -> a0b287e.
+Canonical main UNCHANGED at 5bf1077.
+
+============================================================
+ARTIFACTS TO READ (inside this copy)
+============================================================
+- qad/m6/orchestration.py   (the M6.5 layer; rounds 1-6 fixes applied)
+- qad/m6/ledger.py          (accepted M6.3 ledger + one additive READ-ONLY helper)
+- qad/m6/research_contract.py (accepted M6.4 seam; must be unchanged)
+- tests/qad/m6/test_m65_retry_telemetry_idempotency.py  (93 tests collected)
+- tests/qad/m6/test_m63_run_ledger.py (+6 additive tests)
+- qad/contract/canonical_boundary.py (68) · qad/models/family_i.py (RRM-01)
+- design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md
+
+============================================================
+REQUIRED PROBES — state VERIFIED / NOT VERIFIED / DEFECT for each
+============================================================
+A  RE-PROBE ALL PRIOR FINDINGS (rounds 1-6) — try to defeat each yourself. In particular,
+   attempt to construct ANY durable history through ANY M6.5 boundary (recording, normal
+   SUCCESS acceptance, exhaustion terminalization, recovery) that lets a later attempt or a
+   SUCCESS proceed after an earlier fail-closed attempt, or that finalizes provider
+   provenance inconsistent with the run's configured surface.
+B  SUCCESS acceptance bound to the target run (all four identity fields); neither run
+   mutated when refused; matching run accepted with its exact result_sha256.
+C  Deterministic idempotency formula and its non-dependencies.
+D  Duplicate logical-run suppression, race reconciliation, M6.3 UNIQUE preserved, re-entry
+   budget continuity.
+E  Mode B semantics/labels; Mode A semantics; recording-boundary integrity: out-of-order,
+   exhausted, terminal, contradictory provider, non-deterministic plan, initial provider
+   not matching the run's configured surface.
+F  Exhaustion terminalization: refused unless the history is contiguous, exactly
+   MAX_ATTEMPTS long, and EVERY attempt is retryable; the EG-01 DEFERRED instruction is
+   emitted (applied=False); no canonical EG write API.
+G  Fail-closed failures never retried with budget remaining; report any outcome you believe
+   is misclassified against M6.0 §8.
+H  Telemetry truthfulness (real zero vs unknown; NOT_EXPOSED null+reason; closed metric
+   set; no estimation path).
+I  Durable append-only attempt history; telemetry survives a fresh store.
+J  M6.4 proof seam intact: the proof gate runs BEFORE any recording/terminalization/return;
+   forged and tampered SUCCESS cannot terminalize; valid verified SUCCESS retains its exact
+   result_sha256 and stays non-canonical; canonical count 68; RRM-01 Optional[list[str]].
+K  No provider transport (your own AST/import scan), no M6.6+ scope creep, no M6.6 start.
+L  No new canonical schema; the only ledger change is the additive READ-ONLY lookup.
+M  Run the suites and report ACTUAL counts: tests/qad/m6 (expect 302 passed) and, if cheap,
+   tests/qad.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round7-review/basetemp"
+- Read/write ONLY inside this disposable copy and the basetemp above. Do NOT touch any
+  other repository/worktree. Do NOT run state-mutating git commands.
+- Write your own throwaway probe scripts INSIDE this copy.
+- Report the exact commands you ran and their real observed output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.5 PASS / READY FOR M6.6
+  B = M6.5 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A..M — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: what you could not verify and why. "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT (if any): if you believe an authoritative policy above is wrong, say
+   so here — it does NOT change your verdict; the policy is Founder-set.

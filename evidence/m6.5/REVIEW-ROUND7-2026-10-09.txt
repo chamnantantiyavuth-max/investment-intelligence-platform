@@ -1,0 +1,54 @@
+VERDICT: C — M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A..M
+A. DEFECT — After a durable SUCCESS attempt’s terminalization fails, recovery accepts a different proof-verified result for the same run and stores its different hash. This reopens the reported success-finalization defect.
+B. VERIFIED — The four result/run identity fields are checked; mismatched results are refused before either run is changed, and matching-run acceptance retains the supplied result hash. This does not bind recovery to the hash of an earlier persisted SUCCESS attempt.
+C. VERIFIED — The key uses the six specified fields. Changing only request_id, research_run_id, and ledger_id preserved both the payload hash and idempotency key in the direct probe.
+D. VERIFIED — Same-key suppression, UNIQUE preservation, the simulated losing-create race path, and retry-budget continuity across re-entry are covered. No threaded contention stress test was run.
+E. VERIFIED — Mode A/B labels and the recording checks for order, exhausted/terminal runs, provider/plan validity, and the initial run-provider binding are covered.
+F. VERIFIED — Exhaustion requires contiguous attempts 1..3 and every attempt retryable; the EG-01 DEFERRED instruction is unapplied, with no canonical EG write API.
+G. VERIFIED — PIT_BLOCK, INCOMPLETE, FAILED, and the fail-closed result statuses do not authorize a retry. TRANSPORT_FAILURE and RESEARCH_UNAVAILABLE are treated as retryable; no contrary classification finding was verified.
+H. VERIFIED — Telemetry accepts exposed zero as a real value, requires null plus a reason for NOT_EXPOSED, enforces the closed metric set, and has no estimation path.
+I. VERIFIED — Attempt and telemetry history persist through a fresh store instance.
+J. NOT VERIFIED — The proof-gate, forgery/tamper, exact-hash, non-canonical, schema-count, and RRM-01 behavior passed the M6 tests; however, this copy has no Git metadata to establish that research_contract.py is unchanged from the accepted M6.4 version.
+K. VERIFIED — AST/import scan of orchestration.py and its M6.3/M6.4 dependencies found no provider transport imports or M6.6+ identifiers.
+L. NOT VERIFIED — The 68-schema count and read-only lookup behavior are verified, but without Git metadata I cannot verify that the lookup is the only ledger change.
+M. VERIFIED — tests/qad/m6: 302 passed. tests/qad: 837 passed, 1 failed; the failure is a schema-build source-hash mismatch outside the M6.5 tests.
+
+MATERIAL FINDINGS:
+1. SUCCESS recovery does not bind the persisted attempt to its original result.
+   (a) Evidence: orchestration.py:1194–1213 appends the SUCCESS attempt and then separately terminalizes the run. If terminalization fails, the durable attempt contains no result hash; ledger.py’s attempt table has no result-hash field. I reproduced this: result A’s attempt persisted, terminal_status and persisted result_sha256 remained null. After disposing the blocking candidate, recovery accepted a different proof-verified result B for the same run and finalized with B’s hash. The observed hashes differed: A = ff71f55f2511e947669525e2885205d29fd0218cccf0d2908840c4658aa31522; B/final ledger = 9f47e409ef584ded8723fa17010bd77625e2fd438bd16c139bb969ab7cb83fbb. The stored attempt still only records `(1, SUCCESS, gemini_notebook)`.
+   (b) Why material: the durable SUCCESS attempt does not identify the result that produced it. A later recovery can substitute a different result while finalizing that attempt, breaking exact result provenance. A restart after the split also has no durable expected hash with which to validate recovery.
+   (c) Smallest correction: atomically persist the SUCCESS attempt and its result hash/artifact reference with terminalization; recovery must require the exact persisted hash. This requires a transaction-level write path, beyond the currently claimed read-only-only ledger addition.
+   (d) How to verify: force failure between success-attempt recording and terminalization, reopen the store, then prove either no partial SUCCESS is durable or that recovery with a different valid result hash is rejected while recovery with the original hash succeeds.
+
+NON-BLOCKING FINDINGS: NONE
+
+EVIDENCE GAPS:
+- This source copy has no `.git` directory. I could not verify the actual branch, HEAD, reviewed commit d197c3c, commit diff, or whether research_contract.py and the ledger otherwise match their accepted baselines.
+- The full `tests/qad` run’s hash mismatch cannot be attributed to this commit or classified as pre-existing without a baseline.
+- Execution-scope deviation: I mistakenly ran the broader suite with basetemp set to the sibling `.../m65-round7-review/basetemp-qad`, rather than the specifically approved `.../basetemp`. Pytest wrote its temporary test data there. I did not inspect or clean that directory.
+
+COMMANDS RUN:
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git log --oneline -8`
+  Observed: `fatal: not a git repository (or any of the parent directories): .git` (exit 128; subsequent chained commands did not run).
+- `pwd; python -c "from pathlib import Path; p=Path('.'); print('cwd=',p.resolve()); print('entries=',[(x.name, x.is_dir()) for x in p.iterdir()][:30]); print('.git exists=',(p/'.git').exists())"`
+  Observed: cwd resolved to the supplied copy; `.git exists= False`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round7-review/basetemp"`
+  Observed: `302 passed in 8.49s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round7-review/basetemp-qad"`
+  Observed: `1 failed, 837 passed, 11 warnings in 10.61s`; failure was `tests/qad/test_contract_conformance.py::test_schema_build_identity`, `spec_source_sha256 mismatch`.
+- AST/import scan command:
+  `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c 'import ast, pathlib; root=pathlib.Path("."); paths=[root/"qad/m6/orchestration.py",root/"qad/m6/ledger.py",root/"qad/m6/research_contract.py"]; print("AST IMPORT SCAN");`
+  followed by parsing each file and printing imports and identifiers containing `admit_source`, `browser_transport`, `gemini_adapter`, or `canary`.
+  Observed imports were standard-library modules plus the local QAD modules; no such M6.6+ identifiers were found.
+- Idempotency identity probe:
+  `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c 'import runpy; ns=runpy.run_path("tests/qad/m6/test_m65_retry_telemetry_idempotency.py"); f=ns["_request"]; pairs=(("REQ-1","RR-1","L-1"),("REQ-2","RR-2","L-2")); rs=[f(request_id=a,research_run_id=b,ledger_id=c) for a,b,c in pairs]; keys=[ns["idempotency_key_for_request"](r) for r in rs]; print("payload hashes:",[r.request_payload_hash for r in rs]); print("keys:",keys); print("id-only identity invariant:",len(set(keys))==1); print("ids:",[(r.request_id,r.research_run_id,r.ledger_id) for r in rs])'`
+  Observed: both payload hashes were `eb979cba6bfa4be134c00a6eacb3fedfeed31028ee53ffcfdc342c7b6c025fc6`; both keys were `idem-ee72fb2621e100606bfb781753114c2323f052cf8dd4b7dac9dfce9af9ab26b4`; identity invariant `True`.
+- Partial-success probe: an initial inline probe used `clock=ns["_clock"]` and returned `KeyError: '_clock'`; I corrected it to `clock=lambda:ns["_FIXED_NOW"]`. The corrected probe invoked `_success_run`, registered an undisposed candidate, called `accept_success_result`, and reloaded the ledger.
+  Observed: terminalization raised `LedgerValidationError`; attempts were `[(1, 'SUCCESS')]`; terminal was `None`; persisted result hash was `None`, while the live result hash was `ff71f55f2511e947669525e2885205d29fd0218cccf0d2908840c4658aa31522`.
+- Recovery substitution probe: an inline `python.exe -c` probe created two proof-verified results for the same request/run with different result bytes, forced the first terminalization to fail on an undisposed candidate, disposed the candidate, then recovered using the second result.
+  Observed: first acceptance raised `LedgerValidationError`; hashes differed; `different result substituted during recovery: True`; final ledger hash equaled result B’s hash; stored attempt remained `(1, 'SUCCESS', 'gemini_notebook')`.
+
+POLICY DISAGREEMENT (if any): NONE
+REVIEW_EXIT=0

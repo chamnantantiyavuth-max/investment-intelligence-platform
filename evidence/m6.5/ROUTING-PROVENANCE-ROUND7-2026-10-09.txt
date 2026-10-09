@@ -1,0 +1,6 @@
+  "provider": null,
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT"
+}
