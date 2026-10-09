@@ -169,6 +169,33 @@ def _plan(n: int, previous: str | None = None):
     )
 
 
+def _success_run(store):
+    """Create a ledger run IDENTITY-CONSISTENT with an M6.4 request/result pair.
+
+    The M6.5 acceptance gate binds an accepted SUCCESS result to the TARGET ledger
+    run, so the run must carry the same request/run/ledger/snapshot identity the
+    request (and therefore the result) carries.
+    """
+    req = _request()
+    key = idempotency_key_for_request(req)
+    kw = _create_kwargs(
+        key,
+        ledger_id=req.ledger_id,
+        research_run_id=req.research_run_id,
+        request_id=req.request_id,
+        case_id=req.case_id,
+        case_version=req.case_version,
+        evidence_gap_id=req.evidence_gap_id,
+        input_snapshot_hash=req.input_snapshot_hash,
+        provider_surface=req.provider.provider_surface,
+        pit_context_id=req.pit_context_id,
+        pit_mode=req.pit_mode,
+        as_of=req.as_of,
+    )
+    resolve_or_create_logical_run(store, idempotency_key=key, create_run_kwargs=kw)
+    return _build_success(req), key
+
+
 # ---- M6.4 SUCCESS fixture (test-only resolver; never production) -------------
 
 def _src(sid: str, raw: bytes) -> SourceRecord:
@@ -826,12 +853,7 @@ class TestTelemetry:
 
 class TestSuccessConsumption:
     def test_48_proof_gate_runs_before_anything_is_recorded(self, store, monkeypatch):
-        req = _request()
-        ok = _build_success(req)
-        resolve_or_create_logical_run(
-            store, idempotency_key=compute_idempotency_key(**_keys()),
-            create_run_kwargs=_create_kwargs(compute_idempotency_key(**_keys())),
-        )
+        ok, _ = _success_run(store)
         calls = {"append": 0, "terminal": 0}
 
         def _append_probe(*a, **k):
@@ -855,13 +877,8 @@ class TestSuccessConsumption:
         assert calls == {"append": 0, "terminal": 0}
 
     def test_49_forged_unverified_success_cannot_terminalize_as_success(self, store):
-        req = _request()
-        ok = _build_success(req)
+        ok, _ = _success_run(store)
         object.__setattr__(ok, "_proof_attestation", None)
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
         with pytest.raises(ResearchResultError):
             accept_success_result(
                 store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
@@ -872,15 +889,10 @@ class TestSuccessConsumption:
         assert record.is_terminal is False
 
     def test_50_tampered_success_cannot_terminalize_as_success(self, store):
-        req = _request()
-        ok = _build_success(req)
+        ok, _ = _success_run(store)
         tampered = b"post-construction tamper"
         object.__setattr__(ok, "result_bytes", tampered)
         object.__setattr__(ok, "result_sha256", compute_result_sha256(tampered))
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
         with pytest.raises(ResearchResultError):
             accept_success_result(
                 store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
@@ -891,12 +903,7 @@ class TestSuccessConsumption:
         assert record.is_terminal is False
 
     def test_51_valid_verified_success_retains_its_exact_result_hash(self, store):
-        req = _request()
-        ok = _build_success(req)
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
+        ok, _ = _success_run(store)
         record = accept_success_result(
             store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
@@ -909,12 +916,7 @@ class TestSuccessConsumption:
         assert record.attempts[0].outcome == TerminalStatus.SUCCESS.value
 
     def test_52_valid_verified_success_remains_non_canonical(self, store):
-        req = _request()
-        ok = _build_success(req)
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
+        ok, key = _success_run(store)
         accept_success_result(
             store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
@@ -1057,11 +1059,7 @@ class TestRound1Closure:
         assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1]
 
     def test_r1_05_accept_success_enforces_contiguity_and_the_budget(self, store):
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
-        ok = _build_success(_request())
+        ok, key = _success_run(store)
         with pytest.raises(RetryPolicyError):
             accept_success_result(
                 store, ledger_id="L-1", result=ok, plan=_plan(2, "gemini_notebook"),
@@ -1194,17 +1192,13 @@ class TestRound2Closure:
         assert resolved.retry_budget_remaining == 0
 
     def test_r2_05_persisted_success_is_never_retryable_and_finalizes(self, store):
-        key = compute_idempotency_key(**_keys())
-        resolve_or_create_logical_run(
-            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
-        )
+        ok, key = _success_run(store)
         # make terminalization fail: a registered candidate with no disposition
         store.register_candidate(
             "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
             discovery_timestamp=_FIXED_NOW.isoformat(),
             original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
         )
-        ok = _build_success(_request())
         with pytest.raises(Exception):
             accept_success_result(
                 store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
@@ -1281,3 +1275,99 @@ class TestRound2Closure:
             RetryMode.INITIAL_ATTEMPT, RetryMode.PROVIDER_FALLBACK
         ]
         assert recorded[0].provider_surface != recorded[1].provider_surface
+
+
+# =====================================================================
+# Round-3 reviewer closure — exact-run binding of an accepted SUCCESS
+# =====================================================================
+
+def _second_run(store, ledger_id="L-B", request_id="REQ-B", run_id="RR-B",
+                evidence_gap_id="EG-B"):
+    """Create a second, DIFFERENT logical run in the same store.
+
+    It must differ in one of the SIX idempotency identity fields (here
+    ``evidence_gap_id``) — two requests that differ only in request/ledger/run ids
+    are the SAME logical request and correctly resolve to the same run.
+    """
+    req = _request(
+        request_id=request_id, research_run_id=run_id, ledger_id=ledger_id,
+        evidence_gap_id=evidence_gap_id,
+    )
+    key = idempotency_key_for_request(req)
+    kw = _create_kwargs(
+        key, ledger_id=ledger_id, research_run_id=run_id, request_id=request_id,
+        evidence_gap_id=evidence_gap_id, input_snapshot_hash=req.input_snapshot_hash,
+    )
+    resolve_or_create_logical_run(store, idempotency_key=key, create_run_kwargs=kw)
+    assert store.contains(ledger_id)
+    return key
+
+
+class TestRound3Closure:
+    def test_r3_01_a_result_for_another_run_cannot_terminalize_this_run(self, store):
+        """A proof-verified result for run A must never terminalize run B (FD #152)."""
+        ok_a, _ = _success_run(store)          # run A -> ledger L-1
+        _second_run(store)                     # run B -> ledger L-B
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-B", result=ok_a, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        run_b = store.load_run("L-B")
+        assert run_b.attempts == () and run_b.is_terminal is False
+        assert store.load_run("L-1").attempts == ()  # run A untouched
+
+    def test_r3_02_cross_run_result_is_refused_on_the_recovery_path(self, store):
+        ok_a, _ = _success_run(store)
+        store.register_candidate(
+            "L-1", source_candidate_id="SC-1", url_or_identifier="https://x.example/1",
+            discovery_timestamp=_FIXED_NOW.isoformat(),
+            original_source_verification_status="PENDING", pit_eligibility="UNKNOWN",
+        )
+        with pytest.raises(Exception):  # terminalization fails -> unfinalized SUCCESS
+            accept_success_result(
+                store, ledger_id="L-1", result=ok_a, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        _second_run(store)
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-B", result=ok_a, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-B").is_terminal is False
+
+    def test_r3_03_the_matching_run_is_still_accepted_with_its_exact_hash(self, store):
+        ok, _ = _success_run(store)
+        record = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert record.terminal_status is TerminalStatus.SUCCESS
+        assert record.result_sha256 == ok.result_sha256
+        assert record.request_id == ok.request_id
+        assert record.ledger_id == ok.ledger_id
+        assert record.input_snapshot_hash == ok.input_snapshot_hash
+
+    def test_r3_04_each_identity_field_is_individually_bound(self, store):
+        """Every bound identity field is enforced, not just the ledger id."""
+        from qad.m6.orchestration import _require_result_run_binding
+
+        ok, _ = _success_run(store)
+        record = store.load_run("L-1")
+        _require_result_run_binding(record, ok)  # the genuine pairing passes
+
+        class _IdentityStub:
+            def __init__(self, **kw):
+                self.__dict__.update(kw)
+
+        bound = dict(
+            request_id=ok.request_id,
+            research_run_id=ok.research_run_id,
+            ledger_id=ok.ledger_id,
+            input_snapshot_hash=ok.input_snapshot_hash,
+        )
+        for field in bound:
+            forged = _IdentityStub(**{**bound, field: "NOT-BOUND"})
+            with pytest.raises(RetryPolicyError):
+                _require_result_run_binding(record, forged)

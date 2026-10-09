@@ -1,0 +1,145 @@
+ROLE
+You are an INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER for QAD cluster M6.5
+(round 3, re-review #2). Your model family differs from the producer's (producer =
+DeepSeek, you = OpenAI). Report only what you can verify from artifacts in this
+directory. Do not soften, embellish, or invent findings.
+
+============================================================
+AUTHORITATIVE POLICY — SETTLED, DO NOT RE-LITIGATE
+============================================================
+FD #148 §1 (R-1): Mode A (>=2 explicit compliant providers) = a retry may use a
+DIFFERENT compliant provider, recorded, fallback_used truthful. Mode B (exactly one
+compliant provider) = bounded SAME-PROVIDER retry, MAX 3 ATTEMPTS recorded as
+SAME_PROVIDER_RETRY, NEVER labelled provider fallback; exhaustion ->
+RESEARCH_UNAVAILABLE + linked EG-01 DEFERRED (or appropriate unresolved state);
+quality/evidence gates never weakened.
+
+FD #148 §3: idempotency key = deterministic hash(case_id, case_version, stage,
+evidence_gap_id, request_payload_hash, input_snapshot_hash); retry identity =
+(idempotency_key, attempt_number), attempt_number in 1..3.
+
+FD #148 §2: telemetry truthfulness — exact value when exposed; otherwise
+NOT_EXPOSED with a reason. Never zero-as-unknown; never estimate; never fabricate
+model identity.
+
+FD #152 (settled): M6.4 SUCCESS requires verified proof through the trusted seam; the
+IN-PROCESS trust boundary is FOUNDER-FIXED — hostile same-process introspection
+(closures/frames/gc/ctypes/monkeypatching/object.__setattr__ on private attestation
+objects) is OUTSIDE the accepted trust boundary. Do NOT report "pure Python cannot
+resist a hostile in-process attacker" as a defect.
+
+FD #151: M6.5 = Retry / Telemetry / Idempotency. NOT a provider adapter: no Gemini,
+Notebook, browser/CDP, network, credentials or live execution (M6.7/M6.8). M6.6+ must
+not be started.
+
+M6.3 ledger (FD #149) is ACCEPTED: `append_attempt` validates only the 1..3 RANGE and
+duplicate identity, NOT ordering or outcome discipline. Lifecycle ORDERING and outcome
+discipline are owned by the M6.5 orchestrator. Changing the accepted M6.3 ledger's
+semantics needs separate authority — do not report "the bare ledger alone still permits
+X" as an M6.5 defect, but DO hold M6.5's own recording boundary to the full rules.
+
+============================================================
+FIXED IN THE COMMIT UNDER REVIEW
+============================================================
+Round 1 (fixed in a0b287e): ProviderSet accepted a bare string; a gapped attempt
+history yielded an incoherent next-attempt/budget pair.
+Round 2 returned C with FIVE material defects, all fixed in this commit (9a86701):
+  1. ProviderSet accepted BYTE members.
+  2. Recording accepted caller-supplied labels without validation (a fabricated
+     PROVIDER_FALLBACK on an unconfigured provider was persisted).
+  3. The recording boundary allowed a retry after a FAIL-CLOSED outcome (PIT_BLOCK).
+  4. SUCCESS append + terminalization were not atomic, so a terminalization failure left
+     a persisted SUCCESS attempt on a run that still offered a retry.
+  5. decide_retry accepted invalid attempt numbers (True / 4).
+Claimed fixes: str-only provider members; `validate_attempt_plan(plan, provider_set)`
+plus `_validate_plan_against_record` (which also checks the PREVIOUS durable attempt);
+`record_failed_attempt` / `accept_success_result` now take a validated `AttemptPlan` +
+`ProviderSet`; `_next_attempt_guard` refuses a retry after a non-retryable outcome and
+refuses a persisted SUCCESS attempt; a resolution with a persisted SUCCESS on a
+non-terminal run reports `unfinalized_success=True`, next_attempt_number=None,
+retry_budget_remaining=0, and `accept_success_result` offers a RECOVERY FINALIZATION
+that completes terminalization without appending a second attempt; strict 1..3
+non-bool validation in decide_retry.
+
+============================================================
+CLUSTER / COMMITS
+============================================================
+QAD M6.5 on branch impl/m6-gemini-notebook (never merged to main).
+Reviewed commit: 9a86701. History: a0b287e -> 50f657e -> 220f3ac (M6.4 closeout).
+Canonical main UNCHANGED at 5bf1077.
+
+============================================================
+ARTIFACTS TO READ (inside this copy)
+============================================================
+- qad/m6/orchestration.py   (the M6.5 layer; round-1 + round-2 fixes applied)
+- qad/m6/ledger.py          (accepted M6.3 ledger + one additive READ-ONLY helper)
+- qad/m6/research_contract.py (accepted M6.4 seam; must be unchanged)
+- tests/qad/m6/test_m65_retry_telemetry_idempotency.py  (73 tests)
+- tests/qad/m6/test_m63_run_ledger.py (+6 additive tests)
+- qad/contract/canonical_boundary.py (68) · qad/models/family_i.py (RRM-01)
+- design/qad-pivot/m6/QAD-M6.0-DESIGN-GATE-RECONCILIATION.md · SESSION_CLOSEOUT.md
+
+============================================================
+REQUIRED PROBES — state VERIFIED / NOT VERIFIED / DEFECT for each
+============================================================
+A  RE-PROBE ALL PRIOR FINDINGS: bare string/bytes/int/empty/duplicate provider names
+   refused while a one-element str collection stays Mode B; a gapped durable history
+   resolves fail-closed and coherently; a fabricated label / unconfigured provider is
+   refused at recording; a retry after a fail-closed outcome is refused; a persisted
+   SUCCESS is never retryable and finalizes via recovery; decide_retry rejects
+   True/0/4/non-int. Try to defeat each yourself.
+B  Recording-boundary integrity: out-of-order attempts, exhausted budget, terminal run,
+   provider that contradicts the previous attempt, Mode B labelled as fallback — all
+   refused; valid Mode A/B transitions still persist accurately.
+C  Deterministic idempotency formula and its non-dependencies (clock, UUID/random,
+   process identity, cwd, notebook identity, attempt number, provider surface).
+D  Duplicate logical-run suppression, race reconciliation, M6.3 UNIQUE preserved, and
+   re-entry continuing at the right attempt without resetting the budget.
+E  Mode B semantics/labels; Mode A semantics (provider from the explicit set only,
+   deterministic selection, one provider never masquerades as Mode A).
+F  Exhaustion -> RESEARCH_UNAVAILABLE + EG-01 DEFERRED instruction (applied=False), no
+   canonical EG write API, no new canonical schema.
+G  Fail-closed failures never retried with budget remaining; report any outcome you
+   believe is misclassified against M6.0 §8.
+H  Telemetry truthfulness: exact EXPOSED values (a real 0 stays 0); NOT_EXPOSED needs
+   value=None + non-blank reason; unknown can never be zero; missing required and
+   undeclared metrics fail closed; no estimation path.
+I  Durable append-only attempt history: ordered 1..N, prior telemetry/rows never
+   rewritten, duplicate attempt_number rejected, telemetry survives a fresh store.
+J  M6.4 proof seam intact: SUCCESS acceptance calls assert_proof_verified() BEFORE any
+   recording/terminalization/return; forged and tampered SUCCESS cannot terminalize;
+   valid verified SUCCESS retains its exact result_sha256 and stays non-canonical;
+   qad/m6/research_contract.py unchanged; canonical count 68; RRM-01 Optional[list[str]].
+K  No provider transport (your own AST/import scan), no M6.6+ scope creep, no M6.6 start.
+L  No new canonical schema; the only ledger change is the additive READ-ONLY lookup
+   (verify it writes nothing; its tests must not be tautological).
+M  Run the suites and report ACTUAL counts: tests/qad/m6 (expect 282 passed) and, if
+   cheap, tests/qad.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round3-review/basetemp"
+- Read/write ONLY inside this disposable copy and the basetemp above. Do NOT touch any
+  other repository/worktree. Do NOT run state-mutating git commands.
+- Write your own throwaway probe scripts INSIDE this copy.
+- Report the exact commands you ran and their real observed output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.5 PASS / READY FOR M6.6
+  B = M6.5 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: A..M — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: what you could not verify and why. "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT (if any): if you believe an authoritative policy above is wrong,
+   say so here — it does NOT change your verdict; the policy is Founder-set.

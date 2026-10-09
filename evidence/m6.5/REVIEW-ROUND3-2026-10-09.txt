@@ -1,0 +1,38 @@
+VERDICT: C
+  C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS:
+A — VERIFIED — Adversarial provider-set and attempt-number inputs were refused; a one-provider string collection remained Mode B; gapped history resolved to no next attempt and zero budget.
+B — VERIFIED — Out-of-order, exhausted, terminal, contradictory-provider, and Mode B fallback-label attempts were refused; valid Mode A and Mode B behavior is covered by probes and the passing M6 suite.
+C — VERIFIED — The key uses only the six specified identity fields; tests vary clock, randomness/process identity, working directory, and provider selection without changing it.
+D — VERIFIED — Duplicate suppression, injected create-conflict re-read, the M6.3 UNIQUE constraint, and durable re-entry/budget behavior are covered by the passing tests.
+E — VERIFIED — Mode A selects only from the explicit set and records a real provider change truthfully; Mode B retries the same provider without fallback labeling.
+F — VERIFIED — Exhaustion produces RESEARCH_UNAVAILABLE and an unapplied EG-01 DEFERRED instruction; no canonical EG write API or schema addition was found.
+G — VERIFIED — PIT_BLOCK, INCOMPLETE, FAILED, and the two M6.4 fail-closed result statuses are non-retryable; bounded retries for TRANSPORT_FAILURE/RESEARCH_UNAVAILABLE follow FD #148. No §8 misclassification found.
+H — VERIFIED — Exact exposed values, including zero, and NOT_EXPOSED null-plus-reason states are validated; missing/undeclared metrics fail closed and durable telemetry is tested.
+I — VERIFIED — M6.5 enforces contiguous attempt history; duplicate identities are rejected and append-only telemetry/history survive store re-entry.
+J — DEFECT — Proof verification runs before writes and rejects forged/tampered results, but a valid proof/result for run A was accepted to terminalize run B as SUCCESS. The missing target-run binding is material. `research_contract.py` unchanged status could not be compared without Git metadata.
+K — VERIFIED — AST/import scan found no provider or transport imports; the M6 suite’s scope checks passed.
+L — VERIFIED — The added ledger helper performs lookup reads only; tests compare persisted run/event state before and after lookup. No new canonical schema was found.
+M — VERIFIED — `tests/qad/m6`: 282 passed. Broader `tests/qad`: 817 passed, 1 failed; details below.
+
+MATERIAL FINDINGS:
+1. (a) `qad/m6/orchestration.py:1027-1044` verifies the result’s proof, then loads the target ledger run, but does not compare the result’s `request_id`, `research_run_id`, `ledger_id`, or `input_snapshot_hash` with that run. At `:1053-1071`, it can therefore append SUCCESS and terminalize the target using a result verified for another run. Reproduction in `m65_adversarial_probe.py:153-175`: a proof-verified result bound to `L-RA / REQ-A / RR-A` terminalized `L-RB / REQ-B / RR-B` as SUCCESS. (b) This defeats the exact-run proof binding and corrupts success attribution and audit lineage. (c) After proof verification and loading the target record, reject identity/snapshot mismatches before any mutation; apply the same binding check to recovery finalization and verify the result matches the persisted SUCCESS attempt’s provider. (d) Test two distinct runs, pass A’s verified result to B through both normal acceptance and recovery, and assert refusal with neither run mutated; confirm matching-run acceptance still preserves its hash.
+
+NON-BLOCKING FINDINGS:
+1. (a) The broader suite’s `tests/qad/test_contract_conformance.py::test_schema_build_identity` failed: stored `spec_source_sha256` is `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd`, while the current M4A spec hashes to `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`. (b) The canonical model build-identity check is not green, though it is outside M6.5 and does not change the M6.5 suite result. (c) Reconcile the generated identity with the authoritative spec—or restore the spec if that is the intended source—outside this M6.5 fix. (d) Rerun the failing test and `tests/qad`.
+
+EVIDENCE GAPS:
+- This copy has no Git repository metadata (`git` reports “not a git repository”). I could not independently verify branch, HEAD, reviewed commit `9a86701`, history, canonical-main state, or whether `research_contract.py` is unchanged from the reviewed baseline.
+- The broader-suite hash mismatch is observed, but without repository history I cannot establish whether it predates this reviewed commit.
+
+COMMANDS RUN:
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git log --oneline -4` — exit 128: `fatal: not a git repository`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round3-review/basetemp"` — exit 0; `282 passed in 9.50s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" m65_adversarial_probe.py` — first run exposed a probe-harness provider mismatch (`gemini_notebook` vs `only`) and then a temporary-file cleanup lock; corrected the probe and reran.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" m65_adversarial_probe.py` — exit 0; malformed plans refused and cross-run SUCCESS defect reproduced.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round3-review/basetemp"` — exit 1; `1 failed, 817 passed, 11 warnings in 11.05s`; failure is the schema build-identity hash mismatch above.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "import ast,pathlib; p=pathlib.Path('qad/m6/orchestration.py'); t=ast.parse(p.read_text(encoding='utf-8')); mods=sorted({(n.module or '').split('.')[0] if isinstance(n,ast.ImportFrom) else a.name.split('.')[0] for n in ast.walk(t) if isinstance(n,(ast.Import,ast.ImportFrom)) for a in (n.names if isinstance(n,ast.Import) else [None])}); banned={'requests','urllib','socket','httpx','selenium','playwright','chromedriver','google','gemini','notebooklm'}; assert not (set(mods)&banned), (mods,set(mods)&banned); print('AST imports:',mods); print('Forbidden provider/transport imports: none'); from qad.contract.canonical_boundary import CANONICAL_SCHEMAS; from qad.models.family_i import RunManifestRecord; print('Canonical schema count:',len(CANONICAL_SCHEMAS)); print('RRM-01 deep_research_runs annotation:',RunManifestRecord.model_fields['deep_research_runs'].annotation)"` — exit 0; imports were `__future__, dataclasses, enum, hashlib, qad, typing`; no forbidden imports; canonical count 68; RRM-01 annotation `typing.Optional[list[str]]`.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0

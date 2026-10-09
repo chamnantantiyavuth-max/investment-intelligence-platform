@@ -368,6 +368,26 @@ def _next_attempt_guard(
     return record, expected
 
 
+def _require_result_run_binding(record: RunRecord, result: DeepResearchResult) -> None:
+    """Bind an accepted SUCCESS result to the TARGET ledger run (FD #152 §4/§7).
+
+    M6.4 binds a verified proof to the exact run, so M6.5 must refuse a result whose
+    identity belongs to a DIFFERENT logical run — otherwise a proof-verified result
+    produced for run A could terminalize run B as SUCCESS (round-3 reviewer finding).
+    """
+    for name, got, bound in (
+        ("request_id", result.request_id, record.request_id),
+        ("research_run_id", result.research_run_id, record.research_run_id),
+        ("ledger_id", result.ledger_id, record.ledger_id),
+        ("input_snapshot_hash", result.input_snapshot_hash, record.input_snapshot_hash),
+    ):
+        if got != bound:
+            raise RetryPolicyError(
+                f"SUCCESS refused: the result's {name} {got!r} is not bound to the "
+                f"target ledger run {record.ledger_id!r} ({name}={bound!r})"
+            )
+
+
 def _validate_plan_against_record(
     record: RunRecord,
     plan: AttemptPlan,
@@ -1031,9 +1051,28 @@ def accept_success_result(
     record = store.load_run(ledger_id)
     if record.is_terminal:
         raise RetryPolicyError(f"ledger run {ledger_id!r} is already terminal")
+    # FD #152 exact-run binding: the result must belong to THIS target ledger run,
+    # otherwise a proof-verified result produced for another run could terminalize
+    # this one as SUCCESS (round-3 reviewer finding).
+    _require_result_run_binding(record, result)
     if any(a.outcome == TerminalStatus.SUCCESS.value for a in record.attempts):
         # RECOVERY FINALIZATION: a SUCCESS attempt is already durable. Never append
         # a second attempt and never retry — just complete the terminalization.
+        persisted = next(
+            a for a in record.attempts
+            if a.outcome == TerminalStatus.SUCCESS.value
+        )
+        if (
+            result.provider_surface != persisted.provider_surface
+            or plan.provider_surface != persisted.provider_surface
+            or plan.attempt_number != persisted.attempt_number
+        ):
+            raise RetryPolicyError(
+                "recovery finalization requires the result and the attempt plan to "
+                "match the ALREADY PERSISTED SUCCESS attempt "
+                f"(attempt {persisted.attempt_number}, provider "
+                f"{persisted.provider_surface!r})"
+            )
         store.terminalize(
             ledger_id,
             terminal_status=TerminalStatus.SUCCESS,
