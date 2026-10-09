@@ -1,0 +1,69 @@
+VERDICT: C
+  M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..12 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+1 — VERIFIED — Canonical writes use `admit_source` / `admit_evidence`; direct `store` and batch bypasses are rejected by the reference adapters. Finding 1 below concerns proof checks at the allowed evidence boundary.
+2 — DEFECT — Evidence admission can proceed without a minted verdict or a real run/candidate binding; a cross-run verified claim can also pass through the canonical registry boundary. See Material Finding 1.
+3 — VERIFIED — SEALED admission and archive-attestation checks fail closed, and replay authorization checks the stated PITC-01 fields. The tests cover legacy/SRCV-only ineligibility, unauthorized replay, and authorized reuse; see Evidence Gaps for production PIT-store wiring.
+4 — VERIFIED — Duplicate registrations do not create duplicate candidates; dispositions are insert-only, and duplicate inputs yield one outcome per candidate.
+5 — VERIFIED — Contradictory evidence is preserved rather than collapsed; the M6.6 test suite passed.
+6 — DEFECT — A disposition-write failure after canonical evidence admission leaves canonical EV/EAR state unreconciled; retry records an empty evidence linkage. See Material Finding 2.
+7 — DEFECT — Re-entry after that partial failure does not reconcile the committed evidence and instead reports an admission conflict. See Material Finding 2.
+8 — VERIFIED — M6.6 has no terminalization call, and the ledger blocks terminalization while candidates lack dispositions.
+9 — VERIFIED — AST test and source inspection show no M6.6 SUCCESS-writing call.
+10 — VERIFIED — M6.6 does not alter or bypass `M6_RAW_SUCCESS_API_GATE`; the gate remains documented OPEN/BLOCKING.
+11 — VERIFIED — The `qad/m6` snapshot contains no provider/network implementation; the bridge has no provider, network, or browser imports. M6.7 is referenced as future work.
+12 — NOT VERIFIED — The canonical count is 68, but this copy has no Git metadata to verify the parent diff or confirm RRM-01 was unchanged.
+
+MATERIAL FINDINGS:
+1. Evidence admission is not consistently bound to a verified run/candidate/source.
+   (a) `qad/m6/source_bridge.py:892-933` makes `verification` optional and only checks its full run/candidate/source binding when the EAR claims `original_source_verified`. Otherwise it trusts the caller-supplied `verified_source_id`. At `:855-860`, the builder checks only that a verdict is minted and matches the source—not the run/candidate. The existing registry gate at `qad/persistence/reference.py:1217-1256` checks the EAR/EV identity, source existence, and the AI-method `"true"` value, but not the M6.6 verdict binding. The executed probe showed: the bridge helper accepted an EAR with no verdict for `NO-SUCH-RUN` / `NO-SUCH-CANDIDATE` and admitted its EV; a verdict for L-1/candidate-1 also produced an EAR with `"true"` that direct `registry.admit_evidence` accepted for another run. The proof-bound bridge helper itself rejected that cross-run verdict.
+   (b) This allows canonical evidence state—and, through the direct registry boundary, canonical `original_source_verified="true"`—without verification for the exact run/candidate/source.
+   (c) Require a minted verdict bound to the exact run/candidate/source for every M6.6 evidence admission, not only when the EAR asserts `"true"`. Ensure the canonical admission path cannot accept M6.6’s true claim based only on the string.
+   (d) Add regressions proving an absent verdict and nonexistent run/candidate cause zero writes, a cross-run verdict is rejected through every canonical admission path, and the matching run/candidate/source still succeeds.
+
+2. Cross-store failure recovery loses canonical evidence lineage.
+   (a) In `qad/m6/source_bridge.py:1038-1078`, canonical evidence is admitted before the ledger disposition. I injected a one-time failure in `dispose_candidate` after EV/EAR admission. On re-entry, the registry returned `IntegrityConflict` for the already-admitted EV; the bridge then persisted a disposition with empty `evidence_ids` even though the canonical EV still existed. Probe output confirmed the mismatch.
+   (b) The durable ledger can say evidence admission failed and omit EV/EAR references after those canonical records were actually committed; re-entry is therefore not truthful or idempotent for this partial-failure case.
+   (c) Reconcile already-admitted EV/EAR records on re-entry: verify their stored identities/payloads match the rebuilt records, recover their IDs, then persist the disposition. Do not record an empty-link failure when matching canonical evidence exists.
+   (d) Add a failure-injection test that fails disposition persistence after evidence admission, retries, and asserts the durable disposition references the existing EV/EAR with no false failure reason.
+
+NON-BLOCKING FINDINGS:
+1. The broader `tests/qad` run has a schema build-identity checksum mismatch.
+   (a) `tests/qad/test_contract_conformance.py::test_schema_build_identity` failed: recorded `spec_source_sha256` is `7bf250a033e89fe48f6effb64c773526ba7e56871e6d387015f88a860cfd3ffd`; calculated source hash is `3b513829af05ecfd8e3f3d9e666c1c8ac0e23f878f8a446ea94a266c76fa0473`.
+   (b) This is outside the M6.6 bridge behavior, but means the broader suite is not fully green.
+   (c) Reconcile the generated schema build identity with its source of truth in a separate scoped change.
+   (d) Rerun `test_schema_build_identity` and the full `tests/qad` suite.
+
+EVIDENCE GAPS:
+- `.git` is absent in this disposable copy. I could not verify branch, HEAD, commit `58ff8dc`, its parent, the diff from `911836d`, or compare against main. Conclusions apply to the artifacts present here.
+- RRM-01 “unchanged” cannot be confirmed without that diff.
+- M6.6 replay tests use `_StubPitStore`; the bridge checks the injected PITC-01 interface, but this copy does not establish how production wiring guarantees that the injected store is authoritative.
+- The initial no-`--basetemp` pytest attempts were denied while accessing `C:\Users\Admin\AppData\Local\Temp\pytest-of-Admin`; corrected runs used the explicitly permitted basetemp.
+
+COMMANDS RUN:
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/basetemp"`  
+  Result: `361 passed in 13.11s`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/basetemp"`  
+  Result: `37 passed in 2.66s`.
+
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/basetemp"`  
+  Result: `896 passed, 1 failed, 11 warnings in 14.05s`; sole failure was `test_schema_build_identity` as described above.
+
+- Initial attempts without `--basetemp`:
+  - `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q`
+  - `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q`  
+  Result: pytest setup hit `PermissionError` accessing `C:\Users\Admin\AppData\Local\Temp\pytest-of-Admin`. The initial broader run reported `741 passed, 155 errors, 1 failed`; corrected basetemp run is reported above.
+
+- `PYTHONPATH='C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/repo' "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/basetemp/r11_proof_binding_probe.py`  
+  Result: exit 0. Output: builder produced cross-run EAR truth `true`; proof-bound helper rejected it with `SourceBridgeError`; direct registry accepted the cross-run truth; no-verification helper returned a canonical hash and the unregistered-candidate EV was present.
+
+- `PYTHONPATH='C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/repo' "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r11/basetemp/r11_partial_failure_probe.py`  
+  Result: exit 0. Output: injected disposition failure left the candidate pending while canonical EV existed; retry reported `IntegrityConflict`, produced empty evidence IDs in both outcome and disposition, while the EV still existed.
+
+- `git status --short && git branch --show-current && git rev-parse HEAD && git log --oneline -3 && git rev-parse main`  
+  Result: `fatal: not a git repository`.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0

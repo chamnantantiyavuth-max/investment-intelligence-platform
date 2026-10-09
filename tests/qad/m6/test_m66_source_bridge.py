@@ -213,7 +213,7 @@ def _admit_direct_source(archive, source_id, raw=b"seeded", retrieval_date="2025
     )
 
 
-def _evidence_builder(*, evidence_id="EV-A", admission_id="EAR-A",
+def _evidence_builder(*, ledger_id="L-1", evidence_id="EV-A", admission_id="EAR-A",
                       method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
                       evidence_type=EvidenceRecordEvidence_type.CLAIM,
                       contradicts=None, raises=None):
@@ -225,6 +225,7 @@ def _evidence_builder(*, evidence_id="EV-A", admission_id="EAR-A",
         ev = _ev(evidence_id, src01_id, evidence_type=evidence_type, contradicts=contradicts)
         ear = build_evidence_admission(
             evidence=ev, verification=verification, admission_id=admission_id,
+            ledger_id=ledger_id, source_candidate_id=candidate_id,
             admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
             admission_method=method,
             validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
@@ -234,12 +235,13 @@ def _evidence_builder(*, evidence_id="EV-A", admission_id="EAR-A",
     return _build
 
 
-def _per_candidate_builder(mapping):
+def _per_candidate_builder(mapping, *, ledger_id="L-1"):
     def _build(candidate_id, src01_id, verification):
         spec = mapping[candidate_id]
         ev = _ev(spec["ev"], src01_id, contradicts=spec.get("contradicts"))
         ear = build_evidence_admission(
             evidence=ev, verification=verification, admission_id=spec["ear"],
+            ledger_id=ledger_id, source_candidate_id=candidate_id,
             admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
             admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
             validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
@@ -499,6 +501,7 @@ def test_14_ai_extraction_without_actual_verification_is_rejected(store):
     # an UNTRUSTED candidate (or any non-minted object) can never mint "true"
     ear = build_evidence_admission(
         evidence=ev, verification=_verified("SRC-A"), admission_id="EAR-A",
+        ledger_id="L-1", source_candidate_id="SC-x",
         admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
         admission_method=EvidenceAdmissionRecordAdmission_method.AI_EXTRACTION,
         validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
@@ -516,6 +519,7 @@ def test_14_ai_extraction_without_actual_verification_is_rejected(store):
 
     ear2 = build_evidence_admission(
         evidence=ev, verification=_Forged(), admission_id="EAR-A2",
+        ledger_id="L-1", source_candidate_id="SC-x",
         admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
         admission_method=EvidenceAdmissionRecordAdmission_method.AI_EXTRACTION,
         validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
@@ -1008,6 +1012,20 @@ def test_35_a_caller_authored_verified_ear_is_refused(store):
             ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
             verification=None,
         )
+    # ...and even an EAR that does NOT assert verification is refused without a verdict
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-A", "SRC-A"), admission=_ear("EV-A", "EAR-A"),
+            ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
+            verification=None,
+        )
+    # ...and a NONEXISTENT run/candidate cannot satisfy the binding
+    with pytest.raises(SourceBridgeError):
+        admit_candidate_evidence(
+            registry, evidence=_ev("EV-A", "SRC-A"), admission=_ear("EV-A", "EAR-A"),
+            ledger_id="NO-SUCH-RUN", source_candidate_id="NO-SUCH-CANDIDATE",
+            verified_source_id="SRC-A", verification=None,
+        )
     assert registry._data.get("EV-01", {}) == {}
     assert registry._data.get("EAR-01", {}) == {}
 
@@ -1025,6 +1043,7 @@ def test_35_a_caller_authored_verified_ear_is_refused(store):
         admit_candidate_evidence(
             registry, evidence=_ev("EV-A", "SRC-A"), admission=_ear("EV-OTHER", "EAR-A"),
             ledger_id="L-1", source_candidate_id="SC-x", verified_source_id="SRC-A",
+            verification=None,
         )
     assert registry._data.get("EV-01", {}) == {}
 
@@ -1138,3 +1157,59 @@ def test_37_replay_exception_requires_the_authoritative_boundary(store):
     )
     assert out3.disposition.value == "IMPORTED"
     assert out3.reused is True
+
+
+# ======================== 38 round-11 closure (cross-store re-entry reconciliation)
+
+
+def test_38_disposition_failure_after_evidence_admission_is_reconciled_on_retry(
+    store, monkeypatch
+):
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    verifier = _StubVerifier({cid: _verified("SRC-A")})
+
+    # inject a ONE-TIME failure in the ledger disposition write, AFTER canonical
+    # evidence admission has already committed.
+    real_dispose = store.dispose_candidate
+    calls = {"n": 0}
+
+    def _flaky(ledger_id, source_candidate_id, **kw):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise LedgerValidationError("INJECTED disposition failure")
+        return real_dispose(ledger_id, source_candidate_id, **kw)
+
+    monkeypatch.setattr(store, "dispose_candidate", _flaky, raising=False)
+    # the disposition write fails AFTER the canonical evidence was committed -> the
+    # whole call fails closed (nothing is silently claimed), leaving the candidate pending
+    with pytest.raises(LedgerValidationError):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=verifier, registry=registry,
+            evidence_builder=_evidence_builder(),
+        )
+    assert registry.contains("EV-01", "EV-A")
+    assert registry.contains("EAR-01", "EAR-A")
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+
+    # re-entry must RECONCILE the committed evidence (not report a false failure)
+    second = process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp="2026-10-12T10:00:00+00:00",
+        archive=archive, verifier=verifier, registry=registry,
+        evidence_builder=_evidence_builder(),
+    )
+    o = second.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == ("EV-A",) and o.ear_ids == ("EAR-A",)
+    assert o.evidence_admission_error is None
+    d = _dispositions(store, "L-1")[cid]
+    assert tuple(d.evidence_ids) == ("EV-A",) and tuple(d.ear_ids) == ("EAR-A",)
+    assert pending_candidates(store.load_run("L-1")) == ()
+    # exactly ONE canonical object each — reconciliation did not duplicate anything
+    assert len(registry._data["EV-01"]) == 1
+    assert len(registry._data["EAR-01"]) == 1

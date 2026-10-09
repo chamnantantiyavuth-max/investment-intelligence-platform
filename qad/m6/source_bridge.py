@@ -830,6 +830,8 @@ def build_evidence_admission(
     *,
     evidence: EvidenceRecord,
     verification: OriginalSourceVerification,
+    ledger_id: str,
+    source_candidate_id: str,
     admission_id: str,
     admission_timestamp: str,
     admitting_role: str,
@@ -852,11 +854,15 @@ def build_evidence_admission(
     else:
         method_value = str(admission_method)
 
-    # ONLY a minted VERIFIED verdict bound to this exact evidence source can set the
-    # canonical truth value; a forged, unverified, candidate-shaped or cross-source
-    # verdict never can (fail closed).
+    # ONLY a minted VERIFIED verdict bound to this EXACT run + candidate + source can set
+    # the canonical truth value; a forged, unverified, candidate-shaped, cross-source or
+    # cross-run/candidate verdict never can (fail closed).
     if isinstance(verification, OriginalSourceVerification):
-        verified_here = verification.is_verified_verdict_for(source_id=evidence.source_id)
+        verified_here = verification.authorizes_evidence_for(
+            ledger_id=ledger_id,
+            source_candidate_id=source_candidate_id,
+            source_id=evidence.source_id,
+        )
     else:
         verified_here = False
     return EvidenceAdmissionRecord(
@@ -889,7 +895,7 @@ def admit_candidate_evidence(
     ledger_id: str,
     source_candidate_id: str,
     verified_source_id: str,
-    verification: OriginalSourceVerification | None = None,
+    verification: OriginalSourceVerification,
 ):
     """Admit EV-01 + EAR-01 through the EXISTING authoritative gate only.
 
@@ -916,20 +922,22 @@ def admit_candidate_evidence(
             "EAR-01.original_source_verified must be the canonical "
             f"{ORIGINAL_SOURCE_VERIFIED_TRUE!r} or unset, got {claimed!r}"
         )
-    if claimed is not None:
-        authorized = bool(
-            isinstance(verification, OriginalSourceVerification)
-            and verification.authorizes_evidence_for(
-                ledger_id=ledger_id,
-                source_candidate_id=source_candidate_id,
-                source_id=evidence.source_id,
-            )
+    # EVERY M6.6 evidence admission requires a minted verdict bound to exactly this
+    # run + candidate + source — not only when the EAR asserts the truth value
+    # (round-11 finding 1).
+    authorized = bool(
+        isinstance(verification, OriginalSourceVerification)
+        and verification.authorizes_evidence_for(
+            ledger_id=ledger_id,
+            source_candidate_id=source_candidate_id,
+            source_id=evidence.source_id,
         )
-        if not authorized:
-            raise SourceBridgeError(
-                "an EAR-01 asserting original_source_verified may be admitted ONLY when "
-                "the bridge's own verdict verifies exactly this run/candidate/source"
-            )
+    )
+    if not authorized:
+        raise SourceBridgeError(
+            "evidence admission requires a minted verdict that authorizes exactly this "
+            "run/candidate/source"
+        )
     return registry.admit_evidence(evidence, admission)
 
 
@@ -983,9 +991,16 @@ def process_discovered_sources(
 
     ``evidence_builder`` (optional) is a callable
     ``(candidate_id, src01_id, verification) -> tuple[EvidenceRecord, EvidenceAdmissionRecord] | None``
-    supplied by the caller (deterministic fixtures in tests). When omitted, the
-    candidate is disposed IMPORTED with the source admission only, and the
-    outcome truthfully reports that no canonical evidence was admitted.
+    supplied by the caller (deterministic fixtures in tests). It must build the EAR with
+    ``build_evidence_admission(..., ledger_id=<run>, source_candidate_id=candidate_id)`` so
+    the canonical truth value can only be set by a verdict bound to that exact
+    run/candidate/source. When the builder is omitted, the candidate is disposed IMPORTED
+    with the source admission only, and the outcome truthfully reports that no canonical
+    evidence was admitted.
+
+    Cross-store partial failures are reconciled: if canonical EV-01/EAR-01 were already
+    committed by an earlier attempt, the disposition references the EXISTING records
+    instead of recording a false evidence-admission failure.
     """
     registered = register_discovered_candidates(
         store, ledger_id=ledger_id, references=references,
@@ -1043,13 +1058,27 @@ def process_discovered_sources(
                 )
                 if built is not None:
                     ev, ear = built
-                    admit_candidate_evidence(
-                        registry, evidence=ev, admission=ear,
-                        ledger_id=ledger_id,
-                        source_candidate_id=reg.source_candidate_id,
-                        verified_source_id=admission.src01_id,
-                        verification=admission.verification,
-                    )
+                    try:
+                        admit_candidate_evidence(
+                            registry, evidence=ev, admission=ear,
+                            ledger_id=ledger_id,
+                            source_candidate_id=reg.source_candidate_id,
+                            verified_source_id=admission.src01_id,
+                            verification=admission.verification,
+                        )
+                    except IntegrityConflict:
+                        # CROSS-STORE PARTIAL FAILURE (round-11 finding 2): a previous
+                        # attempt may already have committed these exact canonical
+                        # records (e.g. the ledger disposition write failed afterwards).
+                        # Reconcile by READ-BACK rather than recording a false failure.
+                        if not (
+                            registry.contains("EV-01", ev.evidence_id)
+                            and registry.contains("EAR-01", ear.admission_id)
+                        ):
+                            raise
+                        stored_ev = registry.load("EV-01", ev.evidence_id)
+                        if getattr(stored_ev, "source_id", None) != admission.src01_id:
+                            raise
                     evidence_ids = (ev.evidence_id,)
                     ear_ids = (ear.admission_id,)
             except Exception as exc:  # cross-store boundary: preserve committed state
