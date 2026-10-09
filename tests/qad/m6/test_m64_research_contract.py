@@ -51,12 +51,18 @@ from qad.m6.ledger import (
     validate_rrm_deep_research_runs,
 )
 from qad.m6.research_contract import (
+    DEFAULT_PROOF_RESOLVER,
+    NO_VERIFIED_PROOF_RESOLVER,
     REQUEST_ISOLATION_UNVERIFIED,
     S10_CAPABILITY,
     ClosedCorpusEnforcement,
+    DeepResearchProofResolver,
     DeepResearchRequest,
     DeepResearchResult,
     IsolationVerification,
+    ProofKind,
+    ProofVerification,
+    ProofVerificationRequest,
     RequestAuthorityViolation,
     ResearchRequestError,
     ResearchResultError,
@@ -80,6 +86,65 @@ from qad.m6.snapshot import (
 AS_OF = "2026-01-01"
 ADMITTED = "2025-12-15T00:00:00+00:00"
 _FIXED_NOW = dt.datetime(2026, 10, 7, 12, 0, 0, tzinfo=dt.timezone.utc)
+
+#: Sentinel so a test can pass an EXPLICIT ``None`` for ``request`` /
+#: ``proof_resolver`` (to prove the fail-closed default) without the helper
+#: substituting its defaults.
+_KEEP_DEFAULT = object()
+
+
+class _StubProofResolver:
+    """DETERMINISTIC TEST-ONLY proof resolver — NOT a production resolver.
+
+    Implements the FD #152 seam interface (:class:`DeepResearchProofResolver`) so
+    the SUCCESS representation and the verification binding can be exercised
+    without any provider. It echoes the bound execution identity of the context it
+    is given (so the run-binding checks are real), can DENY either proof kind, and
+    can deliberately mis-bind its answer to a different run to prove that proof
+    replay / foreign proofs are rejected.
+    """
+
+    def __init__(
+        self,
+        *,
+        closed_corpus: bool = True,
+        isolation: bool = True,
+        corpus_reason: str = "stub: closed-corpus proof not verified",
+        isolation_reason: str = "stub: request-isolation proof not verified",
+        bind_to: dict | None = None,
+    ) -> None:
+        self._closed_corpus = closed_corpus
+        self._isolation = isolation
+        self._corpus_reason = corpus_reason
+        self._isolation_reason = isolation_reason
+        self._bind_to = dict(bind_to or {})
+
+    def verify_proof(self, context: ProofVerificationRequest) -> ProofVerification:
+        is_corpus = context.proof_kind is ProofKind.CLOSED_CORPUS_ENFORCEMENT
+        verified = self._closed_corpus if is_corpus else self._isolation
+        reason = self._corpus_reason if is_corpus else self._isolation_reason
+
+        def bound(name: str):
+            return self._bind_to.get(name, getattr(context, name))
+
+        return ProofVerification(
+            proof_kind=bound("proof_kind"),
+            verified=verified,
+            request_id=bound("request_id"),
+            research_run_id=bound("research_run_id"),
+            ledger_id=bound("ledger_id"),
+            provider_surface=bound("provider_surface"),
+            input_snapshot_hash=bound("input_snapshot_hash"),
+            evidence_ref=bound("evidence_ref") if verified else None,
+            failure_reason=None if verified else reason,
+        )
+
+
+def _resolver(**kwargs) -> _StubProofResolver:
+    """A declared test stub — asserted to satisfy the FD #152 resolver interface."""
+    stub = _StubProofResolver(**kwargs)
+    assert isinstance(stub, DeepResearchProofResolver)  # interface conformance
+    return stub
 
 
 # =====================================================================
@@ -162,6 +227,12 @@ def _request(snapshot: SealedInputSnapshot, **overrides):
 
 def _result(**overrides):
     payload = b"synthesis text [1][2]"
+    # FD #152 — a SUCCESS result must be verified through the trusted
+    # proof-verification seam. The bound request supplies the exact execution
+    # identity, and `_StubProofResolver` is a DETERMINISTIC TEST-ONLY stub (it is
+    # NOT a production resolver; M6.4 ships none).
+    supplied_request = overrides.pop("request", _KEEP_DEFAULT)
+    supplied_resolver = overrides.pop("proof_resolver", _KEEP_DEFAULT)
     kwargs = dict(
         request_id="REQ-1",
         research_run_id="RR-1",
@@ -180,6 +251,12 @@ def _result(**overrides):
         isolation_evidence_ref="EVID-ISOLATION-1",
     )
     kwargs.update(overrides)
+    kwargs["request"] = (
+        _request(_snapshot()) if supplied_request is _KEEP_DEFAULT else supplied_request
+    )
+    kwargs["proof_resolver"] = (
+        _StubProofResolver() if supplied_resolver is _KEEP_DEFAULT else supplied_resolver
+    )
     return build_deep_research_result(**kwargs)
 
 
@@ -625,15 +702,21 @@ class TestReviewHardening:
                 status="SUCCESS", provider_surface="p",  # type: ignore[arg-type]
             )
         payload = b"direct"
-        ok = DeepResearchResult(
-            request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
-            status=ResearchResultStatus.SUCCESS, provider_surface="p",
-            result_bytes=payload, result_sha256=compute_result_sha256(payload),
-            closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
-            isolation_verification=IsolationVerification.VERIFIED,
-            closed_corpus_evidence_ref="EVID-CORPUS-1",
-            isolation_evidence_ref="EVID-ISO-1",
-        )
+        # FD #152: the direct construction path can NOT authorize SUCCESS — the
+        # verified-proof attestation is minted only by the trusted builder path.
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=payload, result_sha256=compute_result_sha256(payload),
+                closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+                isolation_verification=IsolationVerification.VERIFIED,
+                closed_corpus_evidence_ref="EVID-CORPUS-1",
+                isolation_evidence_ref="EVID-ISO-1",
+            )
+        # … the trusted builder path with a verified resolver still produces a
+        # hash-matching, non-canonical SUCCESS.
+        ok = _result(result_bytes=payload, result_sha256=compute_result_sha256(payload))
         assert result_matches_hash(ok) is True
 
     def test_35_direct_request_construction_is_still_validated(self):
@@ -900,6 +983,18 @@ class TestReviewHardening:
                 closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
                 isolation_verification=IsolationVerification.VERIFIED,
                 closed_corpus_evidence_ref="EVID-C",  # isolation evidence missing
+            )
+        # FD #152: even with BOTH evidence references and matching identity, the
+        # direct construction still cannot authorize SUCCESS (no verified proof).
+        with pytest.raises(ResearchResultError):
+            DeepResearchResult(
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                status=ResearchResultStatus.SUCCESS, provider_surface="p",
+                result_bytes=payload, result_sha256=compute_result_sha256(payload),
+                closed_corpus_enforcement=ClosedCorpusEnforcement.ENFORCED,
+                isolation_verification=IsolationVerification.VERIFIED,
+                closed_corpus_evidence_ref="EVID-C",
+                isolation_evidence_ref="EVID-I",
             )
 
     def test_50_snapshot_closed_corpus_flag_cannot_be_bypassed(self):

@@ -47,8 +47,56 @@ activation; no claim that enforcement or isolation has been proven live. **M6.5 
 Telemetry / Idempotency) NOT started — blocked until M6.4 passes independent review.**
 All 5 cron PAUSED. O3 CLOSED. FD #142–151 not reopened.
 
-IMPLEMENTATION + VERIFICATION RESULTS: pending — appended below in this session after the
-Option-B seam is implemented, tested, and independently reviewed.
+IMPLEMENTATION + VERIFICATION RESULTS — COMPLETE (9 Oct 2026)
+
+Governance commit `e13a64e` (FD #152 register item + §21 chain + PROJECT_STATE +
+this session log + the co-touched locked audit-register date). Implementation in
+the next bounded commit.
+
+What was built (`qad/m6/research_contract.py`; everything NON-CANONICAL — no new
+schema, no SRC-01 / EV-01 semantics):
+- `ProofKind` — CLOSED_CORPUS_ENFORCEMENT / REQUEST_ISOLATION.
+- `ProofVerificationRequest` (frozen) — the immutable verification CONTEXT derived
+  from the authoritative `DeepResearchRequest`: proof_kind, request_id,
+  research_run_id, ledger_id, provider_surface, input_snapshot_hash, evidence_ref.
+- `ProofVerification` (frozen) — the structured RESULT (never a naked bool):
+  proof_kind, verified, the bound identity, the RESOLVED evidence_ref, and a
+  required failure_reason when unverified.
+- `DeepResearchProofResolver` — a `typing.Protocol` (runtime_checkable) with
+  `verify_proof(context) -> ProofVerification`. It is an injected orchestration
+  dependency, never provider data and never a field on the result.
+- `DEFAULT_PROOF_RESOLVER` — the fail-closed deny-all default
+  (`NO_VERIFIED_PROOF_RESOLVER_CONFIGURED`). M6.4 ships NO production resolver.
+- `_VerifiedProofAttestation` — private, immutable, token-guarded capability
+  minted ONLY by the trusted verification path; a SUCCESS result must carry one
+  bound to its own identity.
+- `build_deep_research_result(..., request=..., proof_resolver=...)` — a SUCCESS
+  now requires the authoritative bound request, the ENFORCED/VERIFIED claim,
+  non-blank evidence IDENTIFIERS, and BOTH proofs verified by the resolver AND
+  bound to the exact run. An invalid SUCCESS is REJECTED, never coerced.
+- `DeepResearchResult` gains `input_snapshot_hash` + the private attestation field;
+  `__post_init__` refuses a SUCCESS without a genuine bound attestation, so the
+  direct-construction path cannot bypass verification.
+- The result envelope carries NO resolver / callable / transport / connection (§8).
+
+Verification (real executions; hermes-agent venv 3.11.15; external `--basetemp`;
+no `.sqlite3` residue in any worktree):
+- **RED demonstrated:** with the seam temporarily neutered the new suite reported
+  **17 failed / 10 passed**; restored it reports **27/27 GREEN**.
+- M6.4 existing suite **57/57** (unchanged count — every Round 1–13 test retained);
+  new seam suite **27/27**; `tests/qad/m6` **192/192**; `tests/qad` **727 passed /
+  1 inherited failure**; `tests/ops` **94 passed**; full suite **1010 passed /
+  18 failed / 2 collection errors**.
+- The 18 failures + 2 errors are INHERITED, proven by re-running at clean HEAD
+  `e13a64e` in a detached worktree (identical results): 17 ×
+  `tests/locked/test_real_data_api.py` (missing `alpha-momentum-v0/output/`
+  artifact), 1 × `tests/qad/test_contract_conformance.py::test_schema_build_identity`,
+  `tests/test_capital_office_semantics.py` + one locked collection error
+  (environment). **Zero regressions from this change.**
+- `main` unchanged `5bf107774b29e5a5fe4dcec5846800b9b48361ba`; 5/5 cron PAUSED;
+  M6.5 NOT started; no provider transport; canonical schema count still 68.
+
+Round-14 family-independent review: see the verdict recorded below.
 
 # Session — 2026-10-07 (M6.4 Research Request/Result Adapter Contract — code GREEN, review round 13 = C, 1 open finding escalated)
 

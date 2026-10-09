@@ -62,9 +62,26 @@ snapshot. So a direct construction cannot inject SEALED authority, even with a
 recomputed payload hash. A fully consistent in-process forgery by code that can
 already import this package is outside the process trust boundary — capability
 isolation is not provided by a plain Python dataclass, exactly as the accepted
-M6.2/M6.3 clusters already document. Positive enforcement/isolation PROOF claims
-are likewise not accepted at this cluster (evidence belongs to M6.7/M6.8); only
-``NOT_VERIFIED`` and the fail-closed states are expressible here.
+M6.2/M6.3 clusters already document.
+
+Trusted proof-verification seam (FD #152)
+-----------------------------------------
+``SUCCESS`` stays representable and testable here, but a positive
+enforcement/isolation CLAIM — and equally a non-empty evidence-reference string —
+is NOT proof. ``SUCCESS`` is constructed ONLY after BOTH the closed-corpus
+enforcement proof AND the request-isolation proof have been VERIFIED through a
+trusted, provider-neutral seam (:class:`DeepResearchProofResolver`): an injected
+orchestration dependency that returns a structured :class:`ProofVerification`
+bound to the EXACT run (request_id, research_run_id, ledger_id, provider_surface,
+input_snapshot_hash, proof reference, proof kind), so a proof obtained for one run
+can never authorize another run's ``SUCCESS``. The verified outcome is minted into
+a private immutable attestation, so the direct ``DeepResearchResult(...)`` path
+cannot authorize ``SUCCESS`` either. The default resolver DENIES (M6.4 ships NO
+production-success resolver), so a real ``SUCCESS`` is impossible inside M6.4
+alone — that is expected; the test boundary may inject a deterministic stub purely
+to exercise the seam. M6.4 defines the INTERFACE only: the real proof-producing /
+proof-resolving implementation (Gemini, Notebook transport, browser automation,
+provider proof collection) belongs to M6.7/M6.8.
 """
 
 from __future__ import annotations
@@ -75,7 +92,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Protocol, Sequence, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -104,6 +121,7 @@ __all__ = [
     "S10_CAPABILITY",
     "REQUEST_ISOLATION_UNVERIFIED",
     "PROVIDER_CANNOT_ENFORCE_SEALED_INPUT",
+    "NO_VERIFIED_PROOF_RESOLVER",
     "ResearchContractError",
     "RequestAuthorityViolation",
     "ResearchRequestError",
@@ -111,6 +129,11 @@ __all__ = [
     "ResearchResultStatus",
     "ClosedCorpusEnforcement",
     "IsolationVerification",
+    "ProofKind",
+    "ProofVerificationRequest",
+    "ProofVerification",
+    "DeepResearchProofResolver",
+    "DEFAULT_PROOF_RESOLVER",
     "ProviderConfiguration",
     "SourceCorpusDescriptor",
     "DeepResearchRequest",
@@ -171,8 +194,9 @@ class ResearchResultStatus(str, Enum):
 class ClosedCorpusEnforcement(str, Enum):
     """Closed-corpus enforcement evidence carried on a result.
 
-    M6.4 never claims enforcement: the default is ``NOT_VERIFIED``. ``ENFORCED``
-    is reserved for a later cluster's real evidence; ``CANNOT_ENFORCE`` forces
+    ``NOT_VERIFIED`` is the default. ``ENFORCED`` is a POSITIVE CLAIM that may
+    only be carried once the trusted proof seam (FD #152) has verified the
+    closed-corpus enforcement proof for the exact run; ``CANNOT_ENFORCE`` forces
     ``PROVIDER_CANNOT_ENFORCE_SEALED_INPUT`` (fail closed — never a fabricated
     success).
     """
@@ -183,11 +207,347 @@ class ClosedCorpusEnforcement(str, Enum):
 
 
 class IsolationVerification(str, Enum):
-    """Request-isolation proof state carried on a result (M6.0 §11.2 R7)."""
+    """Request-isolation proof state carried on a result (M6.0 §11.2 R7).
+
+    ``NOT_VERIFIED`` is the default. ``VERIFIED`` is a POSITIVE CLAIM that may
+    only be carried once the trusted proof seam (FD #152) has verified the
+    request-isolation proof for the exact run; ``UNVERIFIED`` forces
+    ``REQUEST_ISOLATION_UNVERIFIED`` (fail closed).
+    """
 
     NOT_VERIFIED = "NOT_VERIFIED"
     VERIFIED = "VERIFIED"
     UNVERIFIED = "UNVERIFIED"
+
+
+# ---------------------------------------------------------------------------
+# Trusted proof-verification seam (FD #152) — INTERFACE ONLY, non-canonical
+# ---------------------------------------------------------------------------
+
+
+#: Failure reason the fail-closed default resolver reports: M6.4 ships no
+#: production-success resolver, so verification is denied.
+NO_VERIFIED_PROOF_RESOLVER = "NO_VERIFIED_PROOF_RESOLVER_CONFIGURED"
+
+
+class ProofKind(str, Enum):
+    """The two independent proofs ``SUCCESS`` requires (M6.0 §5 / §11.2 R7)."""
+
+    CLOSED_CORPUS_ENFORCEMENT = "CLOSED_CORPUS_ENFORCEMENT"
+    REQUEST_ISOLATION = "REQUEST_ISOLATION"
+
+
+@dataclass(frozen=True)
+class ProofVerificationRequest:
+    """Immutable verification context DERIVED from the authoritative request.
+
+    The resolver is asked to verify ONE proof kind, bound to the EXACT logical
+    execution context — so a proof obtained for one run can never authorize
+    another run's ``SUCCESS``. The context is built from the bound
+    :class:`DeepResearchRequest`, never from duplicated caller strings.
+    """
+
+    proof_kind: ProofKind
+    request_id: str
+    research_run_id: str
+    ledger_id: str
+    provider_surface: str
+    input_snapshot_hash: str
+    #: An evidence reference is an IDENTIFIER the resolver must resolve and
+    #: verify — it is never proof by itself.
+    evidence_ref: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.proof_kind, ProofKind):
+            raise ResearchResultError("proof_kind must be a ProofKind")
+        for name in (
+            "request_id", "research_run_id", "ledger_id", "provider_surface",
+            "input_snapshot_hash", "evidence_ref",
+        ):
+            if not _has_visible_text(getattr(self, name)):
+                raise ResearchResultError(f"{name} must be a non-blank string")
+
+
+@dataclass(frozen=True)
+class ProofVerification:
+    """Structured immutable verification RESULT — deliberately not a naked bool.
+
+    The outcome, the resolved evidence reference and the bound execution identity
+    travel together, so the caller can prove the verification applies to the exact
+    run being authorized. NON-CANONICAL: this is not SRC-01 / EV-01 / canonical
+    provenance and it adds no canonical schema.
+    """
+
+    proof_kind: ProofKind
+    verified: bool
+    request_id: str
+    research_run_id: str
+    ledger_id: str
+    provider_surface: str
+    input_snapshot_hash: str
+    evidence_ref: str | None = None
+    failure_reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.proof_kind, ProofKind):
+            raise ResearchResultError("proof_kind must be a ProofKind")
+        if not isinstance(self.verified, bool):
+            raise ResearchResultError("verified must be a bool")
+        for name in (
+            "request_id", "research_run_id", "ledger_id", "provider_surface",
+            "input_snapshot_hash",
+        ):
+            if not _has_visible_text(getattr(self, name)):
+                raise ResearchResultError(f"{name} must be a non-blank string")
+        if self.verified:
+            if not _has_visible_text(self.evidence_ref):
+                raise ResearchResultError(
+                    "a verified proof must carry the resolved evidence reference"
+                )
+            if self.failure_reason is not None:
+                raise ResearchResultError(
+                    "a verified proof must not carry a failure_reason"
+                )
+        elif not _has_visible_text(self.failure_reason):
+            raise ResearchResultError(
+                "an unverified proof requires a non-blank failure_reason "
+                "(failures are never a silent blank)"
+            )
+
+
+@runtime_checkable
+class DeepResearchProofResolver(Protocol):
+    """Trusted, provider-neutral proof-verification seam (M6.4 INTERFACE ONLY).
+
+    The resolver is a trusted ORCHESTRATION DEPENDENCY — not provider-supplied
+    free-form data, and never stored on the result. It MUST independently verify
+    the proof (never merely test ``bool(evidence_ref)`` / ``evidence_ref is not
+    empty``) and MUST echo the exact bound execution identity in its
+    :class:`ProofVerification`. The real implementation arrives in M6.7/M6.8.
+    """
+
+    def verify_proof(self, context: ProofVerificationRequest) -> ProofVerification:
+        """Verify ONE proof kind for the exact run described by ``context``."""
+        ...
+
+
+class _DenyAllProofResolver:
+    """Fail-closed default: NO VERIFIED PROOF -> NO ``SUCCESS``."""
+
+    __slots__ = ()
+
+    def verify_proof(self, context: ProofVerificationRequest) -> ProofVerification:
+        return ProofVerification(
+            proof_kind=context.proof_kind,
+            verified=False,
+            request_id=context.request_id,
+            research_run_id=context.research_run_id,
+            ledger_id=context.ledger_id,
+            provider_surface=context.provider_surface,
+            input_snapshot_hash=context.input_snapshot_hash,
+            evidence_ref=None,
+            failure_reason=NO_VERIFIED_PROOF_RESOLVER,
+        )
+
+
+#: M6.4 ships NO production-success resolver: absent an explicitly injected
+#: resolver, verification is DENIED (fail closed).
+DEFAULT_PROOF_RESOLVER: DeepResearchProofResolver = _DenyAllProofResolver()
+
+
+_ATTESTATION_TOKEN = object()
+
+
+class _VerifiedProofAttestation:
+    """Private immutable capability minted ONLY by the trusted verification path.
+
+    A ``SUCCESS`` result must carry one, and it must bind that result's exact
+    identity. The type is private and its constructor is token-guarded, so the
+    direct ``DeepResearchResult(...)`` path cannot fabricate a ``SUCCESS``. This is
+    a BOUNDED in-process mechanism — cryptographic/process capability isolation is
+    explicitly NOT claimed (the accepted M6.2/M6.3 process trust boundary stands).
+    """
+
+    __slots__ = (
+        "request_id",
+        "research_run_id",
+        "ledger_id",
+        "provider_surface",
+        "input_snapshot_hash",
+        "closed_corpus_evidence_ref",
+        "isolation_evidence_ref",
+    )
+
+    def __init__(
+        self,
+        *,
+        _token: object,
+        request_id: str,
+        research_run_id: str,
+        ledger_id: str,
+        provider_surface: str,
+        input_snapshot_hash: str,
+        closed_corpus_evidence_ref: str,
+        isolation_evidence_ref: str,
+    ) -> None:
+        if _token is not _ATTESTATION_TOKEN:
+            raise ResearchResultError(
+                "a verified-proof attestation may only be created by the M6.4 "
+                "trusted proof-verification path"
+            )
+        object.__setattr__(self, "request_id", request_id)
+        object.__setattr__(self, "research_run_id", research_run_id)
+        object.__setattr__(self, "ledger_id", ledger_id)
+        object.__setattr__(self, "provider_surface", provider_surface)
+        object.__setattr__(self, "input_snapshot_hash", input_snapshot_hash)
+        object.__setattr__(self, "closed_corpus_evidence_ref", closed_corpus_evidence_ref)
+        object.__setattr__(self, "isolation_evidence_ref", isolation_evidence_ref)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        raise AttributeError("a verified-proof attestation is immutable")
+
+    def __delattr__(self, name: str) -> None:
+        raise AttributeError("a verified-proof attestation is immutable")
+
+
+#: The identity fields a verified-proof attestation must bind to the result.
+_ATTESTED_IDENTITY_FIELDS = (
+    "request_id", "research_run_id", "ledger_id", "provider_surface",
+    "input_snapshot_hash", "closed_corpus_evidence_ref", "isolation_evidence_ref",
+)
+
+
+def _attestation_mismatch(
+    attestation: _VerifiedProofAttestation, result: "DeepResearchResult"
+) -> str | None:
+    """Return the first identity field the attestation does not bind, else None."""
+    for name in _ATTESTED_IDENTITY_FIELDS:
+        if getattr(attestation, name) != getattr(result, name):
+            return (
+                f"{name}: result carries {getattr(result, name)!r} but the verified "
+                f"proof binds {getattr(attestation, name)!r}"
+            )
+    return None
+
+
+def _proof_context_from_request(
+    request: "DeepResearchRequest", proof_kind: ProofKind, evidence_ref: str
+) -> ProofVerificationRequest:
+    """Build the immutable verification context from the authoritative request."""
+    return ProofVerificationRequest(
+        proof_kind=proof_kind,
+        request_id=request.request_id,
+        research_run_id=request.research_run_id,
+        ledger_id=request.ledger_id,
+        provider_surface=request.provider.provider_surface,
+        input_snapshot_hash=request.input_snapshot_hash,
+        evidence_ref=evidence_ref,
+    )
+
+
+def _verification_binding_mismatch(
+    context: ProofVerificationRequest, verification: ProofVerification
+) -> str | None:
+    """Return the first field where the returned proof is not bound, else None.
+
+    This is what blocks proof replay: a verification produced for Request A (or
+    for a different proof kind / ledger / snapshot) does not match the context of
+    the run currently being authorized.
+    """
+    for name in (
+        "proof_kind", "request_id", "research_run_id", "ledger_id",
+        "provider_surface", "input_snapshot_hash", "evidence_ref",
+    ):
+        if getattr(verification, name) != getattr(context, name):
+            return (
+                f"{name}: verification says {getattr(verification, name)!r}, the run "
+                f"requires {getattr(context, name)!r}"
+            )
+    return None
+
+
+def _invoke_proof_resolver(
+    resolver: DeepResearchProofResolver, context: ProofVerificationRequest
+) -> ProofVerification:
+    """Call the resolver; any failure or non-ProofVerification return fails closed."""
+    try:
+        verification = resolver.verify_proof(context)
+    except ResearchContractError:
+        raise
+    except Exception as exc:  # noqa: BLE001 — a failing resolver must fail closed
+        raise ResearchResultError(
+            f"the proof resolver raised {type(exc).__name__} while verifying "
+            f"{context.proof_kind.value}; SUCCESS refused (fail closed)"
+        ) from exc
+    if not isinstance(verification, ProofVerification):
+        raise ResearchResultError(
+            "the proof resolver must return a ProofVerification (a bare bool or any "
+            "other object is not proof)"
+        )
+    return verification
+
+
+def _verify_success_proofs(
+    *,
+    request: "DeepResearchRequest",
+    proof_resolver: "DeepResearchProofResolver | None",
+    corpus_evidence_ref: str | None,
+    isolation_evidence_ref: str | None,
+) -> _VerifiedProofAttestation:
+    """Run the trusted seam for BOTH proofs and mint the attestation.
+
+    Fail-closed: a missing/blank evidence reference, a missing resolver (the
+    default DENIES), a resolver that verifies only one proof, or a verification
+    that is not bound to the exact run all refuse ``SUCCESS``.
+    """
+    if not _has_visible_text(corpus_evidence_ref):
+        raise ResearchResultError(
+            "SUCCESS requires a non-blank closed_corpus_evidence_ref — an identifier "
+            "the trusted resolver must resolve and verify (a string is not proof)"
+        )
+    if not _has_visible_text(isolation_evidence_ref):
+        raise ResearchResultError(
+            "SUCCESS requires a non-blank isolation_evidence_ref — an identifier the "
+            "trusted resolver must resolve and verify (a string is not proof)"
+        )
+    resolver = DEFAULT_PROOF_RESOLVER if proof_resolver is None else proof_resolver
+    if not callable(getattr(resolver, "verify_proof", None)):
+        raise ResearchResultError(
+            "proof_resolver must implement verify_proof(context) -> ProofVerification"
+        )
+    contexts = (
+        _proof_context_from_request(
+            request, ProofKind.CLOSED_CORPUS_ENFORCEMENT, corpus_evidence_ref
+        ),
+        _proof_context_from_request(
+            request, ProofKind.REQUEST_ISOLATION, isolation_evidence_ref
+        ),
+    )
+    resolved_refs: list[str] = []
+    for context in contexts:
+        verification = _invoke_proof_resolver(resolver, context)
+        mismatch = _verification_binding_mismatch(context, verification)
+        if mismatch is not None:
+            raise ResearchResultError(
+                "SUCCESS refused: the resolver returned a proof that is not bound to "
+                f"the exact run being authorized ({context.proof_kind.value} — {mismatch})"
+            )
+        if verification.verified is not True:
+            raise ResearchResultError(
+                f"SUCCESS refused: the trusted proof resolver did not verify "
+                f"{context.proof_kind.value} ({verification.failure_reason})"
+            )
+        resolved_refs.append(verification.evidence_ref)  # type: ignore[arg-type]
+    return _VerifiedProofAttestation(
+        _token=_ATTESTATION_TOKEN,
+        request_id=request.request_id,
+        research_run_id=request.research_run_id,
+        ledger_id=request.ledger_id,
+        provider_surface=request.provider.provider_surface,
+        input_snapshot_hash=request.input_snapshot_hash,
+        closed_corpus_evidence_ref=resolved_refs[0],
+        isolation_evidence_ref=resolved_refs[1],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -899,9 +1259,21 @@ class DeepResearchResult:
     citation_list_sha256: str | None = None
     #: Opaque references to the positive enforcement/isolation evidence. Required
     #: (non-empty) before ENFORCED / VERIFIED may be claimed, and therefore before
-    #: SUCCESS. M6.4 does not fabricate them; the provider clusters supply them.
+    #: SUCCESS. These are IDENTIFIERS — the trusted proof seam (FD #152) resolves
+    #: and verifies them; M6.4 never treats the string itself as proof.
     closed_corpus_evidence_ref: str | None = None
     isolation_evidence_ref: str | None = None
+    #: The deterministic SEALED input-snapshot identity this result is bound to.
+    #: Set from the authoritative request for a SUCCESS result, where it must also
+    #: agree with the verified-proof attestation; optional for non-SUCCESS results.
+    input_snapshot_hash: str | None = None
+    #: Private immutable verified-proof capability (FD #152) — minted ONLY by the
+    #: trusted verification path in ``build_deep_research_result``. A SUCCESS result
+    #: must carry one bound to its own identity, which is why a directly constructed
+    #: ``DeepResearchResult(...)`` can never authorize SUCCESS. Never a public field.
+    _proof_attestation: "_VerifiedProofAttestation | None" = field(
+        default=None, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         # Immutable pointer collection: a caller-supplied list must not be able to
@@ -943,6 +1315,26 @@ class DeepResearchResult:
             )
         if self.result_bytes is not None and not isinstance(self.result_bytes, bytes):
             raise ResearchResultError("result_bytes must be bytes or None")
+        # ---- trusted proof-verification seam (FD #152) --------------------
+        # SUCCESS is only constructible through the trusted verification path:
+        # it must carry a private attestation, and that attestation must bind the
+        # exact identity of THIS result. A direct construction carries none, so it
+        # can never fabricate a SUCCESS from bare enum claims + invented references.
+        if self.status.is_success:
+            attestation = self._proof_attestation
+            if not isinstance(attestation, _VerifiedProofAttestation):
+                raise ResearchResultError(
+                    "SUCCESS requires a verified-proof attestation produced by the "
+                    "trusted proof-verification path — build the result with "
+                    "build_deep_research_result(request=..., proof_resolver=...); a "
+                    "directly constructed result cannot authorize SUCCESS"
+                )
+            mismatch = _attestation_mismatch(attestation, self)
+            if mismatch is not None:
+                raise ResearchResultError(
+                    "SUCCESS refused: the verified-proof attestation does not bind "
+                    f"this result ({mismatch})"
+                )
         # Citation/source-list companion digest (M6.0 §3): derived and verified.
         expected_citation = compute_citation_list_sha256(self.source_pointers)
         if self.citation_list_sha256 is None:
@@ -1106,11 +1498,20 @@ def build_deep_research_result(
     closed_corpus_evidence_ref: str | None = None,
     isolation_evidence_ref: str | None = None,
     citation_list_sha256: str | None = None,
+    request: "DeepResearchRequest | None" = None,
+    proof_resolver: "DeepResearchProofResolver | None" = None,
 ) -> DeepResearchResult:
     """Build an immutable result envelope from provider output.
 
     SUCCESS is refused for blank output, and a hash is never fabricated for
     absent output. Failures must carry a documented ``failure_detail``.
+
+    FD #152 — a SUCCESS additionally requires the authoritative bound
+    ``request`` and a trusted ``proof_resolver`` that independently verifies BOTH
+    the closed-corpus enforcement and the request-isolation proof for that exact
+    run; a bare ENFORCED/VERIFIED claim plus a non-empty evidence-reference string
+    is never enough. With no resolver injected the default DENIES, so SUCCESS is
+    refused (fail closed). An invalid SUCCESS is rejected, never coerced.
     """
     try:
         status_enum = ResearchResultStatus(status)
@@ -1132,9 +1533,58 @@ def build_deep_research_result(
         ) from None
 
     pointers = tuple(source_pointers)
+
+    # ---- trusted proof-verification seam (FD #152) -------------------------
+    input_snapshot_hash: str | None = None
+    attestation: _VerifiedProofAttestation | None = None
+    if status_enum.is_success:
+        # SUCCESS is bound to the authoritative request (never to duplicated
+        # caller strings) and must be verified through the trusted seam. An
+        # invalid SUCCESS construction is REJECTED — it is never silently coerced
+        # into another status.
+        if not isinstance(request, DeepResearchRequest):
+            raise ResearchResultError(
+                "SUCCESS requires the authoritative bound DeepResearchRequest "
+                "(build_deep_research_result(request=..., proof_resolver=...)); "
+                "duplicated caller strings are not request authority"
+            )
+        for name, supplied, bound in (
+            ("request_id", request_id, request.request_id),
+            ("research_run_id", research_run_id, request.research_run_id),
+            ("ledger_id", ledger_id, request.ledger_id),
+            ("provider_surface", provider_surface, request.provider.provider_surface),
+        ):
+            if not _has_visible_text(supplied):
+                raise ResearchResultError(f"{name} must be a non-blank string")
+            if supplied != bound:
+                raise ResearchResultError(
+                    f"SUCCESS refused: {name} {supplied!r} disagrees with the bound "
+                    f"authoritative request ({bound!r})"
+                )
+        if corpus_enum is not ClosedCorpusEnforcement.ENFORCED:
+            raise ResearchResultError(
+                "SUCCESS requires the positive closed-corpus enforcement CLAIM "
+                "(ENFORCED); a claim alone is never enough — it must also be "
+                "verified by the trusted proof resolver"
+            )
+        if isolation_enum is not IsolationVerification.VERIFIED:
+            raise ResearchResultError(
+                "SUCCESS requires the positive request-isolation CLAIM (VERIFIED); "
+                "a claim alone is never enough — it must also be verified by the "
+                "trusted proof resolver"
+            )
+        attestation = _verify_success_proofs(
+            request=request,
+            proof_resolver=proof_resolver,
+            corpus_evidence_ref=closed_corpus_evidence_ref,
+            isolation_evidence_ref=isolation_evidence_ref,
+        )
+        input_snapshot_hash = request.input_snapshot_hash
+
     # Every M6.4 result invariant is enforced by DeepResearchResult.__post_init__,
     # which runs on ALL construction paths — a directly constructed instance
-    # cannot be invalid either.
+    # cannot be invalid, and (FD #152) cannot be a SUCCESS without the verified
+    # proof attestation minted above.
     return DeepResearchResult(
         request_id=request_id,
         research_run_id=research_run_id,
@@ -1153,6 +1603,8 @@ def build_deep_research_result(
         isolation_verification=isolation_enum,
         closed_corpus_evidence_ref=closed_corpus_evidence_ref,
         isolation_evidence_ref=isolation_evidence_ref,
+        input_snapshot_hash=input_snapshot_hash,
+        _proof_attestation=attestation,
         citation_list_sha256=citation_list_sha256,
     )
 
