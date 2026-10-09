@@ -70,6 +70,7 @@ from qad.m6.source_bridge import (
     SourceAdmissionOutcome,
     SourceBridgeError,
     SourceFailureKind,
+    SourceVerificationCandidate,
     SourceVerificationRequest,
     admit_candidate_evidence,
     build_evidence_admission,

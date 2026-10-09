@@ -29,6 +29,7 @@ from qad.m6.source_bridge import (
     OriginalSourceVerification,
     SourceBridgeError,
     SourceFailureKind,
+    SourceVerificationCandidate,
     build_evidence_admission,
     coerce_discovered_reference,
     compute_source_candidate_id,
@@ -118,7 +119,8 @@ def _ptr(index, reference, **kw):
 
 
 def _verified(source_id, raw=b"alpha", tier="L1", source_type="SEC_FILING", **kw):
-    return OriginalSourceVerification(
+    """An UNTRUSTED verifier-returned CANDIDATE for a verified original document."""
+    return SourceVerificationCandidate(
         verified=True,
         reason="INDEPENDENTLY_VERIFIED",
         source_id=source_id,
@@ -135,7 +137,9 @@ def _verified(source_id, raw=b"alpha", tier="L1", source_type="SEC_FILING", **kw
 
 
 def _failed(kind, reason="NOT_VERIFIED"):
-    return OriginalSourceVerification(verified=False, reason=reason, failure_kind=kind)
+    return SourceVerificationCandidate(
+        verified=False, reason=reason, failure_kind=kind
+    )
 
 
 class _StubVerifier:
@@ -206,6 +210,42 @@ def _admit_direct_source(archive, source_id, raw=b"seeded", retrieval_date="2025
         ),
         raw,
     )
+
+
+def _evidence_builder(*, evidence_id="EV-A", admission_id="EAR-A",
+                      method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+                      evidence_type=EvidenceRecordEvidence_type.CLAIM,
+                      contradicts=None, raises=None):
+    """The DOCUMENTED 3-argument builder signature: (candidate_id, src01_id, verification)."""
+
+    def _build(candidate_id, src01_id, verification):
+        if raises is not None:
+            raise raises
+        ev = _ev(evidence_id, src01_id, evidence_type=evidence_type, contradicts=contradicts)
+        ear = build_evidence_admission(
+            evidence=ev, verification=verification, admission_id=admission_id,
+            admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
+            admission_method=method,
+            validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+        )
+        return ev, ear
+
+    return _build
+
+
+def _per_candidate_builder(mapping):
+    def _build(candidate_id, src01_id, verification):
+        spec = mapping[candidate_id]
+        ev = _ev(spec["ev"], src01_id, contradicts=spec.get("contradicts"))
+        ear = build_evidence_admission(
+            evidence=ev, verification=verification, admission_id=spec["ear"],
+            admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+        )
+        return ev, ear
+
+    return _build
 
 
 # ============================================================ 1-4 identity
@@ -311,9 +351,14 @@ def test_06_unverifiable_original_source_cannot_become_canonical_evidence(store)
 
 
 def test_07_source_byte_mismatch_is_rejected(store):
-    # a "verified" verdict whose content_hash != sha256(raw_bytes) cannot exist
+    # a TRUSTED verdict cannot be constructed directly at all (FD #152 principle)
     with pytest.raises(SourceBridgeError):
-        OriginalSourceVerification(
+        OriginalSourceVerification(verified=True, reason="x")
+    with pytest.raises(SourceBridgeError):
+        OriginalSourceVerification(verified=False, reason="x")
+    # a candidate whose content_hash != sha256(raw_bytes) cannot even be formed
+    with pytest.raises(SourceBridgeError):
+        SourceVerificationCandidate(
             verified=True, reason="x", source_id="S", source_tier="L1",
             source_type="SEC_FILING", content_hash="0" * 64, raw_bytes=b"alpha",
             retrieval_date="2025-11-01",
@@ -428,20 +473,21 @@ def test_12_conflicting_source_identity_is_rejected(store):
 
 def test_13_valid_ev01_ear01_uses_the_existing_gate(store):
     archive = _archive()
-    _admit_direct_source(archive, "SRC-A")
     registry = _registry(archive)
-    verification = _verified("SRC-A")
-    ev, ear = _ev("EV-A", "SRC-A"), _ear("EV-A", "EAR-A")
-    ear = build_evidence_admission(
-        evidence=ev, verification=verification, admission_id="EAR-A",
-        admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
-        admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
-        validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    out = process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+        archive=archive, verifier=_StubVerifier({cid: _verified("SRC-A")}),
+        registry=registry, evidence_builder=_evidence_builder(),
     )
-    registry.admit_evidence(ev, ear)
-    stored = registry.load("EV-01", "EV-A")
-    assert stored.evidence_id == "EV-A"
-    assert "EAR-01" in registry._data and "EAR-A" in registry._data["EAR-01"]
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == ("EV-A",) and o.ear_ids == ("EAR-A",)
+    assert o.evidence_admission_error is None   # the documented 3-arg builder ran
+    assert registry.load("EV-01", "EV-A").evidence_id == "EV-A"
+    assert "EAR-A" in registry._data["EAR-01"]
 
 
 def test_14_ai_extraction_without_actual_verification_is_rejected(store):
@@ -449,9 +495,9 @@ def test_14_ai_extraction_without_actual_verification_is_rejected(store):
     _admit_direct_source(archive, "SRC-A")
     registry = _registry(archive)
     ev = _ev("EV-A", "SRC-A")
-    unverified = _failed(SourceFailureKind.NOT_FOUND)
+    # an UNTRUSTED candidate (or any non-minted object) can never mint "true"
     ear = build_evidence_admission(
-        evidence=ev, verification=unverified, admission_id="EAR-A",
+        evidence=ev, verification=_verified("SRC-A"), admission_id="EAR-A",
         admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
         admission_method=EvidenceAdmissionRecordAdmission_method.AI_EXTRACTION,
         validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
@@ -460,6 +506,22 @@ def test_14_ai_extraction_without_actual_verification_is_rejected(store):
     with pytest.raises(IntegrityConflict):
         registry.admit_evidence(ev, ear)
     assert registry._data.get("EV-01", {}) == {}
+
+    # and a caller-CONSTRUCTED verification object cannot even be passed as a verdict
+    class _Forged:
+        verified = True
+        mismatches = ()
+        source_id = "SRC-A"
+
+    ear2 = build_evidence_admission(
+        evidence=ev, verification=_Forged(), admission_id="EAR-A2",
+        admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
+        admission_method=EvidenceAdmissionRecordAdmission_method.AI_EXTRACTION,
+        validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+    )
+    assert ear2.original_source_verified is None
+    with pytest.raises(IntegrityConflict):
+        registry.admit_evidence(ev, ear2)
 
 
 def test_15_direct_ev01_ear01_bypass_is_rejected(store):
@@ -472,16 +534,15 @@ def test_15_direct_ev01_ear01_bypass_is_rejected(store):
 
 def test_16_raw_evidence_is_not_auto_promoted_to_validated(store):
     archive = _archive()
-    _admit_direct_source(archive, "SRC-A")
     registry = _registry(archive)
-    ev = _ev("EV-A", "SRC-A")  # constructed with RAW
-    ear = build_evidence_admission(
-        evidence=ev, verification=_verified("SRC-A"), admission_id="EAR-A",
-        admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
-        admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
-        validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+        archive=archive, verifier=_StubVerifier({cid: _verified("SRC-A")}),
+        registry=registry, evidence_builder=_evidence_builder(),  # EV built as RAW
     )
-    registry.admit_evidence(ev, ear)
     assert registry.load("EV-01", "EV-A").validation_status is EvidenceRecordValidation_status.RAW
 
 
@@ -579,23 +640,25 @@ def test_20_duplicate_source_references_do_not_erase_candidate_histories(store):
 
 def test_21_conflicting_evidence_is_preserved(store):
     archive = _archive()
-    _admit_direct_source(archive, "SRC-A", raw=b"a")
-    _admit_direct_source(archive, "SRC-B", raw=b"b")
     registry = _registry(archive)
-    ev_a = _ev("EV-A", "SRC-A")
-    ev_b = _ev("EV-B", "SRC-B", contradicts=["EV-A"])
-    for ev, eid in ((ev_a, "EAR-A"), (ev_b, "EAR-B")):
-        ear = build_evidence_admission(
-            evidence=ev, verification=_verified(ev.source_id), admission_id=eid,
-            admission_timestamp=DISCOVERED_AT, admitting_role="Research Director",
-            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
-            validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
-        )
-        registry.admit_evidence(ev, ear)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a"), _ptr(1, "https://sec.gov/b")]
+    c0 = _cid("L-1", 0, "https://sec.gov/a")
+    c1 = _cid("L-1", 1, "https://sec.gov/b")
+    process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+        archive=archive,
+        verifier=_StubVerifier({c0: _verified("SRC-A", raw=b"a"),
+                                c1: _verified("SRC-B", raw=b"b")}),
+        registry=registry,
+        evidence_builder=_per_candidate_builder({
+            c0: {"ev": "EV-A", "ear": "EAR-A"},
+            c1: {"ev": "EV-B", "ear": "EAR-B", "contradicts": ["EV-A"]},
+        }),
+    )
     # BOTH sides preserved; neither averaged away nor deleted
     assert registry.load("EV-01", "EV-A") is not None
-    stored_b = registry.load("EV-01", "EV-B")
-    assert stored_b.contradicts_ids == ["EV-A"]
+    assert registry.load("EV-01", "EV-B").contradicts_ids == ["EV-A"]
 
 
 def test_22_all_four_dispositions_persist_with_honest_reasons(store):
@@ -639,7 +702,7 @@ def test_23_source_admission_succeeds_but_evidence_fails_is_truthful(store):
     )
     cid = _cid("L-1", 0, "https://sec.gov/a")
 
-    def _boom(source_candidate_id, src01_id):
+    def _boom(source_candidate_id, src01_id, verification):
         raise RuntimeError("evidence builder unavailable")
 
     out = process_discovered_sources(
@@ -820,3 +883,97 @@ def test_30_no_network_gemini_browser_or_provider_code():
     src = BRIDGE_PATH.read_text(encoding="utf-8")
     for token in ("import requests", "urlopen(", "socket.", "chromedriver", "selenium"):
         assert token not in src
+
+
+# ======================== 31-34 round-9 closure (forgery / index / duplicates)
+
+
+def test_31_a_verdict_cannot_authorize_another_candidate_run_or_source(store):
+    archive = _archive()
+    _admit_direct_source(archive, "SRC-A", raw=b"alpha")
+    _make_run(store)
+    register_discovered_candidates(
+        store, ledger_id="L-1", references=[_ptr(0, "https://sec.gov/a")],
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    out = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid,
+        verifier=_StubVerifier({cid: _verified("SRC-A")}), archive=archive,
+    )
+    verdict = out.verification
+    assert verdict is not None and verdict.verified is True
+    # bound to THIS run + candidate
+    verdict.assert_attested_for(ledger_id="L-1", source_candidate_id=cid, source_id="SRC-A")
+    with pytest.raises(SourceBridgeError):
+        verdict.assert_attested_for(ledger_id="L-1", source_candidate_id="SC-someone-else")
+    with pytest.raises(SourceBridgeError):
+        verdict.assert_attested_for(ledger_id="L-OTHER", source_candidate_id=cid)
+    with pytest.raises(SourceBridgeError):
+        verdict.assert_attested_for(
+            ledger_id="L-1", source_candidate_id=cid, source_id="SRC-DIFFERENT"
+        )
+    # and it can authorize canonical evidence ONLY for its own source
+    assert verdict.authorizes_evidence_for(source_id="SRC-A") is True
+    assert verdict.authorizes_evidence_for(source_id="SRC-B") is False
+
+
+def test_32_no_importable_mint_path_can_forge_a_trusted_verdict():
+    import qad.m6.source_bridge as sb
+
+    with pytest.raises(SourceBridgeError):
+        OriginalSourceVerification(verified=True, reason="forged")
+    with pytest.raises(SourceBridgeError):
+        OriginalSourceVerification(verified=False, reason="forged")
+    # ...and valid-looking BINDINGS do not help: the module-private mint token is what
+    # actually gates a trusted verdict (this isolates the token check from the binding check)
+    with pytest.raises(SourceBridgeError):
+        OriginalSourceVerification(
+            verified=True, reason="forged",
+            bound_ledger_id="L-1", bound_source_candidate_id="SC-forged",
+        )
+    # no module-addressable mint CALLABLE exists (the minter is closure-scoped; only
+    # the non-callable sentinel token lives at module scope)
+    assert [n for n in dir(sb) if "mint" in n.lower() and callable(getattr(sb, n))] == []
+    tree = ast.parse(BRIDGE_PATH.read_text(encoding="utf-8"))
+    module_level = [
+        n.name for n in tree.body
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and "mint" in n.name.lower()
+    ]
+    assert module_level == []
+
+
+def test_33_the_pointer_index_is_reported_to_the_verifier_exactly(store):
+    archive = _archive()
+    _make_run(store)
+    seen: dict[str, int] = {}
+
+    class _Recording:
+        def verify(self, request, /):
+            seen["index"] = request.pointer_index
+            return _failed(SourceFailureKind.NOT_FOUND)
+
+    register_discovered_candidates(
+        store, ledger_id="L-1", references=[_ptr(512, "https://sec.gov/x")],
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    cid = _cid("L-1", 512, "https://sec.gov/x")
+    verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid, verifier=_Recording(),
+        archive=archive,
+    )
+    assert seen["index"] == 512
+
+
+def test_34_duplicate_input_yields_one_outcome_per_candidate(store):
+    archive = _archive()
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a"), _ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    out = process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+        archive=archive, verifier=_StubVerifier({cid: _verified("SRC-A")}),
+    )
+    assert len(out.outcomes) == 1
+    assert len(store.load_run("L-1").candidates) == 1
+    assert len(store.load_run("L-1").dispositions) == 1

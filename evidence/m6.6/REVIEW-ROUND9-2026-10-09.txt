@@ -1,0 +1,56 @@
+VERDICT: C — M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS:
+1. VERIFIED — The bridge’s canonical-write calls are `archive.admit_source` (`source_bridge.py:577`) and `registry.admit_evidence` (`:714`); M6.6 tests also reject direct `store()` bypasses.
+2. DEFECT — A caller-created `OriginalSourceVerification(verified=True, ...)` set `original_source_verified="true"` and was accepted as EV-01/EAR-01; a caller-supplied self-verifying verifier also admitted SRC-01. See Material Finding 1.
+3. VERIFIED — New SEALED sources and post-AS_OF admissions are refused despite backdated metadata; bridge probes also refused legacy unattested and SRCV-only sources. REPLAY_EXCEPTION without the existing boundary is deferred.
+4. VERIFIED — Candidate identity is deterministic; same-ID/different-reference and same-source-ID/different-bytes conflicts are refused. Replay tests show one durable candidate/disposition per identity. Duplicate input can, however, duplicate returned outcome rows; see Non-blocking Finding 3.
+5. VERIFIED — Contradictory evidence is retained on both records; M6.6 test 21 checks both sides persist.
+6. VERIFIED — Evidence-admission failure leaves the source intact, records no evidence IDs, and reports the partial outcome; the bridge does not claim cross-store rollback.
+7. VERIFIED — M6.6 test 25 re-runs the pipeline and confirms no duplicate candidate, source, or disposition; settled disposition is read back from the ledger.
+8. VERIFIED — Registration precedes admission/disposition; ledger terminalization rejects undisposed candidates and terminal runs reject mutations. The bridge does not terminalize.
+9. VERIFIED — AST scan found no SUCCESS-writing/terminalization calls or SUCCESS attributes in `source_bridge.py`.
+10. VERIFIED — The bridge does not modify or reinterpret `M6_RAW_SUCCESS_API_GATE`; its open/blocking state is documented and covered by M6.6 test 29.
+11. NOT VERIFIED — The bridge AST/import scan found no network, browser, Gemini, Notebook, or provider imports; the project-wide claim that M6.7 has not started cannot be confirmed from this no-Git copy.
+12. NOT VERIFIED — Current schema identity reports 68 schemas and the RRM-01 model has 23 fields, but no Git baseline/diff is available to confirm no change from the reviewed commit.
+
+MATERIAL FINDINGS:
+1. Forged verification can authorize canonical SRC-01 and AI evidence.
+   (a) `OriginalSourceVerification` is directly constructible with `verified=True` (`source_bridge.py:217–267`); `build_evidence_admission` trusts that flag and matching source ID (`:681–700`). A fresh probe constructed the object without calling any verifier, using bytes different from the archive’s source bytes; it produced `"true"` and the registry admitted both EV-01 and EAR-01. A self-verifying injected verifier also produced `SELF_VERIFIER True True True` (admitted, SRC-01 exists, attestation verifies).
+   (b) This defeats the core distinction between a provider/caller assertion and independent verification, allowing unverified bytes/evidence to acquire canonical verified provenance.
+   (c) Require success proof to come only from the trusted verification path, bind it to the candidate/run and exact source ID/hash/bytes in the archive, and prevent a caller-created success record from minting the EAR flag.
+   (d) Verify direct construction and arbitrary per-call verifier cannot admit SRC-01 or set `original_source_verified="true"`; a valid trusted verification bound to matching archive bytes still succeeds.
+
+NON-BLOCKING FINDINGS:
+1. Documented evidence-builder signature is not the invocation signature.
+   (a) The API doc says `(candidate_id, src01_id, verification)` (`source_bridge.py:764–766`), but orchestration calls it with two arguments (`:811`). A three-argument probe was never entered; it returned a caught `TypeError`, leaving evidence unadmitted.
+   (b) This disables the documented optional EV-01/EAR-01 path, but fails closed and reports the partial source-only result.
+   (c) Pass the verification to the builder or change the documented contract and provide an equivalent safe verification route.
+   (d) Add a test using the documented callback signature and assert successful evidence admission.
+2. Citation indices at or above 512 are misreported to the verifier.
+   (a) `_pointer_index_for` searches only `range(0, 512)` (`source_bridge.py:601–619`); `SourcePointer` accepts any non-negative index. Probe index 512 reached the verifier as index 0.
+   (b) The verifier receives an inaccurate citation context; candidate ID/reference binding remains intact.
+   (c) Persist the index or recover it without an arbitrary upper bound.
+   (d) Add an index-512 test and assert the verifier receives 512.
+3. Repeated identical references duplicate result rows.
+   (a) A same-index/same-reference input twice produced `DUPLICATE_INPUT 2 1 1 1`: two outcomes, one unique candidate, one durable candidate, one disposition.
+   (b) Durable integrity is preserved, but consumers can miscount the returned outcomes.
+   (c) Deduplicate registered candidates before producing outcomes, or reject duplicate inputs explicitly.
+   (d) Assert duplicate input yields one outcome or a deterministic input-validation error.
+
+EVIDENCE GAPS:
+- The copy has no `.git`; the requested branch, HEAD `2de4cb8`, canonical `main` at `5bf1077`, and commit diff cannot be independently verified.
+- `PROJECT_STATE.md`/`SESSION_CLOSEOUT.md` are pre-M6.6 closeout snapshots, while M6.6 code is present in this copy. Without Git metadata I cannot establish this copy’s commit identity or reconcile that state.
+- Consequently, M6.7’s project-wide start status and schema/RRM-01 changes relative to the reviewed baseline remain unverified. Current artifacts show 68 schemas.
+- `tests/qad` was not fully green: one `test_schema_build_identity` failure reported `spec_source_sha256` expected `7bf250…` but actual `3b5138…`; without a Git baseline I cannot attribute it.
+
+COMMANDS RUN:
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review/basetemp"` — `354 passed in 11.57s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review/basetemp"` — `30 passed in 2.15s`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review/basetemp"` — `889 passed, 1 failed, 11 warnings in 13.91s`; failure: `tests/qad/test_contract_conformance.py::test_schema_build_identity`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" m66_review_probe.py` — exit 0. Observed: `SELF_VERIFIER True True True`; `FORGED_EVIDENCE_VERIFICATION true True True`; three-argument builder raised the missing-`verification` `TypeError`; `POINTER_INDEX_512 0`; `SEALED_LEGACY UNAVAILABLE`; `SEALED_SRCV_ONLY UNAVAILABLE`; `DUPLICATE_INPUT 2 1 1 1`; AST SUCCESS writers/attributes/provider imports all empty; schema count 68, RRM field count 23. Probe script is inside this disposable copy.
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git remote -v && git log -1 --oneline` — failed: `fatal: not a git repository`.
+- `test -e .git && printf '.git exists\n' || printf 'no .git entry in review copy\n'; git rev-parse --show-toplevel` — reported no `.git` entry, then `fatal: not a git repository`.
+
+POLICY DISAGREEMENT (if any): NONE.
+REVIEW_EXIT=0

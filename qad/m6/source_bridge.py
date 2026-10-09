@@ -215,11 +215,13 @@ class SourceVerificationRequest:
 
 
 @dataclass(frozen=True)
-class OriginalSourceVerification:
-    """Structured, immutable outcome of INDEPENDENT original-source verification.
+class SourceVerificationCandidate:
+    """What a verifier RETURNS — an UNTRUSTED candidate verdict (permissive DTO).
 
-    ``raw_bytes`` are the EXACT original-document bytes the verifier established
-    (supplied through an approved authority boundary — never fetched live here).
+    Deliberately NOT proof: anyone (including a provider-shaped caller) can construct
+    one, so it confers no authority. The bridge converts a candidate into the trusted
+    :class:`OriginalSourceVerification` ONLY through its module-internal minting path,
+    bound to the exact request.
     """
 
     verified: bool
@@ -238,32 +240,101 @@ class OriginalSourceVerification:
 
     def __post_init__(self) -> None:
         if not isinstance(self.reason, str) or not self.reason.strip():
-            raise SourceBridgeError("an original-source verification requires a non-blank reason")
-        if self.verified:
-            for name, value in (
-                ("source_id", self.source_id),
-                ("source_tier", self.source_tier),
-                ("source_type", self.source_type),
-                ("content_hash", self.content_hash),
-                ("retrieval_date", self.retrieval_date),
-            ):
-                if not isinstance(value, str) or not value.strip():
-                    raise SourceBridgeError(
-                        f"a verified original source requires a non-blank {name}"
-                    )
-            if not isinstance(self.raw_bytes, bytes) or not self.raw_bytes:
-                raise SourceBridgeError(
-                    "a verified original source requires the exact original bytes"
-                )
-            if self.mismatches:
-                raise SourceBridgeError(
-                    "a verified original source cannot carry mismatches"
-                )
-            actual = hashlib.sha256(self.raw_bytes).hexdigest()
-            if actual != self.content_hash:
-                raise SourceBridgeError(
-                    "a verified original source requires content_hash == sha256(raw_bytes)"
-                )
+            raise SourceBridgeError("a source verification candidate requires a non-blank reason")
+        if not self.verified:
+            return
+        for name, value in (
+            ("source_id", self.source_id),
+            ("source_tier", self.source_tier),
+            ("source_type", self.source_type),
+            ("content_hash", self.content_hash),
+            ("retrieval_date", self.retrieval_date),
+        ):
+            if not isinstance(value, str) or not value.strip():
+                raise SourceBridgeError(f"a verified candidate requires a non-blank {name}")
+        if not isinstance(self.raw_bytes, bytes) or not self.raw_bytes:
+            raise SourceBridgeError("a verified candidate requires the exact original bytes")
+        if self.mismatches:
+            raise SourceBridgeError("a verified candidate cannot carry mismatches")
+        if hashlib.sha256(self.raw_bytes).hexdigest() != self.content_hash:
+            raise SourceBridgeError("a verified candidate requires content_hash == sha256(raw_bytes)")
+
+
+#: Module-private minting token. A TRUSTED verdict exists only when the module-internal
+#: minting path attached this token; a plain caller cannot obtain a trusted verdict by
+#: construction (FD #152 principle: direct construction cannot bypass verification).
+#: Hostile same-process introspection of the token is OUTSIDE the accepted trust
+#: boundary (FD #152, Founder-fixed).
+_MINT_TOKEN = object()
+
+
+@dataclass(frozen=True)
+class OriginalSourceVerification:
+    """TRUSTED, immutable verdict — mintable ONLY by the bridge's verification path.
+
+    Direct construction is REFUSED. A verdict is minted inside
+    :func:`verify_and_admit_source` and is BOUND to the exact (ledger run, candidate)
+    it was produced for, so a verdict minted for one candidate can never authorize
+    another (no cross-candidate / cross-run replay).
+    """
+
+    verified: bool
+    reason: str
+    failure_kind: SourceFailureKind | None = None
+    source_id: str | None = None
+    source_tier: str | None = None
+    source_type: str | None = None
+    content_hash: str | None = None
+    raw_bytes: bytes | None = None
+    location: str | None = None
+    publication_date: str | None = None
+    retrieval_date: str | None = None
+    title: str | None = None
+    mismatches: tuple[str, ...] = ()
+    _minted: object | None = field(default=None, repr=False, compare=False)
+    bound_ledger_id: str | None = field(default=None, repr=False, compare=False)
+    bound_source_candidate_id: str | None = field(default=None, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        if self._minted is not _MINT_TOKEN:
+            raise SourceBridgeError(
+                "an original-source verdict cannot be constructed directly; it is minted "
+                "only by the trusted verification path (FD #152 principle)"
+            )
+        if not (self.bound_ledger_id and self.bound_source_candidate_id):
+            raise SourceBridgeError("a verdict must be bound to its exact run and candidate")
+
+    def assert_attested_for(
+        self, *, ledger_id: str, source_candidate_id: str, source_id: str | None = None,
+    ) -> None:
+        """Consumption-boundary re-validation (no replay across candidates/runs)."""
+        if self._minted is not _MINT_TOKEN:
+            raise SourceBridgeError("verdict is not a minted trusted verdict")
+        if (
+            self.bound_ledger_id != ledger_id
+            or self.bound_source_candidate_id != source_candidate_id
+        ):
+            raise SourceBridgeError(
+                "verdict is not bound to this run/candidate (minted for "
+                f"{self.bound_ledger_id!r}/{self.bound_source_candidate_id!r})"
+            )
+        if source_id is not None and self.verified and self.source_id != source_id:
+            raise SourceBridgeError(
+                f"verdict source_id {self.source_id!r} does not match {source_id!r}"
+            )
+
+    def authorizes_evidence_for(self, *, source_id: str) -> bool:
+        """True ONLY for a minted VERIFIED verdict for exactly this source.
+
+        This is the sole path that can set the canonical ``original_source_verified``
+        truth value, so an unverified or forged verdict can never mint it.
+        """
+        return bool(
+            self._minted is _MINT_TOKEN
+            and self.verified
+            and not self.mismatches
+            and self.source_id == source_id
+        )
 
 
 class OriginalSourceVerifier(Protocol):
@@ -272,24 +343,26 @@ class OriginalSourceVerifier(Protocol):
     The default state DENIES. A verifier must independently establish the original
     document's identity, location, exact bytes and hash, tier and (where relevant)
     the claim/extract location — provider synthesis alone is never sufficient.
+    It returns an UNTRUSTED :class:`SourceVerificationCandidate`; only the module can
+    turn a candidate into a trusted verdict.
     """
 
-    def verify(self, request: SourceVerificationRequest, /) -> OriginalSourceVerification:
+    def verify(self, request: SourceVerificationRequest, /) -> SourceVerificationCandidate:
         ...
 
 
 class _DenyingOriginalSourceVerifier:
     """Default: NO verified proof -> NO admission (fail closed)."""
 
-    def verify(self, request: SourceVerificationRequest, /) -> OriginalSourceVerification:
-        return OriginalSourceVerification(
+    def verify(self, request: SourceVerificationRequest, /) -> SourceVerificationCandidate:
+        return SourceVerificationCandidate(
             verified=False,
             reason=REASON_NO_VERIFIER,
             failure_kind=SourceFailureKind.INSUFFICIENT_PROOF,
         )
 
 
-#: The shipped default resolver: denies verification.
+#: The shipped default verifier: denies verification.
 DEFAULT_ORIGINAL_SOURCE_VERIFIER: OriginalSourceVerifier = _DenyingOriginalSourceVerifier()
 
 
@@ -367,6 +440,7 @@ def register_discovered_candidates(
                 discovery_timestamp=discovery_timestamp,
                 original_source_verification_status=VERIFICATION_STATUS_PENDING,
                 pit_eligibility=PIT_ELIGIBILITY_UNKNOWN,
+                fingerprint=f"{_POINTER_INDEX_MARKER}{ref.index}",
             )
         except LedgerIdentityConflict:
             # Lost a race with a concurrent identical registration: re-read and
@@ -404,6 +478,7 @@ class SourceAdmissionOutcome:
     admitted: bool = False
     reused: bool = False
     attestation_id: str | None = None
+    verification: OriginalSourceVerification | None = None
 
 
 def _source_exists(archive: Any, source_id: str) -> bool:
@@ -495,13 +570,39 @@ def verify_and_admit_source(
         claimed_title=None,
         provider_claim_original_source_verified=None,
     )
-    verification = resolved.verify(request)
+    candidate_verdict = resolved.verify(request)
+    if not isinstance(candidate_verdict, SourceVerificationCandidate):
+        raise SourceBridgeError(
+            "an original-source verifier must return a SourceVerificationCandidate"
+        )
+
+    def _mint(v: SourceVerificationCandidate) -> OriginalSourceVerification:
+        """Closure-scoped minter — deliberately NOT module-addressable.
+
+        There is no importable path that mints a trusted verdict from bare caller
+        strings, so a trusted verdict can only arise from this verification call.
+        """
+        return OriginalSourceVerification(
+            verified=v.verified, reason=v.reason, failure_kind=v.failure_kind,
+            source_id=v.source_id, source_tier=v.source_tier, source_type=v.source_type,
+            content_hash=v.content_hash, raw_bytes=v.raw_bytes, location=v.location,
+            publication_date=v.publication_date, retrieval_date=v.retrieval_date,
+            title=v.title, mismatches=v.mismatches, _minted=_MINT_TOKEN,
+            bound_ledger_id=record.ledger_id,
+            bound_source_candidate_id=source_candidate_id,
+        )
+
+    verification = _mint(candidate_verdict)
+    verification.assert_attested_for(
+        ledger_id=ledger_id, source_candidate_id=source_candidate_id
+    )
 
     if not verification.verified:
         return SourceAdmissionOutcome(
             source_candidate_id=source_candidate_id,
             disposition=_disposition_for_failure(verification),
             reason=verification.reason,
+            verification=verification,
         )
 
     assert verification.source_id is not None  # enforced by the verification type
@@ -553,6 +654,7 @@ def verify_and_admit_source(
             reason=REASON_REUSED,
             src01_id=source_id,
             reused=True,
+            verification=verification,
         )
 
     # LIVE_CASE_UPDATE (or any future live mode): selective admission through the
@@ -564,6 +666,7 @@ def verify_and_admit_source(
             reason=REASON_REUSED,
             src01_id=source_id,
             reused=True,
+            verification=verification,
         )
 
     source_record = _build_source_record(verification)
@@ -595,27 +698,29 @@ def verify_and_admit_source(
         src01_id=source_id,
         admitted=True,
         attestation_id=attestation_id,
+        verification=verification,
     )
 
 
-def _pointer_index_for(record: RunRecord, source_candidate_id: str) -> int:
-    """Recover the citation index bound into the deterministic candidate id.
+#: Operational marker persisted in the ledger candidate's ``fingerprint`` column so the
+#: citation index is recoverable EXACTLY (no arbitrary search bound). Operational,
+#: non-canonical metadata on a non-canonical ledger — not a schema change.
+_POINTER_INDEX_MARKER = "pointer_index="
 
-    The index is not separately persisted by the accepted M6.3 ledger, so it is
-    recovered by matching the deterministic id for each observed index. Returns 0
-    when it cannot be recovered (the id remains the authoritative binding).
-    """
+
+def _pointer_index_for(record: RunRecord, source_candidate_id: str) -> int:
+    """Recover the citation index exactly as persisted at registration."""
     candidate = {c.source_candidate_id: c for c in record.candidates}.get(
         source_candidate_id
     )
     if candidate is None:
         return 0
-    for index in range(0, 512):
-        if compute_source_candidate_id(
-            ledger_id=record.ledger_id, pointer_index=index,
-            reference=candidate.url_or_identifier,
-        ) == source_candidate_id:
-            return index
+    fingerprint = candidate.fingerprint or ""
+    if fingerprint.startswith(_POINTER_INDEX_MARKER):
+        try:
+            return int(fingerprint[len(_POINTER_INDEX_MARKER):])
+        except ValueError:
+            return 0
     return 0
 
 
@@ -678,11 +783,13 @@ def build_evidence_admission(
     else:
         method_value = str(admission_method)
 
-    verified_here = (
-        verification.verified
-        and not verification.mismatches
-        and verification.source_id == evidence.source_id
-    )
+    # ONLY a minted VERIFIED verdict bound to this exact evidence source can set the
+    # canonical truth value; a forged, unverified, candidate-shaped or cross-source
+    # verdict never can (fail closed).
+    if isinstance(verification, OriginalSourceVerification):
+        verified_here = verification.authorizes_evidence_for(source_id=evidence.source_id)
+    else:
+        verified_here = False
     return EvidenceAdmissionRecord(
         admission_id=admission_id,
         admission_method=EvidenceAdmissionRecordAdmission_method(method_value),
@@ -771,6 +878,16 @@ def process_discovered_sources(
         store, ledger_id=ledger_id, references=references,
         discovery_timestamp=discovery_timestamp,
     )
+    # One outcome row per UNIQUE candidate identity: duplicate input is not a duplicate
+    # candidate (durable integrity already guarantees one candidate/disposition).
+    unique_registered: list[RegisteredCandidate] = []
+    _seen_ids: set[str] = set()
+    for reg in registered:
+        if reg.source_candidate_id in _seen_ids:
+            continue
+        _seen_ids.add(reg.source_candidate_id)
+        unique_registered.append(reg)
+    registered = tuple(unique_registered)
     outcome = BridgeOutcome(ledger_id=ledger_id)
 
     for reg in registered:
@@ -808,7 +925,9 @@ def process_discovered_sources(
         if admission.disposition is CandidateDisposition.IMPORTED and registry is not None \
                 and evidence_builder is not None:
             try:
-                built = evidence_builder(reg.source_candidate_id, admission.src01_id)
+                built = evidence_builder(
+                    reg.source_candidate_id, admission.src01_id, admission.verification
+                )
                 if built is not None:
                     ev, ear = built
                     admit_candidate_evidence(registry, evidence=ev, admission=ear)
@@ -866,6 +985,7 @@ __all__ = [
     "SourceAdmissionOutcome",
     "SourceBridgeError",
     "SourceFailureKind",
+    "SourceVerificationCandidate",
     "SourceVerificationRequest",
     "admit_candidate_evidence",
     "build_evidence_admission",
