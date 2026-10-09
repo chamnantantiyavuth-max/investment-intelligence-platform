@@ -1,0 +1,57 @@
+VERDICT: C
+  C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..15 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+
+1. DEFECT — The new atomic path is atomic, including a two-process race. But the public low-level APIs still permit both an orphan SUCCESS attempt and a SUCCESS terminal record with no SUCCESS attempt; I reproduced both.
+2. VERIFIED — Atomic acceptance with an undisposed candidate raises and leaves zero attempts, no terminal row, and no attempt/terminal events; test A2 passed.
+3. VERIFIED — Injecting failure after the attempt insert/event but before terminalization rolls back the attempt and event; test A3 passed.
+4. VERIFIED — Injecting failure on COMMIT leaves neither attempt nor terminal row; test A4 passed.
+5. VERIFIED — Failures writing either ATTEMPT_APPENDED or RUN_TERMINALIZED roll back the transition; tests A5/A5b passed.
+6. VERIFIED — Result B cannot replace finalized result A; repeat finalization is refused and A’s durable hash remains unchanged.
+7. VERIFIED — A constructed orphan SUCCESS attempt is refused by recovery without mutation or attaching a caller-supplied result hash; tests B4/B5 passed.
+8. VERIFIED — After terminalization, ordinary append, another terminalization, candidate registration, and atomic finalization are refused; relevant M6.3/M6.5 tests passed.
+9. VERIFIED — request_id, research_run_id, ledger_id, input_snapshot_hash, and provider-surface mismatches are refused without recording an attempt.
+10. VERIFIED — The proof gate runs before recording; forged/tampered SUCCESS is refused, and valid acceptance retains the exact hash and remains non-canonical.
+11. VERIFIED — Mode A/B labels, retry limits, fail-closed outcomes, contiguous attempts, idempotency, and re-entry budget behavior passed the M6.5 suite.
+12. NOT VERIFIED — Terminal immutability checks and the 52-test M6.3 suite pass, but without Git metadata I could not compare the implementation against its pre-amendment baseline for unrelated semantic drift.
+13. NOT VERIFIED — Runtime registry count is 68 and the current RRM-01 model has the expected existing fields; historical unchanged status cannot be established without a baseline.
+14. VERIFIED — A created database has exactly the six declared ledger tables plus SQLite’s sqlite_sequence; table columns match _SCHEMA, with no attempt result-hash column or other unexpected table/column.
+15. VERIFIED — AST/import scan of qad/m6/*.py found no provider, Gemini, browser, or network imports; the module inventory contains no M6.6+ implementation.
+
+MATERIAL FINDINGS:
+
+1. Public SUCCESS writes still bypass the atomic invariant.
+   (a) Evidence: ledger.py:819 onward allows append_attempt(outcome=SUCCESS); ledger.py:1051–1134 allows terminalize(terminal_status=SUCCESS) without checking for a SUCCESS attempt. I reproduced the orphan case: append SUCCESS, then make terminalization fail on an undisposed candidate; the durable state remained one SUCCESS attempt, no terminal, and an ATTEMPT_APPENDED event. Separately, direct terminalize(SUCCESS) persisted a SUCCESS terminal with a result hash and zero SUCCESS attempts. The atomic method at ledger.py:1138–1198 does not close these other paths.
+   (b) This leaves the FD #153 equivalence unenforced through public ledger paths and permits the inconsistent states the amendment is intended to prevent.
+   (c) Smallest correction: ensure new SUCCESS writes can occur only through the atomic finalizer; reject standalone SUCCESS on the generic append/terminalize paths while preserving fail-closed reads of existing orphan records. Because standalone append semantics are accepted under FD #149, confirm that narrow guard is within the authorized scope before closeout.
+   (d) Verify direct standalone append(SUCCESS) and terminalize(SUCCESS) are refused without mutation; then rerun the atomic failure-injection, concurrency, M6.3, and M6.5 suites.
+
+NON-BLOCKING FINDINGS: NONE
+
+EVIDENCE GAPS:
+- This directory has no Git repository metadata. I could not independently verify branch, HEAD, reviewed commit cc34484, commit history, or commit-to-commit changes. Both Git inspection attempts returned “fatal: not a git repository.”
+- Consequently, I could not independently prove research_contract.py or RRM-01 is unchanged from the accepted baseline, or rule out all historical semantic drift. Current behavior and schema shape were inspected, and the M6.4/M6.3 suites passed.
+
+COMMANDS RUN: exact commands + observed results.
+
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round8-review/basetemp"
+  Observed: 324 passed in 13.63s.
+
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m63_run_ledger.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round8-review/basetemp/m63"
+  Observed: 52 passed in 4.12s.
+
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m65_retry_telemetry_idempotency.py -q -k 'TestAtomicSuccessFinalization or TestResultProvenance' --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round8-review/basetemp/atomic"
+  Observed: 22 passed, 93 deselected in 1.91s.
+
+- "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m64_proof_seam.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round8-review/basetemp/m64"
+  Observed: 38 passed in 0.41s.
+
+- Read-only runtime probes: direct terminalize(SUCCESS); direct append_attempt(SUCCESS) followed by injected terminalization failure; two concurrent subprocesses invoking the atomic finalizer; SQLite PRAGMA schema inspection and AST/import scan.
+  Observed: direct terminalize produced a SUCCESS terminal with zero SUCCESS attempts; append-then-failed-terminalization left a durable orphan attempt; the concurrent race left exactly one matching SUCCESS attempt, terminal binding, and pair of transition events; schema assertions and AST/import check passed.
+
+- Git inspection: `git status --short && git branch --show-current && git rev-parse HEAD && git remote -v && git log --oneline -8`
+  Observed: `fatal: not a git repository (or any of the parent directories): .git`.
+
+POLICY DISAGREEMENT (if any): None. The finding applies the requested “through ANY path” check; the smallest correction may need narrow scope confirmation because FD #149 accepts the standalone append behavior.
+REVIEW_EXIT=0
