@@ -695,6 +695,35 @@ class TestRound14BypassClosure:
                 isolation_evidence_ref="EVID-ISOLATION-1",
             )
 
+    def test_r15_08_no_importable_minting_function_exists(self):
+        """Round 15: removing the token was not enough — the MINTER itself must not
+        be a module attribute, or a caller can mint an attestation from bare identity
+        strings and construct a SUCCESS with no resolver at all."""
+        import qad.m6.research_contract as rc
+
+        assert not hasattr(rc, "_mint_verified_proof_attestation")
+        for name in dir(rc):
+            assert "MINT" not in name.upper(), name
+        # the ONLY module-visible entry into the seam is the full verification
+        # path, and it never mints without a resolver that verifies BOTH proofs
+        req = _request(_snapshot())
+        with pytest.raises(ResearchResultError):
+            rc._verify_success_proofs(
+                request=req, proof_resolver=None,
+                corpus_evidence_ref="EVID-CORPUS-1",
+                isolation_evidence_ref="EVID-ISOLATION-1",
+            )
+        with pytest.raises(ResearchResultError):
+            rc._verify_success_proofs(
+                request=req, proof_resolver=_StubProofResolver(closed_corpus=False),
+                corpus_evidence_ref="EVID-CORPUS-1",
+                isolation_evidence_ref="EVID-ISOLATION-1",
+            )
+        # … and the sanctioned builder path still works
+        assert _build_result(
+            request=req, proof_resolver=_StubProofResolver()
+        ).assert_proof_verified() is not None
+
     def test_r14_03_object_new_success_refused_at_the_consumption_boundary(self):
         """object.__new__ skips __post_init__ — the boundary re-check must catch it."""
         req = _request(_snapshot())

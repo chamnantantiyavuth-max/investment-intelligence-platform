@@ -1,0 +1,68 @@
+VERDICT: C
+
+PROBE RESULTS:
+A1. VERIFIED — `DeepResearchResult` subclassing raises `ResearchResultError`; round-14 closure tests passed.
+A2. DEFECT — No `_ATTESTATION_TOKEN` module attribute exists and a fabricated guard is refused, but the module-level `_mint_verified_proof_attestation` is callable and minted an attestation that authorized SUCCESS without any resolver; see finding 1.
+A3. VERIFIED — A SUCCESS-shaped `object.__new__` instance without an attestation is rejected by `assert_proof_verified()`.
+A4. VERIFIED — Replacing `result_bytes` after construction is caught at consumption.
+A5. VERIFIED — Copying an attestation to a result for a different run is refused.
+A6. VERIFIED — A result built through the normal builder with both proofs verified passes consumption revalidation.
+B. VERIFIED — Omitted resolver, explicit `None`, and `DEFAULT_PROOF_RESOLVER` all fail closed.
+C. VERIFIED — Resolver results mismatched on request ID, run ID, ledger ID, snapshot hash, provider surface, proof kind, or evidence reference were all rejected.
+D. DEFECT — The normal builder does not accept reference strings or enum claims as proof, but the exposed minting function accepts those identifiers directly and enables SUCCESS without resolver verification.
+E. VERIFIED — A resolver verifying only either one of the two proofs is refused.
+F. VERIFIED — Replaying a proof from another request/run is blocked.
+G. VERIFIED — Accepted builder SUCCESS retains the result-byte SHA-256 and citation-list digest, remains non-canonical, and has no canonical admission capability.
+H. VERIFIED — No provider transport or network implementation was found; the seam is provider-neutral. Provider names occur in documentation/data, not transport logic.
+I. VERIFIED — `research_contract.py` contains no M6.5 retry, idempotency, fallback-routing, or telemetry-aggregation implementation; references to these are deferrals.
+J. VERIFIED — Runtime registry count is 68, no QAD M6 proof schema is registered, and the proof seam is identified as non-canonical.
+K. VERIFIED — `RunManifestRecord.deep_research_runs` remains `Optional[list[str]]`; its tests confirm ledger-ID strings only.
+L. VERIFIED — Snapshot checks enforce count, sorted order, uniqueness, ELIGIBLE status, ISO admission time bounded by AS_OF, source/raw hash equality, exact raw bytes/hash/length, closed-corpus requirement, and snapshot identity.
+M. VERIFIED — The result stores no resolver or callable field.
+N. VERIFIED — `tests/qad/m6`: 199 passed. `tests/qad`: 734 passed, 1 failed; the failure is `test_schema_build_identity` due to a `spec_source_sha256` mismatch.
+
+MATERIAL FINDINGS:
+1. (a) `qad/m6/research_contract.py:434-462` defines `_mint_verified_proof_attestation` and binds it as a module attribute. I called it directly with the request identity and evidence-reference strings, constructed `DeepResearchResult(..., status=SUCCESS, _proof_attestation=att)`, and observed `assert_proof_verified()` return successfully—with no resolver invocation. (b) This is a library-callable construction path to SUCCESS that bypasses both required proof verifications and defeats consumption-boundary assurance. (c) Smallest correction: keep the minting callable inside the trusted verification closure; do not bind an importable module-level mint function. (d) Verify that direct access/call cannot mint an attestation or construct consumable SUCCESS, while normal builder SUCCESS with both verified proofs still passes; rerun the M6.4 suite and the round-14 probes.
+
+NON-BLOCKING FINDINGS:
+NONE
+
+EVIDENCE GAPS:
+- This copy has no `.git` directory. Git status, branch, HEAD, remote, and a diff against the stated commit/base could not be verified. The M6.1–M6.3 tests ran and passed as part of the M6 suite, but I could not compare their files or results to a baseline commit.
+- The broad `tests/qad` failure is observed, but without Git metadata I cannot establish whether it is inherited.
+
+COMMANDS RUN:
+All commands were run from `C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round15-review/repo`.
+
+1. `git status --short && git branch --show-current && git rev-parse HEAD && git log -3 --oneline --decorate && git remote -v`
+   Observed: `fatal: not a git repository (or any of the parent directories): .git`
+
+2. `pwd; python -c 'import os,pathlib; p=pathlib.Path.cwd(); print("cwd=",p); print("git=",(p/".git").exists()); print("files=",[x.name for x in p.iterdir()][:15])'; git rev-parse --show-toplevel; git status --short`
+   Observed: cwd was the specified review copy; `git=False`; both Git commands reported “not a git repository”.
+
+3. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.contract.canonical_boundary import CANONICAL_SCHEMAS, NON_CANONICAL_SCHEMAS; print('canonical_count=',len(CANONICAL_SCHEMAS)); print('noncanonical_count=',len(NON_CANONICAL_SCHEMAS)); print('qad.m6 canonical registrations=',sorted(x for x in CANONICAL_SCHEMAS if x.startswith(('M6','PROOF','ATTESTATION','PRF'))))"`
+   Observed: `canonical_count= 68`, `noncanonical_count= 0`, `qad.m6 canonical registrations= []`.
+
+4. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round15-review/basetemp"`
+   Observed: `199 passed in 5.45s`.
+
+5. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m64_proof_seam.py::TestRound14BypassClosure -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round15-review/basetemp-r14"`
+   Observed: `7 passed in 0.19s`.
+
+6. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round15-review/basetemp-qad"`
+   Observed: `1 failed, 734 passed, 11 warnings in 8.57s`; failure: `tests/qad/test_contract_conformance.py::test_schema_build_identity`, expected `spec_source_sha256` differs from the current specification file hash.
+
+7. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c 'import importlib, runpy; ns=runpy.run_path("tests/qad/m6/test_m64_proof_seam.py"); rc=importlib.import_module("qad.m6.research_contract"); req=ns["_request"](ns["_snapshot"]()); payload=ns["_PAYLOAD"]; pointers=ns["_POINTERS"]; att=rc._mint_verified_proof_attestation(request_id=req.request_id, research_run_id=req.research_run_id, ledger_id=req.ledger_id, provider_surface=req.provider.provider_surface, input_snapshot_hash=req.input_snapshot_hash, closed_corpus_evidence_ref="EVID-CORPUS-1", isolation_evidence_ref="EVID-ISOLATION-1"); forged=rc.DeepResearchResult(request_id=req.request_id, research_run_id=req.research_run_id, ledger_id=req.ledger_id, status=rc.ResearchResultStatus.SUCCESS, provider_surface=req.provider.provider_surface, result_bytes=payload, result_sha256=rc.compute_result_sha256(payload), source_pointers=pointers, completed_at="2026-10-09T12:05:00+00:00", closed_corpus_enforcement=rc.ClosedCorpusEnforcement.ENFORCED, isolation_verification=rc.IsolationVerification.VERIFIED, closed_corpus_evidence_ref="EVID-CORPUS-1", isolation_evidence_ref="EVID-ISOLATION-1", input_snapshot_hash=req.input_snapshot_hash, _proof_attestation=att); print("module_minter=", hasattr(rc, "_mint_verified_proof_attestation")); print("SUCCESS_without_resolver=", forged.status.value); print("consumption_boundary=", forged.assert_proof_verified() is forged)'`
+   Observed: `module_minter= True`; `SUCCESS_without_resolver= SUCCESS`; `consumption_boundary= True`.
+
+8. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c 'import importlib, runpy; ns=runpy.run_path("tests/qad/m6/test_m64_proof_seam.py"); rc=importlib.import_module("qad.m6.research_contract"); req=ns["_request"](ns["_snapshot"]()); fields={"request_id":"REQ-OTHER","research_run_id":"RR-OTHER","ledger_id":"L-OTHER","provider_surface":"PROVIDER-OTHER","input_snapshot_hash":"b"*64,"proof_kind":rc.ProofKind.REQUEST_ISOLATION,"evidence_ref":"EVID-OTHER"}; bad=[]; ok=[]
+for field,value in fields.items():
+ try: ns["_build_result"](request=req, proof_resolver=ns["_StubProofResolver"](bind_to={field:value}))
+ except rc.ResearchResultError: ok.append(field)
+ else: bad.append(field)
+print("refusal_fields=", ",".join(ok)); print("unexpected_accepts=", bad); raise SystemExit(bool(bad))'`
+   Observed: all seven fields were refused; `unexpected_accepts= []`.
+
+POLICY DISAGREEMENT (if any):
+NONE
+REVIEW_EXIT=0

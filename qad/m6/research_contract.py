@@ -441,7 +441,14 @@ def _make_proof_attestation_seam():
         closed_corpus_evidence_ref: str,
         isolation_evidence_ref: str,
     ) -> _VerifiedProofAttestation:
-        """Mint the capability. Reachable only from the trusted verification path."""
+        """Mint the capability.
+
+        Closure-scoped on purpose: it is NOT bound as a module attribute, so it
+        cannot be imported or called by name. The only module-visible object that
+        can reach it is ``_verify_success_proofs`` below, which requires the
+        authoritative request AND a resolver that verifies BOTH proofs for the
+        exact run.
+        """
         return _VerifiedProofAttestation(
             _guard=guard,
             request_id=request_id,
@@ -453,12 +460,79 @@ def _make_proof_attestation_seam():
             isolation_evidence_ref=isolation_evidence_ref,
         )
 
-    return _VerifiedProofAttestation, _mint_verified_proof_attestation
+    def _verify_success_proofs(
+        *,
+        request: "DeepResearchRequest",
+        proof_resolver: "DeepResearchProofResolver | None",
+        corpus_evidence_ref: str | None,
+        isolation_evidence_ref: str | None,
+    ) -> _VerifiedProofAttestation:
+        """Run the trusted seam for BOTH proofs and mint the attestation.
+
+        Fail-closed: a missing/blank evidence reference, a missing resolver (the
+        default DENIES), a resolver that verifies only one proof, or a verification
+        that is not bound to the exact run all refuse ``SUCCESS``. This is the ONLY
+        path that reaches the closure-scoped minter.
+        """
+        if not _has_visible_text(corpus_evidence_ref):
+            raise ResearchResultError(
+                "SUCCESS requires a non-blank closed_corpus_evidence_ref — an "
+                "identifier the trusted resolver must resolve and verify (a string "
+                "is not proof)"
+            )
+        if not _has_visible_text(isolation_evidence_ref):
+            raise ResearchResultError(
+                "SUCCESS requires a non-blank isolation_evidence_ref — an identifier "
+                "the trusted resolver must resolve and verify (a string is not proof)"
+            )
+        resolver = DEFAULT_PROOF_RESOLVER if proof_resolver is None else proof_resolver
+        if not callable(getattr(resolver, "verify_proof", None)):
+            raise ResearchResultError(
+                "proof_resolver must implement verify_proof(context) -> ProofVerification"
+            )
+        contexts = (
+            _proof_context_from_request(
+                request, ProofKind.CLOSED_CORPUS_ENFORCEMENT, corpus_evidence_ref
+            ),
+            _proof_context_from_request(
+                request, ProofKind.REQUEST_ISOLATION, isolation_evidence_ref
+            ),
+        )
+        resolved_refs: list[str] = []
+        for context in contexts:
+            verification = _invoke_proof_resolver(resolver, context)
+            mismatch = _verification_binding_mismatch(context, verification)
+            if mismatch is not None:
+                raise ResearchResultError(
+                    "SUCCESS refused: the resolver returned a proof that is not bound "
+                    f"to the exact run being authorized "
+                    f"({context.proof_kind.value} — {mismatch})"
+                )
+            if verification.verified is not True:
+                raise ResearchResultError(
+                    f"SUCCESS refused: the trusted proof resolver did not verify "
+                    f"{context.proof_kind.value} ({verification.failure_reason})"
+                )
+            resolved_refs.append(verification.evidence_ref)  # type: ignore[arg-type]
+        return _mint_verified_proof_attestation(
+            request_id=request.request_id,
+            research_run_id=request.research_run_id,
+            ledger_id=request.ledger_id,
+            provider_surface=request.provider.provider_surface,
+            input_snapshot_hash=request.input_snapshot_hash,
+            closed_corpus_evidence_ref=resolved_refs[0],
+            isolation_evidence_ref=resolved_refs[1],
+        )
+
+    return _VerifiedProofAttestation, _verify_success_proofs
 
 
+# Only the private attestation TYPE and the full verification entry point are
+# module-visible. The minting callable stays inside the closure — there is no
+# module-level mint function a caller could invoke with bare identity strings.
 (
     _VerifiedProofAttestation,
-    _mint_verified_proof_attestation,
+    _verify_success_proofs,
 ) = _make_proof_attestation_seam()
 
 
@@ -537,68 +611,6 @@ def _invoke_proof_resolver(
             "other object is not proof)"
         )
     return verification
-
-
-def _verify_success_proofs(
-    *,
-    request: "DeepResearchRequest",
-    proof_resolver: "DeepResearchProofResolver | None",
-    corpus_evidence_ref: str | None,
-    isolation_evidence_ref: str | None,
-) -> _VerifiedProofAttestation:
-    """Run the trusted seam for BOTH proofs and mint the attestation.
-
-    Fail-closed: a missing/blank evidence reference, a missing resolver (the
-    default DENIES), a resolver that verifies only one proof, or a verification
-    that is not bound to the exact run all refuse ``SUCCESS``.
-    """
-    if not _has_visible_text(corpus_evidence_ref):
-        raise ResearchResultError(
-            "SUCCESS requires a non-blank closed_corpus_evidence_ref — an identifier "
-            "the trusted resolver must resolve and verify (a string is not proof)"
-        )
-    if not _has_visible_text(isolation_evidence_ref):
-        raise ResearchResultError(
-            "SUCCESS requires a non-blank isolation_evidence_ref — an identifier the "
-            "trusted resolver must resolve and verify (a string is not proof)"
-        )
-    resolver = DEFAULT_PROOF_RESOLVER if proof_resolver is None else proof_resolver
-    if not callable(getattr(resolver, "verify_proof", None)):
-        raise ResearchResultError(
-            "proof_resolver must implement verify_proof(context) -> ProofVerification"
-        )
-    contexts = (
-        _proof_context_from_request(
-            request, ProofKind.CLOSED_CORPUS_ENFORCEMENT, corpus_evidence_ref
-        ),
-        _proof_context_from_request(
-            request, ProofKind.REQUEST_ISOLATION, isolation_evidence_ref
-        ),
-    )
-    resolved_refs: list[str] = []
-    for context in contexts:
-        verification = _invoke_proof_resolver(resolver, context)
-        mismatch = _verification_binding_mismatch(context, verification)
-        if mismatch is not None:
-            raise ResearchResultError(
-                "SUCCESS refused: the resolver returned a proof that is not bound to "
-                f"the exact run being authorized ({context.proof_kind.value} — {mismatch})"
-            )
-        if verification.verified is not True:
-            raise ResearchResultError(
-                f"SUCCESS refused: the trusted proof resolver did not verify "
-                f"{context.proof_kind.value} ({verification.failure_reason})"
-            )
-        resolved_refs.append(verification.evidence_ref)  # type: ignore[arg-type]
-    return _mint_verified_proof_attestation(
-        request_id=request.request_id,
-        research_run_id=request.research_run_id,
-        ledger_id=request.ledger_id,
-        provider_surface=request.provider.provider_surface,
-        input_snapshot_hash=request.input_snapshot_hash,
-        closed_corpus_evidence_ref=resolved_refs[0],
-        isolation_evidence_ref=resolved_refs[1],
-    )
 
 
 # ---------------------------------------------------------------------------

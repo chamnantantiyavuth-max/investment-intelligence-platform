@@ -1,0 +1,58 @@
+VERDICT: C
+
+PROBE RESULTS:
+1 DEFECT — Omitted resolver, explicit `None`, and `DEFAULT_PROOF_RESOLVER` each reject SUCCESS; however, the separate construction bypasses in probes 3–4 still authorize it.
+2 VERIFIED — A resolver response bound to a different request ID is rejected; provider-surface, evidence-reference, and proof-kind mismatches were also rejected.
+3 DEFECT — The normal builder rejects references and enum claims alone, but a direct result with invented references and a forged private attestation succeeds without resolver verification.
+4 DEFECT — A subclass overriding `__post_init__`, the module-accessible attestation token, and `object.__new__` each produced SUCCESS without trusted verification.
+5 VERIFIED — `test_15` constructs requests A and B with different snapshot identities, replays A’s proof against B, and asserts rejection.
+6 VERIFIED — Request ID, run ID, ledger ID, snapshot hash, provider surface, evidence reference, and proof-kind mismatches were rejected by tests or direct probes.
+7 VERIFIED — Corpus-only and isolation-only resolver verification each fail to authorize SUCCESS.
+8 VERIFIED — Accepted SUCCESS retains the exact result-byte SHA-256 and citation-list digest; the acceptance tests verify both.
+9 VERIFIED — Accepted SUCCESS is non-canonical and has no canonical admission method or canonical evidence fields.
+10 VERIFIED — No provider, network, browser, Gemini, or Google-specific imports or transport code were found in the implementation; the M6 suite passed its network-boundary tests.
+11 VERIFIED — No M6.5 retry, fallback, idempotency, or telemetry orchestration was found in `research_contract.py`.
+12 VERIFIED — Runtime canonical schema count is 68; proof structures are described as non-canonical and do not appear in the registry.
+13 VERIFIED — `RunManifestRecord.deep_research_runs` is `Optional[list[str]]`; structured entries are rejected by ledger validation.
+14 VERIFIED — Implementation rechecks snapshot identity, source count/order/uniqueness, ELIGIBLE status, admission timestamp, content hash, bytes/hash/length, and closed-corpus requirement; Round-13 structural tests passed.
+15 VERIFIED — No resolver, callable, browser, transport, or connection is carried on the result.
+16 DEFECT — Ordinary assignment is blocked, but `object.__setattr__` changed result bytes after construction while status remained SUCCESS and `result_matches_hash` became false.
+
+MATERIAL FINDINGS:
+1. SUCCESS can be constructed without trusted proof verification.
+   (a) Evidence: `qad/m6/research_contract.py:358` exposes `_ATTESTATION_TOKEN` as a module attribute; `:381–405` accepts that token to create an attestation; `:1323–1337` accepts an attestation based on its type and matching identity. The runtime probes produced `subclass_no_resolver=ACCEPTED_SUCCESS`, `private_token_direct_no_resolver=ACCEPTED_SUCCESS`, and `object_new_success=True`, including invented evidence references.
+   (b) This defeats FD #152’s central requirement that both proofs be verified through the trusted seam before SUCCESS.
+   (c) Smallest correction: prevent subclass overrides of result validation and remove the module-accessible token-based minting path; require an attestation that can only be issued by the verification path. Pure Python cannot make an object resistant to arbitrary same-process `object.__new__`/introspection, so that limit must not be represented as a security guarantee.
+   (d) Verify that subclass construction, direct construction with invented attestations, and ordinary importable module internals cannot produce SUCCESS; retain a passing builder test with a properly bound test resolver.
+
+2. A SUCCESS result’s validated bytes can be changed after construction.
+   (a) Evidence: ordinary assignment raised the frozen-instance error, but `object.__setattr__(good, "result_bytes", b"post-construction tamper")` succeeded; the result remained SUCCESS and `result_matches_hash` returned false.
+   (b) This breaks the exact-result-byte integrity invariant after validation.
+   (c) Smallest correction: revalidate the result hash at every trust/consumption boundary and avoid treating a frozen dataclass as protection against hostile same-process mutation. If the invariant must hold against such mutation itself, a process/trust boundary is required; a Python frozen dataclass alone cannot provide it.
+   (d) Verify that post-construction byte tampering is rejected before any consumer accepts the result, and that the acceptance tests still confirm the exact byte digest.
+
+NON-BLOCKING FINDINGS:
+NONE
+
+EVIDENCE GAPS:
+- This copy has no `.git` directory. The requested branch, reviewed commit `b3c8dfc`, governance commit `e13a64e`, and base `4f89d56` could not be independently verified against Git history. The review is of the artifacts present in this copy; `SESSION_CLOSEOUT.md` contains project claims but cannot establish this copy’s commit identity.
+
+COMMANDS RUN:
+1. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round14-review/basetemp"`
+   Result: `192 passed in 5.64s`.
+
+2. `pwd && git status --short && git branch --show-current && git rev-parse HEAD && git log -1 --format='%H%n%s'`
+   Result: printed `/c/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round14-review/repo`, then `fatal: not a git repository`; subsequent `&&` commands did not run.
+
+3. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c '<inline probe importing the seam acceptance-test helpers; tested omitted/None/default resolver, mismatched resolver binding, one-proof-only outcomes, subclass construction, private-token attestation construction, dataclasses.replace across requests, deepcopy/pickle, ordinary assignment, object.__setattr__, schema count, and resolver fields>'`
+   Observed: omitted/None/default rejected; mismatched binding and either single proof rejected; subclass and private-token direct construction accepted SUCCESS; cross-request replace rejected; deepcopy and pickle failed with `TypeError`; ordinary mutation blocked; `object.__setattr__` mutation accepted and hash check became false; schema count 68; no resolver field.
+
+4. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c '<inline probe for provider-surface, evidence-reference, and proof-kind mismatches plus static transport/M6.5 token and result-field checks>'`
+   Observed: all three mismatches rejected; no banned transport or M6.5 orchestration tokens present; no resolver field on the result.
+
+5. `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c '<inline object.__new__ probe constructing a DeepResearchResult without invoking initialization>'`
+   Observed: `object_new_success=True attestation=None result_hash_valid=True`.
+
+POLICY DISAGREEMENT (if any):
+NONE
+REVIEW_EXIT=0

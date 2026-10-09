@@ -1,0 +1,117 @@
+ROLE
+You are an INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER. Your model family differs
+from the producer's (producer = DeepSeek, you = OpenAI). Report only what you can verify
+from artifacts in this directory. Do not soften, embellish, or invent findings. A clean
+"no findings" verdict is an acceptable and expected outcome.
+
+============================================================
+AUTHORITATIVE POLICY (FOUNDER-RESOLVED) — DO NOT RE-LITIGATE
+============================================================
+Founder Decision FD #152 resolved the M6.4 Round-13 contract/policy conflict by selecting
+OPTION B, verbatim:
+
+  "M6.4 retains a representable/testable SUCCESS state, but SUCCESS requires verified proof
+   through the trusted proof-resolver seam. Evidence-reference strings alone are never proof.
+   Actual real proof resolution remains M6.7/M6.8."
+
+Policy consequences you must treat as SETTLED (not open questions):
+- SUCCESS stays constructible and testable in M6.4 (do NOT ask for SUCCESS to be removed).
+- SUCCESS requires BOTH the closed-corpus enforcement proof AND the request-isolation proof
+  to be VERIFIED through a trusted provider-neutral seam bound to the exact run.
+- A non-empty evidence-reference string is an IDENTIFIER, never proof.
+- ENFORCED/VERIFIED enum values alone never authorize SUCCESS.
+- The default resolver must DENY (fail-closed). M6.4 ships NO production resolver.
+- Real proof production/resolution belongs to M6.7/M6.8 — its absence in M6.4 is EXPECTED.
+- M6.4 must NOT implement provider transport, Gemini, Notebook, browser/CDP, live calls,
+  network calls, credentials, canonical schema changes, or RRM-01 changes.
+- M6.5 (Retry / Telemetry / Idempotency) must NOT be started.
+
+Your scope is IMPLEMENTATION CORRECTNESS against that ruling.
+
+============================================================
+CLUSTER UNDER REVIEW
+============================================================
+QAD M6.4 — Deep Research request/result contract, hardened with a trusted
+proof-verification seam. Branch: impl/m6-gemini-notebook (never merged to main).
+Reviewed commit: b3c8dfc. Governance commit: e13a64e. Base: 4f89d56.
+
+============================================================
+ARTIFACTS TO READ (all inside this copy)
+============================================================
+- qad/m6/research_contract.py        (the implementation under review)
+- tests/qad/m6/test_m64_proof_seam.py          (new seam acceptance tests)
+- tests/qad/m6/test_m64_research_contract.py   (existing M6.4 Round 1-13 suite, adapted)
+- tests/qad/m6/test_m61_archive_attestation.py , test_m62_sealed_snapshot.py ,
+  test_m63_run_ledger.py                       (must be unaffected)
+- qad/contract/canonical_boundary.py           (canonical schema registry; must be 68)
+- qad/m6/ledger.py                             (RRM-01 deep_research_runs linkage)
+- SESSION_CLOSEOUT.md                          (top entry = the FD #152 record + evidence)
+
+============================================================
+REQUIRED PROBES — independently verify each; state VERIFIED / NOT VERIFIED / DEFECT
+============================================================
+1  No-resolver fail closed: building a SUCCESS with no proof_resolver (and with
+   proof_resolver=None, and with DEFAULT_PROOF_RESOLVER) must RAISE, not return SUCCESS.
+2  A fake/attacker resolver result cannot bypass required binding: a resolver that returns
+   a "verified" ProofVerification bound to a DIFFERENT request must not authorize SUCCESS.
+3  Evidence references alone can never authorize SUCCESS, and neither can ENFORCED/VERIFIED
+   enum values alone. Confirm no code path checks only `bool(evidence_ref)` / non-empty
+   string as proof. Attempt to construct a SUCCESS with invented references — it must fail.
+4  Direct-construction bypass: DeepResearchResult(...) with status=SUCCESS plus
+   ENFORCED/VERIFIED plus invented references must RAISE (no second constructor path).
+   Try hard to find ANY way to build a SUCCESS result without trusted verification
+   (e.g. object.__new__, dataclasses.replace, copying an attestation between results,
+   tampering the private attestation token, subclassing, pickling/copy.deepcopy).
+5  Proof replay across requests: a proof verified for Request A must not authorize
+   Request B. Check the test at test_15 actually exercises this.
+6  Wrong run binding: request_id / research_run_id / ledger_id / input_snapshot_hash /
+   provider_surface / proof-kind mismatches must each fail verification.
+7  Only ONE of the two proofs verified must never authorize SUCCESS (either one alone).
+8  Accepted SUCCESS retains the exact result-byte SHA-256 and the citation-list digest.
+9  Accepted SUCCESS remains non_canonical == True and carries no canonical semantics
+   (no SRC-01 / EV-01 / evidence admission capability).
+10 No provider transport / network / browser / Gemini / Google-specific logic exists in the
+   seam; the seam is provider-neutral.
+11 No M6.5 scope creep (no retry orchestration, no idempotency orchestration, no
+   SAME_PROVIDER_RETRY, no fallback routing, no telemetry aggregation).
+12 No canonical schema change: the registry is still exactly 68 entries; no 69th schema
+   for the proof/attestation structures; the proof structures are explicitly NON-CANONICAL.
+13 No RRM-01 change: RunManifestRecord.deep_research_runs is still a list of ledger-id
+   strings only (no structured dicts).
+14 Round-13 Finding 2 remains FIXED (no regression of the request-authority checks):
+   source_count exact, canonical sorted ordering, duplicate source IDs rejected, every
+   source ELIGIBLE, archive_admitted_at valid ISO-8601 and <= AS_OF,
+   source_content_hash == raw_blob_sha256, raw bytes/hash/length exact,
+   closed_corpus_required true, snapshot identity exact.
+15 The resolver is never persisted/carried on the result (no callable / resolver object /
+   browser / provider connection stored in the result envelope).
+16 The result dataclass is immutable and its invariants cannot be bypassed by mutation.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- Run tests from THIS directory, e.g.:
+    cd <this dir>
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m64-round14-review/basetemp"
+- You may read/write files ONLY inside this disposable copy (and the basetemp above).
+  Do NOT touch any other repository or worktree. Do NOT run git commands that mutate state.
+- You may write your own throwaway probe scripts INSIDE this copy to test the probes.
+- Report the ACTUAL commands you ran and their real output counts.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.4 PASS / READY FOR M6.5
+  B = M6.4 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.4 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: for each of the 16 probes — VERIFIED / NOT VERIFIED / DEFECT + one line.
+MATERIAL FINDINGS: numbered; each with (a) concrete evidence, (b) why it is material,
+   (c) the smallest correction, (d) how to verify the correction. Write "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. Write "NONE" if none.
+EVIDENCE GAPS: what you could not verify and why. Write "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT (if any): if you believe Option B policy itself is wrong, say so
+   explicitly here and note it does NOT change your verdict — the policy is Founder-set.
