@@ -378,6 +378,8 @@ class TestSuccessRequiresVerifiedProof:
         assert ok.status is ResearchResultStatus.SUCCESS
         assert ok.closed_corpus_enforcement is ClosedCorpusEnforcement.ENFORCED
         assert ok.isolation_verification is IsolationVerification.VERIFIED
+        # an accepted SUCCESS survives the consumption-boundary re-check
+        assert ok.assert_proof_verified() is ok
 
 
 # =====================================================================
@@ -660,3 +662,91 @@ class TestSeamContractShape:
             assert not callable(getattr(ok, field.name))
         # the persisted/carried identity is data only
         assert ok.input_snapshot_hash == req.input_snapshot_hash
+
+
+# =====================================================================
+# Round-14 reviewer-driven closure (FD #152) — the bypasses the family-
+# independent reviewer demonstrated in round 14 must all be refused.
+# =====================================================================
+
+class TestRound14BypassClosure:
+    def test_r14_01_result_type_is_final_and_cannot_be_subclassed(self):
+        """A subclass could override __post_init__ and skip the SUCCESS gate."""
+        with pytest.raises(ResearchResultError):
+
+            class _FakeSuccess(DeepResearchResult):  # noqa: D401
+                def __post_init__(self) -> None:  # never enforces the proof gate
+                    pass
+
+    def test_r14_02_no_importable_attestation_token_exists(self):
+        """The minting guard must not be a module attribute reachable by name."""
+        import qad.m6.research_contract as rc
+
+        assert not hasattr(rc, "_ATTESTATION_TOKEN")
+        for name in dir(rc):
+            assert not name.upper().endswith("_TOKEN"), name
+        # the guard is closure-captured: a fabricated guard is refused
+        with pytest.raises(ResearchResultError):
+            rc._VerifiedProofAttestation(
+                _guard=object(),
+                request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+                provider_surface="gemini_notebook", input_snapshot_hash="a" * 64,
+                closed_corpus_evidence_ref="EVID-CORPUS-1",
+                isolation_evidence_ref="EVID-ISOLATION-1",
+            )
+
+    def test_r14_03_object_new_success_refused_at_the_consumption_boundary(self):
+        """object.__new__ skips __post_init__ — the boundary re-check must catch it."""
+        req = _request(_snapshot())
+        src = _build_result(request=req, proof_resolver=_StubProofResolver())
+        forged = object.__new__(DeepResearchResult)
+        for f in dataclasses.fields(DeepResearchResult):
+            if f.name == "_proof_attestation":
+                continue
+            object.__setattr__(forged, f.name, getattr(src, f.name))
+        object.__setattr__(forged, "_proof_attestation", None)
+        # data-wise it looks like a success …
+        assert forged.status is ResearchResultStatus.SUCCESS
+        assert forged.is_success is True
+        # … but it can never be CONSUMED as one
+        with pytest.raises(ResearchResultError):
+            forged.assert_proof_verified()
+
+    def test_r14_04_post_construction_byte_tamper_is_caught(self):
+        """A frozen dataclass does NOT stop object.__setattr__ — re-check must."""
+        req = _request(_snapshot())
+        ok = _build_result(request=req, proof_resolver=_StubProofResolver())
+        ok.assert_proof_verified()
+        object.__setattr__(ok, "result_bytes", b"post-construction tamper")
+        assert result_matches_hash(ok) is False
+        with pytest.raises(ResearchResultError):
+            ok.assert_proof_verified()
+
+    def test_r14_05_builder_success_passes_the_consumption_boundary(self):
+        ok = _build_result(request=_request(_snapshot()), proof_resolver=_StubProofResolver())
+        assert ok.assert_proof_verified() is ok
+
+    def test_r14_06_attestation_is_not_transferable_between_results(self):
+        """Copying a genuine attestation onto a different run's result is refused."""
+        req_a = _request(_snapshot(sources=(("S1", b"alpha"),)),
+                         request_id="REQ-A", research_run_id="RR-A", ledger_id="L-A")
+        req_b = _request(_snapshot(),
+                         request_id="REQ-B", research_run_id="RR-B", ledger_id="L-B")
+        ok_a = _build_result(request=req_a, proof_resolver=_StubProofResolver())
+        ok_b = _build_result(request=req_b, proof_resolver=_StubProofResolver())
+        ok_a.assert_proof_verified()
+        object.__setattr__(ok_b, "_proof_attestation", ok_a._proof_attestation)
+        with pytest.raises(ResearchResultError):
+            ok_b.assert_proof_verified()
+
+    def test_r14_07_consumption_boundary_applies_only_to_success(self):
+        fail = build_deep_research_result(
+            request_id="REQ-1", research_run_id="RR-1", ledger_id="L-1",
+            status=ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT,
+            provider_surface="gemini_notebook",
+            failure_detail="provider cannot enforce the sealed input",
+            closed_corpus_enforcement=ClosedCorpusEnforcement.CANNOT_ENFORCE,
+        )
+        assert fail.is_success is False
+        with pytest.raises(ResearchResultError):
+            fail.assert_proof_verified()

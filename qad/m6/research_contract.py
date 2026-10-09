@@ -355,33 +355,84 @@ class _DenyAllProofResolver:
 DEFAULT_PROOF_RESOLVER: DeepResearchProofResolver = _DenyAllProofResolver()
 
 
-_ATTESTATION_TOKEN = object()
+def _make_proof_attestation_seam():
+    """Create the guarded verified-proof attestation type and its minter.
 
+    The attestation guard is captured in a CLOSURE — there is deliberately no
+    module-level token attribute, so the guarded minting path cannot be reached by
+    a name import (``from ... import _ATTESTATION_TOKEN``). Only
+    ``_mint_verified_proof_attestation`` — called from the trusted verification
+    path — can produce an attestation.
 
-class _VerifiedProofAttestation:
-    """Private immutable capability minted ONLY by the trusted verification path.
-
-    A ``SUCCESS`` result must carry one, and it must bind that result's exact
-    identity. The type is private and its constructor is token-guarded, so the
-    direct ``DeepResearchResult(...)`` path cannot fabricate a ``SUCCESS``. This is
-    a BOUNDED in-process mechanism — cryptographic/process capability isolation is
-    explicitly NOT claimed (the accepted M6.2/M6.3 process trust boundary stands).
+    BOUNDED MECHANISM — NOT a security guarantee. Pure Python cannot make an
+    object resistant to arbitrary same-process introspection, ``object.__new__``,
+    ``object.__setattr__`` or monkeypatching of module internals, and M6.4 does NOT
+    claim cryptographic or process capability isolation. The accepted M6.2/M6.3
+    IN-PROCESS trust boundary stands unchanged (FD #152 §7): this mechanism closes
+    the ordinary library-API construction paths, while hostile in-process code
+    remains outside the trust boundary. Consumers therefore re-check a SUCCESS
+    result at the consumption boundary (``assert_proof_verified``), which is what
+    catches an artifact that never came through this path.
     """
+    guard = object()
 
-    __slots__ = (
-        "request_id",
-        "research_run_id",
-        "ledger_id",
-        "provider_surface",
-        "input_snapshot_hash",
-        "closed_corpus_evidence_ref",
-        "isolation_evidence_ref",
-    )
+    class _VerifiedProofAttestation:
+        """Private immutable capability minted ONLY by the trusted verification path.
 
-    def __init__(
-        self,
+        A ``SUCCESS`` result must carry one, and it must bind that result's exact
+        identity. The type is private and its constructor is guard-protected, so
+        the direct ``DeepResearchResult(...)`` path cannot fabricate a ``SUCCESS``.
+        """
+
+        __slots__ = (
+            "request_id",
+            "research_run_id",
+            "ledger_id",
+            "provider_surface",
+            "input_snapshot_hash",
+            "closed_corpus_evidence_ref",
+            "isolation_evidence_ref",
+        )
+
+        def __init__(
+            self,
+            *,
+            _guard: object,
+            request_id: str,
+            research_run_id: str,
+            ledger_id: str,
+            provider_surface: str,
+            input_snapshot_hash: str,
+            closed_corpus_evidence_ref: str,
+            isolation_evidence_ref: str,
+        ) -> None:
+            if _guard is not guard:
+                raise ResearchResultError(
+                    "a verified-proof attestation may only be created by the M6.4 "
+                    "trusted proof-verification path"
+                )
+            object.__setattr__(self, "request_id", request_id)
+            object.__setattr__(self, "research_run_id", research_run_id)
+            object.__setattr__(self, "ledger_id", ledger_id)
+            object.__setattr__(self, "provider_surface", provider_surface)
+            object.__setattr__(
+                self, "input_snapshot_hash", input_snapshot_hash
+            )
+            object.__setattr__(
+                self, "closed_corpus_evidence_ref", closed_corpus_evidence_ref
+            )
+            object.__setattr__(
+                self, "isolation_evidence_ref", isolation_evidence_ref
+            )
+
+        def __setattr__(self, name: str, value: Any) -> None:
+            raise AttributeError("a verified-proof attestation is immutable")
+
+        def __delattr__(self, name: str) -> None:
+            raise AttributeError("a verified-proof attestation is immutable")
+
+    def _mint_verified_proof_attestation(
         *,
-        _token: object,
         request_id: str,
         research_run_id: str,
         ledger_id: str,
@@ -389,25 +440,26 @@ class _VerifiedProofAttestation:
         input_snapshot_hash: str,
         closed_corpus_evidence_ref: str,
         isolation_evidence_ref: str,
-    ) -> None:
-        if _token is not _ATTESTATION_TOKEN:
-            raise ResearchResultError(
-                "a verified-proof attestation may only be created by the M6.4 "
-                "trusted proof-verification path"
-            )
-        object.__setattr__(self, "request_id", request_id)
-        object.__setattr__(self, "research_run_id", research_run_id)
-        object.__setattr__(self, "ledger_id", ledger_id)
-        object.__setattr__(self, "provider_surface", provider_surface)
-        object.__setattr__(self, "input_snapshot_hash", input_snapshot_hash)
-        object.__setattr__(self, "closed_corpus_evidence_ref", closed_corpus_evidence_ref)
-        object.__setattr__(self, "isolation_evidence_ref", isolation_evidence_ref)
+    ) -> _VerifiedProofAttestation:
+        """Mint the capability. Reachable only from the trusted verification path."""
+        return _VerifiedProofAttestation(
+            _guard=guard,
+            request_id=request_id,
+            research_run_id=research_run_id,
+            ledger_id=ledger_id,
+            provider_surface=provider_surface,
+            input_snapshot_hash=input_snapshot_hash,
+            closed_corpus_evidence_ref=closed_corpus_evidence_ref,
+            isolation_evidence_ref=isolation_evidence_ref,
+        )
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        raise AttributeError("a verified-proof attestation is immutable")
+    return _VerifiedProofAttestation, _mint_verified_proof_attestation
 
-    def __delattr__(self, name: str) -> None:
-        raise AttributeError("a verified-proof attestation is immutable")
+
+(
+    _VerifiedProofAttestation,
+    _mint_verified_proof_attestation,
+) = _make_proof_attestation_seam()
 
 
 #: The identity fields a verified-proof attestation must bind to the result.
@@ -538,8 +590,7 @@ def _verify_success_proofs(
                 f"{context.proof_kind.value} ({verification.failure_reason})"
             )
         resolved_refs.append(verification.evidence_ref)  # type: ignore[arg-type]
-    return _VerifiedProofAttestation(
-        _token=_ATTESTATION_TOKEN,
+    return _mint_verified_proof_attestation(
         request_id=request.request_id,
         research_run_id=request.research_run_id,
         ledger_id=request.ledger_id,
@@ -1275,6 +1326,18 @@ class DeepResearchResult:
         default=None, repr=False, compare=False
     )
 
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """The result envelope is FINAL — subclassing would reopen the FD #152 bypass.
+
+        A subclass could otherwise override ``__post_init__`` (skipping the SUCCESS
+        proof gate) and be constructed as a SUCCESS without any trusted
+        verification. Refusing subclasses closes that construction path.
+        """
+        raise ResearchResultError(
+            "DeepResearchResult is final and cannot be subclassed — a subclass could "
+            "bypass the FD #152 trusted proof-verification gate"
+        )
+
     def __post_init__(self) -> None:
         # Immutable pointer collection: a caller-supplied list must not be able to
         # mutate the preserved source pointers after validation.
@@ -1361,6 +1424,62 @@ class DeepResearchResult:
     @property
     def source_pointer_count(self) -> int:
         return len(self.source_pointers)
+
+    def assert_proof_verified(self) -> "DeepResearchResult":
+        """Consumption-boundary revalidation of a ``SUCCESS`` result (FD #152).
+
+        EVERY consumer of a SUCCESS result must call this before acting on it. It
+        re-derives the checks instead of trusting construction-time validation, so
+        it also catches a result object that never came through the trusted
+        verification path:
+
+        * a SUCCESS with no verified-proof attestation (e.g. produced by
+          ``object.__new__``, which skips ``__post_init__`` entirely);
+        * an attestation that does not bind this result's exact identity;
+        * result bytes that no longer match ``result_sha256`` (post-construction
+          replacement — e.g. ``object.__setattr__``, which a frozen dataclass does
+          NOT prevent);
+        * a citation-list digest that no longer matches the source pointers.
+
+        Raises :class:`ResearchResultError` when any check fails. This is the
+        bounded in-process control, NOT a process/cryptographic boundary: hostile
+        same-process code is outside the accepted M6.2/M6.3 trust boundary, which
+        is why this re-check — not the frozen dataclass — is what consumers rely on.
+        """
+        if not self.status.is_success:
+            raise ResearchResultError(
+                "assert_proof_verified applies only to a SUCCESS result"
+            )
+        # getattr: an object created via ``object.__new__`` never ran __post_init__
+        # and may not carry this slot at all — that is exactly the case to refuse.
+        attestation = getattr(self, "_proof_attestation", None)
+        if not isinstance(attestation, _VerifiedProofAttestation):
+            raise ResearchResultError(
+                "SUCCESS refused at the consumption boundary: the result carries no "
+                "verified-proof attestation (it was not produced by the trusted "
+                "proof-verification path)"
+            )
+        mismatch = _attestation_mismatch(attestation, self)
+        if mismatch is not None:
+            raise ResearchResultError(
+                "SUCCESS refused at the consumption boundary: the verified-proof "
+                f"attestation does not bind this result ({mismatch})"
+            )
+        if not isinstance(self.result_bytes, bytes) or not self.result_bytes:
+            raise ResearchResultError(
+                "SUCCESS refused at the consumption boundary: result bytes are absent"
+            )
+        if self.result_sha256 != compute_result_sha256(self.result_bytes):
+            raise ResearchResultError(
+                "SUCCESS refused at the consumption boundary: result bytes no longer "
+                "match result_sha256 (the result was mutated after construction)"
+            )
+        if self.citation_list_sha256 != compute_citation_list_sha256(self.source_pointers):
+            raise ResearchResultError(
+                "SUCCESS refused at the consumption boundary: the citation-list "
+                "digest no longer matches the source pointers"
+            )
+        return self
 
 
 def compute_result_sha256(result_bytes: bytes) -> str:
