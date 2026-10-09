@@ -1,6 +1,54 @@
-# Session — 2026-10-09 (QAD M6.6 Noncanonical Source Discovery + Admission Bridge — IMPLEMENTED, REVIEW INCOMPLETE)
+# Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
-## WHAT HAPPENED (plain language)
+## UPDATE LATER THE SAME DAY — ROUNDS 9–13 (plain language)
+
+After the first write-up below, M6.6 went through **FIVE** independent reviews (Rounds 9–13).
+Every one came back **C** with real problems, and every problem was fixed and proven. But two
+of those problems were caused by my own earlier fixes, and all of the last three were in the
+**same small block** of error-handling code. So I stopped and asked the Founder how to proceed
+instead of patching that same block a sixth time.
+
+What each round found, and what was fixed:
+
+- **Round 9** (C, 1 big + 3 small): a verifier's "verified" stamp could be built by hand → the
+  stamp can now only be minted inside the bridge, and it is tied to the exact run + candidate +
+  source.
+- **Round 10** (C, 3 big): a caller could write its own "verified" evidence; a stamp from run A
+  could be reused for run B; a replay bypass was not authenticated → all three now enforced by
+  reusing the existing authorities.
+- **Round 11** (C, 2 big): the run/candidate/source check only ran when the evidence *claimed*
+  "true"; a half-finished save could lose which evidence belonged to which candidate → the check
+  is now always applied, and a re-run reads back what was already saved instead of recording a
+  false failure.
+- **Round 12** (C, 1 big): my Round-11 fix accepted a same-id record with **different contents**
+  as success → contents must now match exactly, otherwise it raises.
+- **Round 13** (C, 1 big): my earlier fix still settled a candidate when only **half** of the
+  pair existed (EV-only or EAR-only) → any id clash now raises unless the pair exists and
+  matches exactly.
+
+**Status now:** M6.6 is IMPLEMENTED and every finding is fixed, but **M6.6 IS NOT CLOSED**,
+because its final code has **no A/B "pass" verdict** from an independent reviewer. I am **not**
+labelling it a pass.
+
+Verified numbers: M6.6's own tests **41** · all M6 tests **365** · M5.2+M5.3+M6.3 **460** · full
+QAD **900 passed / 1 pre-existing unrelated failure** (`test_schema_build_identity`, present at
+clean baseline `e13a64e`) · ops **94** · both guard scripts exit 0. `main` is unchanged
+(`5bf1077…`); cron is still **5/5 paused**; **M6.7 has not started**; the raw-success-API gate is
+still **OPEN**.
+
+## NEXT ACTION REQUIRED FROM THE FOUNDER — pick A, B, C or D
+
+Decision package: `evidence/m6.6/FOUNDER-DECISION-PACKAGE-REVIEW-LOOP-2026-10-09.md`
+
+- **A (recommended)** — replace the broad catch-all error handler in the evidence/disposition
+  block with an explicit list of named outcomes, then run **ONE** final review. This is the
+  option most likely to end the problem class, and it gives M6.6 a real A/B verdict.
+- **B** — freeze now at `88e61ce` (all findings fixed), recorded honestly as
+  "review-unconfirmed" rather than as a pass.
+- **C** — keep fixing and re-reviewing until A/B.
+- **D** — change the review treatment (hostile whole-module review, or a second reviewer).
+
+## EARLIER THE SAME DAY (original write-up)
 
 M6.5 was already closed earlier today (FD #154). This session built **M6.6**: the bridge
 that takes the loose "sources" a research provider mentions and decides, one by one, whether
@@ -1886,3 +1934,5 @@ then run the NEW FOUNDER INDEPENDENT RE-AUDIT.
 <!-- 2026-10-07 19:29 UTC+7 -->
 
 <!-- 2026-10-09 12:35 UTC+7 (M6.4 trusted proof-verification seam CLOSED — rounds 14/15/16 C → fixed; round 17 = B M6.4 PASS; FD #152; branch impl/m6-gemini-notebook; main 5bf1077 unchanged; M6.5 NOT started; 5/5 cron PAUSED) -->
+
+<!-- 2026-10-09 12:01 UTC+7 (M6.6 rounds 9-13 CLOSED AS FIXES: r9 1M+3NB, r10 3M, r11 2M, r12 1M, r13 1M, all fixed and RED-proven; r12/r13 were fix-chain self-defects; M6.6 NOT closed - review-unconfirmed; Founder decision package A/B/C/D pending; head 2c032ca; main 5bf1077 unchanged; M6.7 NOT started; gate OPEN; 5/5 cron PAUSED) -->
