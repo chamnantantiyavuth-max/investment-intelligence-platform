@@ -1644,3 +1644,134 @@ class TestRound5Closure:
         assert finalized.terminal_status is TerminalStatus.SUCCESS
         assert [a.attempt_number for a in finalized.attempts] == [1, 2]
         assert finalized.result_sha256 == result.result_sha256
+
+
+# =====================================================================
+# Round-6 reviewer closure — whole-history governance at EVERY boundary
+# =====================================================================
+
+class TestRound6Closure:
+    def _run_with(self, store, *, provider_surface, ps_provider="surface_a"):
+        req = _request(provider_surface=ps_provider)
+        key = idempotency_key_for_request(req)
+        resolve_or_create_logical_run(
+            store, idempotency_key=key,
+            create_run_kwargs=_create_kwargs(
+                key, provider_surface=provider_surface,
+                input_snapshot_hash=req.input_snapshot_hash,
+            ),
+        )
+        return req
+
+    def test_r6_01_recording_refuses_a_later_attempt_after_an_earlier_fail_closed(
+        self, store
+    ):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("gemini_notebook",))
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        # a legacy/foreign history: an earlier fail-closed attempt, then a retryable one
+        _append(store, n=1, outcome="PIT_BLOCK")
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1",
+                plan=plan_attempt(provider_set=ps, attempt_number=3,
+                                  previous_provider_surface="gemini_notebook"),
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1, 2]
+
+    def test_r6_02_normal_success_acceptance_refuses_after_an_earlier_fail_closed(
+        self, store
+    ):
+        ok, _ = _success_run(store)
+        _append(store, n=1, outcome="PIT_BLOCK")
+        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY)
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(3, "gemini_notebook"),
+                provider_set=_PS, transport_type="BROWSER_UI_AUTOMATION",
+                telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+        assert len(store.load_run("L-1").attempts) == 2
+
+    def test_r6_03_recovery_refuses_when_a_preceding_attempt_is_fail_closed(self, store):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("surface_a", "surface_b"))
+        req = _build_success(_request(provider_surface="surface_b"))
+        self._run_with(store, provider_surface="surface_a", ps_provider="surface_b")
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.PIT_BLOCK,
+            error="pit", telemetry=_tel(),
+        )
+        store.append_attempt(
+            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
+            provider_surface="surface_b", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=req,
+                plan=plan_attempt(provider_set=ps, attempt_number=2,
+                                  previous_provider_surface="surface_a"),
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+
+    def test_r6_04_recovery_binds_an_initial_success_to_the_run_surface(self, store):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("surface_a",))
+        req = _build_success(_request(provider_surface="surface_a"))
+        # the RUN is configured for surface_z; the persisted INITIAL SUCCESS is surface_a
+        self._run_with(store, provider_surface="surface_z", ps_provider="surface_a")
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=req,
+                plan=plan_attempt(provider_set=ps, attempt_number=1),
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").is_terminal is False
+        # the refusal reason is the RUN-surface binding, not an unrelated plan error
+        with pytest.raises(RetryPolicyError, match="configured provider surface"):
+            accept_success_result(
+                store, ledger_id="L-1", result=req,
+                plan=plan_attempt(provider_set=ps, attempt_number=1),
+                provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+
+    def test_r6_05_a_matching_initial_success_still_recovers(self, store):
+        from qad.m6.orchestration import ProviderSet as _PSet
+
+        ps = _PSet(("surface_a",))
+        req = _build_success(_request(provider_surface="surface_a"))
+        self._run_with(store, provider_surface="surface_a", ps_provider="surface_a")
+        store.append_attempt(
+            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
+            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
+            error=None, telemetry=_tel(),
+        )
+        finalized = accept_success_result(
+            store, ledger_id="L-1", result=req,
+            plan=plan_attempt(provider_set=ps, attempt_number=1),
+            provider_set=ps, transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert finalized.terminal_status is TerminalStatus.SUCCESS
+        assert finalized.result_sha256 == req.result_sha256
