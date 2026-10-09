@@ -251,6 +251,7 @@ class LogicalRunResolution:
     attempts_recorded: int
     next_attempt_number: int | None
     retry_budget_remaining: int
+    history_consistent: bool = True
     terminal_status: TerminalStatus | None = None
     record: RunRecord | None = field(default=None, repr=False, compare=False)
 
@@ -268,23 +269,58 @@ def _resolution_from_record(
     outcome: ResolutionOutcome, key: str, record: RunRecord
 ) -> LogicalRunResolution:
     used = [a.attempt_number for a in record.attempts]
-    attempts_recorded = len(used)
-    if record.is_terminal:
-        next_attempt: int | None = None
+    # The durable attempt history must be the contiguous sequence 1..N (M6.5 §13
+    # criterion 34). A gapped history is treated FAIL-CLOSED: no further attempt is
+    # permitted, so the resolution can never report a self-contradictory pair such
+    # as "no next attempt but two attempts remaining".
+    consistent = used == list(range(1, len(used) + 1))
+    next_attempt: int | None
+    if record.is_terminal or not consistent:
+        next_attempt = None
     else:
-        highest = max(used) if used else 0
-        candidate = max(highest + 1, ATTEMPT_NUMBER_MIN)
+        candidate = len(used) + 1
         next_attempt = candidate if candidate <= MAX_ATTEMPTS else None
+    remaining = 0 if next_attempt is None else (MAX_ATTEMPTS - next_attempt + 1)
     return LogicalRunResolution(
         outcome=outcome,
         idempotency_key=key,
         ledger_id=record.ledger_id,
-        attempts_recorded=attempts_recorded,
+        attempts_recorded=len(used),
         next_attempt_number=next_attempt,
-        retry_budget_remaining=max(0, MAX_ATTEMPTS - attempts_recorded),
+        retry_budget_remaining=remaining,
+        history_consistent=consistent,
         terminal_status=record.terminal_status,
         record=record,
     )
+
+
+def _require_next_attempt_number(
+    store: DeepResearchRunLedgerStore, ledger_id: str
+) -> int:
+    """The M6.5 recording boundary requires a CONTIGUOUS 1..N attempt history.
+
+    M6.3's ledger deliberately validates only the 1..3 RANGE and duplicate identity;
+    lifecycle ORDERING is owned here by the orchestrator, so this does not change the
+    accepted M6.3 ledger semantics. A gapped or exhausted history is refused.
+    """
+    record = store.load_run(ledger_id)
+    if record.is_terminal:
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} is already terminal; no further attempt "
+            "may be recorded"
+        )
+    used = [a.attempt_number for a in record.attempts]
+    if used != list(range(1, len(used) + 1)):
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} has a non-contiguous attempt history "
+            f"{used}; M6.5 requires the contiguous sequence 1..N"
+        )
+    expected = len(used) + 1
+    if expected > MAX_ATTEMPTS:
+        raise RetryPolicyError(
+            f"ledger run {ledger_id!r} has exhausted the {MAX_ATTEMPTS}-attempt budget"
+        )
+    return expected
 
 
 def resolve_or_create_logical_run(
@@ -368,11 +404,23 @@ class ProviderSet:
     compliant_providers: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        providers = tuple(self.compliant_providers)
+        raw = self.compliant_providers
+        if isinstance(raw, (str, bytes)):
+            raise RetryPolicyError(
+                "compliant_providers must be a COLLECTION of provider names, not a "
+                "single string — a string would be iterated into characters and "
+                "silently invent provider surfaces (and could fake Mode A)"
+            )
+        try:
+            providers = tuple(raw)
+        except TypeError:
+            raise RetryPolicyError(
+                "compliant_providers must be an iterable of provider names"
+            ) from None
         if not providers:
             raise RetryPolicyError("at least one compliant provider is required")
         for name in providers:
-            if not isinstance(name, str) or not name.strip():
+            if isinstance(name, (str, bytes)) is False or not str(name).strip():
                 raise RetryPolicyError("provider names must be non-blank strings")
         if len(set(providers)) != len(providers):
             raise RetryPolicyError("compliant provider names must be unique")
@@ -765,6 +813,12 @@ def record_failed_attempt(
             "record_failed_attempt refuses SUCCESS — a successful attempt must go "
             "through accept_success_result (FD #152 proof gate)"
         )
+    expected = _require_next_attempt_number(store, ledger_id)
+    if attempt_number != expected:
+        raise RetryPolicyError(
+            "attempt history must be the contiguous sequence 1..N: expected attempt "
+            f"{expected} for ledger run {ledger_id!r}, got {attempt_number}"
+        )
     store.append_attempt(
         ledger_id,
         attempt_number=attempt_number,
@@ -809,6 +863,12 @@ def accept_success_result(
     result.assert_proof_verified()
     if not result.status.is_success:  # defensive: assert_proof_verified guards this
         raise OrchestrationError("accept_success_result requires a SUCCESS result")
+    expected = _require_next_attempt_number(store, ledger_id)
+    if attempt_number != expected:
+        raise RetryPolicyError(
+            "attempt history must be the contiguous sequence 1..N: expected attempt "
+            f"{expected} for ledger run {ledger_id!r}, got {attempt_number}"
+        )
     store.append_attempt(
         ledger_id,
         attempt_number=attempt_number,

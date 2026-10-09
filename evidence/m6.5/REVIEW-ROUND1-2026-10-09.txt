@@ -1,0 +1,63 @@
+VERDICT: C
+C = M6.5 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS:
+A. VERIFIED — The key uses exactly the six specified fields (`orchestration.py:97-107, 168-215`); tests vary each field, and the patched clock/random/UUID/cwd probe reproduced the same key.
+B. VERIFIED — Eight concurrent identical resolutions produced one `CREATED`, seven `EXISTING_ACTIVE`, and one ledger run.
+C. VERIFIED — The fresh-store re-entry test reads the durable attempt history and continues at attempt 2.
+D. VERIFIED — `plan_attempt` rejects attempt 4; ledger validation and its SQLite constraint reject recording attempt 4.
+E. VERIFIED — A one-provider tuple uses `INITIAL_ATTEMPT`, then same-provider retries, without fallback.
+F. DEFECT — A string passed as `ProviderSet.compliant_providers` is split into characters and silently treated as multiple providers; see Material Finding 1.
+G. VERIFIED — Exhaustion yields `RESEARCH_UNAVAILABLE` and an EG-01 `DEFERRED` instruction with `applied=False`; no EG-01 mutation API or canonical schema addition was found.
+H. VERIFIED — `PIT_BLOCK`, `INCOMPLETE`, `FAILED`, `PROVIDER_CANNOT_ENFORCE_SEALED_INPUT`, and `REQUEST_ISOLATION_UNVERIFIED` classify as non-retryable. The M6.4 statuses fail closed; no retry is planned for them.
+I. VERIFIED — Exact exposed zeroes are retained; NOT_EXPOSED requires `None` and a non-blank reason; missing required and undeclared metrics are rejected. No estimation path was found.
+J. DEFECT — The ledger accepts attempt 3 as the first persisted attempt. Re-entry then reports one recorded attempt, no next attempt, but two attempts remaining; see Material Finding 2.
+K. NOT VERIFIED — The FD #152 seam is present and the M6 suite passes; whether `research_contract.py` is unchanged cannot be established without a baseline.
+L. VERIFIED — The only M6.5 function consuming a `DeepResearchResult` for SUCCESS calls `assert_proof_verified()` before append or terminalization (`orchestration.py:782-830`). Forged/tampered and valid-success tests passed.
+M. VERIFIED — AST import scan of `orchestration.py` found no provider, browser, network, or credential imports.
+N. VERIFIED — No M6.6-named implementation files were found under `qad/m6`; the reviewed orchestration layer contains no provider transport.
+O. NOT VERIFIED — The lookup helper is SELECT-only and its tests check unchanged run/event state; schema count is 68. Without `.git`, I cannot verify it is the sole ledger diff or establish no mutation-semantic change.
+P. VERIFIED — `tests/qad/m6`: 269 passed. `tests/qad`: 804 passed, 1 failed; exact failure is reported below.
+
+MATERIAL FINDINGS:
+1. Provider-name strings are silently split into characters.
+   (a) `qad/m6/orchestration.py:368-379` applies `tuple(self.compliant_providers)` without rejecting strings. Actual probe: `ProviderSet('openai')` produced `('a', 'e', 'i', 'n', 'o', 'p')`, mode `MODE_A`; planning then selected `a` followed by `e`, labelled `PROVIDER_FALLBACK`, `fallback_used=True`.
+   (b) A single provider identifier can therefore masquerade as multiple configured compliant providers, inventing provider surfaces and violating the Mode A/Mode B policy.
+   (c) Reject `str`/`bytes` before normalization and validate the provider collection’s type.
+   (d) Verify a string provider identifier is rejected; a one-element tuple remains Mode B and retries on the same provider; rerun the Mode A/B tests.
+
+2. Attempt history can start with a gap.
+   (a) `qad/m6/ledger.py:819-897` validates the range and duplicate identity but does not require the next sequential number. I created a run and appended attempt 3 first; it persisted as `[3]`. `resolve_or_create_logical_run` then returned `attempts_recorded=1`, `next_attempt_number=None`, `retry_budget_remaining=2` (`orchestration.py:267-285`).
+   (b) This violates the required 1..N attempt history and leaves the durable budget internally inconsistent: retry is disallowed despite two attempts reported as remaining.
+   (c) Enforce the next expected attempt number atomically at the recording boundary. If doing so changes accepted M6.3 ledger semantics, obtain the required authority rather than silently changing them.
+   (d) Verify attempts 2 or 3 cannot be appended before their predecessors; after reopening the store, history must be exactly 1..N and the next-attempt/budget values must agree.
+
+NON-BLOCKING FINDINGS:
+NONE
+
+EVIDENCE GAPS:
+- This copy has no `.git` directory. I could not verify the claimed commit `50f657e`, branch `impl/m6-gemini-notebook`, its diff against `220f3ac`, that `research_contract.py` is unchanged, or that the idempotency lookup is the only ledger change.
+- The top entry of `SESSION_CLOSEOUT.md` says M6.5 was not started and records an M6.4-era branch head. That does not establish the provenance of the M6.5 artifacts in this copy.
+- The broader `tests/qad` failure cannot be classified as inherited or introduced without a baseline: `tests/qad/test_contract_conformance.py::test_schema_build_identity` failed because the recorded `spec_source_sha256` did not match the current schema document hash.
+
+COMMANDS RUN:
+- `git status --short --branch && git branch --show-current && git rev-parse HEAD && git log -1 --oneline && git status --porcelain=v1`
+  Observed: `fatal: not a git repository (or any of the parent directories): .git`
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round1-review/basetemp"`
+  Observed: `269 passed in 8.57s`
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round1-review/basetemp"`
+  Observed: `1 failed, 804 passed, 11 warnings in 11.29s`; failure: `tests/qad/test_contract_conformance.py::test_schema_build_identity`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.m6.orchestration import ProviderSet, plan_attempt; from qad.m6.ledger import RetryMode; p=ProviderSet('openai'); a=plan_attempt(provider_set=p, attempt_number=1); b=plan_attempt(provider_set=p, attempt_number=2, previous_provider_surface=a.provider_surface); print(p.compliant_providers, p.mode.value, a.provider_surface, b.provider_surface, b.retry_mode.value, b.fallback_used)"`
+  Observed: `('a', 'e', 'i', 'n', 'o', 'p') MODE_A a e PROVIDER_FALLBACK True`
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; from uuid import uuid4; from qad.m6.ledger import DeepResearchRunLedgerStore, RetryMode; from qad.m6.orchestration import resolve_or_create_logical_run; root=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m65-round1-review/basetemp'); root.mkdir(parents=True, exist_ok=True); path=root/('m65-gap2-'+uuid4().hex+'.sqlite3'); s=DeepResearchRunLedgerStore(path); key='idem-gap-probe'; s.create_run(ledger_id='L', research_run_id='R', rrm_manifest_id='RRM', case_id='C', case_version='v1', evidence_gap_id='EG', request_id='REQ', idempotency_key=key, notebook_identity='nb', pit_context_id='PIT', pit_mode='SEALED', as_of='2026-01-01', input_snapshot_hash='b'*64, provider_surface='p', transport_type='T'); tel={m:{'status':'NOT_EXPOSED','value':None,'reason':'probe'} for m in ('model_identity','prompt_tokens','completion_tokens','cost','model_version')}; s.append_attempt('L', attempt_number=3, retry_mode=RetryMode.SAME_PROVIDER_RETRY, provider_surface='p', transport_type='T', outcome='TRANSPORT_FAILURE', telemetry=tel); r=resolve_or_create_logical_run(s, idempotency_key=key); print([a.attempt_number for a in s.load_run('L').attempts], r.attempts_recorded, r.next_attempt_number, r.retry_budget_remaining); print(path)"`
+  Observed: `[3] 1 None 2`; the probe DB was subsequently removed from the permitted basetemp.
+- AST/import scan of `qad/m6/orchestration.py` using the specified Python executable.
+  Observed imports: `['__future__', 'dataclasses', 'enum', 'hashlib', 'qad.m6.ledger', 'qad.m6.research_contract', 'qad.models.family_b', 'typing']`; `BANNED_IMPORTS []`; canonical schema count `68`; RRM annotation `typing.Optional[list[str]]`.
+- Concurrent duplicate-resolution probe using eight workers against one SQLite store.
+  Observed: one `CREATED`, seven `EXISTING_ACTIVE`; runs `['LRACE']`.
+- Probe cleanup under the authorized basetemp.
+  Observed: probe SQLite files removed; no matching probe files remained.
+
+POLICY DISAGREEMENT (if any):
+NONE
+REVIEW_EXIT=0

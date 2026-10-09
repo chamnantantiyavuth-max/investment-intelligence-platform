@@ -989,3 +989,126 @@ class TestBoundaries:
 
         annotation = RunManifestRecord.model_fields["deep_research_runs"].annotation
         assert "list[str]" in str(annotation)
+
+
+# =====================================================================
+# Round-1 reviewer closure — two bounded implementation defects
+# =====================================================================
+
+class TestRound1Closure:
+    def test_r1_01_provider_set_rejects_a_bare_string(self):
+        """A string iterates into characters and would fabricate provider surfaces."""
+        with pytest.raises(RetryPolicyError):
+            ProviderSet("openai")
+        with pytest.raises(RetryPolicyError):
+            ProviderSet(b"openai")
+        # a genuine one-element collection is still Mode B
+        one = ProviderSet(("openai",))
+        assert one.mode is OrchestrationMode.MODE_B
+        assert one.compliant_providers == ("openai",)
+
+    def test_r1_02_provider_names_must_be_non_blank_strings(self):
+        with pytest.raises(RetryPolicyError):
+            ProviderSet((123,))
+        with pytest.raises(RetryPolicyError):
+            ProviderSet(("  ",))
+        with pytest.raises(RetryPolicyError):
+            ProviderSet(())
+        with pytest.raises(RetryPolicyError):
+            ProviderSet(("dup", "dup"))
+
+    def test_r1_03_a_gapped_attempt_history_is_fail_closed_and_coherent(self, store):
+        """A gap must never yield 'no next attempt' + 'two attempts remaining'."""
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        # write a GAPPED durable state directly through the M6.3 ledger (legacy state)
+        _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
+        resolved = resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        assert resolved.history_consistent is False
+        assert resolved.next_attempt_number is None
+        assert resolved.retry_budget_remaining == 0
+        assert resolved.may_attempt is False
+
+    def test_r1_04_m65_recording_refuses_a_non_contiguous_attempt(self, store):
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", attempt_number=2,
+                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                provider_surface="gemini_notebook",
+                transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert store.load_run("L-1").attempts == ()
+        # attempt 1 is accepted, attempt 3 (out of order) is refused
+        record_failed_attempt(
+            store, ledger_id="L-1", attempt_number=1,
+            retry_mode=RetryMode.INITIAL_ATTEMPT, provider_surface="gemini_notebook",
+            transport_type="BROWSER_UI_AUTOMATION",
+            outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+        )
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", attempt_number=3,
+                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                provider_surface="gemini_notebook",
+                transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
+        assert [a.attempt_number for a in store.load_run("L-1").attempts] == [1]
+
+    def test_r1_05_accept_success_enforces_contiguity_and_the_budget(self, store):
+        key = compute_idempotency_key(**_keys())
+        resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        ok = _build_success(_request())
+        with pytest.raises(RetryPolicyError):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, attempt_number=2,
+                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        record = store.load_run("L-1")
+        assert record.attempts == () and record.is_terminal is False
+        # attempt 1 is accepted (§15 tests 51/52 cover the success semantics)
+        assert accept_success_result(
+            store, ledger_id="L-1", result=ok, attempt_number=1,
+            retry_mode=RetryMode.INITIAL_ATTEMPT,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        ).terminal_status is TerminalStatus.SUCCESS
+
+    def test_r1_06_budget_is_coherent_across_the_whole_lifecycle(self, store):
+        key = compute_idempotency_key(**_keys())
+        created = resolve_or_create_logical_run(
+            store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+        )
+        assert (created.next_attempt_number, created.retry_budget_remaining) == (1, 3)
+        for n in (1, 2, 3):
+            _append(store, n=n, mode=RetryMode.SAME_PROVIDER_RETRY)
+            resolved = resolve_or_create_logical_run(
+                store, idempotency_key=key, create_run_kwargs=_create_kwargs(key)
+            )
+            assert resolved.history_consistent is True
+            if n < MAX_ATTEMPTS:
+                assert resolved.next_attempt_number == n + 1
+                assert resolved.retry_budget_remaining == MAX_ATTEMPTS - n
+            else:
+                assert resolved.next_attempt_number is None
+                assert resolved.retry_budget_remaining == 0
+        # the 4th attempt is unrecordable through the M6.5 boundary
+        with pytest.raises(RetryPolicyError):
+            record_failed_attempt(
+                store, ledger_id="L-1", attempt_number=4,
+                retry_mode=RetryMode.SAME_PROVIDER_RETRY,
+                provider_surface="gemini_notebook",
+                transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.TRANSPORT_FAILURE, error="boom", telemetry=_tel(),
+            )
