@@ -1,5 +1,82 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-12 (later still) — ROUND-16 CORRECTION DONE, ROUND 16 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED
+
+You authorized Option A (the one-line exact-type fix) plus a closure-focused review. I did exactly
+that, and Round 16 found one more real thing.
+
+**What I changed (one line)**
+
+I replaced the doorway test with what you prescribed:
+`if type(error) not in _RECONCILABLE_ENTRY_FAILURES:` — and kept the governance guard first, the
+comparison code untouched, and the "temporary" list unchanged. I added the 7 tests you asked for
+(cases A–G), each proving a *full candidate lifecycle*: the bad failure settles nothing, and the same
+candidate still completes afterwards. All 71 older tests kept byte-identical (the test diff adds 199
+lines, deletes 0).
+
+I also ran the mutation tests you asked for: putting `isinstance` back → 2 tests fail; adding a third
+class to the list → 2 tests fail; restoring the file byte-for-byte → all 7 pass.
+
+**What Round 16 found (C again — one real thing)**
+
+`type(error) not in <list>` looks like an identity test but Python's `in` is an **equality** test. A
+class can be built whose *metaclass* says "I equal IntegrityConflict", so an unlisted subclass slips
+through the doorway again and gets recorded as a successful, linked outcome. I reproduced it myself:
+membership said `True` while true identity said `False`, and the candidate got settled.
+
+Two honest points:
+- **It is not reachable from the code we actually ship.** Nothing in `qad/` defines a custom metaclass
+  or an `__eq__`; every raise site raises the exact class. Reaching it needs code *inside the process*
+  that deliberately defines such a class — the kind of hostile in-process construct FD #152 already
+  puts outside the accepted trust boundary for verifier trust.
+- **But it does violate the literal wording of your ruling** ("closed by exact type"), because the
+  predicate you prescribed (`in`) is equality-based. So it is a policy-precision gap, not me
+  disobeying you — the code implements your exact text.
+
+Round 16 also **confirmed** the Round-15 problem is fixed (ordinary subclasses, subclass-of-subclass,
+same-name dynamic class, NotImplementedError and the other error classes are all rejected with zero
+read-back).
+
+**What I did NOT do:** no fix, no Round 17, no freeze, no "GREEN" claim, nothing into M6.7.
+
+**The state right now**
+
+| Thing | Status |
+|---|---|
+| M6.6 | IMPLEMENTED / **NOT CLOSED** |
+| Round-15 problem | **fixed and independently verified** in `6565227` |
+| Round-16 problem | **OPEN** — not frozen, not accepted |
+| Round 17 | **NOT RUN** |
+| M6.7 | **NOT STARTED** |
+| Raw SUCCESS gate | **still OPEN** (blocking M6.7) |
+| cron | **5/5 PAUSED** |
+| `main` | unchanged `5bf1077` |
+
+**Recommended next action**
+
+**A (recommended) — make the test an identity test, then ONE Round-17 review.** Change `in` to
+`any(type(error) is allowed for allowed in _RECONCILABLE_ENTRY_FAILURES)` (one line) + one regression
+test using a metaclass-spoofing class + keep everything else. It makes your exact-type ruling literally
+true, costs one line, and needs no design work.
+
+Alternatives:
+- **B — freeze at `6565227`** as **"review-unconfirmed"** (no A/B), with the identity-closure recorded
+  as a documented **blocking** pre-M6.7 item — never as accepted risk, never as a pass.
+- **D — rule the threat model explicitly**: declare adversarial in-process metaclass/class-identity
+  spoofing OUTSIDE the accepted M6.6 trust model (exactly as FD #152 does for verifier trust), record
+  that ruling, then close on B with the closure noted as future hardening. If you take this path the
+  gap becomes a documented policy boundary instead of an open defect — and B must still not be called
+  a pass.
+- **C — revert.** Not recommended (re-opens the Round-15 problem).
+
+Honest note: this is the eighth C in a row on the same small boundary, and the residual has now
+shrunk from "reachable from the accepted code" to "needs an adversarial in-process class definition".
+That is why D is on the table as a genuine policy choice rather than an engineering one.
+
+Full detail: `evidence/m6.6/FOUNDER-DECISION-PACKAGE-ROUND16-C-2026-10-12.md`.
+
+<!-- 2026-10-12 16:05 UTC+7 -->
+
 ## 2026-10-12 (later) — OPTION A CORRECTION DONE, ROUND 15 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED (plain language)
 
 You picked **Option A**: make the one small correction — the "doorway" into the compare-what-is-
