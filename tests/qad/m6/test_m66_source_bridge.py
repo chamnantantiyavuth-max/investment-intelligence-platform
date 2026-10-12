@@ -2303,3 +2303,202 @@ def test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist(tmp_p
     assert _dispositions(store, "L-G") == {}
     assert pending_candidates(store.load_run("L-G")) == (cid,)
     assert _canonical_hashes(registry) == before
+
+
+# ============================================================================
+# 55-61 round-16 closure — RECONCILIATION-ENTRY CONTRACT CLOSED BY EXACT TYPE
+#
+# Founder ruling (12 Oct 2026): the entry allowlist is EXACTLY (IntegrityConflict,
+# TransactionFailure) matched with `type(error) not in _RECONCILABLE_ENTRY_FAILURES`. A SUBCLASS is
+# NOT implicitly authorized. Founder-mandated cases: A (test_55) · B (test_56) · C (test_57) ·
+# D (test_58) · E (test_59) · F (test_60) · G (test_61) · H/I/J mutation demonstrations
+# (evidence/m6.6/RED-DEMO-ROUND16-2026-10-12.txt).
+#
+# Each fail-closed case below proves a COMPLETE candidate lifecycle: the unauthorized failure
+# settles nothing, and the SAME candidate is still recoverable afterwards (the recovery run then
+# reconciles the identical pair through the exact allowlist) — not just a predicate assertion.
+# ============================================================================
+
+
+class _UnlistedIntegritySubclass(IntegrityConflict):
+    """An UNLISTED subclass of an allowlisted class - not implicitly authorized (case C)."""
+
+
+class _UnlistedTransactionSubclass(TransactionFailure):
+    """An UNLISTED subclass of the other allowlisted class (case D)."""
+
+
+class _GovernanceAndCollision(SourceBridgeError, IntegrityConflict):
+    """Multiple inheritance: a governance failure that is ALSO collision-shaped (case F)."""
+
+
+class _GovernanceOnly(SourceBridgeError):
+    """A pure governance failure (case F companion)."""
+
+
+def _fail_closed_lifecycle(tmp_path, *, ledger_id, reference, exc_factory, exc_type):
+    """Complete lifecycle proof for one unauthorized failure class."""
+    store, archive, registry, cid, verifier, refs = _pending_candidate_with_exact_pair(
+        tmp_path, ledger_id=ledger_id, reference=reference
+    )
+    before = _canonical_hashes(registry)
+    real_admit = registry.admit_evidence
+    registry.admit_evidence = lambda e, a: (_ for _ in ()).throw(exc_factory())
+    with pytest.raises(exc_type):
+        _rerun(store, registry, archive, verifier, refs, ledger_id=ledger_id)
+    # nothing settled, no lineage, canonical state untouched, candidate still pending
+    assert _dispositions(store, ledger_id) == {}
+    assert pending_candidates(store.load_run(ledger_id)) == (cid,)
+    assert _canonical_hashes(registry) == before
+    # LIFECYCLE COMPLETES: with the registry behaving normally again, the SAME candidate
+    # reconciles the identical pair through the EXACT allowlist
+    registry.admit_evidence = real_admit
+    out = _rerun(store, registry, archive, verifier, refs, ledger_id=ledger_id)
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == (EXPECTED_EV_ID,) and o.ear_ids == (EXPECTED_EAR_ID,)
+    assert pending_candidates(store.load_run(ledger_id)) == ()
+    assert len(registry._data["EV-01"]) == 1 and len(registry._data["EAR-01"]) == 1
+
+
+def test_55_A_exact_integrity_conflict_reconciles_full_lifecycle(tmp_path):
+    """Case A — EXACT IntegrityConflict + exact pre-existing pair -> legitimate reconciliation."""
+    expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+    expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+    # (a) DIRECT classifier against a committed, exactly-matching canonical pair
+    decision = classify_evidence_admission_failure(
+        _seeded_registry(seed_ev=expected_ev, seed_ear=expected_ear),
+        error=IntegrityConflict("EV-01/EV-A: evidence already admitted"),
+        evidence=expected_ev, admission=expected_ear, verified_source_id=EXPECTED_SRC,
+    )
+    assert decision.classification is EvidenceAdmissionClassification.RECONCILED_IDENTICAL
+    assert decision.settled is True
+    assert (decision.evidence_id, decision.ear_id) == (EXPECTED_EV_ID, EXPECTED_EAR_ID)
+    # (b) COMPLETE LIFECYCLE end-to-end (the registry's own natural collision, no injection)
+    store, archive, registry, cid, verifier, refs = _pending_candidate_with_exact_pair(tmp_path)
+    out = _rerun(store, registry, archive, verifier, refs)
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == (EXPECTED_EV_ID,) and o.ear_ids == (EXPECTED_EAR_ID,)
+    assert o.evidence_admission_error is None
+    assert pending_candidates(store.load_run("L-1")) == ()
+    assert _dispositions(store, "L-1")[cid].evidence_ids == (EXPECTED_EV_ID,)
+
+
+def test_56_B_exact_transaction_failure_reconciles_full_lifecycle(tmp_path):
+    """Case B — EXACT TransactionFailure + exact pre-existing pair -> legitimate reconciliation."""
+    store, archive, registry, cid, verifier, refs = _pending_candidate_with_exact_pair(tmp_path)
+    real_admit = registry.admit_evidence
+    registry.admit_evidence = lambda e, a: (_ for _ in ()).throw(
+        TransactionFailure("INJECTED batch failure")
+    )
+    out = _rerun(store, registry, archive, verifier, refs)
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == (EXPECTED_EV_ID,) and o.ear_ids == (EXPECTED_EAR_ID,)
+    assert pending_candidates(store.load_run("L-1")) == ()
+    assert len(registry._data["EV-01"]) == 1 and len(registry._data["EAR-01"]) == 1
+    registry.admit_evidence = real_admit
+
+
+def test_57_C_unlisted_integrity_subclass_fails_closed_full_lifecycle(tmp_path):
+    """Case C — UNLISTED subclass of IntegrityConflict: zero read-back, nothing settled."""
+    # (a) DIRECT classifier: propagates unchanged AND attempts no read-back at all
+    spy = _ReadBackSpy()
+    raised = _UnlistedIntegritySubclass("UNLISTED subclass collision")
+    with pytest.raises(_UnlistedIntegritySubclass) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is raised
+    assert spy.calls == 0
+    # (b) COMPLETE LIFECYCLE end-to-end
+    _fail_closed_lifecycle(
+        tmp_path, ledger_id="L-C", reference="https://sec.gov/c",
+        exc_factory=lambda: _UnlistedIntegritySubclass("UNLISTED subclass collision"),
+        exc_type=_UnlistedIntegritySubclass,
+    )
+
+
+def test_58_D_unlisted_transaction_subclass_fails_closed_full_lifecycle(tmp_path):
+    """Case D — UNLISTED subclass of TransactionFailure: zero read-back, nothing settled."""
+    spy = _ReadBackSpy()
+    raised = _UnlistedTransactionSubclass("UNLISTED subclass batch failure")
+    with pytest.raises(_UnlistedTransactionSubclass) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is raised
+    assert spy.calls == 0
+    _fail_closed_lifecycle(
+        tmp_path, ledger_id="L-D", reference="https://sec.gov/d",
+        exc_factory=lambda: _UnlistedTransactionSubclass("UNLISTED subclass batch failure"),
+        exc_type=_UnlistedTransactionSubclass,
+    )
+
+
+def test_59_E_an_unlisted_plain_class_fails_closed_full_lifecycle(tmp_path):
+    """Case E — NotImplementedError (neither allowlisted nor a subclass): nothing settled."""
+    spy = _ReadBackSpy()
+    raised = NotImplementedError("UNLISTED plain failure class")
+    with pytest.raises(NotImplementedError) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is raised
+    assert spy.calls == 0
+    _fail_closed_lifecycle(
+        tmp_path, ledger_id="L-E2", reference="https://sec.gov/e2",
+        exc_factory=lambda: NotImplementedError("UNLISTED plain failure class"),
+        exc_type=NotImplementedError,
+    )
+
+
+def test_60_F_governance_precedence_survives_multiple_inheritance(tmp_path):
+    """Case F — a class inheriting BOTH SourceBridgeError and IntegrityConflict fails closed."""
+    spy = _ReadBackSpy()
+    raised = _GovernanceAndCollision("governance failure with collision shape")
+    assert isinstance(raised, SourceBridgeError) and isinstance(raised, IntegrityConflict)
+    assert type(raised) not in (IntegrityConflict, TransactionFailure)   # not an exact member
+    with pytest.raises(SourceBridgeError) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is raised
+    assert spy.calls == 0
+    _fail_closed_lifecycle(
+        tmp_path, ledger_id="L-F", reference="https://sec.gov/f",
+        exc_factory=lambda: _GovernanceAndCollision("governance failure with collision shape"),
+        exc_type=SourceBridgeError,
+    )
+    # companion: a PURE governance failure also fails closed
+    pure = _GovernanceOnly("pure governance failure")
+    with pytest.raises(SourceBridgeError) as excinfo2:
+        classify_evidence_admission_failure(
+            _ReadBackSpy(), error=pure, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo2.value is pure
+
+
+def test_61_G_the_entry_allowlist_composition_is_closed_and_exact():
+    """Case G — the allowlist contains EXACTLY the two Founder-approved classes and no third."""
+    from qad.m6 import source_bridge as sb
+
+    allow = sb._RECONCILABLE_ENTRY_FAILURES
+    assert isinstance(allow, tuple)
+    assert allow == (IntegrityConflict, TransactionFailure)      # exact members and order
+    assert len(allow) == 2                                        # no third class
+    assert set(allow) == {IntegrityConflict, TransactionFailure}   # no duplicates/extras
+    assert all(isinstance(cls, type) for cls in allow)
+    # every non-member class is excluded, including subclasses of the members
+    for excluded in (SourceBridgeError, _UnlistedIntegritySubclass, _UnlistedTransactionSubclass,
+                     NotImplementedError, RuntimeError, CanonicalBoundaryViolation,
+                     MissingForeignKey, PITBlockError):
+        assert excluded not in allow
+    # ...and the transient-partial allowlist was NOT broadened
+    assert sb._RETRYABLE_OPERATIONAL_FAILURES == (TransactionFailure,)

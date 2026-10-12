@@ -177,14 +177,16 @@ _SETTLED_EVIDENCE_CLASSIFICATIONS = frozenset(
 #: are NOT retryable and never take the transient path.
 _RETRYABLE_OPERATIONAL_FAILURES: tuple[type[BaseException], ...] = (TransactionFailure,)
 
-#: RECONCILIATION-ENTRY ALLOWLIST. Only exception classes whose reconciliation semantics are
-#: ESTABLISHED may enter authoritative read-back reconciliation at all:
+#: RECONCILIATION-ENTRY ALLOWLIST — **CLOSED BY EXACT TYPE** (Founder ruling, 12 Oct 2026).
+#: Only the EXACT classes below may enter authoritative read-back reconciliation:
 #:   * ``IntegrityConflict`` — the canonical gate refused because the id already exists
 #:     (same id, possibly a prior identical commit of this same candidate);
 #:   * ``TransactionFailure``  — a batch transaction failed before commit; the commit may
 #:     nevertheless have landed earlier, so read-back is how we tell.
-#: EVERY other failure class propagates UNCHANGED *before* any read-back is attempted, so an
-#: unrecognized failure can never be reconciled into a successful, lineage-claiming outcome.
+#: Matched with ``type(error) not in _RECONCILABLE_ENTRY_FAILURES`` — a SUBCLASS of either class is
+#: NOT implicitly authorized, and no third class is. EVERY failure outside this exact set propagates
+#: UNCHANGED *before* any read-back, so an unrecognized failure (or an unapproved subtype of a
+#: recognized one) can never be reconciled into a successful, lineage-claiming outcome.
 _RECONCILABLE_ENTRY_FAILURES: tuple[type[BaseException], ...] = (
     IntegrityConflict,
     TransactionFailure,
@@ -1208,9 +1210,10 @@ def classify_evidence_admission_failure(
       * a pre-boundary proof / binding / verification failure (``SourceBridgeError``)
         FAILS CLOSED immediately (no read-back, no disposition);
       * ANY exception class outside the reconciliation-entry allowlist
-        (``_RECONCILABLE_ENTRY_FAILURES``) propagates UNCHANGED **before** any read-back —
-        an unrecognized failure can therefore never be reconciled into a settled,
-        lineage-claiming success (round-14 correction);
+        (``_RECONCILABLE_ENTRY_FAILURES``, matched by **EXACT TYPE**) propagates UNCHANGED
+        **before** any read-back — an unrecognized failure, and equally an UNLISTED SUBCLASS
+        of an allowlisted class, can therefore never be reconciled into a settled,
+        lineage-claiming success (round-14 + round-15 correction);
       * neither record exists -> TRANSIENT_PARTIAL ONLY for a recognized retryable
         operational failure; absent records alone are NOT transient, so any other
         (unknown / unreconciled) error FAILS CLOSED by propagating;
@@ -1228,12 +1231,14 @@ def classify_evidence_admission_failure(
         # governance failure never enters reconciliation even if it also carries a
         # collision-shaped type.
         raise error
-    if not isinstance(error, _RECONCILABLE_ENTRY_FAILURES):
-        # RECONCILIATION-ENTRY ALLOWLIST (round-14 correction). A failure whose class has NO
-        # established reconciliation semantics must not reach the read-back at all: nothing is
-        # read, nothing is guessed, and the ORIGINAL exception propagates unchanged. This is
-        # what stops an unrecognized failure from being turned into a settled success merely
-        # because an identical canonical pair happens to exist.
+    if type(error) not in _RECONCILABLE_ENTRY_FAILURES:
+        # RECONCILIATION-ENTRY CONTRACT — CLOSED BY EXACT TYPE (Founder ruling, 12 Oct 2026).
+        # The allowlist is EXACTLY the two approved classes; a SUBCLASS is NOT implicitly
+        # authorized, and neither is any other class. A failure outside the exact allowlist must
+        # not reach the read-back at all: nothing is read, nothing is guessed, and the ORIGINAL
+        # exception propagates unchanged. This is what stops an unrecognized failure — or an
+        # unapproved subtype of a recognized one — from being turned into a settled success
+        # merely because an identical canonical pair happens to exist.
         raise error
     state = reconcile_canonical_evidence_pair(
         registry, evidence=evidence, admission=admission,
