@@ -1,5 +1,87 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-12 (later) — OPTION A CORRECTION DONE, ROUND 15 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED (plain language)
+
+You picked **Option A**: make the one small correction — the "doorway" into the compare-what-is-
+already-saved step should only open for the two known error types — then run ONE fresh independent
+review. Same rule as before: if the review said "C", stop and come back to you.
+
+**What I did**
+
+1. Added the doorway rule: only `IntegrityConflict` and `TransactionFailure` may enter the
+   read-back/compare step. Anything else stops immediately, **before anything is read**, and the
+   original error is passed straight through.
+2. Kept the proof/governance guard first, so a governance error never enters that step.
+3. Added 7 focused tests for the exact cases you listed (A–G) — each one both at the classifier and
+   end-to-end — and kept all 64 older tests exactly as they were (the diff adds 347 lines, deletes 0).
+4. Also fixed the test weakness Round 14 pointed at: deleting the green governance guard now makes a
+   test FAIL (before, it went unnoticed).
+5. Proved the tests bite: I removed the doorway rule → 3 tests went RED; I removed the governance
+   guard → 1 test went RED; I put the file back byte-for-byte → all GREEN.
+6. Ran the whole matrix, gate check and isolation scan. Everything inherited I proved is inherited.
+
+**What Round 15 found (C again — one real problem)**
+
+The doorway rule I wrote uses `isinstance`, which is an **open** door: it also lets in **subclasses**
+of those two error types, not just the exact two classes. So a *subclass* of one of them — whose
+meaning was never approved — can still enter the compare step and be recorded as a successful,
+linked outcome. I reproduced it myself with both subclasses.
+
+Two honest points:
+- **This is not something my correction broke.** The original code (rounds 11–13 and before) used
+  `except (IntegrityConflict, TransactionFailure)`, and Python's `except` also matches subclasses. So
+  the open door is an old, latent property — the policy you wrote ("only recognized exception
+  classes") now requires it be shut exactly.
+- **It is latent, not live**: the accepted database layer today never raises a subclass of those two
+  types. So nothing in the current production path reaches it.
+
+Also: Round 15 **confirmed** the Round-14 problem is fixed, and that the guard-deletion weakness is
+now caught.
+
+**What I did NOT do (your instruction)**
+
+- Did **not** fix it. Did **not** run Round 16. Did **not** freeze it as accepted risk. Did **not**
+  call M6.6 GREEN. Nothing moved into M6.7.
+
+**The state right now**
+
+| Thing | Status |
+|---|---|
+| M6.6 | IMPLEMENTED / **NOT CLOSED** |
+| Round-14 problem | **fixed and independently verified** in `18531e5` |
+| Round-15 problem | **OPEN** — not frozen, not accepted |
+| Round 16 | **NOT RUN** |
+| M6.7 | **NOT STARTED** |
+| Raw SUCCESS gate | **still OPEN** (blocking M6.7) |
+| cron | **5/5 PAUSED** |
+| `main` | unchanged `5bf1077` |
+| Correction commit | `18531e5` on `impl/m6-gemini-notebook` |
+
+**Recommended next action**
+
+**A (recommended) — close the door exactly, then ONE Round-16 review.** The change is a *single
+predicate*: `type(error) not in _RECONCILABLE_ENTRY_FAILURES` instead of `isinstance(...)`. That is
+literally the wording you already mandated ("only recognized exception classes"), plus tests for an
+unlisted subclass of each base and for a non-listed class like `NotImplementedError`. It closes the
+finding **and** the test-strength gap at once. Cost: one line + tests + one review.
+
+Alternatives:
+- **B — stop spending and freeze at `18531e5`**, recorded honestly as **"review-unconfirmed"** (no
+  A/B), with the open finding carried forward as a **blocking** pre-M6.7 item (never as accepted
+  risk). Defensible now because the residual is latent — no subclass exists in the accepted
+  persistence layer today.
+- **C — revert.** Not recommended: re-opens the Round-14 problem.
+- **D — change the review treatment**: one *closure-scoped* review that only tries to prove the
+  doorway test is airtight (exact-type membership, subclasses, dynamic classes), instead of
+  re-reviewing the whole module for an eighth time. Can be combined with A.
+
+Honest note: seven consecutive C rounds on this same small boundary means the *review scope* is now
+the main cost driver, not new design risk.
+
+Full detail and evidence: `evidence/m6.6/FOUNDER-DECISION-PACKAGE-ROUND15-C-2026-10-12.md`.
+
+<!-- 2026-10-12 14:40 UTC+7 -->
+
 ## 2026-10-12 — OPTION A+ DONE, ROUND 14 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED (plain language)
 
 You picked **Option A+**: fix the *structure* of the M6.6 error-handling block once, not the same
