@@ -25,22 +25,32 @@ from qad.m6.research_contract import SourcePointer
 from qad.m6.source_bridge import (
     DEFAULT_ORIGINAL_SOURCE_VERIFIER,
     CandidateIdentityConflict,
+    CanonicalPairState,
     DiscoveredSourceReference,
+    EvidenceAdmissionClassification,
+    EvidenceAdmissionDecision,
     OriginalSourceVerification,
     SourceBridgeError,
     SourceEvidenceConflict,
+    SourceEvidenceIncomplete,
     SourceFailureKind,
     SourceVerificationCandidate,
     admit_candidate_evidence,
+    attempt_canonical_evidence_admission,
     build_evidence_admission,
+    classify_evidence_admission_failure,
     coerce_discovered_reference,
     compute_source_candidate_id,
+    construct_candidate_evidence,
+    dispose_settled_candidate,
     pending_candidates,
     process_discovered_sources,
+    reconcile_canonical_evidence_pair,
     register_discovered_candidates,
     verify_and_admit_source,
 )
 from qad.models.family_b import (
+    EvidenceAdmissionRecord,
     EvidenceAdmissionRecordAdmission_method,
     EvidenceRecord,
     EvidenceRecordEvidence_type,
@@ -53,6 +63,7 @@ from qad.persistence.errors import (
     CanonicalBoundaryViolation,
     IntegrityConflict,
     MissingForeignKey,
+    PITBlockError,
     TransactionFailure,
 )
 from qad.persistence.reference import (
@@ -1311,3 +1322,637 @@ def test_41_an_ear_only_collision_is_a_propagated_conflict(store, monkeypatch):
         store, monkeypatch, ev_exists=False, ear_exists=True,
         exc=TransactionFailure("INJECTED EAR-only canonical collision"),
     )
+
+
+# ============================================================================
+# 42-47 round-14 closure — CLOSED DECISION STRUCTURE (structural refactor, FD #151 A+)
+#
+# Row coverage of the mandated classification table:
+#   1  neither exists + explicitly retryable operational error -> row01
+#   2  neither exists + unexpected exception                  -> row02
+#   3  EV exists, EAR absent                                  -> row03
+#   4  EAR exists, EV absent                                  -> row04
+#   5  both exist, identical payload/hash                     -> row05
+#   6  both exist, EV payload mismatch                        -> row06
+#   7  both exist, EAR payload mismatch                       -> row07
+#   8  both exist, source mismatch                            -> row08
+#   9  canonical record load/read-back fails                  -> row09_load / row09_contains
+#   10 unknown integrity exception                            -> row10
+#   11 proof-verification exception                           -> row11
+#   12 PIT-validation exception                               -> row12
+#   13 evidence-builder exception                             -> test_43 (pre-boundary stage)
+#   14 disposition write fails after canonical admission       -> test_44
+#   15 re-entry after identical evidence commit                -> row13 + test_38 + test_46
+#   16 re-entry after conflicting evidence commit               -> row14 + tests 39/40/41
+#   17 no candidate settlement on unresolved governance error  -> test_45 + test_47
+#   18 no duplicate canonical records during replay             -> test_46
+#
+# The table calls the refactored CLASSIFIER directly (not a public happy path), so it
+# proves the classifier itself.
+# ============================================================================
+
+EXPECTED_EV_ID = "EV-A"
+EXPECTED_EAR_ID = "EAR-A"
+EXPECTED_SRC = "SRC-A"
+
+#: The functions that make up the refactored admission/reconciliation boundary.
+_REFACTORED_FUNCTIONS = (
+    "process_discovered_sources",
+    "construct_candidate_evidence",
+    "attempt_canonical_evidence_admission",
+    "classify_evidence_admission_failure",
+    "reconcile_canonical_evidence_pair",
+    "dispose_settled_candidate",
+)
+
+
+def _mk_ev(
+    evidence_id,
+    source_id,
+    *,
+    content="Verified extract from the original document.",
+):
+    """Exactly the EV-01 the bridge's 3-argument fixture builder would produce."""
+    return EvidenceRecord(
+        admitting_role="Research Director",
+        as_of=AS_OF,
+        content=content,
+        evidence_id=evidence_id,
+        evidence_type=EvidenceRecordEvidence_type.CLAIM,
+        extractor="M6.6 bridge fixture",
+        source_id=source_id,
+        source_tier="L1",
+        validation_status=EvidenceRecordValidation_status.RAW,
+    )
+
+
+def _mk_ear(
+    evidence_id,
+    admission_id,
+    *,
+    method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+    validation_method="ORIGINAL_DOCUMENT_BYTE_COMPARISON",
+    osv=None,
+):
+    """Exactly the EAR-01 the bridge's 3-argument fixture builder would produce."""
+    return EvidenceAdmissionRecord(
+        admission_id=admission_id,
+        admission_method=method,
+        admission_timestamp=DISCOVERED_AT,
+        admitting_role="Research Director",
+        evidence_id=evidence_id,
+        source_tier_check="L1",
+        validation_method=validation_method,
+        original_source_verified=osv,
+    )
+
+
+class _LoadBombRegistry:
+    """contains() reports the pair, but the AUTHORITATIVE load fails."""
+
+    def __init__(self, exc):
+        self._exc = exc
+
+    def contains(self, schema_id, record_id):
+        return True
+
+    def load(self, schema_id, record_id):
+        raise self._exc
+
+
+class _ContainsBombRegistry:
+    """The authoritative EXISTS check itself fails: the state cannot be established."""
+
+    def __init__(self, exc):
+        self._exc = exc
+
+    def contains(self, schema_id, record_id):
+        raise self._exc
+
+    def load(self, schema_id, record_id):  # pragma: no cover - never reached
+        raise self._exc
+
+
+def _patch_pair_state(monkeypatch, registry, *, ev_exists, ear_exists):
+    """Deterministically report a partial pre-existing canonical pair (read-only patch)."""
+    real_contains = registry.contains
+
+    def _contains(schema_id, record_id):
+        if schema_id == "EV-01" and ev_exists:
+            return True
+        if schema_id == "EAR-01" and ear_exists:
+            return True
+        return real_contains(schema_id, record_id)
+
+    monkeypatch.setattr(registry, "contains", _contains, raising=False)
+
+
+def _seeded_registry(*, seed_ev=None, seed_ear=None):
+    """A registry holding an ALREADY-COMMITTED canonical pair (authoritative gate only)."""
+    archive = _archive()
+    _admit_direct_source(archive, EXPECTED_SRC, raw=b"seeded")
+    registry = _registry(archive)
+    if seed_ev is not None and seed_ear is not None:
+        registry.admit_evidence(seed_ev, seed_ear)
+    return registry
+
+
+_IDENTICAL_SEED = dict(
+    seed_ev=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+    seed_ear=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID),
+)
+
+CLASSIFICATION_TABLE = [
+    pytest.param(
+        dict(
+            id="row01_neither_exists_retryable",
+            error=TransactionFailure("INJECTED retryable batch failure"),
+            expect=EvidenceAdmissionClassification.TRANSIENT_PARTIAL,
+        ),
+        id="row01_neither_exists_retryable",
+    ),
+    pytest.param(
+        dict(
+            id="row02_neither_exists_unexpected",
+            error=RuntimeError("UNEXPLAINED canonical failure"),
+            raises=RuntimeError,
+            original_propagates=True,
+        ),
+        id="row02_neither_exists_unexpected",
+    ),
+    pytest.param(
+        dict(
+            id="row03_ev_only",
+            error=IntegrityConflict("INJECTED EV-only canonical collision"),
+            ev_exists=True, ear_exists=False,
+            expect=EvidenceAdmissionClassification.CONFLICT_INCOMPLETE,
+        ),
+        id="row03_ev_only",
+    ),
+    pytest.param(
+        dict(
+            id="row04_ear_only",
+            error=TransactionFailure("INJECTED EAR-only canonical collision"),
+            ev_exists=False, ear_exists=True,
+            expect=EvidenceAdmissionClassification.CONFLICT_INCOMPLETE,
+        ),
+        id="row04_ear_only",
+    ),
+    pytest.param(
+        dict(
+            id="row05_identical_pair",
+            error=IntegrityConflict("EV-01/EV-A: evidence already admitted"),
+            seed=True,
+            expect=EvidenceAdmissionClassification.RECONCILED_IDENTICAL,
+        ),
+        id="row05_identical_pair",
+    ),
+    pytest.param(
+        dict(
+            id="row06_ev_payload_mismatch",
+            error=IntegrityConflict("EV-01/EV-A: evidence already admitted"),
+            seed=True,
+            seed_ev=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC, content="DIFFERENT PAYLOAD"),
+            seed_ear=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID),
+            expect=EvidenceAdmissionClassification.CONFLICT_DIVERGENT,
+        ),
+        id="row06_ev_payload_mismatch",
+    ),
+    pytest.param(
+        dict(
+            id="row07_ear_payload_mismatch",
+            error=IntegrityConflict("EV-01/EV-A: evidence already admitted"),
+            seed=True,
+            seed_ev=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            seed_ear=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID, validation_method="DIFFERENT"),
+            expect=EvidenceAdmissionClassification.CONFLICT_DIVERGENT,
+        ),
+        id="row07_ear_payload_mismatch",
+    ),
+    pytest.param(
+        dict(
+            id="row08_source_mismatch",
+            error=IntegrityConflict("EV-01/EV-A: evidence already admitted"),
+            seed=True,
+            verified_source_id="SRC-OTHER",
+            expect=EvidenceAdmissionClassification.CONFLICT_DIVERGENT,
+        ),
+        id="row08_source_mismatch",
+    ),
+    pytest.param(
+        dict(
+            id="row09_read_back_load_fails",
+            error=IntegrityConflict("ORIGINAL collision error"),
+            read_back="load",
+            raises=KeyError,
+        ),
+        id="row09_read_back_load_fails",
+    ),
+    pytest.param(
+        dict(
+            id="row09_read_back_contains_fails",
+            error=IntegrityConflict("ORIGINAL collision error"),
+            read_back="contains",
+            raises=KeyError,
+        ),
+        id="row09_read_back_contains_fails",
+    ),
+    pytest.param(
+        dict(
+            id="row10_unknown_integrity_exception",
+            error=IntegrityConflict("UNEXPLAINED integrity failure"),
+            raises=IntegrityConflict,
+            original_propagates=True,
+        ),
+        id="row10_unknown_integrity_exception",
+    ),
+    pytest.param(
+        dict(
+            id="row11_proof_verification_exception",
+            error=SourceBridgeError("forged proof / binding refused"),
+            raises=SourceBridgeError,
+            original_propagates=True,
+        ),
+        id="row11_proof_verification_exception",
+    ),
+    pytest.param(
+        dict(
+            id="row12_pit_validation_exception",
+            error=PITBlockError("PIT enforcement forbids this read"),
+            raises=PITBlockError,
+            original_propagates=True,
+        ),
+        id="row12_pit_validation_exception",
+    ),
+    pytest.param(
+        dict(
+            id="row13_reentry_after_identical_commit",
+            error=TransactionFailure("disposition write failed AFTER the commit"),
+            seed=True,
+            expect=EvidenceAdmissionClassification.RECONCILED_IDENTICAL,
+        ),
+        id="row13_reentry_after_identical_commit",
+    ),
+    pytest.param(
+        dict(
+            id="row14_reentry_after_conflicting_commit",
+            error=TransactionFailure("disposition write failed AFTER a conflicting commit"),
+            seed=True,
+            seed_ev=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC, content="DIFFERENT PAYLOAD"),
+            seed_ear=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID),
+            expect=EvidenceAdmissionClassification.CONFLICT_DIVERGENT,
+        ),
+        id="row14_reentry_after_conflicting_commit",
+    ),
+]
+
+
+@pytest.mark.parametrize("case", CLASSIFICATION_TABLE)
+def test_42_the_failure_classifier_is_exhaustive_table_driven(case, monkeypatch):
+    """The refactored classifier, driven directly over the mandated case table."""
+    if case.get("read_back") == "load":
+        registry = _LoadBombRegistry(KeyError("INJECTED authoritative load failure"))
+    elif case.get("read_back") == "contains":
+        registry = _ContainsBombRegistry(KeyError("INJECTED authoritative load failure"))
+    elif case.get("seed"):
+        registry = _seeded_registry(
+            seed_ev=case.get("seed_ev", _IDENTICAL_SEED["seed_ev"]),
+            seed_ear=case.get("seed_ear", _IDENTICAL_SEED["seed_ear"]),
+        )
+    else:
+        registry = _seeded_registry()
+    if "ev_exists" in case:
+        _patch_pair_state(
+            monkeypatch, registry, ev_exists=case["ev_exists"], ear_exists=case["ear_exists"]
+        )
+
+    expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+    expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+    call = dict(
+        registry=registry,
+        error=case["error"],
+        evidence=expected_ev,
+        admission=expected_ear,
+        verified_source_id=case.get("verified_source_id", EXPECTED_SRC),
+    )
+
+    if case.get("raises") is not None:
+        with pytest.raises(case["raises"]) as excinfo:
+            classify_evidence_admission_failure(**call)
+        if case.get("original_propagates"):
+            # FAIL CLOSED preserves the ORIGINAL error and its provenance.
+            assert excinfo.value is case["error"]
+        return
+
+    decision = classify_evidence_admission_failure(**call)
+    assert decision.classification is case["expect"]
+    assert decision.settled is (
+        case["expect"] is not EvidenceAdmissionClassification.CONFLICT_INCOMPLETE
+        and case["expect"] is not EvidenceAdmissionClassification.CONFLICT_DIVERGENT
+    )
+    if case["expect"] is EvidenceAdmissionClassification.RECONCILED_IDENTICAL:
+        assert decision.evidence_id == EXPECTED_EV_ID
+        assert decision.ear_id == EXPECTED_EAR_ID
+
+
+def test_42b_the_retryable_allowlist_is_explicit_and_narrow():
+    """The transient path is an EXPLICIT allowlist — never `except Exception`."""
+    from qad.m6 import source_bridge as sb
+
+    assert sb._RETRYABLE_OPERATIONAL_FAILURES == (TransactionFailure,)
+    for never_transient in (
+        IntegrityConflict, CanonicalBoundaryViolation, MissingForeignKey,
+        PITBlockError, SourceBridgeError, RuntimeError,
+    ):
+        assert never_transient not in sb._RETRYABLE_OPERATIONAL_FAILURES
+
+
+def test_42c_no_broad_handler_in_the_refactored_region_can_downgrade_a_failure():
+    """The refactored region has NO catch-all that records or downgrades a failure class."""
+    tree = ast.parse(BRIDGE_PATH.read_text(encoding="utf-8"))
+    offenders = []
+    seen = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.FunctionDef) or node.name not in _REFACTORED_FUNCTIONS:
+            continue
+        seen.add(node.name)
+        for sub in ast.walk(node):
+            if not isinstance(sub, ast.ExceptHandler):
+                continue
+            broad = sub.type is None or (
+                isinstance(sub.type, ast.Name) and sub.type.id in ("Exception", "BaseException")
+            )
+            if not broad:
+                continue
+            for stmt in sub.body:
+                # an allowed broad handler may ONLY return a classification/route or raise
+                if isinstance(stmt, (ast.Return, ast.Raise)):
+                    continue
+                offenders.append((node.name, sub.lineno, type(stmt).__name__))
+    assert seen == set(_REFACTORED_FUNCTIONS), f"missing refactored functions: {seen}"
+    assert offenders == [], f"broad handlers that could classify/downgrade a failure: {offenders}"
+
+
+# ==================================================== 43-47 behavioural closeout of the table
+
+
+def test_43_an_evidence_builder_failure_is_a_pre_boundary_transient_partial(store):
+    """Row 13 — construction is mutation-free, so its failure is the truthful partial."""
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+
+    def _boom(candidate_id, src01_id, verification):
+        raise RuntimeError("evidence builder unavailable")
+
+    out = process_discovered_sources(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+        archive=archive, verifier=_StubVerifier({cid: _verified(EXPECTED_SRC)}),
+        registry=registry, evidence_builder=_boom,
+    )
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"
+    assert o.evidence_ids == () and o.ear_ids == ()
+    assert o.evidence_admission_error == "RuntimeError: evidence builder unavailable"
+    assert "evidence construction FAILED" in o.reason
+    assert "no canonical evidence was admitted" in o.reason
+    # the PRE-BOUNDARY stage mutated NO canonical state at all
+    assert registry._data.get("EV-01", {}) == {}
+    assert registry._data.get("EAR-01", {}) == {}
+    # the disposition is still written (truthful, permitted terminal outcome)
+    assert _dispositions(store, "L-1")[cid].disposition.value == "IMPORTED"
+    # ...and nothing was fabricated on the canonical side on re-entry either
+    assert registry._data.get("EV-01", {}) == {}
+
+
+def test_43b_a_governance_failure_from_the_builder_still_fails_closed(store):
+    """The pre-boundary allowlist never absorbs a SourceBridgeError governance failure."""
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+
+    def _governance(candidate_id, src01_id, verification):
+        raise SourceBridgeError("builder governance failure")
+
+    with pytest.raises(SourceBridgeError):
+        construct_candidate_evidence(_governance, cid, EXPECTED_SRC, None)
+
+    # and end-to-end: the candidate stays UNDISPOSED
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    with pytest.raises(SourceBridgeError):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=_StubVerifier({cid: _verified(EXPECTED_SRC)}),
+            registry=registry, evidence_builder=_governance,
+        )
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+
+
+def test_44_a_disposition_write_failure_after_canonical_admission_settles_nothing(
+    store, monkeypatch
+):
+    """Row 14 — the canonical pair is preserved and NO disposition is written."""
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+
+    def _always_fail(ledger_id, source_candidate_id, **kw):
+        raise LedgerValidationError("INJECTED disposition failure")
+
+    monkeypatch.setattr(store, "dispose_candidate", _always_fail, raising=False)
+    with pytest.raises(LedgerValidationError):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=_StubVerifier({cid: _verified(EXPECTED_SRC)}),
+            registry=registry, evidence_builder=_evidence_builder(),
+        )
+    # the committed canonical pair is neither deleted nor rewritten
+    assert registry.contains("EV-01", EXPECTED_EV_ID)
+    assert registry.contains("EAR-01", EXPECTED_EAR_ID)
+    assert len(registry._data["EV-01"]) == 1
+    assert len(registry._data["EAR-01"]) == 1
+    # nothing was settled
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+
+
+def test_45_no_candidate_settlement_on_an_unresolved_governance_error(store, monkeypatch):
+    """Row 17 — every unresolved governance error leaves the candidate undisposed."""
+    # (a) an UNKNOWN error with NO canonical trace: FAIL CLOSED, nothing settled
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    monkeypatch.setattr(
+        registry, "admit_evidence",
+        lambda e, a: (_ for _ in ()).throw(RuntimeError("UNEXPLAINED canonical failure")),
+        raising=False,
+    )
+    with pytest.raises(RuntimeError):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=_StubVerifier({cid: _verified(EXPECTED_SRC)}),
+            registry=registry, evidence_builder=_evidence_builder(),
+        )
+    assert pending_candidates(store.load_run("L-1")) == (cid,)
+    assert _dispositions(store, "L-1") == {}
+    assert registry._data.get("EV-01", {}) == {}
+
+    # (b) an INCOMPLETE pair: a TYPED conflict (SourceEvidenceIncomplete), nothing settled
+    archive2 = _archive()
+    registry2 = _registry(archive2)
+    _admit_direct_source(archive2, EXPECTED_SRC, raw=b"seeded")
+    ledger_id = "L-B"
+    _make_run(store, ledger_id=ledger_id, run_id="RR-B", request_id="REQ-B")
+    _patch_pair_state(monkeypatch, registry2, ev_exists=True, ear_exists=False)
+    monkeypatch.setattr(
+        registry2, "admit_evidence",
+        lambda e, a: (_ for _ in ()).throw(
+            IntegrityConflict("INJECTED EV-only canonical collision")
+        ),
+        raising=False,
+    )
+    cid_b = _cid(ledger_id, 0, "https://sec.gov/b")
+    with pytest.raises(SourceEvidenceIncomplete):
+        process_discovered_sources(
+            store, ledger_id=ledger_id, references=[_ptr(0, "https://sec.gov/b")],
+            discovery_timestamp=DISCOVERED_AT, archive=archive2,
+            verifier=_StubVerifier({cid_b: _verified(EXPECTED_SRC, raw=b"seeded")}),
+            registry=registry2, evidence_builder=_evidence_builder(ledger_id=ledger_id),
+        )
+    assert pending_candidates(store.load_run(ledger_id)) == (cid_b,)
+    assert _dispositions(store, ledger_id) == {}
+
+
+def test_46_no_duplicate_canonical_records_during_replay(store, monkeypatch):
+    """Row 18 — replay reconciles; it never duplicates or rewrites canonical state."""
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    refs = [_ptr(0, "https://sec.gov/a")]
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    verifier = _StubVerifier({cid: _verified(EXPECTED_SRC)})
+
+    real_dispose = store.dispose_candidate
+    calls = {"n": 0}
+
+    def _flaky(ledger_id, source_candidate_id, **kw):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise LedgerValidationError("INJECTED disposition failure")
+        return real_dispose(ledger_id, source_candidate_id, **kw)
+
+    monkeypatch.setattr(store, "dispose_candidate", _flaky, raising=False)
+    with pytest.raises(LedgerValidationError):
+        process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT,
+            archive=archive, verifier=verifier, registry=registry,
+            evidence_builder=_evidence_builder(),
+        )
+    monkeypatch.setattr(store, "dispose_candidate", real_dispose, raising=False)
+
+    for stamp in ("2026-10-12T10:00:00+00:00", "2026-10-13T10:00:00+00:00",
+                  "2026-10-14T10:00:00+00:00"):
+        out = process_discovered_sources(
+            store, ledger_id="L-1", references=refs, discovery_timestamp=stamp,
+            archive=archive, verifier=verifier, registry=registry,
+            evidence_builder=_evidence_builder(),
+        )
+        o = out.outcomes[0]
+        assert o.disposition.value == "IMPORTED"
+        assert o.evidence_ids == (EXPECTED_EV_ID,) and o.ear_ids == (EXPECTED_EAR_ID,)
+        assert o.evidence_admission_error is None
+
+    assert len(registry._data["EV-01"]) == 1
+    assert len(registry._data["EAR-01"]) == 1
+    assert len(archive._data["SRC-01"]) == 1
+    assert len(store.load_run("L-1").dispositions) == 1
+    assert pending_candidates(store.load_run("L-1")) == ()
+
+
+def test_47_the_three_operations_are_separable_and_fail_closed(store):
+    """Operation A / B / C are independently testable, and C never settles an unsettled case."""
+    archive = _archive()
+    registry = _registry(archive)
+    _make_run(store)
+    # the verified original bytes are ALREADY admitted, so operation A can run
+    _admit_direct_source(archive, EXPECTED_SRC, raw=b"alpha")
+    refs = [_ptr(0, "https://sec.gov/a")]
+    register_discovered_candidates(
+        store, ledger_id="L-1", references=refs, discovery_timestamp=DISCOVERED_AT
+    )
+    cid = _cid("L-1", 0, "https://sec.gov/a")
+    admission = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid,
+        verifier=_StubVerifier({cid: _verified(EXPECTED_SRC)}), archive=archive,
+    )
+    assert admission.disposition.value == "IMPORTED"
+    assert admission.verification is not None
+    ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+    ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+
+    # B — the authoritative read-back reports NO canonical trace
+    state = reconcile_canonical_evidence_pair(
+        registry, evidence=ev, admission=ear, verified_source_id=EXPECTED_SRC
+    )
+    assert isinstance(state, CanonicalPairState)
+    assert (state.ev_exists, state.ear_exists, state.classification) == (False, False, None)
+
+    def _attempt():
+        return attempt_canonical_evidence_admission(
+            registry, evidence=ev, admission=ear, ledger_id="L-1",
+            source_candidate_id=cid, verified_source_id=EXPECTED_SRC,
+            verification=admission.verification,
+        )
+
+    # A — a fresh canonical admission is ADMITTED_NEW; the replay is RECONCILED_IDENTICAL
+    fresh = _attempt()
+    assert fresh.classification is EvidenceAdmissionClassification.ADMITTED_NEW
+    assert fresh.settled is True
+    replay = _attempt()
+    assert replay.classification is EvidenceAdmissionClassification.RECONCILED_IDENTICAL
+    assert len(registry._data["EV-01"]) == 1
+    assert len(registry._data["EAR-01"]) == 1
+
+    # B — now both exist and match EXACTLY
+    state2 = reconcile_canonical_evidence_pair(
+        registry, evidence=ev, admission=ear, verified_source_id=EXPECTED_SRC
+    )
+    assert state2.classification is EvidenceAdmissionClassification.RECONCILED_IDENTICAL
+
+    # C — an UNSETTLED decision is refused BEFORE any disposition write
+    class _RecordingStore:
+        def __init__(self):
+            self.writes = 0
+
+        def dispose_candidate(self, *a, **kw):
+            self.writes += 1
+
+    recorder = _RecordingStore()
+    incomplete = EvidenceAdmissionDecision(
+        EvidenceAdmissionClassification.CONFLICT_INCOMPLETE, diagnostic="EV-only"
+    )
+    with pytest.raises(SourceEvidenceIncomplete):
+        dispose_settled_candidate(
+            recorder, ledger_id="L-1", registered=None, admission=None,
+            decision=incomplete, reason="x", evidence_ids=(), ear_ids=(),
+        )
+    divergent = EvidenceAdmissionDecision(
+        EvidenceAdmissionClassification.CONFLICT_DIVERGENT, diagnostic="differs"
+    )
+    with pytest.raises(SourceEvidenceConflict):
+        dispose_settled_candidate(
+            recorder, ledger_id="L-1", registered=None, admission=None,
+            decision=divergent, reason="x", evidence_ids=(), ear_ids=(),
+        )
+    assert recorder.writes == 0          # NOTHING was settled
+    assert EvidenceAdmissionDecision(
+        EvidenceAdmissionClassification.TRANSIENT_PARTIAL
+    ).settled is True

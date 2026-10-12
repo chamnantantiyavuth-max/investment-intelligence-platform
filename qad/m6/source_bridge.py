@@ -111,6 +111,93 @@ class SourceEvidenceConflict(SourceBridgeError):
     """
 
 
+class SourceEvidenceIncomplete(SourceEvidenceConflict):
+    """An INCOMPLETE pre-existing canonical pair (EV-01 only, or EAR-01 only).
+
+    The canonical pair is written atomically, so a LONE half can never be this
+    candidate's successful admission and can never be reconciled: it is a typed
+    governance conflict. The candidate stays undisposed and the stored record is
+    never rewritten.
+    """
+
+
+class EvidenceAdmissionClassification(str, Enum):
+    """EXHAUSTIVE classification of the canonical EV-01/EAR-01 admission boundary.
+
+    Every RECOGNIZED operational case is named here. There is deliberately no
+    implicit/default mapping — an unrecognized failure is never absorbed into a
+    classification (it propagates untouched).
+
+      ADMITTED_NEW          the canonical pair was written by THIS attempt (a fresh
+                            canonical admission, never a reuse).
+      RECONCILED_IDENTICAL  the pair had already been committed by an earlier attempt
+                            and the stored records match the expected ones EXACTLY
+                            (canonical identity + source binding + canonical hash).
+                            The committed ids are reused; canonical state is not
+                            rewritten.
+      TRANSIENT_PARTIAL     no canonical trace exists and the failure is a recognized
+                            retryable operational failure: the truthful outcome is
+                            SOURCE IMPORTED / CANONICAL EVIDENCE NOT ADMITTED.
+      CONFLICT_INCOMPLETE   exactly ONE of EV-01 / EAR-01 exists -> typed conflict
+                            (``SourceEvidenceIncomplete``); candidate undisposed.
+      CONFLICT_DIVERGENT    BOTH exist but ANY canonical identity, source binding or
+                            payload (canonical hash) differs -> typed conflict
+                            (``SourceEvidenceConflict``); candidate undisposed.
+
+    FAIL-CLOSED cases (a pre-boundary proof/binding failure, a failure while reading
+    the authoritative stored state, or an unrecognized/unresolved error with no
+    canonical trace) are NOT classifications: the original error propagates with its
+    provenance intact and NO candidate disposition is written.
+    """
+
+    ADMITTED_NEW = "ADMITTED_NEW"
+    RECONCILED_IDENTICAL = "RECONCILED_IDENTICAL"
+    TRANSIENT_PARTIAL = "TRANSIENT_PARTIAL"
+    CONFLICT_INCOMPLETE = "CONFLICT_INCOMPLETE"
+    CONFLICT_DIVERGENT = "CONFLICT_DIVERGENT"
+
+
+#: The classifications that have reached a TRUTHFUL, permitted terminal candidate outcome.
+#: A candidate disposition is written ONLY for one of these; an unsettled classification
+#: (CONFLICT_INCOMPLETE / CONFLICT_DIVERGENT) never settles a candidate.
+_SETTLED_EVIDENCE_CLASSIFICATIONS = frozenset(
+    {
+        EvidenceAdmissionClassification.ADMITTED_NEW,
+        EvidenceAdmissionClassification.RECONCILED_IDENTICAL,
+        EvidenceAdmissionClassification.TRANSIENT_PARTIAL,
+    }
+)
+
+#: The ONLY errors whose semantics are ESTABLISHED as non-integrity operational failures
+#: at the canonical admission boundary: a ``TransactionFailure`` is raised only when a
+#: batch transaction failed before commit and GUARANTEES zero committed records, so an
+#: honest retry is the truthful reading of "the canonical pair was not written".
+#: Same-id/different-payload collisions, boundary violations, missing foreign keys,
+#: hash/immutability violations, PIT blocks, proof/binding failures and malformed state
+#: are NOT retryable and never take the transient path.
+_RETRYABLE_OPERATIONAL_FAILURES: tuple[type[BaseException], ...] = (TransactionFailure,)
+
+
+def _failure_diagnostic(error: BaseException) -> str:
+    """Preserve error provenance + useful diagnostic detail (type + message)."""
+    return f"{type(error).__name__}: {error}"
+
+
+@dataclass(frozen=True)
+class EvidenceAdmissionDecision:
+    """The classified result of ONE candidate's canonical evidence-admission attempt."""
+
+    classification: EvidenceAdmissionClassification
+    evidence_id: str | None = None
+    ear_id: str | None = None
+    diagnostic: str | None = None
+
+    @property
+    def settled(self) -> bool:
+        """True only for a classification permitted to settle the candidate durably."""
+        return self.classification in _SETTLED_EVIDENCE_CLASSIFICATIONS
+
+
 class SourceFailureKind(str, Enum):
     """Why independent original-source verification did not succeed.
 
@@ -952,6 +1039,281 @@ def admit_candidate_evidence(
 
 
 # ---------------------------------------------------------------------------
+# Failure classification / canonical reconciliation (closed decision structure)
+# ---------------------------------------------------------------------------
+#
+# Three SMALL, separately testable operations replace the previous single nested
+# catch-all block:
+#
+#   A. attempt_canonical_evidence_admission(...)   attempt the canonical pair through
+#                                                  the EXISTING authoritative gate only.
+#   B. reconcile_canonical_evidence_pair(...)      authoritative read-back + EXACT-record
+#                                                  reconciliation on a classified conflict.
+#   C. dispose_settled_candidate(...)              write the ONE durable disposition ONLY
+#                                                  for a truthful, permitted terminal outcome.
+#
+# ``construct_candidate_evidence`` is the documented PRE-BOUNDARY construction stage.
+# No cross-store atomicity is invented: a committed SRC-01/EV-01/EAR-01 is never deleted
+# or rewritten to simulate a rollback; an unsettled candidate simply stays pending.
+
+
+def construct_candidate_evidence(
+    evidence_builder: Any,
+    source_candidate_id: str,
+    src01_id: str | None,
+    verification: OriginalSourceVerification | None,
+) -> tuple[tuple[Any, Any] | None, str | None]:
+    """PRE-BOUNDARY evidence construction (caller-supplied deterministic builder).
+
+    Returns ``(built_or_None, failure_diagnostic_or_None)``.
+
+    This stage performs NO canonical mutation whatsoever: it only builds the EV-01 /
+    EAR-01 DTOs in memory, so a failure here can never conceal a canonical
+    integrity/governance failure and can never downgrade one. A construction failure is
+    therefore an explicitly recognized NON-INTEGRITY OPERATIONAL failure, and its
+    allowlist is scoped to THIS mutation-free stage — never to the canonical boundary.
+    Such a failure yields the truthful TRANSIENT_PARTIAL outcome (SOURCE IMPORTED /
+    CANONICAL EVIDENCE NOT ADMITTED).
+
+    A governance failure raised BY the builder (``SourceBridgeError``) is not absorbed:
+    it propagates so the candidate stays undisposed.
+    """
+    try:
+        built = evidence_builder(source_candidate_id, src01_id, verification)
+        if built is None:
+            return None, None
+        ev, ear = built
+    except SourceBridgeError:
+        # proof / binding / governance failure from the builder: fail closed.
+        raise
+    except Exception as exc:  # stage-scoped allowlist: mutation-free construction only
+        return None, _failure_diagnostic(exc)
+    return (ev, ear), None
+
+
+def _canonical_pair_matches_exactly(
+    stored_ev: Any,
+    stored_ear: Any,
+    expected_ev: EvidenceRecord,
+    expected_ear: EvidenceAdmissionRecord,
+    verified_source_id: str,
+) -> bool:
+    """FULL canonical record identity — never merely matching ids.
+
+    Requires the stored canonical identity, the source binding and the canonical hash of
+    BOTH stored records to equal the expected EV-01 / EAR-01. Any difference is a
+    DIVERGENT conflict (never a reuse, never an overwrite).
+    """
+    if getattr(stored_ev, "evidence_id", None) != expected_ev.evidence_id:
+        return False
+    if getattr(stored_ear, "admission_id", None) != expected_ear.admission_id:
+        return False
+    if getattr(stored_ear, "evidence_id", None) != expected_ev.evidence_id:
+        return False
+    if getattr(stored_ev, "source_id", None) != verified_source_id:
+        return False
+    if compute_canonical_hash(stored_ev) != compute_canonical_hash(expected_ev):
+        return False
+    if compute_canonical_hash(stored_ear) != compute_canonical_hash(expected_ear):
+        return False
+    return True
+
+
+@dataclass(frozen=True)
+class CanonicalPairState:
+    """Authoritative read-back state of the requested EV-01/EAR-01 pair."""
+
+    ev_exists: bool
+    ear_exists: bool
+    classification: EvidenceAdmissionClassification | None
+
+    def describe(self, evidence_id: str, admission_id: str) -> str:
+        return (
+            f"EV-01 {evidence_id!r} exists={self.ev_exists}, "
+            f"EAR-01 {admission_id!r} exists={self.ear_exists}"
+        )
+
+
+def reconcile_canonical_evidence_pair(
+    registry: Any,
+    *,
+    evidence: EvidenceRecord,
+    admission: EvidenceAdmissionRecord,
+    verified_source_id: str,
+) -> CanonicalPairState:
+    """Operation B — AUTHORITATIVE read-back + EXACT-record reconciliation.
+
+    Returns the classification of the *pre-existing canonical state*:
+
+      * ``classification is None``   neither requested record exists (no canonical trace);
+      * ``CONFLICT_INCOMPLETE``      exactly one of the pair exists;
+      * ``CONFLICT_DIVERGENT``       both exist but identity/source/payload differ;
+      * ``RECONCILED_IDENTICAL``     both exist and match EXACTLY (ids are reused).
+
+    Reads ONLY through the authoritative registry, and FAILS CLOSED: any error while
+    reading the authoritative stored state propagates untouched — the bridge never
+    guesses whether the records exist or match, and never settles the candidate.
+    """
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+    ear_exists = bool(registry.contains("EAR-01", admission.admission_id))
+    if not (ev_exists and ear_exists):
+        if ev_exists or ear_exists:
+            return CanonicalPairState(
+                ev_exists, ear_exists,
+                EvidenceAdmissionClassification.CONFLICT_INCOMPLETE,
+            )
+        return CanonicalPairState(False, False, None)
+    stored_ev = registry.load("EV-01", evidence.evidence_id)
+    stored_ear = registry.load("EAR-01", admission.admission_id)
+    identical = _canonical_pair_matches_exactly(
+        stored_ev, stored_ear, evidence, admission, verified_source_id
+    )
+    return CanonicalPairState(
+        True,
+        True,
+        (
+            EvidenceAdmissionClassification.RECONCILED_IDENTICAL
+            if identical
+            else EvidenceAdmissionClassification.CONFLICT_DIVERGENT
+        ),
+    )
+
+
+def classify_evidence_admission_failure(
+    registry: Any,
+    *,
+    error: BaseException,
+    evidence: EvidenceRecord,
+    admission: EvidenceAdmissionRecord,
+    verified_source_id: str,
+) -> EvidenceAdmissionDecision:
+    """EXHAUSTIVE classification of an EV-01/EAR-01 admission failure.
+
+    The classification is decided from AUTHORITATIVE read-back — never from the
+    exception type alone. Recognized outcomes are named; nothing else is absorbed:
+
+      * a pre-boundary proof / binding / verification failure (``SourceBridgeError``)
+        FAILS CLOSED immediately (no read-back, no disposition);
+      * neither record exists -> TRANSIENT_PARTIAL ONLY for a recognized retryable
+        operational failure; absent records alone are NOT transient, so any other
+        (unknown / unreconciled) error FAILS CLOSED by propagating;
+      * exactly one record exists -> CONFLICT_INCOMPLETE;
+      * both exist and match exactly -> RECONCILED_IDENTICAL;
+      * both exist and differ -> CONFLICT_DIVERGENT;
+      * a failure while reading the authoritative stored state FAILS CLOSED.
+
+    FAIL-CLOSED means the ORIGINAL error propagates with its provenance intact and no
+    disposition is written — never a fabricated disposition.
+    """
+    if isinstance(error, SourceBridgeError):
+        # proof / binding / verification / governance failure: pre-boundary, fail closed.
+        raise error
+    state = reconcile_canonical_evidence_pair(
+        registry, evidence=evidence, admission=admission,
+        verified_source_id=verified_source_id,
+    )
+    if state.classification is None:
+        if isinstance(error, _RETRYABLE_OPERATIONAL_FAILURES):
+            return EvidenceAdmissionDecision(
+                EvidenceAdmissionClassification.TRANSIENT_PARTIAL,
+                diagnostic=_failure_diagnostic(error),
+            )
+        # No canonical trace AND not a recognized retryable operational failure: the
+        # state cannot be explained, so FAIL CLOSED rather than invent a partial outcome.
+        raise error
+    if state.classification is EvidenceAdmissionClassification.RECONCILED_IDENTICAL:
+        return EvidenceAdmissionDecision(
+            state.classification,
+            evidence_id=evidence.evidence_id,
+            ear_id=admission.admission_id,
+            diagnostic=_failure_diagnostic(error),
+        )
+    if state.classification is EvidenceAdmissionClassification.CONFLICT_DIVERGENT:
+        detail = (
+            f"stored EV-01 {evidence.evidence_id!r} / EAR-01 {admission.admission_id!r} "
+            "differ from the expected records"
+        )
+    else:
+        detail = state.describe(evidence.evidence_id, admission.admission_id)
+    return EvidenceAdmissionDecision(state.classification, diagnostic=detail)
+
+
+def attempt_canonical_evidence_admission(
+    registry: Any,
+    *,
+    evidence: EvidenceRecord,
+    admission: EvidenceAdmissionRecord,
+    ledger_id: str,
+    source_candidate_id: str,
+    verified_source_id: str,
+    verification: OriginalSourceVerification | None,
+) -> EvidenceAdmissionDecision:
+    """Operation A — attempt canonical admission through the EXISTING gate ONLY.
+
+    Returns ``ADMITTED_NEW`` on a fresh canonical write. On failure the error is ROUTED
+    (never classified here) to :func:`classify_evidence_admission_failure`, which either
+    returns an exhaustive classification or re-raises (FAIL CLOSED).
+    """
+    try:
+        admit_candidate_evidence(
+            registry, evidence=evidence, admission=admission, ledger_id=ledger_id,
+            source_candidate_id=source_candidate_id,
+            verified_source_id=verified_source_id, verification=verification,
+        )
+    except Exception as exc:  # routing ONLY — this handler never classifies
+        return classify_evidence_admission_failure(
+            registry, error=exc, evidence=evidence, admission=admission,
+            verified_source_id=verified_source_id,
+        )
+    return EvidenceAdmissionDecision(
+        EvidenceAdmissionClassification.ADMITTED_NEW,
+        evidence_id=evidence.evidence_id,
+        ear_id=admission.admission_id,
+    )
+
+
+def dispose_settled_candidate(
+    store: DeepResearchRunLedgerStore,
+    *,
+    ledger_id: str,
+    registered: RegisteredCandidate,
+    admission: SourceAdmissionOutcome,
+    decision: EvidenceAdmissionDecision | None,
+    reason: str,
+    evidence_ids: tuple[str, ...],
+    ear_ids: tuple[str, ...],
+) -> None:
+    """Operation C — write the ONE durable candidate disposition.
+
+    Writes ONLY when the result has reached a truthful, permitted terminal candidate
+    outcome. An UNSETTLED classification (a canonical identity conflict) is propagated as
+    a typed conflict instead: the candidate stays undisposed, no false evidence linkage is
+    recorded, and committed canonical state is neither deleted nor rewritten.
+    """
+    if decision is not None and not decision.settled:
+        if decision.classification is EvidenceAdmissionClassification.CONFLICT_INCOMPLETE:
+            raise SourceEvidenceIncomplete(
+                "an INCOMPLETE canonical record already exists for the requested pair "
+                f"({decision.diagnostic}) — refusing to settle a candidate on a canonical "
+                "identity collision"
+            ) from None
+        raise SourceEvidenceConflict(
+            "a canonical EV-01/EAR-01 with the requested ids already exists with a "
+            f"DIFFERENT payload ({decision.diagnostic}) — refusing to reconcile a "
+            "conflicting record as this candidate's evidence"
+        ) from None
+    store.dispose_candidate(
+        ledger_id,
+        registered.source_candidate_id,
+        disposition=admission.disposition,
+        reason=reason,
+        src01_id=admission.src01_id,
+        evidence_ids=evidence_ids,
+        ear_ids=ear_ids,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 
@@ -1008,9 +1370,16 @@ def process_discovered_sources(
     with the source admission only, and the outcome truthfully reports that no canonical
     evidence was admitted.
 
-    Cross-store partial failures are reconciled: if canonical EV-01/EAR-01 were already
-    committed by an earlier attempt, the disposition references the EXISTING records
-    instead of recording a false evidence-admission failure.
+    Cross-store partial failures are reconciled through a CLOSED decision structure: the
+    canonical admission attempt, the authoritative read-back/reconciliation and the durable
+    disposition write are three separate operations, and the failure classification is
+    EXHAUSTIVE (ADMITTED_NEW / RECONCILED_IDENTICAL / TRANSIENT_PARTIAL /
+    CONFLICT_INCOMPLETE / CONFLICT_DIVERGENT). If canonical EV-01/EAR-01 were already
+    committed by an earlier attempt AND match the expected records exactly, the disposition
+    references those EXISTING records instead of recording a false evidence-admission
+    failure. An incomplete or divergent canonical pair, an unreadable canonical state or an
+    unrecognized error FAILS CLOSED: the error propagates, the candidate stays undisposed
+    and no canonical state is deleted or rewritten.
     """
     registered = register_discovered_candidates(
         store, ledger_id=ledger_id, references=references,
@@ -1058,84 +1427,75 @@ def process_discovered_sources(
         )
         evidence_ids: tuple[str, ...] = ()
         ear_ids: tuple[str, ...] = ()
-        evidence_error: str | None = None
+        decision: EvidenceAdmissionDecision | None = None
+        construction_failed = False
 
         if admission.disposition is CandidateDisposition.IMPORTED and registry is not None \
                 and evidence_builder is not None:
-            try:
-                built = evidence_builder(
-                    reg.source_candidate_id, admission.src01_id, admission.verification
+            # (1) PRE-BOUNDARY CONSTRUCTION — no canonical mutation is possible in this
+            # stage, so its failure cannot conceal or downgrade a canonical/id integrity
+            # failure: the truthful outcome is TRANSIENT_PARTIAL (source imported /
+            # canonical evidence not admitted). Governance failures still propagate.
+            built, build_error = construct_candidate_evidence(
+                evidence_builder,
+                reg.source_candidate_id,
+                admission.src01_id,
+                admission.verification,
+            )
+            if build_error is not None:
+                construction_failed = True
+                decision = EvidenceAdmissionDecision(
+                    EvidenceAdmissionClassification.TRANSIENT_PARTIAL,
+                    diagnostic=build_error,
                 )
-                if built is not None:
-                    ev, ear = built
-                    try:
-                        admit_candidate_evidence(
-                            registry, evidence=ev, admission=ear,
-                            ledger_id=ledger_id,
-                            source_candidate_id=reg.source_candidate_id,
-                            verified_source_id=admission.src01_id,
-                            verification=admission.verification,
-                        )
-                    except (IntegrityConflict, TransactionFailure):
-                        # CROSS-STORE PARTIAL FAILURE (rounds 11/12/13). Any canonical ID
-                        # COLLISION is a governance matter:
-                        #   * neither record exists  -> a GENUINE TRANSIENT failure
-                        #     (truthful source-imported / evidence-not-admitted outcome);
-                        #   * only ONE of the pair exists -> an INCOMPLETE pre-existing
-                        #     pair -> a PROPAGATED typed conflict (never settled);
-                        #   * both exist -> reconcile ONLY when BOTH match exactly.
-                        ev_exists = registry.contains("EV-01", ev.evidence_id)
-                        ear_exists = registry.contains("EAR-01", ear.admission_id)
-                        if not (ev_exists or ear_exists):
-                            raise
-                        if not (ev_exists and ear_exists):
-                            raise SourceEvidenceConflict(
-                                "an INCOMPLETE canonical record already exists for "
-                                f"{ev.evidence_id!r}/{ear.admission_id!r} "
-                                f"(EV exists={ev_exists}, EAR exists={ear_exists}) — "
-                                "refusing to settle a candidate on a canonical identity "
-                                "collision"
-                            ) from None
-                        stored_ev = registry.load("EV-01", ev.evidence_id)
-                        stored_ear = registry.load("EAR-01", ear.admission_id)
-                        if (
-                            getattr(stored_ev, "source_id", None) != admission.src01_id
-                            or compute_canonical_hash(stored_ev) != compute_canonical_hash(ev)
-                            or compute_canonical_hash(stored_ear) != compute_canonical_hash(ear)
-                        ):
-                            raise SourceEvidenceConflict(
-                                f"canonical evidence {ev.evidence_id!r} / "
-                                f"{ear.admission_id!r} already exists with a DIFFERENT "
-                                "payload — refusing to reconcile a conflicting record"
-                            ) from None
+            elif built is not None:
+                ev, ear = built
+                # (2) CANONICAL ADMISSION through the EXISTING authoritative gate, whose
+                # failure classification is EXHAUSTIVE and read-back driven. An unsettled
+                # classification (canonical identity conflict) and every FAIL-CLOSED case
+                # propagate straight out of the classifier — the candidate is never
+                # settled on either, and no evidence linkage is claimed here.
+                decision = attempt_canonical_evidence_admission(
+                    registry, evidence=ev, admission=ear, ledger_id=ledger_id,
+                    source_candidate_id=reg.source_candidate_id,
+                    verified_source_id=admission.src01_id,
+                    verification=admission.verification,
+                )
+                if decision.settled and decision.classification is not \
+                        EvidenceAdmissionClassification.TRANSIENT_PARTIAL:
                     evidence_ids = (ev.evidence_id,)
                     ear_ids = (ear.admission_id,)
-            except SourceBridgeError:
-                # A proof/binding/conflict failure is a GOVERNANCE failure, not a
-                # transient partial admission: propagate it so the candidate stays
-                # undisposed and nothing false is recorded.
-                raise
-            except Exception as exc:  # cross-store boundary: preserve committed state
-                evidence_error = f"{type(exc).__name__}: {exc}"
+
+        transient = decision is not None and decision.classification is \
+            EvidenceAdmissionClassification.TRANSIENT_PARTIAL
+        evidence_error = decision.diagnostic if transient else None
 
         reason = admission.reason
-        if evidence_error is not None:
-            # Truthful partial outcome: the SOURCE is imported; canonical evidence
-            # was NOT admitted. Never claim otherwise.
+        if transient:
+            # Truthful partial outcome: the SOURCE is imported; canonical evidence was
+            # NOT admitted. Never claim otherwise.
+            stage = (
+                "evidence construction FAILED" if construction_failed
+                else "canonical evidence admission FAILED"
+            )
             reason = (
-                f"{admission.reason}; canonical evidence admission FAILED "
-                f"({evidence_error}) — no canonical evidence was admitted"
+                f"{admission.reason}; {stage} ({evidence_error}) — "
+                "no canonical evidence was admitted"
             )
         elif admission.disposition is CandidateDisposition.IMPORTED \
                 and not evidence_ids and registry is not None:
             reason = f"{admission.reason}; no canonical evidence admitted"
 
-        store.dispose_candidate(
-            ledger_id,
-            reg.source_candidate_id,
-            disposition=admission.disposition,
+        # (3) DURABLE DISPOSITION — written ONLY when the result reached a truthful,
+        # permitted terminal candidate outcome; an unsettled classification is propagated
+        # as a typed conflict instead of being settled.
+        dispose_settled_candidate(
+            store,
+            ledger_id=ledger_id,
+            registered=reg,
+            admission=admission,
+            decision=decision,
             reason=reason,
-            src01_id=admission.src01_id,
             evidence_ids=evidence_ids,
             ear_ids=ear_ids,
         )
@@ -1159,23 +1519,32 @@ __all__ = [
     "BridgeOutcome",
     "CandidateIdentityConflict",
     "CandidateOutcome",
+    "CanonicalPairState",
     "DEFAULT_ORIGINAL_SOURCE_VERIFIER",
     "DiscoveredSourceReference",
+    "EvidenceAdmissionClassification",
+    "EvidenceAdmissionDecision",
     "ORIGINAL_SOURCE_VERIFIED_TRUE",
     "OriginalSourceVerification",
     "OriginalSourceVerifier",
     "SourceAdmissionOutcome",
     "SourceBridgeError",
     "SourceEvidenceConflict",
+    "SourceEvidenceIncomplete",
     "SourceFailureKind",
     "SourceVerificationCandidate",
     "SourceVerificationRequest",
     "admit_candidate_evidence",
+    "attempt_canonical_evidence_admission",
     "build_evidence_admission",
+    "classify_evidence_admission_failure",
     "coerce_discovered_reference",
     "compute_source_candidate_id",
+    "construct_candidate_evidence",
+    "dispose_settled_candidate",
     "pending_candidates",
     "process_discovered_sources",
+    "reconcile_canonical_evidence_pair",
     "register_discovered_candidates",
     "verify_and_admit_source",
 ]
