@@ -1,0 +1,174 @@
+ROUND-15 MUTATION DEMONSTRATION (Founder-mandated Test G) — QAD M6.6 Option A
+Executed: 2026-10-12 after commit 18531e5, by the Parent agent, on qad/m6/source_bridge.py
+
+Two deliberate mutations, each reverted byte-identically (sha256 verified) before the next run:
+  MUTATION 1 — remove the reconciliation-entry allowlist check (_RECONCILABLE_ENTRY_FAILURES)
+  MUTATION 2 — remove the SourceBridgeError fast-fail guard (the Round-14 probe-11 gap)
+
+GREEN sha256 (before and after every mutation) = c85ce508024ae46127fccab2f0b28a38679b57af5b45d8c0615aa5af306df10a
+MUTATION 1 mutated sha256 = 2faeede9b869aa09c7888804a99159970bf553425a614ed6a28ddea69db8a431
+MUTATION 2 mutated sha256 = 84a83948ce60a46baf9f03cd685aeacf522da63b6578b0ee394d8bfec6d63088
+
+RESULT: MUTATION 1 -> 3 focused tests RED (test_48_A, test_49_B, test_52_E)
+        MUTATION 2 -> test_54 RED (the probe-11 test-strength gap is now CLOSED)
+        RESTORED -> all 7 round-15 focused tests GREEN
+
+--- RAW OUTPUT ---
+GREEN sha256 = c85ce508024ae46127fccab2f0b28a38679b57af5b45d8c0615aa5af306df10a
+
+================ MUTATION_1_entry_allowlist_REMOVED ================
+mutated sha256 = 2faeede9b869aa09c7888804a99159970bf553425a614ed6a28ddea69db8a431
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round15\bt-MUTATION_1_entry_allowlist_REMOVED -k test_48_A_unknown_error_with_an_exact_canonical_pair_fails_closed or test_49_B_unknown_error_with_no_canonical_pair_fails_closed or test_52_E_unknown_error_with_an_incomplete_or_divergent_pair_never_reconciles
+ontains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x000001FB8C3A3150>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+_________ test_49_B_unknown_error_with_no_canonical_pair_fails_closed _________
+
+store = <qad.m6.ledger.DeepResearchRunLedgerStore object at 0x000001FB8C0CDDD0>
+
+    def test_49_B_unknown_error_with_no_canonical_pair_fails_closed(store):
+        """Case B (control) — unknown RuntimeError + NO canonical pair."""
+        archive = _archive()
+        registry = _registry(archive)
+        _make_run(store)
+        refs = [_ptr(0, "https://sec.gov/a")]
+        cid = _cid("L-1", 0, "https://sec.gov/a")
+        unknown = RuntimeError("UNEXPLAINED canonical failure")
+    
+        with pytest.raises(RuntimeError) as excinfo:
+>           classify_evidence_admission_failure(
+                _ReadBackSpy(), error=unknown,
+                evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+                admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID),
+                verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2092: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1231: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1170: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x000001FB8C0CEF50>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+_ test_52_E_unknown_error_with_an_incomplete_or_divergent_pair_never_reconciles _
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round15/bt-MUTATION_1_entry_allowlist_REMOVED/test_52_E_unknown_error_with_a0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FB8DC35F90>
+
+    def test_52_E_unknown_error_with_an_incomplete_or_divergent_pair_never_reconciles(
+        tmp_path, monkeypatch
+    ):
+        """Case E — unknown exception + INCOMPLETE or DIVERGENT pair: never reconcile, never settle."""
+        expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+        expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+        unknown = RuntimeError("UNEXPLAINED canonical failure")
+    
+        # (a) INCOMPLETE pair (EV-only) + unknown error -> propagate, nothing settled
+        incomplete = _seeded_registry()
+        _patch_pair_state(monkeypatch, incomplete, ev_exists=True, ear_exists=False)
+>       with pytest.raises(RuntimeError) as excinfo:
+E       Failed: DID NOT RAISE RuntimeError
+
+tests\qad\m6\test_m66_source_bridge.py:2186: Failed
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_48_A_unknown_error_with_an_exact_canonical_pair_fails_closed
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_49_B_unknown_error_with_no_canonical_pair_fails_closed
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_52_E_unknown_error_with_an_incomplete_or_divergent_pair_never_reconciles
+3 failed, 68 deselected in 0.60s
+
+MUTATION_1_entry_allowlist_REMOVED exit code = 1
+RESULT: MUTATION_1_entry_allowlist_REMOVED -> RED (expected)
+
+================ MUTATION_2_sourcebridge_guard_REMOVED ================
+mutated sha256 = 84a83948ce60a46baf9f03cd685aeacf522da63b6578b0ee394d8bfec6d63088
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round15\bt-MUTATION_2_sourcebridge_guard_REMOVED -k test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist or test_42_the_failure_classifier_is_exhaustive_table_driven[row11_proof_verification_exception]
+.F                                                                       [100%]
+================================== FAILURES ===================================
+___ test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist ____
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round15/bt-MUTATION_2_sourcebridge_guard_REMOVED/test_54_the_governance_guard_t0')
+
+    def test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist(tmp_path):
+        """Probe-11 test-strength gap: weakening the SourceBridgeError guard IS now detected.
+    
+        A governance failure must never reconcile — even when its type is ALSO a recognized
+        collision class. Removing the guard would let reconciliation run and settle the candidate.
+        """
+        from qad.m6 import source_bridge as sb
+    
+        # the entry allowlist is exactly the two recognized collision classes
+        assert sb._RECONCILABLE_ENTRY_FAILURES == (IntegrityConflict, TransactionFailure)
+        # ...and the transient allowlist was NOT broadened
+        assert sb._RETRYABLE_OPERATIONAL_FAILURES == (TransactionFailure,)
+    
+        store, archive, registry, cid, verifier, refs = _pending_candidate_with_exact_pair(
+            tmp_path, ledger_id="L-G", reference="https://sec.gov/g"
+        )
+        before = _canonical_hashes(registry)
+    
+        # (a) DIRECT: a governance failure that is ALSO collision-shaped -> propagate, no read-back
+        governance = _GovernanceCollision("builder governance failure")
+        assert isinstance(governance, SourceBridgeError)
+        assert isinstance(governance, IntegrityConflict)
+        spy = _ReadBackSpy()
+        with pytest.raises(SourceBridgeError) as excinfo:
+>           classify_evidence_admission_failure(
+                spy, error=governance, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+                admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID),
+                verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1232: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1170: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x000002BBCD98BD50>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist
+1 failed, 1 passed, 69 deselected in 0.35s
+
+MUTATION_2_sourcebridge_guard_REMOVED exit code = 1
+RESULT: MUTATION_2_sourcebridge_guard_REMOVED -> RED (expected)
+
+================ RESTORED — GREEN RE-RUN (all round-15 focused tests) ================
+restored sha256 = c85ce508024ae46127fccab2f0b28a38679b57af5b45d8c0615aa5af306df10a
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round15\bt-green -k test_48_A or test_49_B or test_50_C or test_51_D or test_52_E or test_53_F or test_54_
+.......                                                                  [100%]
+7 passed, 64 deselected in 0.76s
+
+green exit code = 0
+RESULT: restored -> GREEN (expected)

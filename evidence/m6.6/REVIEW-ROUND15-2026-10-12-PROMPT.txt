@@ -1,0 +1,127 @@
+ROLE
+INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER — QAD M6.6 (Noncanonical Source Discovery +
+Admission Bridge), FD #151, ROUND 15.
+Producer = DeepSeek V4.1 Flash; you = OpenAI family (family-independent). Report only what you can
+verify from the artifacts in THIS copy. Do not soften. Do not accept the producer's summary of what
+changed, and do NOT aim for a PASS verdict — a finding is a valid and useful result.
+
+Rounds 9–13 each returned C with real material findings, all fixed. Round 14 (on the round-14
+structural-refactor commit `38dcd9f`) returned C with ONE material finding: an UNRECOGNIZED
+exception raised by the canonical gate while an EXACT canonical EV-01/EAR-01 pair already existed
+was reconciled into a settled, lineage-claiming successful outcome instead of failing closed.
+The Founder authorized ONE minimal correction (no further refactor). This commit is that
+correction. Re-attack it and the whole boundary.
+
+============================================================
+SETTLED POLICY — DO NOT RE-LITIGATE
+============================================================
+FD #151: M6.6 = source discovery / verification / admission boundaries ONLY. No provider execution
+  (no Gemini, no Notebook transport, no browser/CDP, no network, no credentials).
+FD #149/#150: `RawSourceArchive.admit_source` is the ONLY trusted SEALED byte-capture proof;
+  LEGACY_UNATTESTED_SRC01 / SRCV_ONLY_CAPTURE_PROOF are NOT eligible; `admitted_at` is
+  archive-owned. The accepted canonical gates (`admit_source` / `admit_evidence`) are the existing
+  authority — M6.6 must USE them, not replace them.
+FD #152: the IN-PROCESS trust boundary is FOUNDER-FIXED; a deliberately injected malicious verifier
+  or hostile same-process introspection is OUTSIDE it (`DEFAULT_ORIGINAL_SOURCE_VERIFIER` DENIES).
+  DO report any path where an ORDINARY caller (no hostile in-process access) can obtain canonical
+  state or assert canonical `original_source_verified` WITHOUT a genuine verification for that
+  EXACT run/candidate/source.
+FD #153: M6.3 atomic SUCCESS finalization is authoritative — do not re-litigate.
+FD #154: `M6_RAW_SUCCESS_API_GATE` = OPEN / BLOCKING M6.7+. M6.6 must not write a SUCCESS and must
+  not close the gate.
+REPLAY_EXCEPTION: the existing rule (authoritative PITC-01 in REPLAY_EXCEPTION mode + exact FOUNDER
+  role + non-empty exception_reason). No second PIT authority.
+SETTLED (accepted since rounds 12–13): a failure of the CALLER-SUPPLIED, mutation-free evidence
+  CONSTRUCTION stage (the pre-boundary `evidence_builder` call, which performs ZERO canonical
+  mutation) yields the TRUTHFUL partial outcome SOURCE IMPORTED / CANONICAL EVIDENCE NOT ADMITTED.
+  The FAIL-CLOSED rule applies to the CANONICAL ADMISSION / RECONCILIATION boundary. Report it as a
+  finding ONLY if you can show a path where a canonical/governance failure is downgraded through it.
+
+============================================================
+WHAT CHANGED IN THIS COMMIT (verify the claim, then attack it)
+============================================================
+Claimed: `classify_evidence_admission_failure` now has an explicit RECONCILIATION-ENTRY ALLOWLIST
+(`_RECONCILABLE_ENTRY_FAILURES = (IntegrityConflict, TransactionFailure)`). A failure class outside
+that allowlist is claimed to propagate UNCHANGED, BEFORE any authoritative read-back. The immediate
+`SourceBridgeError` guard is claimed to be preserved and to take precedence. `RECONCILED_IDENTICAL`
+is claimed to remain available for recognized retries whose canonical pair is identical. The
+transient-partial allowlist is claimed NOT to have been broadened. No other semantics are claimed to
+have changed.
+
+Read the code and verify each of those claims yourself; if any claim is false, that is a finding.
+
+============================================================
+REQUIRED CHALLENGES — VERIFIED / NOT VERIFIED / DEFECT + one line each
+============================================================
+Focus areas mandated by the Founder (attack each; PROVE, do not assert):
+ 1. RECONCILIATION-ENTRY ALLOWLIST CORRECTNESS — is the entry condition exactly the two recognized
+    collision classes? Can ANY failure class outside it still reach authoritative read-back, be
+    reconciled, or settle a candidate? Can a recognized class be EXCLUDED so that a legitimate
+    retry now fails closed (a new defect in the opposite direction)?
+ 2. UNKNOWN ERROR + IDENTICAL CANONICAL PAIR — an unrecognized exception while an EXACT pair exists
+    must propagate, leave the candidate undisposed, write no disposition, claim no evidence/ear
+    lineage, and leave canonical hashes unchanged.
+ 3. RECOGNIZED COLLISION + IDENTICAL PAIR — `RECONCILED_IDENTICAL` must still work end-to-end,
+    reuse the EXISTING ids, and create no duplicate canonical records.
+ 4. INCOMPLETE AND DIVERGENT PAIRS — never reconciled, never settled, typed conflict propagated,
+    stored records never rewritten.
+ 5. AUTHORITATIVE READ-BACK FAILURE — `contains`/`load` failing must fail closed under an otherwise
+    recognized exception; the bridge must never guess whether records exist or match.
+ 6. PROOF / BINDING VERIFICATION — as an ORDINARY caller: no verdict; a nonexistent run/candidate;
+    a verdict minted for another run/candidate/source; evidence for a source other than the verified
+    one; a hand-built EAR asserting `original_source_verified="true"`; constructing a trusted
+    verdict; any importable mint path.
+ 7. PIT AND REPLAY_EXCEPTION ENFORCEMENT — SEALED injection, backdated metadata, legacy-unattested
+    and SRCV-only reuse, REPLAY_EXCEPTION with no surface / non-Founder PITC / empty reason (NEW and
+    ALREADY-ADMITTED sources), authorized replay still working, no second PIT authority.
+ 8. DISPOSITION AND RE-ENTRY INTEGRITY — a disposition-write failure after an identical canonical
+    commit, then repeated re-entry: existing ids reused, no false failure reason, exactly one
+    canonical object each, one disposition, nothing rewritten.
+ 9. CANONICAL ADMISSION BYPASS — any path to SRC-01/EV-01/EAR-01 outside
+    `admit_source`/`admit_evidence`, or any direct `store()` bypass, including inside the new
+    entry-allowlist region.
+10. TEST STRENGTH — do the tests EXECUTE production code (not source-string assertions)? Write ONE
+    mutation of the production classification/entry logic that this suite does NOT catch and report
+    it. (Round 14 found that removing the SourceBridgeError guard was undetected; the producer claims
+    a new test now detects it — verify that claim by attempting that mutation yourself in a COPY
+    inside your basetemp.)
+11. DUPLICATE / CONTRADICTION / TERMINALIZATION; ANY M6.6 SUCCESS-WRITING PATH (AST); ANY
+    `M6_RAW_SUCCESS_API_GATE` BYPASS.
+12. NO NETWORK/GEMINI/BROWSER/PROVIDER CODE; NO SCHEMA #69 (canonical count 68); RRM-01 unchanged;
+    M6.7 not started.
+
+Run the suites and report ACTUAL counts:
+- tests/qad/m6/test_m66_source_bridge.py   (producer claims 71 passed)
+- tests/qad/m6                           (producer claims 395 passed)
+- tests/qad                              (producer claims 930 passed / 1 failed — attribute honestly)
+- tests/locked                           (producer claims 17 failed / 144 passed / 1 error — attribute honestly)
+- tests/ops costs ~3 minutes; run it only if you have budget.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy and the basetemp)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory, e.g.:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp"
+  (always pass an explicit --basetemp; do not rely on a bare relative basetemp)
+- Read/write ONLY inside this copy and that basetemp. Do NOT touch any other repository/worktree.
+  Do NOT run git (this copy has no git metadata — hash the files instead).
+- Do NOT modify qad/m6/source_bridge.py or the test file in place: copy them into your basetemp
+  first if you want to demonstrate a mutation.
+- Report exact commands + real output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.6 PASS / READY FOR PRE-M6.7 GATE RESOLUTION
+  B = M6.6 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..12 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest correction,
+   (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT: does NOT change your verdict; the policy is Founder-set.

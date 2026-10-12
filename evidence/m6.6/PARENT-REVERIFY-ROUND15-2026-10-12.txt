@@ -1,0 +1,28 @@
+PARENT RE-VERIFICATION — Round-15 material finding 1 (unlisted SUBCLASS enters reconciliation)
+Executed by the Parent agent against commit 18531e5 (qad/m6/source_bridge.py sha256 c85ce508...).
+Method: a test-only SUBCLASS of each allowlisted base class, raised by the canonical gate while an
+EXACT canonical EV-01/EAR-01 pair already existed (pair committed by an earlier attempt whose
+disposition write failed, candidate still pending).
+
+=== allowlist and membership semantics ===
+  _RECONCILABLE_ENTRY_FAILURES            = (<class 'qad.persistence.errors.IntegrityConflict'>, <class 'qad.persistence.errors.TransactionFailure'>)
+  IntegrityConflict                  isinstance=True  exact_type=True
+  TransactionFailure                 isinstance=True  exact_type=True
+  *subclass of IntegrityConflict*    isinstance=True  exact_type=False
+  *subclass of TransactionFailure*   isinstance=True  exact_type=False
+
+=== END-TO-END: exact canonical pair + subclass of IntegrityConflict ===
+  RETURNED: disposition=IMPORTED evidence_ids=('EV-A',) ear_ids=('EAR-A',) pending=()
+  dispositions written = 1
+  FINDING REPRODUCED (settled as reconciled success) for subclass of IntegrityConflict
+  canonical hashes unchanged: True
+
+=== END-TO-END: exact canonical pair + subclass of TransactionFailure ===
+  RETURNED: disposition=IMPORTED evidence_ids=('EV-A',) ear_ids=('EAR-A',) pending=()
+  dispositions written = 1
+  FINDING REPRODUCED (settled as reconciled success) for subclass of TransactionFailure
+  canonical hashes unchanged: True
+
+=== CONTROL: the exact BASE classes must still reconcile ===
+  IntegrityConflict    -> IMPORTED ('EV-A',) ('EAR-A',)
+  TransactionFailure   -> IMPORTED ('EV-A',) ('EAR-A',)

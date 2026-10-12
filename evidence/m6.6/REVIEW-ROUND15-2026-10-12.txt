@@ -1,0 +1,43 @@
+VERDICT: C
+
+PROBE RESULTS:
+1. DEFECT — `_RECONCILABLE_ENTRY_FAILURES` contains the two stated base classes, but `isinstance` also admits unlisted subclasses. A current-code end-to-end probe with an `IntegrityConflict` subclass reconciled an identical pair and wrote an IMPORTED disposition with EV/EAR lineage.
+2. VERIFIED — An unrecognized `RuntimeError` with an exact pair propagates unchanged: test 48 verifies no read-back, no disposition, pending candidate, and unchanged canonical hashes.
+3. VERIFIED — Exact `IntegrityConflict` and `TransactionFailure` collisions still reconcile end-to-end, reuse EV-A/EAR-A, and create no duplicates (tests 50–51).
+4. VERIFIED — Recognized incomplete/divergent pairs yield typed conflicts and leave candidates undisposed; stored canonical records are not rewritten (tests 39–41).
+5. VERIFIED — Authoritative `contains`/`load` read-back failures propagate under recognized errors; the candidate stays pending (tests 42 and 53).
+6. VERIFIED — Ordinary public paths deny without a verdict and reject misbound or cross-source verdicts and hand-built verified EARs. No public callable mint path was found; the private `_MINT_TOKEN` is module-introspectable, which FD #152 explicitly excludes as hostile same-process introspection.
+7. VERIFIED — SEALED legacy-unattested and SRCV-only sources returned UNAVAILABLE; backdated attestation was rejected. New-source REPLAY_EXCEPTION denied missing surface, non-Founder, and empty reason; authorized replay admitted. Existing-source cases are exercised in test 37.
+8. VERIFIED — After a disposition failure, three re-entries reused the existing IDs, reported no evidence-admission error, retained identical canonical hashes, and left one EV, one EAR, one disposition.
+9. VERIFIED — AST inspection found M6.6 canonical calls only to `admit_source` and `admit_evidence`; the reference stores reject direct SRC-01/EV-01/EAR-01 bypasses.
+10. DEFECT — Tests exercise production behavior and test 54 detects removal of the SourceBridgeError guard. However, a copied-code mutation that additionally admitted `NotImplementedError` passed all 71 M6.6 tests and reconciled an identical pair. The current subclass defect also goes undetected.
+11. VERIFIED — M6.6 has no SUCCESS-finalization/terminalization calls or raw-success-gate reference; duplicate, contradiction, and terminalization tests passed.
+12. NOT VERIFIED — Current canonical count is 68, no M6.7 implementation file was found under `qad/m6`, and this bridge has no RRM-01 reference. Historical “RRM-01 unchanged” cannot be compared without git metadata, which this review was instructed not to use.
+
+MATERIAL FINDINGS:
+1. Unlisted subclasses enter reconciliation.
+   (a) `source_bridge.py:1231` uses `isinstance(error, _RECONCILABLE_ENTRY_FAILURES)`. I raised `UnrecognizedIntegritySubclass(IntegrityConflict)` during re-entry with an exact existing pair; it is not an exact tuple member, but current production code reconciled it, returned IMPORTED with `('EV-A',)` / `('EAR-A',)`, and wrote one disposition.
+   (b) An exception whose reconciliation semantics were never approved can be converted into a settled, lineage-claiming success—the same failure mode this round was meant to close.
+   (c) Keep the preceding `SourceBridgeError` guard, then use exact-type membership (`type(error) in _RECONCILABLE_ENTRY_FAILURES`) or another explicitly closed class policy.
+   (d) Add direct and end-to-end tests for a non-SourceBridgeError subclass of each allowlisted base. Require original exception propagation, zero read-back, no disposition/linkage, pending candidate, and unchanged hashes; retain tests proving the exact base classes reconcile.
+
+NON-BLOCKING FINDINGS: NONE
+
+EVIDENCE GAPS:
+- `tests/qad` had one failure outside the M6.6 test: `test_schema_build_identity` reports the generated `spec_source_sha256` (`7bf250…`) differs from the on-disk spec hash (`3b5138…`). Without git comparison, I cannot establish when that mismatch arose.
+- `tests/locked` is not clean in this copy: it has no git history for the git-log test and lacks `alpha-momentum-v0/output/pipeline_result.json` for the AM tests; additional FO/CS API tests returned 503 or unexpected response shapes. These results do not establish an M6.6 regression.
+- The copy has no git metadata, so no historical baseline comparison was performed.
+
+COMMANDS RUN:
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/m66-source-bridge"` — 71 passed in 4.67s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/qad-m6"` — 395 passed in 15.88s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/qad"` — 930 passed, 1 failed, 11 warnings in 18.46s; failure: `test_schema_build_identity` hash mismatch.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/locked -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/locked"` — 143 passed, 18 failed, 1 error in 3.62s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/ops -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/ops"` — 94 passed in 178.27s.
+- Isolated guard-removal mutation: copied source/tests to basetemp, replaced `if isinstance(error, SourceBridgeError):` with `if False:`, then ran `pytest tests/qad/m6/test_m66_source_bridge.py::test_54_the_governance_guard_takes_precedence_over_the_entry_allowlist -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r15/basetemp/guard-mutation-pytest"` — expected failure; the read-back spy raised, confirming test 54 detects the mutation.
+- Isolated missed-mutation probe: in a basetemp copy, changed the entry predicate to additionally admit `NotImplementedError`; the copied M6.6 suite returned 71 passed, and a direct classifier probe returned `RECONCILED_IDENTICAL`, `settled=True`, IDs EV-A/EAR-A.
+- Current-code subclass probe: exact end-to-end output was `exception_exact_type_allowed=False`, `exception_isinstance_allowlisted=True`, `outcome_disposition=IMPORTED`, evidence IDs `('EV-A',)`, EAR IDs `('EAR-A',)`, one durable disposition, and no pending candidate.
+- Current source hashes before and after: `qad/m6/source_bridge.py` = `fc61d6e77a02cb8aece793848c6be223a710c229c644b962b59b4693d0f92acc`; `tests/qad/m6/test_m66_source_bridge.py` = `0d7e97910d2bef4b6275a179eb71b40058dd4e279178868f3e46d9e1fea7b41d`. No in-place edits were made.
+- No git command was run.
+
+POLICY DISAGREEMENT: NONE

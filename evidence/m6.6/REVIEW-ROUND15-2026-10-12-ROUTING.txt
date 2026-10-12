@@ -1,0 +1,16 @@
+{
+  "producer_model": "deepseek/deepseek-v4.1-flash",
+  "producer_family": "deepseek",
+  "reviewer_model": "openai/gpt-6-luna",
+  "reviewer_family": "openai",
+  "reasoning_effort": "high",
+  "provider": "openrouter",
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT",
+  "reviewer_self_id_probe": "HARNESS_OK openai/gpt-6-luna (same harness as round 14)",
+  "guard": "profiles/iip/scripts/routing_provenance.py --require-independent (exit 0)",
+  "harness": "disposable no-.git copy (git archive HEAD 18531e5) + explicit external basetemp; read-only; reviewed files naturalized-LF hashes verified against REVIEW-TARGET-PROVENANCE.txt",
+  "reviewed_commit": "18531e576eaec6d53755db971ee62a6a65266b59"
+}
