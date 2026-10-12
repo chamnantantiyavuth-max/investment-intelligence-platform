@@ -177,6 +177,19 @@ _SETTLED_EVIDENCE_CLASSIFICATIONS = frozenset(
 #: are NOT retryable and never take the transient path.
 _RETRYABLE_OPERATIONAL_FAILURES: tuple[type[BaseException], ...] = (TransactionFailure,)
 
+#: RECONCILIATION-ENTRY ALLOWLIST. Only exception classes whose reconciliation semantics are
+#: ESTABLISHED may enter authoritative read-back reconciliation at all:
+#:   * ``IntegrityConflict`` — the canonical gate refused because the id already exists
+#:     (same id, possibly a prior identical commit of this same candidate);
+#:   * ``TransactionFailure``  — a batch transaction failed before commit; the commit may
+#:     nevertheless have landed earlier, so read-back is how we tell.
+#: EVERY other failure class propagates UNCHANGED *before* any read-back is attempted, so an
+#: unrecognized failure can never be reconciled into a successful, lineage-claiming outcome.
+_RECONCILABLE_ENTRY_FAILURES: tuple[type[BaseException], ...] = (
+    IntegrityConflict,
+    TransactionFailure,
+)
+
 
 def _failure_diagnostic(error: BaseException) -> str:
     """Preserve error provenance + useful diagnostic detail (type + message)."""
@@ -1194,6 +1207,10 @@ def classify_evidence_admission_failure(
 
       * a pre-boundary proof / binding / verification failure (``SourceBridgeError``)
         FAILS CLOSED immediately (no read-back, no disposition);
+      * ANY exception class outside the reconciliation-entry allowlist
+        (``_RECONCILABLE_ENTRY_FAILURES``) propagates UNCHANGED **before** any read-back —
+        an unrecognized failure can therefore never be reconciled into a settled,
+        lineage-claiming success (round-14 correction);
       * neither record exists -> TRANSIENT_PARTIAL ONLY for a recognized retryable
         operational failure; absent records alone are NOT transient, so any other
         (unknown / unreconciled) error FAILS CLOSED by propagating;
@@ -1207,6 +1224,16 @@ def classify_evidence_admission_failure(
     """
     if isinstance(error, SourceBridgeError):
         # proof / binding / verification / governance failure: pre-boundary, fail closed.
+        # This guard is checked FIRST and takes PRECEDENCE over the entry allowlist below: a
+        # governance failure never enters reconciliation even if it also carries a
+        # collision-shaped type.
+        raise error
+    if not isinstance(error, _RECONCILABLE_ENTRY_FAILURES):
+        # RECONCILIATION-ENTRY ALLOWLIST (round-14 correction). A failure whose class has NO
+        # established reconciliation semantics must not reach the read-back at all: nothing is
+        # read, nothing is guessed, and the ORIGINAL exception propagates unchanged. This is
+        # what stops an unrecognized failure from being turned into a settled success merely
+        # because an identical canonical pair happens to exist.
         raise error
     state = reconcile_canonical_evidence_pair(
         registry, evidence=evidence, admission=admission,
@@ -1377,9 +1404,10 @@ def process_discovered_sources(
     CONFLICT_INCOMPLETE / CONFLICT_DIVERGENT). If canonical EV-01/EAR-01 were already
     committed by an earlier attempt AND match the expected records exactly, the disposition
     references those EXISTING records instead of recording a false evidence-admission
-    failure. An incomplete or divergent canonical pair, an unreadable canonical state or an
-    unrecognized error FAILS CLOSED: the error propagates, the candidate stays undisposed
-    and no canonical state is deleted or rewritten.
+    failure. Only failures whose class has ESTABLISHED reconciliation semantics enter the
+    read-back at all; every other failure class propagates unchanged. An incomplete or divergent
+    canonical pair, an unreadable canonical state or an unrecognized error FAILS CLOSED: the error
+    propagates, the candidate stays undisposed and no canonical state is deleted or rewritten.
     """
     registered = register_discovered_candidates(
         store, ledger_id=ledger_id, references=references,
