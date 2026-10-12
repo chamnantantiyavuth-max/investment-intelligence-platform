@@ -1,0 +1,24 @@
+PARENT RE-VERIFICATION - Round-16 material finding 1 (equality-based tuple membership)
+Executed by the Parent agent against commit 6565227 (predicate at qad/m6/source_bridge.py line 1234).
+Reachability check performed FIRST: no class in qad/ defines a custom metaclass (no 'metaclass='
+usage matches anywhere under qad/) and no exception class in qad/persistence or qad/m6 defines
+__eq__ - so the equality spoof is NOT reachable from the accepted codebase; it requires in-process
+code that defines a metaclass-spoofing exception class.
+
+=== predicate semantics ===
+  allowlist                                = (<class 'qad.persistence.errors.IntegrityConflict'>, <class 'qad.persistence.errors.TransactionFailure'>)
+  type(error) is IntegrityConflict          = False
+  type(error) in allowlist (equality `in`)  = True
+  identity-closed test (type(...) is ...)   = False
+  isinstance(probe, IntegrityConflict)      = True
+  (a) direct classifier: READ-BACK ATTEMPTED -> spy raised: authoritative read-back must NOT be attempted
+=== end-to-end: exact canonical pair + spoofed-metaclass subclass ===
+  RETURNED: disposition=IMPORTED evidence_ids=('EV-A',) ear_ids=('EAR-A',) pending=()
+  dispositions written = 1
+  FINDING REPRODUCED (unauthorized exception settled with lineage)
+  canonical hashes unchanged: True
+=== control: exact bases + a normal (non-spoofing) subclass ===
+  exact IntegrityConflict  -> IMPORTED ('EV-A',) ('EAR-A',)
+  exact TransactionFailure -> IMPORTED ('EV-A',) ('EAR-A',)
+  ordinary subclass: type(...) in allowlist = False (must be False)
+  ordinary subclass: identity-closed test   = False (must be False)

@@ -1,0 +1,165 @@
+ROUND-16 MUTATION DEMONSTRATIONS H/I/J (Founder-mandated) — QAD M6.6 Option A
+Executed: 2026-10-12 after commit 6565227, by the Parent agent, on qad/m6/source_bridge.py
+
+  MUTATION H — replace EXACT-TYPE membership with isinstance (re-open the door to subclasses)
+  MUTATION I — insert NotImplementedError into _RECONCILABLE_ENTRY_FAILURES (third class)
+  RESTORE J  — restore the production file byte-identically and re-demonstrate GREEN
+
+GREEN sha256 (before and after every mutation) = cc8192ae1318fee47dc7b05a215fdc36067f4a619f0215b11f1c190137e5b9e2
+MUTATION H mutated sha256 = 4b769b519643a31240dabfe58b017001ce1919b28fbcbf7e33cffcb6a4bcac9d
+MUTATION I mutated sha256 = b36f956b2c52d76f1c91c530b97ba68220b7656c948107c8b22fa9e48982b6a0
+
+RESULT H -> 2 focused tests RED (test_57_C, test_58_D)
+RESULT I -> 2 focused tests RED (test_59_E, test_61_G)
+RESULT J -> all 7 focused tests GREEN after byte-identical restore
+
+--- RAW OUTPUT ---
+GREEN sha256 = cc8192ae1318fee47dc7b05a215fdc36067f4a619f0215b11f1c190137e5b9e2
+
+================ MUTATION_H_isinstance_replaces_exact_type ================
+mutated sha256 = 4b769b519643a31240dabfe58b017001ce1919b28fbcbf7e33cffcb6a4bcac9d
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round16\bt-MUTATION_H_isinstance_replaces_exact_type -k test_57_C or test_58_D or test_59_E or test_60_F
+FF..                                                                     [100%]
+================================== FAILURES ===================================
+______ test_57_C_unlisted_integrity_subclass_fails_closed_full_lifecycle ______
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round16/bt-MUTATION_H_isinstance_replaces_exact_type/test_57_C_unlisted_integrity_s0')
+
+    def test_57_C_unlisted_integrity_subclass_fails_closed_full_lifecycle(tmp_path):
+        """Case C — UNLISTED subclass of IntegrityConflict: zero read-back, nothing settled."""
+        # (a) DIRECT classifier: propagates unchanged AND attempts no read-back at all
+        spy = _ReadBackSpy()
+        raised = _UnlistedIntegritySubclass("UNLISTED subclass collision")
+        with pytest.raises(_UnlistedIntegritySubclass) as excinfo:
+>           classify_evidence_admission_failure(
+                spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+                admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2410: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1243: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1172: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x00000224165B9ED0>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+_____ test_58_D_unlisted_transaction_subclass_fails_closed_full_lifecycle _____
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round16/bt-MUTATION_H_isinstance_replaces_exact_type/test_58_D_unlisted_transaction0')
+
+    def test_58_D_unlisted_transaction_subclass_fails_closed_full_lifecycle(tmp_path):
+        """Case D — UNLISTED subclass of TransactionFailure: zero read-back, nothing settled."""
+        spy = _ReadBackSpy()
+        raised = _UnlistedTransactionSubclass("UNLISTED subclass batch failure")
+        with pytest.raises(_UnlistedTransactionSubclass) as excinfo:
+>           classify_evidence_admission_failure(
+                spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+                admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2429: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1243: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1172: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x00000224165B8DD0>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_57_C_unlisted_integrity_subclass_fails_closed_full_lifecycle
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_58_D_unlisted_transaction_subclass_fails_closed_full_lifecycle
+2 failed, 2 passed, 74 deselected in 0.47s
+
+MUTATION_H_isinstance_replaces_exact_type exit code = 1
+RESULT: MUTATION_H_isinstance_replaces_exact_type -> RED (detected, expected)
+
+================ MUTATION_I_third_class_added_to_allowlist ================
+mutated sha256 = b36f956b2c52d76f1c91c530b97ba68220b7656c948107c8b22fa9e48982b6a0
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round16\bt-MUTATION_I_third_class_added_to_allowlist -k test_59_E or test_61_G
+FF                                                                       [100%]
+================================== FAILURES ===================================
+________ test_59_E_an_unlisted_plain_class_fails_closed_full_lifecycle ________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round16/bt-MUTATION_I_third_class_added_to_allowlist/test_59_E_an_unlisted_plain_cl0')
+
+    def test_59_E_an_unlisted_plain_class_fails_closed_full_lifecycle(tmp_path):
+        """Case E — NotImplementedError (neither allowlisted nor a subclass): nothing settled."""
+        spy = _ReadBackSpy()
+        raised = NotImplementedError("UNLISTED plain failure class")
+        with pytest.raises(NotImplementedError) as excinfo:
+>           classify_evidence_admission_failure(
+                spy, error=raised, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+                admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2447: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1244: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1173: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x000001C81FBDA150>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+________ test_61_G_the_entry_allowlist_composition_is_closed_and_exact ________
+
+    def test_61_G_the_entry_allowlist_composition_is_closed_and_exact():
+        """Case G — the allowlist contains EXACTLY the two Founder-approved classes and no third."""
+        from qad.m6 import source_bridge as sb
+    
+        allow = sb._RECONCILABLE_ENTRY_FAILURES
+        assert isinstance(allow, tuple)
+>       assert allow == (IntegrityConflict, TransactionFailure)      # exact members and order
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert (<class 'qad....mentedError'>) == (<class 'qad....tionFailure'>)
+E         
+E         Left contains one more item: <class 'NotImplementedError'>
+E         Use -v to get more diff
+
+tests\qad\m6\test_m66_source_bridge.py:2494: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_59_E_an_unlisted_plain_class_fails_closed_full_lifecycle
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_61_G_the_entry_allowlist_composition_is_closed_and_exact
+2 failed, 76 deselected in 0.30s
+
+MUTATION_I_third_class_added_to_allowlist exit code = 1
+RESULT: MUTATION_I_third_class_added_to_allowlist -> RED (detected, expected)
+
+================ J: RESTORED — GREEN RE-RUN (all round-16 focused tests) ================
+restored sha256 = cc8192ae1318fee47dc7b05a215fdc36067f4a619f0215b11f1c190137e5b9e2
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round16\bt-j-green -k test_55_A or test_56_B or test_57_C or test_58_D or test_59_E or test_60_F or test_61_G
+.......                                                                  [100%]
+7 passed, 71 deselected in 0.72s
+
+j-green exit code = 0
+RESULT: restored -> GREEN (expected)

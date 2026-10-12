@@ -1,0 +1,39 @@
+VERDICT: C
+
+PROBE RESULTS: 1..12
+
+1. DEFECT — `type(error) not in _RECONCILABLE_ENTRY_FAILURES` uses equality-based tuple membership, not guaranteed identity. An unlisted `IntegrityConflict` subclass with custom class equality had `type(error) is IntegrityConflict == False` but membership `True`, and was reconciled.
+2. DEFECT — Ordinary subclasses of both bases fail closed in tests, but the contract fails for an unlisted subclass whose metaclass makes it compare equal to a listed class; the reproduced subclass settled the candidate.
+3. VERIFIED — `NotImplementedError`, `CanonicalBoundaryViolation`, `MissingForeignKey`, `PITBlockError`, a subclass-of-subclass, and a dynamically created same-name subclass propagated as the same exception object; read-back spy calls were zero.
+4. VERIFIED — The `SourceBridgeError` guard is first; both pure governance errors and a `SourceBridgeError`/`IntegrityConflict` multiple-inheritance error propagated unchanged with no read-back (tests 54/60).
+5. VERIFIED — Exact `IntegrityConflict` and exact `TransactionFailure` each reconciled an exact pair end-to-end, reused `EV-A`/`EAR-A`, wrote one disposition, left one EV and one EAR, and left no pending candidate.
+6. VERIFIED — Read-back returned `CONFLICT_DIVERGENT` for each tested mismatch: stored evidence ID, admission ID, EAR evidence ID, source binding, EV hash, and EAR hash.
+7. DEFECT — The unlisted equality-spoof exception produced an `IMPORTED` disposition linking `EV-A`/`EAR-A`; canonical hashes stayed unchanged, but false lineage was claimed.
+8. DEFECT — That unauthorized exception triggered authoritative read-back: observed 2 `contains` calls and 2 `load` calls.
+9. VERIFIED — `tests/qad/m6` passed 402 tests, including the existing verifier, proof-bound admission, replay, incomplete/divergent pair, read-back-failure, re-entry, and terminalization controls.
+10. DEFECT — A copied-source mutation replacing tuple membership with pairwise `!=` checks escaped the focused suite: all 78 tests passed. The mutation retains the equality-spoof bypass.
+11. VERIFIED — The bridge AST checks found no SUCCESS-writing path or raw-success-gate bypass; tests 28–30 passed.
+12. NOT VERIFIED — In this copy, M6.6 has no provider execution, the canonical count is 68, existing PITC-01 authority is used, and the bridge does not terminalize runs. RRM-01’s unchanged status cannot be established without a comparison baseline.
+
+MATERIAL FINDINGS:
+
+1. Reconciliation allowlist is not actually closed by exact type.
+   (a) Evidence: `qad/m6/source_bridge.py:1234` uses `type(error) not in tuple`. Python tuple membership can invoke class-metaclass `__eq__`. Reproduction: an unlisted subclass of `IntegrityConflict` made `type(error) is IntegrityConflict` false while `type(error) in allowlist` was true. End-to-end, the bridge read back the existing pair, returned `IMPORTED` with `('EV-A',)` / `('EAR-A',)`, wrote one disposition, and cleared pending status; hashes remained unchanged.
+   (b) This defeats the Founder-set exact-type entry contract and lets an unauthorized failure settle a candidate with canonical evidence lineage.
+   (c) Smallest correction: use identity checks, e.g. reject unless `any(type(error) is allowed for allowed in _RECONCILABLE_ENTRY_FAILURES)`. Add a metaclass-equality regression proving unchanged exception propagation, zero read-back, unchanged hashes, no disposition/lineage, and pending candidate; retain exact-base reconciliation tests.
+   (d) Verify the new regression fails against the current predicate and passes after the correction; rerun the focused 78 tests and the 402-test M6 suite, including exact-base reconciliation.
+
+NON-BLOCKING FINDINGS: NONE.
+
+EVIDENCE GAPS: This copy has no Git metadata, and Git was not run per instruction. Therefore I could not independently verify that the reconciliation comparison or RRM-01 is unchanged from a prior revision. The broader suites also exposed copy/environment issues: `tests/qad` had one schema-source SHA mismatch (`937 passed, 1 failed`); `tests/locked` had `18 failed, 143 passed, 1 error`, including absent `alpha-momentum-v0/output/pipeline_result.json`, no commit history for the Git-log test, and API 503 responses. These are outside the M6.6 focused suite.
+
+COMMANDS RUN:  
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r16/basetemp"` — 78 passed in 5.53s.  
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r16/basetemp/m6"` — 402 passed in 17.35s.  
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r16/basetemp/qad"` — 937 passed, 1 failed in 20.19s; failure was `test_schema_build_identity` (stored and current spec-source hashes differ).  
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/locked -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r16/basetemp/locked"` — 18 failed, 143 passed, 1 error in 4.20s.  
+Equality probe: `".../python.exe" -c 'from qad.persistence.errors import IntegrityConflict; from qad.m6.source_bridge import _RECONCILABLE_ENTRY_FAILURES as allow; Meta=type("SpoofMeta",(type,),{"__eq__":lambda cls,other: other is IntegrityConflict,"__hash__":type.__hash__}); C=Meta("UnlistedIntegritySubclass",(IntegrityConflict,),{}); error=C("x"); print("exact:",type(error) is IntegrityConflict,"membership:",type(error) in allow)'` — `exact: False membership: True`.  
+Mutation probe: copied `qad/`, the focused test file, and the FD register under `basetemp/mutant-round16`; changed the predicate to `if type(error) != IntegrityConflict and type(error) != TransactionFailure:` in that copy only; ran `python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp=".../basetemp/mutation-run"` from the copy — 78 passed in 5.67s.  
+Final hashes confirmed the original source and test files were unchanged: `source_bridge.py` SHA-256 `e2ae31e51ac3de8c7e693f2c7a821f6fd2ceac084daed5a4ce3e66887c49f7d2`; test file SHA-256 `58a3881230644a5ed217574869f58422889485e1af22ce7d0d49da3239148627`.
+
+POLICY DISAGREEMENT: NONE. The verdict reflects an implementation defect against the settled Founder policy.

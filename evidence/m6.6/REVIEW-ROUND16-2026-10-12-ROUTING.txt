@@ -1,0 +1,24 @@
+{
+  "producer_model": "deepseek/deepseek-v4.1-flash",
+  "producer_family": "deepseek",
+  "reviewer_model": "openai/gpt-6-luna",
+  "reviewer_family": "openai",
+  "reasoning_effort": "high",
+  "provider": "openrouter",
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT",
+  "guard": "profiles/iip/scripts/routing_provenance.py --require-independent (exit 0)",
+  "harness": "disposable no-.git copy (git archive HEAD 6565227) + explicit external basetemp; read-only; naturalized-LF hashes verified against REVIEW-TARGET-PROVENANCE.txt",
+  "reviewed_commit": "6565227d3380d2cab69fbe5cfd3e35f199375ca3",
+  "review_scope": "closure-focused (reconciliation-entry contract) + broad regression",
+  "reviewer_verdict": "C",
+  "reviewer_findings": {
+    "material": 1,
+    "non_blocking": 0
+  },
+  "material_finding": "tuple membership `in` is EQUALITY-based, not identity-based: a metaclass `__eq__` spoof admits an unlisted subclass to reconciliation",
+  "parent_reverified": true,
+  "minimal_correction_proposed": "any(type(error) is allowed for allowed in _RECONCILABLE_ENTRY_FAILURES)"
+}
