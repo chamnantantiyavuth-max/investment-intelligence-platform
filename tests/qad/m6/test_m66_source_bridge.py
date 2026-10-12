@@ -2502,3 +2502,109 @@ def test_61_G_the_entry_allowlist_composition_is_closed_and_exact():
         assert excluded not in allow
     # ...and the transient-partial allowlist was NOT broadened
     assert sb._RETRYABLE_OPERATIONAL_FAILURES == (TransactionFailure,)
+
+
+# ============================================================================
+# 62 round-17 closure — IDENTITY, NOT EQUALITY (Round-16 material finding reproduced)
+#
+# The Round-16 finding: `type(error) not in _RECONCILABLE_ENTRY_FAILURES` is an EQUALITY test, so a
+# class whose METACLASS defines `__eq__` to compare equal to `IntegrityConflict` passed the previous
+# predicate, entered the authoritative read-back, and settled a lineage-claiming success.
+# The predicate is now identity-based: any(type(error) is allowed for allowed in ...).
+#
+# Positive controls retained unchanged elsewhere in this file: exact IntegrityConflict reconciles
+# (test_55), exact TransactionFailure reconciles (test_56), ordinary subclasses stay rejected
+# (test_57/test_58), NotImplementedError stays rejected (test_59), the SourceBridgeError guard keeps
+# precedence (test_54/test_60), the composition is exactly the two classes (test_61).
+# ============================================================================
+
+
+class _EqualitySpoofMeta(type):
+    """TEST-ONLY metaclass whose classes compare EQUAL to `IntegrityConflict`.
+
+    This reproduces the Round-16 finding exactly: tuple membership (`in`) is an equality test, so a
+    class built with this metaclass satisfied the PREVIOUS predicate even though it is not the actual
+    `IntegrityConflict` class object.
+    """
+
+    def __eq__(cls, other):
+        return other is IntegrityConflict
+
+    def __hash__(cls):  # keep the metaclass hashable like `type`
+        return type.__hash__(cls)
+
+
+class _EqualitySpoofSubclass(IntegrityConflict, metaclass=_EqualitySpoofMeta):
+    """An unlisted subclass that is EQUALITY-compatible with IntegrityConflict but NOT identical."""
+
+
+def test_62_identity_predicate_rejects_an_equality_compatible_class(tmp_path):
+    """Round-17 regression: an equality-spoofing class can never enter reconciliation."""
+    from qad.m6 import source_bridge as sb
+
+    spoof = _EqualitySpoofSubclass("SPOOFED metaclass-equality collision")
+
+    # (1) identity is FALSE
+    assert (type(spoof) is IntegrityConflict) is False
+    # (2) equality-based membership (the PREVIOUS predicate) would have admitted it
+    assert (type(spoof) in sb._RECONCILABLE_ENTRY_FAILURES) is True
+    # (3) the NEW identity-based predicate rejects it
+    assert any(
+        type(spoof) is allowed for allowed in sb._RECONCILABLE_ENTRY_FAILURES
+    ) is False
+    assert isinstance(spoof, IntegrityConflict) is True     # ...even though isinstance would also
+
+    # (4)+(5) DIRECT classifier: the ORIGINAL exception propagates unchanged, with ZERO read-back
+    expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+    expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+    spy = _ReadBackSpy()
+    with pytest.raises(_EqualitySpoofSubclass) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=spoof, evidence=expected_ev, admission=expected_ear,
+            verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is spoof                              # (4) same object
+    assert spy.calls == 0                                      # (5) no authoritative read-back
+
+    # (6)-(9) END-TO-END: nothing is settled, no lineage, canonical state untouched
+    store, archive, registry, cid, verifier, refs = _pending_candidate_with_exact_pair(
+        tmp_path, ledger_id="L-SPOOF", reference="https://sec.gov/spoof"
+    )
+    before = _canonical_hashes(registry)
+    real_admit = registry.admit_evidence
+    registry.admit_evidence = lambda e, a: (_ for _ in ()).throw(
+        _EqualitySpoofSubclass("SPOOFED metaclass-equality collision")
+    )
+    with pytest.raises(_EqualitySpoofSubclass):
+        _rerun(store, registry, archive, verifier, refs, ledger_id="L-SPOOF")
+    assert _dispositions(store, "L-SPOOF") == {}               # (6) ZERO dispositions
+    assert pending_candidates(store.load_run("L-SPOOF")) == (cid,)  # (7) still pending
+    assert _canonical_hashes(registry) == before               # (8) hashes unchanged
+    assert len(registry._data["EV-01"]) == 1 and len(registry._data["EAR-01"]) == 1
+
+    # (10) the SAME candidate recovers legitimately with the ACTUAL approved exception type
+    registry.admit_evidence = real_admit
+    out = _rerun(store, registry, archive, verifier, refs, ledger_id="L-SPOOF")
+    o = out.outcomes[0]
+    assert o.disposition.value == "IMPORTED"                   # (9) no lineage was claimed before...
+    assert o.evidence_ids == (EXPECTED_EV_ID,) and o.ear_ids == (EXPECTED_EAR_ID,)  # (10) now it is
+    assert pending_candidates(store.load_run("L-SPOOF")) == ()
+    assert len(store.load_run("L-SPOOF").dispositions) == 1
+    assert len(registry._data["EV-01"]) == 1 and len(registry._data["EAR-01"]) == 1
+
+
+def test_63_a_dynamically_created_same_name_class_cannot_enter_reconciliation():
+    """Round-17 regression: a same-NAME class forged at runtime is not the allowed class object."""
+    forged = type("IntegrityConflict", (Exception,), {})
+    assert forged.__name__ == "IntegrityConflict"
+    assert forged is not IntegrityConflict
+    spoof = forged("forged same-name collision")
+
+    spy = _ReadBackSpy()
+    with pytest.raises(Exception) as excinfo:
+        classify_evidence_admission_failure(
+            spy, error=spoof, evidence=_mk_ev(EXPECTED_EV_ID, EXPECTED_SRC),
+            admission=_mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID), verified_source_id=EXPECTED_SRC,
+        )
+    assert excinfo.value is spoof
+    assert spy.calls == 0
