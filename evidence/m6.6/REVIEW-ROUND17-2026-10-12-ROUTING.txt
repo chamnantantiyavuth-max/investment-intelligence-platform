@@ -1,0 +1,16 @@
+{
+  "producer_model": "deepseek/deepseek-v4.1-flash",
+  "producer_family": "deepseek",
+  "reviewer_model": "openai/gpt-6-luna",
+  "reviewer_family": "openai",
+  "reasoning_effort": "high",
+  "provider": "openrouter",
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT",
+  "guard": "profiles/iip/scripts/routing_provenance.py --require-independent (exit 0)",
+  "harness": "disposable no-.git copy (git archive HEAD d67f2a6) + explicit external basetemp; read-only; naturalized-LF hashes verified against REVIEW-TARGET-PROVENANCE.txt",
+  "reviewed_commit": "d67f2a6a362cfd9c2d23e8cb9fcd1cfc695a46c4",
+  "review_scope": "focused confirmation (reconciliation-entry identity contract) with explicit threat-model boundary + regression suites"
+}

@@ -1,0 +1,107 @@
+ROLE
+INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER — QAD M6.6 (Noncanonical Source Discovery +
+Admission Bridge), FD #151, ROUND 17 (focused confirmation review).
+Producer = DeepSeek V4.1 Flash; you = OpenAI family (family-independent). Report only what you can
+verify from the artifacts in THIS copy. Do not soften; do not aim for a PASS verdict — a finding is a
+valid and useful result.
+
+This is a FOCUSED CONFIRMATION review, not an open-ended audit. It exists because Round 16 found that
+the previous entry predicate (`type(error) not in _RECONCILABLE_ENTRY_FAILURES`) was an EQUALITY test
+that a metaclass `__eq__` could satisfy. The Founder ruled the intended contract is exact Python
+object IDENTITY, and authorized exactly ONE minimal correction: the predicate is now
+`if not any(type(error) is allowed for allowed in _RECONCILABLE_ENTRY_FAILURES): raise error`.
+
+============================================================
+PRINCIPAL QUESTION (answer this first, explicitly)
+============================================================
+"Does the corrected reconciliation-entry boundary now enforce the Founder-approved exact class
+identity for the only two allowed exceptions, without regressing legitimate canonical reconciliation
+or fail-closed behavior?"
+
+============================================================
+THREAT-MODEL BOUNDARY — READ CAREFULLY (Founder-set)
+============================================================
+* The accepted trust model does NOT require defence against a hostile party that already controls
+  arbitrary in-process Python execution.
+* The exact-identity contract MUST nevertheless work correctly AS WRITTEN, and the test-only
+  metaclass-equality example IS valid evidence of the previous predicate's semantic weakness — so
+  verify that the new predicate is genuinely identity-based (not merely narrowed).
+* Do NOT turn this review into an unrestricted search for new speculative same-process attack models
+  (for example: monkeypatching module globals, bytecode tampering, hostile descriptors, or an
+  attacker who can rewrite the allowlist itself).
+* This does NOT authorize suppression of genuine, reproducible material defects reachable through the
+  ACCEPTED execution boundary (ordinary callers of the bridge, the accepted persistence stores, the
+  accepted verifier seam, PIT authority, the ledger).
+
+============================================================
+SETTLED POLICY — DO NOT RE-LITIGATE
+============================================================
+FD #149 (ledger / SEALED capture), FD #150 (archive-owned `admitted_at` attestation), FD #151 (M6.6
+scope: no provider execution), FD #152 (in-process trust boundary FOUNDER-FIXED; `original_source_verified`
+only from a genuine verification for the exact run/candidate/source), FD #153 (M6.3 atomic SUCCESS
+finalization), FD #154 (`M6_RAW_SUCCESS_API_GATE` OPEN / blocking M6.7+). Also settled: the CALLER-SUPPLIED
+mutation-free evidence-CONSTRUCTION stage yields the truthfully partial SOURCE IMPORTED / CANONICAL
+EVIDENCE NOT ADMITTED outcome; and the reconciliation-entry allowlist is EXACTLY the two approved
+classes `IntegrityConflict` and `TransactionFailure`, matched by IDENTITY.
+
+============================================================
+VERIFY (each: VERIFIED / NOT VERIFIED / DEFECT + one line, with the evidence)
+============================================================
+ 1. EXACT IDENTITY CHECKS — read the predicate and prove it uses `is` (identity), not `==`/`in`
+    (equality). Show that a metaclass-`__eq__` class cannot satisfy it. Confirm the assertion you rely
+    on by RUNNING code, not by reading alone.
+ 2. METACLASS EQUALITY SPOOF REJECTION — build (in your basetemp) a subclass whose metaclass compares
+    equal to `IntegrityConflict`, raise it at the canonical gate with an EXACT pre-existing
+    EV-01/EAR-01 pair, and confirm end-to-end: original exception propagates unchanged (same object),
+    ZERO authoritative read-back calls, no disposition, candidate pending, canonical hashes unchanged,
+    no evidence lineage claimed.
+ 3. ORDINARY AND NESTED SUBCLASS REJECTION — subclass of each base, subclass-of-subclass, and a
+    runtime-forged class with the same NAME must all be rejected with zero read-back.
+ 4. AUTHORIZED EXACT-BASE RECONCILIATION — exact `IntegrityConflict` and exact `TransactionFailure`
+    against an exact pre-existing pair must still reconcile end-to-end (`RECONCILED_IDENTICAL`),
+    reuse the EXISTING ids, write exactly ONE disposition, and create NO duplicate canonical records.
+ 5. SourceBridgeError PRECEDENCE — the guard remains FIRST for a pure governance failure and for a
+    class inheriting BOTH `SourceBridgeError` and `IntegrityConflict`.
+ 6. NO FALSE LINEAGE / DISPOSITION — no unauthorized failure may produce a disposition or an
+    evidence/EAR linkage.
+ 7. NO READ-BACK ON UNAUTHORIZED FAILURE — prove the read-back is not merely harmless but NOT
+    ATTEMPTED (e.g. a registry double that raises if touched).
+ 8. FULL CANONICAL HASH / SOURCE IDENTITY UNCHANGED — the reconciliation comparison is untouched:
+    stored evidence_id, admission_id, `EAR.evidence_id == EV.evidence_id`, source binding and BOTH
+    canonical hashes are still required; a mismatch in any of them is DIVERGENT, never reconciled.
+ 9. REGRESSION SUITE STATUS — run the suites and report ACTUAL counts (see the provenance file).
+10. NO NEW SUCCESS WRITER OR GATE BYPASS — AST/source check: no SUCCESS-writing call, no
+    `M6_RAW_SUCCESS_API_GATE` bypass, no provider/network/browser/Gemini/Notebook code, no M6.7
+    implementation, canonical schema count 68, no second PIT authority.
+
+TEST-STRENGTH CHECK (bounded): in a COPY inside your basetemp, restore the previous equality-based
+predicate and confirm the new metaclass regression turns RED; then confirm the identity predicate
+passes it. Do NOT build a fuzzing framework or broaden the test architecture.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy and the basetemp)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory, e.g.:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r17/basetemp"
+  (always pass an explicit --basetemp)
+- Do NOT modify qad/m6/source_bridge.py or the test file in place: copy them into your basetemp first.
+- Do NOT run git (this copy has no git metadata — hash the files instead).
+- Report exact commands + real output.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+PRINCIPAL QUESTION: answered YES / NO + one paragraph.
+VERDICT: A | B | C
+  A = PASS
+  B = PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = FAIL / MATERIAL DEFECT
+
+PROBE RESULTS: 1..10 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest correction,
+   (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT: does NOT change your verdict; the policy is Founder-set.

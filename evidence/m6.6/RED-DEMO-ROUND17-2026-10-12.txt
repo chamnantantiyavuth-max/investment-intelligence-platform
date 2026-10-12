@@ -1,0 +1,85 @@
+ROUND-17 RED->GREEN MUTATION PROOF A/B (Founder-mandated) — QAD M6.6 Option A
+Executed: 2026-10-12 after commit d67f2a6, by the Parent agent, on qad/m6/source_bridge.py
+
+  A — restore the PREVIOUS equality-based predicate (type(error) not in tuple)
+      -> the new metaclass regression (test_62) MUST turn RED
+  B — restore the IDENTITY-based predicate byte-identically
+      -> MUST turn GREEN
+
+GREEN (identity) sha256 = 320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871
+MUTATION A mutated sha256 = 2260dba0eb604e0ae43d4e74840d8e392703245b7713a2a9c93479aba34ebedb
+
+RESULT A -> test_62_identity_predicate_rejects_an_equality_compatible_class FAILED (RED, detected)
+RESULT B -> byte-identical restore, 6 passed (GREEN)
+
+--- RAW OUTPUT ---
+GREEN (identity) sha256 = 320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871
+
+================ MUTATION A: equality-based predicate restored ================
+mutated sha256 = 2260dba0eb604e0ae43d4e74840d8e392703245b7713a2a9c93479aba34ebedb
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round17\bt-mutA -k test_62 or test_63 or test_57_C or test_58_D or test_55_A or test_56_B
+....F.                                                                   [100%]
+================================== FAILURES ===================================
+_______ test_62_identity_predicate_rejects_an_equality_compatible_class _______
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-round17/bt-mutA/test_62_identity_predicate_rej0')
+
+    def test_62_identity_predicate_rejects_an_equality_compatible_class(tmp_path):
+        """Round-17 regression: an equality-spoofing class can never enter reconciliation."""
+        from qad.m6 import source_bridge as sb
+    
+        spoof = _EqualitySpoofSubclass("SPOOFED metaclass-equality collision")
+    
+        # (1) identity is FALSE
+        assert (type(spoof) is IntegrityConflict) is False
+        # (2) equality-based membership (the PREVIOUS predicate) would have admitted it
+        assert (type(spoof) in sb._RECONCILABLE_ENTRY_FAILURES) is True
+        # (3) the NEW identity-based predicate rejects it
+        assert any(
+            type(spoof) is allowed for allowed in sb._RECONCILABLE_ENTRY_FAILURES
+        ) is False
+        assert isinstance(spoof, IntegrityConflict) is True     # ...even though isinstance would also
+    
+        # (4)+(5) DIRECT classifier: the ORIGINAL exception propagates unchanged, with ZERO read-back
+        expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+        expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+        spy = _ReadBackSpy()
+        with pytest.raises(_EqualitySpoofSubclass) as excinfo:
+>           classify_evidence_admission_failure(
+                spy, error=spoof, evidence=expected_ev, admission=expected_ear,
+                verified_source_id=EXPECTED_SRC,
+            )
+
+tests\qad\m6\test_m66_source_bridge.py:2562: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+qad\m6\source_bridge.py:1251: in classify_evidence_admission_failure
+    state = reconcile_canonical_evidence_pair(
+qad\m6\source_bridge.py:1175: in reconcile_canonical_evidence_pair
+    ev_exists = bool(registry.contains("EV-01", evidence.evidence_id))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <m6.test_m66_source_bridge._ReadBackSpy object at 0x000001D04E6FDA50>
+schema_id = 'EV-01', record_id = 'EV-A'
+
+    def contains(self, schema_id, record_id):
+        self.calls += 1
+>       raise AssertionError("authoritative read-back must NOT be attempted")
+E       AssertionError: authoritative read-back must NOT be attempted
+
+tests\qad\m6\test_m66_source_bridge.py:1994: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_62_identity_predicate_rejects_an_equality_compatible_class
+1 failed, 5 passed, 74 deselected in 0.59s
+
+mutA exit code = 1
+RESULT A -> RED (detected, expected)
+
+================ MUTATION B: identity-based predicate restored ================
+restored sha256 = 320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871
+$ C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round17\bt-mutB -k test_62 or test_63 or test_57_C or test_58_D or test_55_A or test_56_B
+......                                                                   [100%]
+6 passed, 74 deselected in 0.62s
+
+mutB exit code = 0
+RESULT B -> GREEN (expected)

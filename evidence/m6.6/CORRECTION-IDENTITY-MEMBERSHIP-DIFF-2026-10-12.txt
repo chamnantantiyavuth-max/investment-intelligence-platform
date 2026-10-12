@@ -1,0 +1,95 @@
+ROUND-17 REVIEW — EXACT DELTA SUPPLIED IN ANSWER TO NON-BLOCKING FINDING 1 ('pre-correction source snapshot/diff not available')
+Reviewed commit d67f2a6 ; parent 1b533f0 ; branch impl/m6-gemini-notebook
+
+STATEMENT: the ONLY functional line changed anywhere in qad/m6/source_bridge.py is the reconciliation-entry predicate. Every other changed line is a comment or docstring. The reconciliation comparator is NOT in the diff at all.
+
+--- git diff --numstat (d67f2a6) ---
+29	18	qad/m6/source_bridge.py
+106	0	tests/qad/m6/test_m66_source_bridge.py
+
+--- functional (non-comment, non-blank) REMOVED lines ---
+-#: RECONCILIATION-ENTRY ALLOWLIST — **CLOSED BY EXACT TYPE** (Founder ruling, 12 Oct 2026).
+-#: Only the EXACT classes below may enter authoritative read-back reconciliation:
+-#: Matched with ``type(error) not in _RECONCILABLE_ENTRY_FAILURES`` — a SUBCLASS of either class is
+-#: NOT implicitly authorized, and no third class is. EVERY failure outside this exact set propagates
+-#: UNCHANGED *before* any read-back, so an unrecognized failure (or an unapproved subtype of a
+-#: recognized one) can never be reconciled into a successful, lineage-claiming outcome.
+-        (``_RECONCILABLE_ENTRY_FAILURES``, matched by **EXACT TYPE**) propagates UNCHANGED
+-        **before** any read-back — an unrecognized failure, and equally an UNLISTED SUBCLASS
+-        of an allowlisted class, can therefore never be reconciled into a settled,
+-        lineage-claiming success (round-14 + round-15 correction);
+-    if type(error) not in _RECONCILABLE_ENTRY_FAILURES:
+-        # RECONCILIATION-ENTRY CONTRACT — CLOSED BY EXACT TYPE (Founder ruling, 12 Oct 2026).
+-        # The allowlist is EXACTLY the two approved classes; a SUBCLASS is NOT implicitly
+-        # authorized, and neither is any other class. A failure outside the exact allowlist must
+-        # not reach the read-back at all: nothing is read, nothing is guessed, and the ORIGINAL
+-        # exception propagates unchanged. This is what stops an unrecognized failure — or an
+-        # unapproved subtype of a recognized one — from being turned into a settled success
+-        # merely because an identical canonical pair happens to exist.
+
+--- functional ADDED lines ---
++        (``_RECONCILABLE_ENTRY_FAILURES``, matched by **EXACT OBJECT IDENTITY**) propagates
++        UNCHANGED **before** any read-back — an unrecognized failure, an UNLISTED SUBCLASS of
++        an allowlisted class, a dynamically created same-name class, and any equality-compatible
++        class can therefore never be reconciled into a settled, lineage-claiming success
++        (round-14 + round-15 + round-17 corrections);
++    if not any(
++        type(error) is allowed
++        for allowed in _RECONCILABLE_ENTRY_FAILURES
++    ):
+
+--- proof the comparator region is untouched: NO changed (+/-) line mentions it ---
+changed lines mentioning reconcile_canonical_evidence_pair / CanonicalPairState / RECONCILED_IDENTICAL / CONFLICT_* : 0
+(only occurrence is an UNCHANGED CONTEXT line inside the predicate hunk:)
+75:     state = reconcile_canonical_evidence_pair(
+
+--- identical in both commits? compare the comparator's own text ---
+9117936832d3472d77337409cdb4967df1d4fb6c9908507f18031b139fe5dd05 *-
+9117936832d3472d77337409cdb4967df1d4fb6c9908507f18031b139fe5dd05 *-
+
+--- comparator (both commits identical) as the reviewer cited it ---
+) -> bool:
+    """FULL canonical record identity — never merely matching ids.
+
+    Requires the stored canonical identity, the source binding and the canonical hash of
+    BOTH stored records to equal the expected EV-01 / EAR-01. Any difference is a
+    DIVERGENT conflict (never a reuse, never an overwrite).
+    """
+    if getattr(stored_ev, "evidence_id", None) != expected_ev.evidence_id:
+        return False
+    if getattr(stored_ear, "admission_id", None) != expected_ear.admission_id:
+        return False
+    if getattr(stored_ear, "evidence_id", None) != expected_ev.evidence_id:
+        return False
+    if getattr(stored_ev, "source_id", None) != verified_source_id:
+        return False
+    if compute_canonical_hash(stored_ev) != compute_canonical_hash(expected_ev):
+        return False
+    if compute_canonical_hash(stored_ear) != compute_canonical_hash(expected_ear):
+        return False
+
+--- byte-level: the WHOLE file differs only in the predicate + its comments ---
+<         (``_RECONCILABLE_ENTRY_FAILURES``, matched by **EXACT TYPE**) propagates UNCHANGED
+<         **before** any read-back — an unrecognized failure, and equally an UNLISTED SUBCLASS
+<         of an allowlisted class, can therefore never be reconciled into a settled,
+<         lineage-claiming success (round-14 + round-15 correction);
+>         (``_RECONCILABLE_ENTRY_FAILURES``, matched by **EXACT OBJECT IDENTITY**) propagates
+>         UNCHANGED **before** any read-back — an unrecognized failure, an UNLISTED SUBCLASS of
+>         an allowlisted class, a dynamically created same-name class, and any equality-compatible
+>         class can therefore never be reconciled into a settled, lineage-claiming success
+>         (round-14 + round-15 + round-17 corrections);
+<     if type(error) not in _RECONCILABLE_ENTRY_FAILURES:
+>     if not any(
+>         type(error) is allowed
+>         for allowed in _RECONCILABLE_ENTRY_FAILURES
+>     ):
+
+--- and the non-comment, non-blank difference count ---
+14
+(Total = 14 non-blank changed lines: 5 removed, 9 added. Of those, the ONLY functional Python
+statement is the reconciliation-entry predicate — 1 line removed (`if type(error) not in ...`)
+→ 4 lines added (`if not any( / type(error) is allowed / for allowed in ... / ):`). The other 4
+removed + 5 added lines are comment/docstring PROSE. The comparator, the classification structure,
+the allowlist tuple and every other statement are byte-identical between 1b533f0 and d67f2a6.)
+
+THIS SUPPLIES THE PRE-CORRECTION SNAPSHOT DIFF REQUESTED BY ROUND-17 NON-BLOCKING FINDING 1.

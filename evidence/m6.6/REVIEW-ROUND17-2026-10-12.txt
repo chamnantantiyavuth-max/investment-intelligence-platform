@@ -1,0 +1,39 @@
+PRINCIPAL QUESTION: answered YES — The current reconciliation-entry boundary enforces exact class-object identity for only `IntegrityConflict` and `TransactionFailure`. The metaclass-equality spoof is rejected before authoritative read-back; the existing exact-base reconciliation paths still reuse matching EV-01/EAR-01 records and fail closed on unauthorized errors. I found no material regression in the reviewed behavior.
+
+VERDICT: B — PASS WITH BOUNDED NON-BLOCKING FINDING
+
+PROBE RESULTS:
+1. VERIFIED — `source_bridge.py:1238–1241` uses `type(error) is allowed`; the executed metaclass probe showed equality-membership `True` but identity-match `False`. Restoring the previous equality predicate made test 62 fail at the read-back spy; restoring identity made it pass.
+2. VERIFIED — End-to-end spoof injection against an exact pre-existing pair propagated the same exception object, attempted zero registry reads, wrote no disposition, left the candidate pending, and preserved both canonical hashes.
+3. VERIFIED — End-to-end probes rejected subclasses of both bases, subclass-of-subclass cases for both, and a runtime-forged same-name class; the registry read-back bombs were never touched.
+4. VERIFIED — Exact `IntegrityConflict` and exact `TransactionFailure` each returned `RECONCILED_IDENTICAL`; the end-to-end probes reused the existing IDs, read back the pair, wrote exactly one disposition, and created no duplicate EV-01/EAR-01 records.
+5. VERIFIED — The `SourceBridgeError` check is first (`source_bridge.py:1232–1237`); test 60 verifies pure governance and `SourceBridgeError`/`IntegrityConflict` multiple-inheritance failures propagate without read-back.
+6. VERIFIED — Unauthorized end-to-end cases left the disposition tuple empty and claimed no evidence/EAR linkage; the stored canonical records and hashes remained unchanged.
+7. VERIFIED — A registry double that raises on either `contains` or `load` recorded zero calls for each unauthorized end-to-end failure.
+8. NOT VERIFIED — Current comparison logic (`source_bridge.py:1125–1136`) checks stored evidence ID, admission ID, `EAR.evidence_id == EV.evidence_id`, source binding, and both canonical hashes; six independent mismatch probes returned `CONFLICT_DIVERGENT`. Historical “untouched” status cannot be established without a prior source snapshot or diff.
+9. VERIFIED — Actual runs: the focused M6.6 file reported 80 passed; `tests/qad/m6` reported 404 passed. The prior Round-16 report records 78/402, so those are not the current counts.
+10. VERIFIED — AST/SOURCE controls passed: no SUCCESS-writing call or raw-success-gate bypass in the bridge; the gate is still OPEN; the seven `qad/m6` Python modules had no provider/network/browser/Gemini/Notebook import hits; runtime schema counts were 68/68/68; the existing PITC-01 authority path passed its control test.
+
+MATERIAL FINDINGS: NONE.
+
+NON-BLOCKING FINDINGS:
+1. Historical comparison-logic “untouched” status is not independently verifiable.
+   (a) This copy provides current code and the earlier review’s hash, but no previous source snapshot; Git use was prohibited.
+   (b) This limits attribution of changes to the authorized predicate correction, not verification of the current comparator’s behavior.
+   (c) Smallest remedy: provide the authorized pre-correction source snapshot or diff.
+   (d) Verify by comparing the comparator function and surrounding changed hunks; current behavior is already covered by the six mismatch probes.
+
+EVIDENCE GAPS: Historical “untouched” status of the comparator cannot be confirmed from this copy; its present checks and mismatch behavior were verified.
+
+COMMANDS RUN:
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r17/basetemp/focused"` — 80 passed in 5.81s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r17/basetemp/m6"` — 404 passed in 18.48s.
+- In the copied tree, test 62 with the identity predicate — 1 passed; with the previous equality predicate restored — 1 failed as expected because `_ReadBackSpy.contains` was reached; after restoring identity — 1 passed. Each pytest invocation used an explicit basetemp outside the copied tree.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_round17_adversarial_review.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r17/basetemp/pytest-extra-probes-r5"` (from the copied tree) — 9 passed in 0.80s.
+- Focused exact-base/governance/identity controls (tests 55, 56, 60, 62, 63) — 5 passed in 0.53s.
+- Focused SUCCESS/gate/provider/PIT controls (tests 28–30, 37) — 4 passed in 0.29s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from qad.models import SCHEMA_REGISTRY,SCHEMA_BUILD_IDENTITY; from qad.m6.ledger import CANONICAL_SCHEMA_COUNT; print('runtime_schema_registry_len',len(SCHEMA_REGISTRY)); print('identity_total_schemas',SCHEMA_BUILD_IDENTITY['total_schemas']); print('ledger_canonical_schema_count',CANONICAL_SCHEMA_COUNT); print('unique_schema_ids',len(set(SCHEMA_REGISTRY)))"` — 68, 68, 68, 68.
+- Final SHA-256 check: `qad/m6/source_bridge.py` = `cbef574c8fb2cc79a73003532d2437cbb3d696769b461fa3cf553aaf2b59ced2`; `tests/qad/m6/test_m66_source_bridge.py` = `1d4bfb71d189866cac05269f97907d1381e473c82e6f269ea968a2af28a39481`.
+- No Git command was run. An early supplemental-harness draft had test-only assertion/hash-wrapper mistakes; after correcting the temporary probe harness, its final run was 9 passed. No in-place edits were made to the bridge or its test file.
+
+POLICY DISAGREEMENT: NONE. Founder-set exact-identity policy was applied as written.
