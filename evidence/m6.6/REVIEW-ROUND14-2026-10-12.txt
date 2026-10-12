@@ -1,0 +1,50 @@
+VERDICT: C
+  C = M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..17 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+1. DEFECT — An unknown RuntimeError with an exact canonical pair returns RECONCILED_IDENTICAL; end-to-end, process_discovered_sources returned IMPORTED and wrote a disposition.
+2. VERIFIED — Different-payload and one-sided-pair cases raise typed conflicts; candidates remain pending and stored evidence is preserved.
+3. VERIFIED — EV-only/EAR-only states do not settle candidates; the incomplete-pair end-to-end probe left dispositions empty.
+4. VERIFIED — EV/EAR payload, source-binding, EV evidence_id, and EAR admission_id mismatches classify as CONFLICT_DIVERGENT.
+5. VERIFIED — contains/load read-back failures propagate; the end-to-end OSError probe left the candidate pending with no disposition.
+6. VERIFIED — Public construction, no-verdict, wrong-source, and cross-run routes are denied; importing private `_MINT_TOKEN` can mint, but is the explicitly excluded hostile same-process access under FD #152.
+7. VERIFIED — Verdicts are bound to the exact ledger, candidate, and source; tests 31/36 reject cross-run reuse.
+8. VERIFIED — Missing PITC, non-Founder role, and empty reason are refused; authorized replay of an already-admitted eligible source works.
+9. VERIFIED — The bridge’s canonical writes call only `admit_source` and `admit_evidence`; no direct canonical `store()` bypass was found.
+10. VERIFIED — Failed disposition write followed by repeated re-entry reuses the same canonical IDs; tests confirm one object each and one disposition.
+11. DEFECT — Behavioral tests execute the production classifier, but deleting its `SourceBridgeError` fail-fast guard still leaves all 64 target tests passing.
+12. VERIFIED — The refactor uses existing admission gates and PITC/eligibility authority; canonical registry and ledger counts are both 68.
+13. VERIFIED — Duplicate handling, contradiction preservation, pending-candidate completeness, and terminalization ordering are exercised and passed.
+14. VERIFIED — AST checks and source scan found no SUCCESS-writing call or gate bypass; `M6_RAW_SUCCESS_API_GATE` remains documented OPEN.
+15. VERIFIED — `qad/m6` contains no provider-execution module; the reviewed bridge has no network/Gemini/browser imports or calls.
+16. VERIFIED — Canonical schema count is 68; the bridge has no RRM-01 write path.
+17. VERIFIED — SEALED injection/backdating, legacy-unattested reuse, and SRCV-only reuse are blocked; archive-attested eligibility remains authoritative.
+
+MATERIAL FINDINGS:
+1. Unknown admission errors are reconciled as successful evidence when read-back finds an exact pair.
+   (a) `source_bridge.py:1208-1238` only fast-fails `SourceBridgeError`; otherwise an exact pair returns `RECONCILED_IDENTICAL` regardless of the original exception. In an end-to-end probe, a pre-seeded exact pair was unchanged (same EV/EAR hashes before and after), `admit_evidence` raised `RuntimeError` without writing, yet `process_discovered_sources` returned `IMPORTED`, linked EV-A/EAR-A, cleared pending, and wrote one disposition.
+   (b) This converts an unexpected canonical-boundary failure into a successful durable candidate outcome, contrary to the required fail-closed behavior.
+   (c) Before reconciling, propagate unrecognized exception classes unchanged; retain read-back reconciliation only for explicitly recognized failure classes.
+   (d) Add direct-classifier and end-to-end cases for unknown errors with exact canonical traces; assert original-error propagation, pending candidate, no disposition, and unchanged canonical hashes. Keep the existing known-error reconciliation cases.
+
+NON-BLOCKING FINDINGS:
+NONE
+
+EVIDENCE GAPS:
+No git metadata is present, so parent/branch history and whether `tests/locked` failures are inherited could not be independently verified. Both reviewed files’ normalized LF hashes match the target hashes in `REVIEW-TARGET-PROVENANCE.txt`.
+
+COMMANDS RUN: exact commands + observed results.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp-target"` — 64 passed in 4.33s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp"` — 388 passed in 15.87s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp-qad"` — 923 passed, 1 failed in 18.47s. The failure was `test_schema_build_identity`: expected spec hash `7bf250…`, actual `3b5138…`.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/locked -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp-locked"` — 18 failed, 143 passed, 1 error in 3.00s. One failure was the git-history test against this no-git copy; the other failures/error were in `test_real_data_api`, including the missing `alpha-momentum-v0/output/pipeline_result.json` and dependent 503 responses.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/ops -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp-ops"` — 94 passed in 185.48s.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp/probes/review_probe_r14b.py"` — no-trace RuntimeError propagated unchanged; exact-trace RuntimeError reconciled; end-to-end no-trace stayed pending with zero dispositions; end-to-end exact-trace path returned IMPORTED.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp/probes/preseed_unknown_trace.py"` — canonical hashes unchanged, but unexpected RuntimeError still produced IMPORTED and one disposition.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp/probes/edge_probe_r14.py"` — modified EV/EAR identity fields classified divergent; read-back OSError propagated with candidate pending; legacy and SRCV-only SEALED sources were unavailable.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp/probes/run_weak_mutant_suite.py"` — after removing the `SourceBridgeError` fail-fast guard in a basetemp copy, the target suite still passed: 64 passed.
+- `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp/probes/run_mutated_suite.py"` — stricter unknown-error guard in a separate basetemp copy: 64 passed.
+- Normalized LF SHA-256 verification — `qad/m6/source_bridge.py` matched `704a23c492e8573738ca737924444c504537c181a6443c749a605ebc3de4f0c7`; `tests/qad/m6/test_m66_source_bridge.py` matched `4968ef8d99c9590a328b1108a596231fb72520ce98265bc52656b4b7da6b2cf2`.
+- Runtime schema scan — registry count 68, ledger constant 68; only canonical write calls found in the bridge were `admit_source` and `admit_evidence`.
+
+POLICY DISAGREEMENT: NONE.

@@ -1,0 +1,31 @@
+=== SCENARIO A: exact canonical pair (from an earlier attempt) + UNKNOWN error ===
+  attempt-1 raised: LedgerValidationError (expected)
+  canonical pair committed: EV=True EAR=True
+  candidate still pending : True
+  RETRY RETURNED (no exception): disposition=IMPORTED evidence_ids=('EV-A',) ear_ids=('EAR-A',) err=None
+  dispositions after retry: [('SC-00924423d0fee0943b0fc715', 'IMPORTED', ('EV-A',), ('EAR-A',))]
+  pending after retry     : ()
+  canonical hashes unchanged: True
+  SCENARIO A VERDICT: FINDING REPRODUCED (settled as reconciled success)
+
+=== SCENARIO B (control): UNKNOWN error with NO canonical trace ===
+  RETRY RAISED (fail closed, correct): RuntimeError: UNEXPLAINED canonical failure
+  pending after retry : ('SC-c35a3bc5eece37fc9977fe73',)
+  dispositions        : {}
+  canonical EV written: {}
+=== PRE-REFACTOR COMPARISON (same probe, parent commit 1a5002e, bridge sha 99eb4099) ===
+=== SCENARIO A: exact canonical pair (from an earlier attempt) + UNKNOWN error ===
+  attempt-1 raised: LedgerValidationError (expected)
+  canonical pair committed: EV=True EAR=True
+  candidate still pending : True
+  RETRY RETURNED (no exception): disposition=IMPORTED evidence_ids=() ear_ids=() err='RuntimeError: UNEXPLAINED canonical failure'
+  dispositions after retry: [('SC-00924423d0fee0943b0fc715', 'IMPORTED', (), ())]
+  pending after retry     : ()
+  canonical hashes unchanged: True
+  SCENARIO A VERDICT: FINDING REPRODUCED (settled as reconciled success)
+
+=== SCENARIO B (control): UNKNOWN error with NO canonical trace ===
+  RETRY RETURNED (no exception) — FAIL CLOSED BROKEN
+  pending after retry : ()
+  dispositions        : {'SC-c35a3bc5eece37fc9977fe73': DispositionRecord(source_candidate_id='SC-c35a3bc5eece37fc9977fe73', disposition=<CandidateDisposition.IMPORTED: 'IMPORTED'>, reason='ORIGINAL_SOURCE_VERIFIED_AND_ADMITTED; canonical evidence admission FAILED (RuntimeError: UNEXPLAINED canonical failure) — no canonical evidence was admitted', src01_id='SRC-A', evidence_ids=(), ear_ids=(), disposed_at='2026-10-12T05:55:07.477153+00:00')}
+  canonical EV written: {}

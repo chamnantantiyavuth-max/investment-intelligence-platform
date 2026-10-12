@@ -1,0 +1,163 @@
+ROLE
+INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER — QAD M6.6 (Noncanonical Source Discovery +
+Admission Bridge), FD #151, ROUND 14 (confirmation review of ONE structural refactor).
+Producer = DeepSeek V4.1 Flash; you = OpenAI family (family-independent). Report only what you
+can verify from the artifacts in THIS copy. Do not soften. Do not accept the producer's summary.
+
+Rounds 9, 10, 11, 12 and 13 each returned C with real material findings; every one was fixed.
+Rounds 11-13 findings were each a different escape route into ONE nested `try` whose broad
+`except Exception` inside `process_discovered_sources` downgraded an integrity/governance
+failure into an ordinary partial evidence-admission outcome. The Founder therefore mandated
+OPTION A+: ONE bounded STRUCTURAL refactor of that boundary, focused tests, then this ONE
+family-independent confirmation review. The STRUCTURE is the target — attack the class, not
+just the previously reported instances.
+
+============================================================
+SETTLED POLICY — DO NOT RE-LITIGATE
+============================================================
+FD #151: M6.6 = source discovery / verification / admission boundaries ONLY. No provider
+  execution (no Gemini, no Notebook transport, no browser/CDP, no network, no credentials).
+FD #149/#150: `RawSourceArchive.admit_source` is the ONLY trusted SEALED byte-capture proof;
+  LEGACY_UNATTESTED_SRC01 / SRCV_ONLY_CAPTURE_PROOF are NOT eligible; `admitted_at` is
+  archive-owned. The accepted canonical gates (`admit_source` / `admit_evidence`) are the
+  existing authority — M6.6 must USE them, not replace them.
+FD #152: the IN-PROCESS trust boundary is FOUNDER-FIXED; a deliberately injected malicious
+  verifier or hostile same-process introspection is OUTSIDE it (`DEFAULT_ORIGINAL_SOURCE_VERIFIER`
+  DENIES). DO report any path where an ORDINARY caller (no hostile in-process access) can obtain
+  canonical state or assert canonical `original_source_verified` WITHOUT a genuine verification
+  for that EXACT run/candidate/source.
+FD #153: M6.3 atomic SUCCESS finalization is authoritative — do not re-litigate.
+FD #154: `M6_RAW_SUCCESS_API_GATE` = OPEN / BLOCKING M6.7+. M6.6 must not write a SUCCESS and
+  must not close the gate.
+REPLAY_EXCEPTION: the existing rule (authoritative PITC-01 in REPLAY_EXCEPTION mode + exact
+  FOUNDER role + non-empty exception_reason). No second PIT authority.
+SETTLED (accepted across rounds 12-13): a failure of the CALLER-SUPPLIED, mutation-free evidence
+  CONSTRUCTION stage (the pre-boundary `evidence_builder` call, which performs ZERO canonical
+  mutation) still yields the TRUTHFUL partial outcome SOURCE IMPORTED / CANONICAL EVIDENCE NOT
+  ADMITTED. That is the settled reading of "builder/transient error". The FAIL-CLOSED rule
+  applies to the CANONICAL ADMISSION / RECONCILIATION boundary, not to that mutation-free stage.
+  Report it as a finding ONLY if you can show a path where a canonical/governance failure is
+  downgraded through it.
+
+============================================================
+WHAT CHANGED IN THIS COMMIT (the target of this review)
+============================================================
+ONE bounded structural refactor of the M6.6 evidence-admission / reconciliation / disposition
+failure-handling boundary in `qad/m6/source_bridge.py`:
+
+1. A CLOSED, EXHAUSTIVE decision structure replaces the nested catch-all:
+     EvidenceAdmissionClassification = ADMITTED_NEW | RECONCILED_IDENTICAL | TRANSIENT_PARTIAL
+                                       | CONFLICT_INCOMPLETE | CONFLICT_DIVERGENT
+   `EvidenceAdmissionDecision.classification` + `.settled` (only ADMITTED_NEW /
+   RECONCILED_IDENTICAL / TRANSIENT_PARTIAL may settle a candidate durably).
+2. THREE separated, individually testable operations replace the one nested block:
+     A `attempt_canonical_evidence_admission(...)` — the EXISTING authoritative gate only; on
+        failure it ROUTES the error (never classifies) to the classifier.
+     B `reconcile_canonical_evidence_pair(...)` — authoritative read-back (registry.contains /
+        registry.load) + EXACT-record identity comparison, returning `CanonicalPairState`.
+     C `dispose_settled_candidate(...)` — writes the ONE durable disposition ONLY for a settled
+        classification; an unsettled one is propagated as a typed conflict.
+   `construct_candidate_evidence(...)` is the documented PRE-BOUNDARY, mutation-free stage.
+3. `classify_evidence_admission_failure(...)` — the classifier. Decided from authoritative
+   read-back, never from the exception type alone:
+     - `SourceBridgeError` (proof / binding / verification / governance) -> re-raised (fail closed)
+     - neither record exists -> TRANSIENT_PARTIAL **only** for `_RETRYABLE_OPERATIONAL_FAILURES`
+       (= (TransactionFailure,)); any other error -> re-raised (fail closed)
+     - exactly one record exists -> CONFLICT_INCOMPLETE -> `SourceEvidenceIncomplete`
+     - both exist and match exactly -> RECONCILED_IDENTICAL
+     - both exist and differ -> CONFLICT_DIVERGENT -> `SourceEvidenceConflict`
+     - a failure while reading the authoritative stored state -> propagates (fail closed)
+4. Reconciliation now requires FULL canonical identity, not matching ids: stored EV.evidence_id,
+   stored EAR.admission_id, stored EAR.evidence_id == EV.evidence_id, stored EV.source_id == the
+   verified source, and BOTH `compute_canonical_hash` values equal.
+5. New tests appended (41 existing M6.6 tests retained UNCHANGED): a 15-case table-driven
+   classifier table, an allowlist-narrowness test, an AST test that no broad handler in the
+   refactored region can classify/downgrade, and behavioural rows 13/14/17/18 plus an
+   operations-A/B/C separation test.
+
+============================================================
+REQUIRED CHALLENGES — VERIFIED / NOT VERIFIED / DEFECT + one line each
+============================================================
+PRIMARY (the refactored failure-classification region — try HARD to defeat it; each of the
+following must be PROVEN, not asserted):
+ 1. UNEXPECTED ERROR CONVERTED TO PARTIAL SUCCESS — drive an unknown/unexpected exception
+    (a) with NO canonical trace and (b) with a canonical trace, through
+    `classify_evidence_admission_failure` AND end-to-end through `process_discovered_sources`.
+    Confirm FAIL CLOSED: the ORIGINAL error propagates, the candidate stays undisposed, no
+    disposition row is written, no canonical state changes. Report ANY unexpected exception that
+    still reaches a partial/IMPORTED outcome through the canonical boundary.
+ 2. IDENTITY CONFLICT SETTLED AS IMPORTED — pre-seed a same-id EV-01/EAR-01 pair with a
+    different payload, and an EV-only / EAR-only pair; confirm a TYPED conflict
+    (`SourceEvidenceConflict` / `SourceEvidenceIncomplete`) is raised, `pending` still contains
+    the candidate, dispositions are empty, and the stored record is NOT rewritten.
+ 3. INCOMPLETE CANONICAL PAIR ACCEPTED — any path where a LONE EV-01 or LONE EAR-01 settles a
+    candidate, or is treated as this candidate's evidence.
+ 4. MISMATCHING FULL PAIR RECONCILED — change ONLY one field of one stored record (payload,
+    evidence_id, admission_id, source binding) while keeping the same ids; confirm DIVERGENT
+    (never reconciled, never reported as IMPORTED evidence).
+ 5. READ-BACK FAILURE HIDDEN — make `registry.contains` or `registry.load` raise while
+    classifying; confirm the read-back error propagates and the candidate is NOT settled.
+ 6. FORGED VERIFICATION ADMITTED — as an ORDINARY caller try: construct a trusted verdict;
+    find an importable mint path; replay a verdict minted for another run/candidate/source;
+    hand-build an EAR asserting `original_source_verified="true"`; admit evidence for a source
+    that was not the independently verified/admitted one; call with no verdict at all.
+ 7. CROSS-RUN PROOF REUSED — a verdict minted for run A / candidate A must never authorize run
+    B / candidate B / another source.
+ 8. UNAUTHORIZED REPLAY_EXCEPTION ACCEPTED — no PITC surface, non-Founder PITC-01, empty
+    exception_reason, and the already-admitted-source variant; authorized replay must still work.
+ 9. CANONICAL / SOURCE ADMISSION BYPASS — any path to SRC-01/EV-01/EAR-01 outside
+    `admit_source`/`admit_evidence`, or any direct `store()` bypass, INCLUDING inside the new
+    operations A/B/C.
+10. WRONG DISPOSITION LINEAGE AFTER RE-ENTRY — inject a disposition write failure AFTER an
+    identical canonical commit, then re-enter: confirm reconciliation reuses the EXISTING ids
+    with no false failure reason and exactly ONE canonical object each; then re-enter again and
+    confirm nothing is duplicated or rewritten.
+11. ENFORCEMENT OF THE INVARIANTS ITSELF — verify the new tests actually EXERCISE production code
+    (not source-string assertions), and that the classification table would FAIL if the
+    classification logic were weakened. Try to write ONE mutation of the production classifier
+    that the suite does NOT catch; report it if you find one.
+12. NO NEW AUTHORITY — confirm the refactor added no new canonical write path, no schema change,
+    no second PIT authority, and did not touch the accepted `admit_source`/`admit_evidence` gates.
+
+ALSO (regression sweep, report actual results):
+13. DUPLICATE / DISPOSITION INTEGRITY; CONTRADICTION LOSS; TERMINALIZATION ORDERING.
+14. ANY M6.6 SUCCESS-WRITING PATH (AST) and ANY `M6_RAW_SUCCESS_API_GATE` BYPASS.
+15. NO NETWORK/GEMINI/BROWSER/PROVIDER CODE; M6.7 not started.
+16. NO SCHEMA #69; canonical count 68; RRM-01 unchanged.
+17. PIT / AS_OF — SEALED injection, backdated metadata, legacy unattested / SRCV-only reuse.
+
+Run the suites and report ACTUAL counts:
+- tests/qad/m6/test_m66_source_bridge.py  (expected 64 passed)
+- tests/qad/m6                          (expected 388 passed)
+- tests/qad                             (expected 923 passed / 1 failed — attribute it honestly)
+- tests/locked                          (expected 17 failed / 144 passed / 1 error — attribute honestly)
+- tests/ops is available but costs ~3 minutes; run it only if you have budget.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside this copy)
+============================================================
+- Python: "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe"
+- From THIS directory:
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m66-review-r14/basetemp"
+- Read/write ONLY inside this copy and that basetemp. Do NOT touch any other
+  repository/worktree. Do NOT run git (this copy has no git metadata — see
+  REVIEW-TARGET-PROVENANCE.txt and hash the files to verify the target yourself).
+- Write probe scripts INSIDE this copy. Report exact commands + real output.
+- Do NOT modify qad/m6/source_bridge.py or the test file: this is a READ-ONLY review. If you
+  need to demonstrate a mutation, copy the file into the basetemp first.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+VERDICT: A | B | C
+  A = M6.6 PASS / READY FOR PRE-M6.7 GATE RESOLUTION
+  B = M6.6 PASS WITH BOUNDED NON-BLOCKING FINDINGS
+  C = M6.6 FAIL / MATERIAL IMPLEMENTATION DEFECT
+
+PROBE RESULTS: 1..17 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT: does NOT change your verdict; the policy is Founder-set.

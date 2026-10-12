@@ -1,0 +1,144 @@
+RED→GREEN DEMONSTRATION — QAD M6.6 Round 14 (FD #151 Option A+)
+Executed: 2026-10-12 12:45 UTC+7 by the Parent agent on commit 38dcd9f
+
+Procedure: (1) sha256 the GREEN qad/m6/source_bridge.py; (2) apply ONE deliberate mutation of
+the mandated FAIL-CLOSED behaviour — replace the 'raise error' of the neither-record/non-
+retryable branch of classify_evidence_admission_failure with a fabricated TRANSIENT_PARTIAL
+return; (3) run the 4 targeted tests that assert that FAIL-CLOSED behaviour; (4) restore the
+file byte-for-byte and re-run the same 4 tests.
+
+GREEN sha256 = 704a23c492e8573738ca737924444c504537c181a6443c749a605ebc3de4f0c7
+RESTORED sha256 = 704a23c492e8573738ca737924444c504537c181a6443c749a605ebc3de4f0c7 (identical)
+
+--- RAW OUTPUT ---
+GREEN sha256 = 704a23c492e8573738ca737924444c504537c181a6443c749a605ebc3de4f0c7
+MUTATED sha256 = a302b087f164192200f9dba8251b4dae595f7b6d8d1346bfeb682fc39a5c63b6
+$ C:\Users\Admin\AppData\Local\Programs\Python\Python314\python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q -p no:cacheprovider --basetemp=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\m66-round14\basetemp-red -k test_42_the_failure_classifier_is_exhaustive_table_driven[row02_neither_exists_unexpected] or test_42_the_failure_classifier_is_exhaustive_table_driven[row10_unknown_integrity_exception] or test_42_the_failure_classifier_is_exhaustive_table_driven[row12_pit_validation_exception] or test_45_no_candidate_settlement_on_an_unresolved_governance_error
+---- RED RUN (expect FAILURES) ----
+erified_source_id=case.get("verified_source_id", EXPECTED_SRC),
+        )
+    
+        if case.get("raises") is not None:
+>           with pytest.raises(case["raises"]) as excinfo:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE RuntimeError
+
+tests\qad\m6\test_m66_source_bridge.py:1640: Failed
+_ test_42_the_failure_classifier_is_exhaustive_table_driven[row10_unknown_integrity_exception] _
+
+case = {'id': 'row10_unknown_integrity_exception', 'error': IntegrityConflict('UNEXPLAINED integrity failure'), 'raises': <class 'qad.persistence.errors.IntegrityConflict'>, 'original_propagates': True}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E3F5D683E0>
+
+    @pytest.mark.parametrize("case", CLASSIFICATION_TABLE)
+    def test_42_the_failure_classifier_is_exhaustive_table_driven(case, monkeypatch):
+        """The refactored classifier, driven directly over the mandated case table."""
+        if case.get("read_back") == "load":
+            registry = _LoadBombRegistry(KeyError("INJECTED authoritative load failure"))
+        elif case.get("read_back") == "contains":
+            registry = _ContainsBombRegistry(KeyError("INJECTED authoritative load failure"))
+        elif case.get("seed"):
+            registry = _seeded_registry(
+                seed_ev=case.get("seed_ev", _IDENTICAL_SEED["seed_ev"]),
+                seed_ear=case.get("seed_ear", _IDENTICAL_SEED["seed_ear"]),
+            )
+        else:
+            registry = _seeded_registry()
+        if "ev_exists" in case:
+            _patch_pair_state(
+                monkeypatch, registry, ev_exists=case["ev_exists"], ear_exists=case["ear_exists"]
+            )
+    
+        expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+        expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+        call = dict(
+            registry=registry,
+            error=case["error"],
+            evidence=expected_ev,
+            admission=expected_ear,
+            verified_source_id=case.get("verified_source_id", EXPECTED_SRC),
+        )
+    
+        if case.get("raises") is not None:
+>           with pytest.raises(case["raises"]) as excinfo:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE IntegrityConflict
+
+tests\qad\m6\test_m66_source_bridge.py:1640: Failed
+_ test_42_the_failure_classifier_is_exhaustive_table_driven[row12_pit_validation_exception] _
+
+case = {'id': 'row12_pit_validation_exception', 'error': PITBlockError('PIT enforcement forbids this read'), 'raises': <class 'qad.persistence.errors.PITBlockError'>, 'original_propagates': True}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E3F5C51C70>
+
+    @pytest.mark.parametrize("case", CLASSIFICATION_TABLE)
+    def test_42_the_failure_classifier_is_exhaustive_table_driven(case, monkeypatch):
+        """The refactored classifier, driven directly over the mandated case table."""
+        if case.get("read_back") == "load":
+            registry = _LoadBombRegistry(KeyError("INJECTED authoritative load failure"))
+        elif case.get("read_back") == "contains":
+            registry = _ContainsBombRegistry(KeyError("INJECTED authoritative load failure"))
+        elif case.get("seed"):
+            registry = _seeded_registry(
+                seed_ev=case.get("seed_ev", _IDENTICAL_SEED["seed_ev"]),
+                seed_ear=case.get("seed_ear", _IDENTICAL_SEED["seed_ear"]),
+            )
+        else:
+            registry = _seeded_registry()
+        if "ev_exists" in case:
+            _patch_pair_state(
+                monkeypatch, registry, ev_exists=case["ev_exists"], ear_exists=case["ear_exists"]
+            )
+    
+        expected_ev = _mk_ev(EXPECTED_EV_ID, EXPECTED_SRC)
+        expected_ear = _mk_ear(EXPECTED_EV_ID, EXPECTED_EAR_ID)
+        call = dict(
+            registry=registry,
+            error=case["error"],
+            evidence=expected_ev,
+            admission=expected_ear,
+            verified_source_id=case.get("verified_source_id", EXPECTED_SRC),
+        )
+    
+        if case.get("raises") is not None:
+>           with pytest.raises(case["raises"]) as excinfo:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE PITBlockError
+
+tests\qad\m6\test_m66_source_bridge.py:1640: Failed
+______ test_45_no_candidate_settlement_on_an_unresolved_governance_error ______
+
+store = <qad.m6.ledger.DeepResearchRunLedgerStore object at 0x000001E3F5D64EC0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001E3F5C92AD0>
+
+    def test_45_no_candidate_settlement_on_an_unresolved_governance_error(store, monkeypatch):
+        """Row 17 — every unresolved governance error leaves the candidate undisposed."""
+        # (a) an UNKNOWN error with NO canonical trace: FAIL CLOSED, nothing settled
+        archive = _archive()
+        registry = _registry(archive)
+        _make_run(store)
+        refs = [_ptr(0, "https://sec.gov/a")]
+        cid = _cid("L-1", 0, "https://sec.gov/a")
+        monkeypatch.setattr(
+            registry, "admit_evidence",
+            lambda e, a: (_ for _ in ()).throw(RuntimeError("UNEXPLAINED canonical failure")),
+            raising=False,
+        )
+>       with pytest.raises(RuntimeError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE RuntimeError
+
+tests\qad\m6\test_m66_source_bridge.py:1798: Failed
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_42_the_failure_classifier_is_exhaustive_table_driven[row02_neither_exists_unexpected]
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_42_the_failure_classifier_is_exhaustive_table_driven[row10_unknown_integrity_exception]
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_42_the_failure_classifier_is_exhaustive_table_driven[row12_pit_validation_exception]
+FAILED tests/qad/m6/test_m66_source_bridge.py::test_45_no_candidate_settlement_on_an_unresolved_governance_error
+4 failed, 60 deselected in 0.48s
+
+
+RED exit code = 1
+RESTORED sha256 = 704a23c492e8573738ca737924444c504537c181a6443c749a605ebc3de4f0c7
+---- GREEN RE-RUN (expect PASS) ----
+....                                                                     [100%]
+4 passed, 60 deselected in 0.39s
+
+GREEN exit code = 0
