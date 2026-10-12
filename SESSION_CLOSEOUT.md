@@ -1,5 +1,89 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-12 (final) — M6.6 IS NOW CLOSED: ROUND 17 RETURNED "B", SO CLOSEOUT WAS AUTHORIZED
+
+You chose Option A again — make the doorway test a true identity test, not an equality test. I did it,
+reviewed it once, and this time the independent reviewer came back **B** with **no material finding**.
+Your rule said A or B with no material blocker → do the facts-only closeout. So M6.6 is closed.
+
+**What I changed (one statement)**
+
+From this: `if type(error) not in _RECONCILABLE_ENTRY_FAILURES:` (equality — a class could pretend to
+be equal to an allowed class).
+
+To this, exactly as you wrote it:
+
+```
+if not any(
+    type(error) is allowed
+    for allowed in _RECONCILABLE_ENTRY_FAILURES
+):
+    raise error
+```
+
+The `SourceBridgeError` guard is still first, the comparison code is untouched, and the allowed list is
+still only the two real classes. Nothing else in the bridge changed — I proved that: of the 14 changed
+lines, the only one that is real code is the test above (1 line out → 4 lines in); the rest is comments.
+The input comparator's text is byte-for-byte the same in the old and new commits.
+
+**The test you asked for**
+
+`test_62` builds a class that *pretends* to equal `IntegrityConflict` and proves all ten things you
+listed: identity is False, the old equality check says True, the new identity check rejects it, the same
+error comes out unchanged, zero read-back, zero dispositions, candidate still pending, both canonical
+hashes unchanged, no evidence link claimed, and the same candidate still completes properly afterwards
+with the real exception type. `test_63` adds a fake class with the same name. Every positive control you
+listed is kept as-is.
+
+**Proof the test actually bites**
+
+Putting the old equality check back → `test_62` FAILS. Restoring the identity check byte-for-byte →
+passes. That is the RED→GREEN you required.
+
+**Round 17 (independent reviewer, different AI family)**
+
+Answered the main question **YES** — the doorway now checks real class identity for exactly the two
+allowed exceptions, real reconciliation still works, and failures outside the list still fail closed.
+All ten probes verified. **Material findings: none.** One small non-blocking note: the reviewer could
+not confirm "the comparator was untouched" historically — it had no old snapshot. I closed that gap
+myself by handing over the exact old-vs-new diff and hashes (comparator identical, `91179368…`).
+
+**Nothing was reopened.** No Round 18, no redesign.
+
+**M6.6 status now**
+
+`M6.6 SOURCE DISCOVERY + ADMISSION BRIDGE GREEN / CANONICAL RECONCILIATION FAIL-CLOSED /
+ORIGINAL-SOURCE BOUNDARY VERIFIED / READY FOR PRE-M6.7 RAW SUCCESS API GATE RESOLUTION`
+
+| Thing | Status |
+|---|---|
+| M6.6 | **CLOSED** (on Round-17 = B; no material finding) |
+| Rounds 11–16 | all C, all recorded truthfully, all fixed |
+| Round 17 | **B** — 1 non-blocking note, now closed |
+| Tests | M6.6 80 · M6 404 · M5.2 292 · M5.3 116 · QAD 939/1 inherited · ops 94 · locked 17/144/1 inherited |
+| Raw SUCCESS gate | **still OPEN** — blocks M6.7 SUCCESS work |
+| M6.7 | **NOT STARTED** |
+| cron | **5/5 PAUSED** |
+| `main` | unchanged `5bf1077` |
+
+**Recommended next action**
+
+**A (recommended) — resolve the pre-M6.7 RAW SUCCESS API gate.** That is the next required step: decide
+the `M6_RAW_SUCCESS_API_GATE` resolution package (the preferred Path H: make the ledger-level invariant
+`SUCCESS attempt ⇔ SUCCESS terminal binding` hold for every caller, not just M6.5's path) and then M6.7
+provider execution can be authorized.
+
+Alternatives:
+- **B — pause here.** M6.6 is closed and the branch is pushed; stop and pick up the gate later.
+- **C — housekeeping first** (backfill the vault FD register / evidence index for rounds 14–17) then the
+  gate.
+
+Honest note: this boundary took eight review rounds, and each one found a real thing — the last two were
+about *how* the type check was written, not about the bridge's behaviour. The end state is tighter than
+where we started, and the remaining risk is now a policy matter only for M6.7, not M6.6.
+
+<!-- 2026-10-12 17:50 UTC+7 -->
+
 ## 2026-10-12 (later still) — ROUND-16 CORRECTION DONE, ROUND 16 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED
 
 You authorized Option A (the one-line exact-type fix) plus a closure-focused review. I did exactly
