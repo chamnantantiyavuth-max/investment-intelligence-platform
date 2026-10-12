@@ -1,5 +1,83 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-12 — OPTION A+ DONE, ROUND 14 CAME BACK "C" AGAIN, M6.6 STILL NOT CLOSED (plain language)
+
+You picked **Option A+**: fix the *structure* of the M6.6 error-handling block once, not the same
+block for the fourth time — and if the follow-up review still said "C", stop and come back to you
+instead of quietly closing the cluster. That is what I did.
+
+**What I did (in simple words)**
+
+1. The bad block is gone. Instead of one big `try` with a catch-everything handler, the code now
+   sorts every failure into a fixed, named list — admitted new / matched an identical pair we
+   already saved / short temporary failure / half-saved pair / conflicting pair — and three small
+   separate pieces of code do three separate jobs (try the save, read back and compare, write the
+   final record). Anything the code does not recognise **fails closed** instead of being turned
+   into a "partly OK" result. Only one error type is allowed to count as "temporary", and that is
+   written down explicitly.
+2. I kept all 41 older tests exactly as they were (the diff adds 645 lines and deletes none) and
+   added 23 new ones — including a table that runs all 18 cases you listed, one per row.
+3. I proved the new tests really test something: I broke the "fail closed" rule on purpose, 4
+   targeted tests went RED, I put the file back byte-for-byte, and they went GREEN again.
+4. I ran the whole test matrix, the gate check, and the isolation scan. Everything I inherited
+   (the 1 known `tests/qad` failure, the 17 `tests/locked` API failures) I proved is inherited by
+   re-running them at the previous commit — same numbers.
+
+**What Round 14 found (it came back C, one real problem)**
+
+The reviewer showed — and I reproduced it myself — that if a **strange, unrecognised error**
+happens at the exact moment when evidence for that source is **already saved and identical**, the
+code now treats it as a **success** and links that evidence to the candidate. Your rule says an
+unrecognised error must never be turned into a success; it must stop and stay open.
+
+The important nuance: **my new structure fixed the actual problem you asked me to fix.** At the
+previous commit, the same "strange error" with nothing saved was **silently swallowed** and the
+candidate was marked done anyway (that is the bug rounds 11–13 kept circling). Now it stops
+properly. What the structure *also* did, unintentionally, was **widen the doorway** into the
+"compare what is already saved" step: before, that doorway only opened for two known error types;
+now it opens for any error. That is a **regression I introduced with the refactor** — narrow, and
+easy to close — but real.
+
+**What I did NOT do (on purpose, per your instruction)**
+
+- I did **not** fix it. You said: on C, stop, do not freeze it as accepted risk, do not start
+  another fix-and-review round silently.
+- I did **not** close M6.6, did **not** call it a pass, and did **not** move anything into M6.7.
+
+**The state right now**
+
+| Thing | Status |
+|---|---|
+| M6.6 | IMPLEMENTED / **NOT CLOSED** |
+| Round 14 | **C** — 1 real problem, 0 minor, 0 missing evidence |
+| That problem | **open** — not frozen, not accepted |
+| M6.7 | **NOT STARTED** |
+| Raw SUCCESS gate | **still OPEN** (blocking M6.7) |
+| cron | **5/5 PAUSED** |
+| `main` | unchanged `5bf1077` |
+| Refactor commit | `38dcd9f` on `impl/m6-gemini-notebook` |
+
+**Recommended next action**
+
+**A (recommended) — let me close the one narrow doorway, then run ONE more independent review.**
+The fix is small and it restores a rule that *already existed before my refactor* (only the two
+known error types may enter the "compare saved evidence" step; everything else stops). Then one
+Round-15 confirmation review. Cost: one small fix + one review; benefit: the cluster finally gets
+a real independent A/B verdict on a boundary that has now failed six reviews.
+
+Alternatives:
+- **B — stop spending and freeze at `38dcd9f`**, recorded honestly as **"review-unconfirmed"**
+  (no A/B) with the open finding carried forward into the pre-M6.7 gate package. Cheapest, but it
+  leaves an open finding on the admission boundary that M6.7 would build on.
+- **C — revert the refactor.** Not recommended: the comparison proves that re-opens the old
+  "strange error silently swallowed" bug.
+- **D — change the reviewer treatment instead** (e.g. a hostile full-module review by a different
+  independent model) to test whether 6× C means the risk is wider than this one boundary.
+
+Full detail and evidence: `evidence/m6.6/FOUNDER-DECISION-PACKAGE-ROUND14-C-2026-10-12.md`.
+
+<!-- 2026-10-12 13:35 UTC+7 -->
+
 ## UPDATE LATER THE SAME DAY — ROUNDS 9–13 (plain language)
 
 After the first write-up below, M6.6 went through **FIVE** independent reviews (Rounds 9–13).
