@@ -830,10 +830,33 @@ class DeepResearchRunLedgerStore:
         error: str | None = None,
         telemetry: Mapping[str, Any] | None = None,
     ) -> None:
-        """Durably append one attempt. Append-only; prior attempts never rewritten."""
+        """Durably append one attempt. Append-only; prior attempts never rewritten.
+
+        FD #155 (Path H): a STANDALONE ``SUCCESS`` attempt is refused through this
+        generic public API. A new SUCCESS write must go through
+        :meth:`finalize_success_attempt_atomic`, which records the SUCCESS attempt AND
+        its terminal result binding in ONE transaction — so an orphan
+        ``attempt.outcome == SUCCESS`` with no terminal result record can no longer be
+        produced by any supported public caller.
+
+        The guard is enforced HERE, by the API itself (callers cannot avoid it), and it
+        fires BEFORE any connection is opened — no attempt row, no audit event and no
+        terminal mutation can occur. Both ``outcome=TerminalStatus.SUCCESS`` and
+        ``outcome="SUCCESS"`` are refused (the outcome is normalized first).
+
+        Every NON-SUCCESS outcome keeps the previously accepted behaviour exactly.
+        """
         mode, outcome_value, metrics = self._validate_attempt_args(
             attempt_number, retry_mode, outcome, telemetry
         )
+        if outcome_value == TerminalStatus.SUCCESS.value:
+            raise LedgerValidationError(
+                "append_attempt refuses a standalone SUCCESS attempt (FD #155): a "
+                "SUCCESS attempt must be recorded together with its exact terminal "
+                "result binding in ONE transaction via "
+                "finalize_success_attempt_atomic(...). Nothing was written "
+                "(no attempt, no audit event, no terminal record)."
+            )
         started = _iso(started_at) if started_at is not None else self._now()
 
         conn = self._connect()
@@ -1060,11 +1083,32 @@ class DeepResearchRunLedgerStore:
     ) -> None:
         """Finalize the run. Rejected if already terminal or if any registered
         candidate lacks a disposition (no silently undisposed discovered source).
+
+        FD #155 (Path H): ``terminal_status=SUCCESS`` is refused by this generic public
+        API. A SUCCESS terminal record must carry its exact result binding and must be
+        written TOGETHER with its SUCCESS attempt by
+        :meth:`finalize_success_attempt_atomic` — there is no legitimate separate public
+        SUCCESS-terminalization path. Both ``TerminalStatus.SUCCESS`` and ``"SUCCESS"``
+        are refused, and a non-empty ``result_sha256`` / ``result_artifact_ref`` does
+        NOT override the rule. The rejection happens before any connection is opened, so
+        no terminal record, attempt or audit event is written.
+
+        Non-SUCCESS terminalization (including the source-candidate disposition
+        prerequisite and the typed failure semantics) is unchanged.
         """
         try:
             status = TerminalStatus(terminal_status)
         except ValueError:
             raise LedgerValidationError(f"unknown terminal_status {terminal_status!r}") from None
+        if status is TerminalStatus.SUCCESS:
+            raise LedgerValidationError(
+                "terminalize refuses terminal_status=SUCCESS (FD #155): a SUCCESS "
+                "terminal record must carry its exact result binding and must be "
+                "written together with its SUCCESS attempt in ONE transaction via "
+                "finalize_success_attempt_atomic(...). A non-empty result_sha256 / "
+                "result_artifact_ref does not bypass this rule. Nothing was written "
+                "(no terminal record, no attempt, no audit event)."
+            )
 
         conn = self._connect()
         try:

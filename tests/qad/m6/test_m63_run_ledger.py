@@ -115,6 +115,25 @@ def _attempt(store, ledger_id, n=1, **kw):
     return store.append_attempt(ledger_id, **base)
 
 
+def _finalize_success(store, ledger_id, n=1, **kw):
+    """Write the final SUCCESS attempt AND its SUCCESS terminal record ATOMICALLY.
+
+    FD #155 (Path H): this is the ONLY supported public path for a NEW SUCCESS write.
+    A test that needs a valid SUCCESS state must use this instead of the now-refused
+    generic ``append_attempt(outcome=SUCCESS)`` / ``terminalize(terminal_status=SUCCESS)``.
+    """
+    base = dict(
+        attempt_number=n,
+        retry_mode=RetryMode.INITIAL_ATTEMPT,
+        provider_surface="gemini_notebook",
+        transport_type="BROWSER_UI_AUTOMATION",
+        result_sha256="b" * 64,
+        telemetry=_tel(),
+    )
+    base.update(kw)
+    return store.finalize_success_attempt_atomic(ledger_id, **base)
+
+
 def _candidate(store, ledger_id, cid="C-1", **kw):
     base = dict(
         source_candidate_id=cid,
@@ -208,8 +227,11 @@ class TestAttempts:
     def test_04_attempt_append_persists_across_reopen(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001", n=1, completed_at="2026-10-07T12:05:00+00:00",
-                 outcome=TerminalStatus.SUCCESS)
+        # FD #155 (Path H): a standalone SUCCESS attempt is no longer writable through the
+        # generic public API; the legitimate SUCCESS retention path is the atomic finalizer,
+        # which still records the attempt row and its outcome durably.
+        _finalize_success(store, "L-001", n=1,
+                          completed_at="2026-10-07T12:05:00+00:00")
         reopened = DeepResearchRunLedgerStore(path, clock=_clock)
         rec = reopened.load_run("L-001")
         assert len(rec.attempts) == 1
@@ -361,12 +383,15 @@ class TestCandidateDispositions:
         _candidate(store, "L-001", cid="C-1")
         _candidate(store, "L-001", cid="C-2")
         _dispose(store, "L-001", cid="C-1")
+        # FD #155: the generic terminalize SUCCESS path is retired, so this
+        # candidate-disposition test uses a non-SUCCESS terminal status — the
+        # prerequisite being exercised is unchanged.
         with pytest.raises(LedgerValidationError):
-            store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+            store.terminalize("L-001", terminal_status=TerminalStatus.RESEARCH_UNAVAILABLE)
         assert store.load_run("L-001").terminal_status is None
         _dispose(store, "L-001", cid="C-2", disp=CandidateDisposition.DEFERRED)
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
-        assert store.load_run("L-001").terminal_status is TerminalStatus.SUCCESS
+        store.terminalize("L-001", terminal_status=TerminalStatus.RESEARCH_UNAVAILABLE)
+        assert store.load_run("L-001").terminal_status is TerminalStatus.RESEARCH_UNAVAILABLE
 
 
 # =====================================================================
@@ -412,8 +437,9 @@ class TestTerminalization:
     def test_20_terminal_success_persists_across_reopen(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS,
-                          result_artifact_ref="artifact://dr/report", result_sha256="b" * 64)
+        _finalize_success(store, "L-001", n=1,
+                          result_artifact_ref="artifact://dr/report",
+                          result_sha256="b" * 64)
         reopened = DeepResearchRunLedgerStore(path, clock=_clock)
         rec = reopened.load_run("L-001")
         assert rec.terminal_status is TerminalStatus.SUCCESS
@@ -434,17 +460,17 @@ class TestTerminalization:
     def test_22_append_attempt_after_terminalization_rejected(self, tmp_path):
         store, _ = _store(tmp_path)
         _create(store)
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        _finalize_success(store, "L-001", n=1)
         with pytest.raises(LedgerTerminalError):
-            _attempt(store, "L-001", n=1)
-        assert store.load_run("L-001").attempts == ()
+            _attempt(store, "L-001", n=2)
+        assert [a.attempt_number for a in store.load_run("L-001").attempts] == [1]
 
     def test_23_append_disposition_after_terminalization_rejected(self, tmp_path):
         store, _ = _store(tmp_path)
         _create(store)
         _candidate(store, "L-001")
         _dispose(store, "L-001")
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        _finalize_success(store, "L-001", n=1)
         with pytest.raises(LedgerTerminalError):
             _candidate(store, "L-001", cid="C-2")
         with pytest.raises(LedgerTerminalError):
@@ -453,7 +479,7 @@ class TestTerminalization:
     def test_24_second_terminalization_rejected(self, tmp_path):
         store, _ = _store(tmp_path)
         _create(store)
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        _finalize_success(store, "L-001", n=1)
         with pytest.raises(LedgerTerminalError):
             store.terminalize("L-001", terminal_status=TerminalStatus.FAILED)
 
@@ -467,8 +493,8 @@ class TestResultHashAndRrmLinkage:
     def test_25_result_sha256_persists_independently_of_artifact(self, tmp_path):
         store, path = _store(tmp_path)
         _create(store)
-        store.terminalize(
-            "L-001", terminal_status=TerminalStatus.SUCCESS,
+        _finalize_success(
+            store, "L-001", n=1,
             result_artifact_ref="artifact://dr/report-xyz",
             result_sha256="c" * 64,
         )
@@ -612,10 +638,10 @@ class TestReviewHardening:
         """Immutability is enforced at the SQLite boundary, not only in Python."""
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001")
         _candidate(store, "L-001")
         _dispose(store, "L-001")
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        # FD #155: the atomic finalizer writes the attempt row it needs itself.
+        _finalize_success(store, "L-001", n=1)
 
         conn = sqlite3.connect(str(path))
         try:
@@ -659,9 +685,8 @@ class TestReviewHardening:
         """INSERT OR REPLACE and raw post-terminal INSERTs cannot alter history."""
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001")
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS,
-                          result_sha256="d" * 64)
+        # FD #155: the atomic finalizer writes attempt 1 + the SUCCESS terminal together.
+        _finalize_success(store, "L-001", n=1, result_sha256="d" * 64)
 
         conn = sqlite3.connect(str(path))
         try:
@@ -790,7 +815,6 @@ class TestReviewHardening:
         """An unbacked terminal event is rejected; post-terminal raw inserts blocked."""
         store, path = _store(tmp_path)
         _create(store)
-        _attempt(store, "L-001")
         conn = sqlite3.connect(str(path))
         try:
             conn.execute("PRAGMA foreign_keys = ON")
@@ -804,7 +828,7 @@ class TestReviewHardening:
             conn.close()
         assert store.load_run("L-001").terminal_status is None
         # legitimate terminalization still works, then raw attempt insert is blocked
-        store.terminalize("L-001", terminal_status=TerminalStatus.SUCCESS)
+        _finalize_success(store, "L-001", n=1)
         conn = sqlite3.connect(str(path))
         try:
             conn.execute("PRAGMA foreign_keys = ON")

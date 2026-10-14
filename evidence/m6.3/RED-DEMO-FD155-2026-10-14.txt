@@ -1,0 +1,92 @@
+==============================================================
+FD #155 (Path H) - EXECUTED MUTATION DEMONSTRATION (RED -> GREEN)
+Date: 2026-10-14  -  Branch: impl/m6-gemini-notebook
+Target: qad/m6/ledger.py
+Frozen copy: C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-mut/ledger.orig.py
+Frozen raw sha256          : 4325c3a3cb5e5e262c415917f9fe893af7957f9ba12b919252f3cb7adf565b26
+Frozen LF-normalised sha256: 61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c
+==============================================================
+GREEN BASELINE (before any mutation)
+command: pytest tests/qad/m6/test_m63_public_success_hardening.py -q
+..........................                                               [100%]
+26 passed in 1.87s
+exit code: 0
+
+
+--- MUTATION A: append_attempt SUCCESS guard removed ---
+mutate.py applied: A
+live LF-normalised sha256: 8df870fec6a85cf8d771942c146ae0b7c8200c5aa949311a588fc6dcf352d8dd
+command: pytest tests/qad/m6/test_m63_public_success_hardening.py -q
+E       assert 'append_attempt refuses a standalone SUCCESS attempt (FD #155)' in '"""M6.3 — Deep Research Run Ledger (``DeepResearchRunLedgerStore``).\n\nFD #149 / M6.0 §7 durable, **non-canonical** ...arch_runs entry {ref!r} does not resolve to a ledger record"\n            )\n        out.append(ref)\n    return out\n'
+
+tests\qad\m6\test_m63_public_success_hardening.py:621: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_01_append_attempt_refuses_enum_success
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_02_append_attempt_refuses_string_success
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_03_rejected_append_leaves_zero_new_attempts
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_04_rejected_append_leaves_zero_new_audit_events
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_09_prior_attempts_unchanged_after_rejected_append
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_10_candidate_and_disposition_state_unchanged_after_rejection
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestSourceConfinement::test_24_no_standalone_success_writer_remains_in_production_code
+7 failed, 19 passed in 2.01s
+exit code: 1
+
+--- restore ---
+restored raw sha256          : 4325c3a3cb5e5e262c415917f9fe893af7957f9ba12b919252f3cb7adf565b26
+restored LF-normalised sha256: 61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c
+byte-identical to frozen copy: True
+command: pytest tests/qad/m6/test_m63_public_success_hardening.py -q
+..........................                                               [100%]
+26 passed in 1.91s
+exit code: 0
+
+
+--- MUTATION B: terminalize SUCCESS guard removed ---
+mutate.py applied: B
+live LF-normalised sha256: 447dd4c72fe9c546ae0eecca52e8f6980e10f6cdb58346b98b13c8bdfa65602f
+command: pytest tests/qad/m6/test_m63_public_success_hardening.py -q
+>       assert "terminalize refuses terminal_status=SUCCESS (FD #155)" in ledger_src
+E       assert 'terminalize refuses terminal_status=SUCCESS (FD #155)' in '"""M6.3 — Deep Research Run Ledger (``DeepResearchRunLedgerStore``).\n\nFD #149 / M6.0 §7 durable, **non-canonical** ...arch_runs entry {ref!r} does not resolve to a ledger record"\n            )\n        out.append(ref)\n    return out\n'
+
+tests\qad\m6\test_m63_public_success_hardening.py:622: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_10_candidate_and_disposition_state_unchanged_after_rejection
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestTerminalizeRefusesSuccess::test_05_terminalize_refuses_enum_success
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestTerminalizeRefusesSuccess::test_06_terminalize_refuses_string_success
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestTerminalizeRefusesSuccess::test_07_non_empty_result_binding_does_not_bypass_rejection
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestTerminalizeRefusesSuccess::test_08_rejected_terminalize_leaves_no_terminal_record
+FAILED tests/qad/m6/test_m63_public_success_hardening.py::TestSourceConfinement::test_24_no_standalone_success_writer_remains_in_production_code
+6 failed, 20 passed in 1.99s
+exit code: 1
+
+--- restore ---
+restored raw sha256          : 4325c3a3cb5e5e262c415917f9fe893af7957f9ba12b919252f3cb7adf565b26
+restored LF-normalised sha256: 61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c
+byte-identical to frozen copy: True
+command: pytest tests/qad/m6/test_m63_public_success_hardening.py -q
+..........................                                               [100%]
+26 passed in 1.90s
+exit code: 0
+
+
+--- FINAL RESTORED STATE ---
+raw sha256          : 4325c3a3cb5e5e262c415917f9fe893af7957f9ba12b919252f3cb7adf565b26
+LF-normalised sha256: 61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c
+byte-identical      : True
+command: pytest tests/qad/m6 -q
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+........................................................................ [ 49%]
+........................................................................ [ 66%]
+........................................................................ [ 83%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+433 passed in 18.83s
+exit code: 0
+
+--- git status (governed worktree) ---
+ M qad/m6/ledger.py
+ M tests/qad/m6/test_m63_run_ledger.py
+ M tests/qad/m6/test_m65_retry_telemetry_idempotency.py
+?? evidence/m6.3/
+?? tests/qad/m6/test_m63_public_success_hardening.py

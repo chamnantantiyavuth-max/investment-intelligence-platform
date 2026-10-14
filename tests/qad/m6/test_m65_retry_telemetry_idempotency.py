@@ -164,6 +164,41 @@ def _append(store, ledger_id="L-1", n=1, mode=RetryMode.INITIAL_ATTEMPT,
 _PS = ProviderSet(("gemini_notebook",))
 
 
+def _legacy_orphan_success_attempt(store, ledger_id="L-1", *, n, mode=RetryMode.INITIAL_ATTEMPT,
+                                   provider="gemini_notebook"):
+    """TEST-ONLY constructor for the PRE-FD-#155 legacy half-state.
+
+    FD #155 (Path H) closed EVERY supported PUBLIC SUCCESS writer, so an ORPHAN SUCCESS
+    attempt (a durable SUCCESS attempt with no terminal result binding) can no longer be
+    produced through ``append_attempt``/``terminalize``. The negative tests below still
+    need that exact legacy state in order to prove it is refused FAIL-CLOSED, so it is
+    built here through the ledger's PRIVATE single-transaction insert helper.
+
+    This deliberately BYPASSES the supported public API. It is exactly the
+    "private-helper abuse / direct unsupported mutation" case that FD #155 explicitly
+    scopes OUT of its guarantee — it exists only so the fail-closed refusal of legacy
+    inconsistent state remains testable.
+    """
+    mode_value, outcome_value, metrics = store._validate_attempt_args(
+        n, mode, TerminalStatus.SUCCESS, _tel()
+    )
+    conn = store._connect()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        store._require_run(conn, ledger_id)
+        store._require_mutable(conn, ledger_id)
+        store._insert_attempt_in_transaction(
+            conn, ledger_id, n, mode_value, provider, "BROWSER_UI_AUTOMATION",
+            _FIXED_NOW.isoformat(), None, outcome_value, None, metrics,
+        )
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.close()
+
+
 def _plan(n: int, previous: str | None = None):
     """A validated attempt plan for the Mode-B recording tests."""
     return plan_attempt(
@@ -1484,11 +1519,10 @@ class TestRound4Closure:
     def test_r4_05_recovery_refuses_a_gapped_success_history(self, store):
         ok, _ = _success_run(store)
         # a gapped durable history: attempt 3 is the only SUCCESS attempt
-        store.append_attempt(
-            "L-1", attempt_number=3, retry_mode=RetryMode.SAME_PROVIDER_RETRY,
-            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: a standalone SUCCESS attempt is refused by the public API, so this
+        # legacy half-state is constructed through the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=3, mode=RetryMode.SAME_PROVIDER_RETRY
         )
         with pytest.raises(RetryPolicyError):
             accept_success_result(
@@ -1501,12 +1535,9 @@ class TestRound4Closure:
     def test_r4_06_an_orphan_success_history_is_refused_by_every_plan(self, store):
         ok, _ = _success_run(store)  # run provider surface: gemini_notebook
         # a legacy/foreign ORPHAN: a durable SUCCESS attempt with no terminal record
-        store.append_attempt(
-            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
-            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
-        )
+        # FD #155: a standalone SUCCESS attempt is refused by the public API, so this
+        # legacy half-state is constructed through the explicitly non-public test route.
+        _legacy_orphan_success_attempt(store, "L-1", n=1)
         from qad.m6.orchestration import AttemptPlan
 
         # FD #153 §7: recovery is REFUSED for an orphan SUCCESS state — regardless of
@@ -1564,7 +1595,11 @@ class TestRound5Closure:
     def test_r5_02_exhaustion_refuses_a_history_containing_success(self, store):
         self._run(store)
         _append(store, n=1)
-        _append(store, n=2, mode=RetryMode.SAME_PROVIDER_RETRY, outcome="SUCCESS")
+        # FD #155: SUCCESS can no longer be written through the public API — the legacy
+        # half-state is constructed through the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=2, mode=RetryMode.SAME_PROVIDER_RETRY
+        )
         _append(store, n=3, mode=RetryMode.SAME_PROVIDER_RETRY)
         with pytest.raises(RetryPolicyError):
             terminalize_research_unavailable(store, ledger_id="L-1", failure_detail="x")
@@ -1600,11 +1635,9 @@ class TestRound5Closure:
             completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.TRANSPORT_FAILURE,
             error="boom", telemetry=_tel(),
         )
-        store.append_attempt(
-            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
-            provider_surface="surface_c", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: legacy half-state via the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=2, mode=RetryMode.PROVIDER_FALLBACK, provider="surface_c"
         )
         deterministic_plan = plan_attempt(
             provider_set=ps, attempt_number=2, previous_provider_surface="surface_a"
@@ -1637,11 +1670,9 @@ class TestRound5Closure:
             completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.TRANSPORT_FAILURE,
             error="boom", telemetry=_tel(),
         )
-        store.append_attempt(
-            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
-            provider_surface="surface_b", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: legacy half-state via the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=2, mode=RetryMode.PROVIDER_FALLBACK, provider="surface_b"
         )
         deterministic = plan_attempt(
             provider_set=ps, attempt_number=2, previous_provider_surface="surface_a"
@@ -1727,11 +1758,9 @@ class TestRound6Closure:
             completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.PIT_BLOCK,
             error="pit", telemetry=_tel(),
         )
-        store.append_attempt(
-            "L-1", attempt_number=2, retry_mode=RetryMode.PROVIDER_FALLBACK,
-            provider_surface="surface_b", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: legacy half-state via the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=2, mode=RetryMode.PROVIDER_FALLBACK, provider="surface_b"
         )
         with pytest.raises(RetryPolicyError):
             accept_success_result(
@@ -1749,11 +1778,9 @@ class TestRound6Closure:
         req = _build_success(_request(provider_surface="surface_a"))
         # the RUN is configured for surface_z; the orphan INITIAL attempt is surface_a
         self._run_with(store, provider_surface="surface_z", ps_provider="surface_a")
-        store.append_attempt(
-            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
-            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: legacy half-state via the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=1, mode=RetryMode.INITIAL_ATTEMPT, provider="surface_a"
         )
         # FD #153 §7: the orphan refusal fires FIRST — the provider-surface provenance
         # question never even arises, because an orphan is never recoverable
@@ -1773,11 +1800,9 @@ class TestRound6Closure:
         ps = _PSet(("surface_a",))
         req = _build_success(_request(provider_surface="surface_a"))
         self._run_with(store, provider_surface="surface_a", ps_provider="surface_a")
-        store.append_attempt(
-            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
-            provider_surface="surface_a", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
+        # FD #155: legacy half-state via the explicitly non-public test route.
+        _legacy_orphan_success_attempt(
+            store, "L-1", n=1, mode=RetryMode.INITIAL_ATTEMPT, provider="surface_a"
         )
         # a perfectly matching run/provider/plan pair does NOT make an orphan recoverable
         with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
@@ -1971,8 +1996,11 @@ class TestAtomicSuccessFinalization:
             store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
             transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
         )
+        # FD #155: the generic terminalize SUCCESS path is retired (it is refused for a
+        # different, stronger reason), so terminal immutability is exercised with a
+        # non-SUCCESS terminal status — the property under test is unchanged.
         with pytest.raises(LedgerTerminalError):
-            store.terminalize("L-1", terminal_status=TerminalStatus.SUCCESS)
+            store.terminalize("L-1", terminal_status=TerminalStatus.FAILED)
         with pytest.raises(LedgerTerminalError):
             store.register_candidate(
                 "L-1", source_candidate_id="SC-9",
@@ -2051,12 +2079,9 @@ class TestResultProvenance:
 
     def test_b4_a_legacy_orphan_cannot_be_recovery_finalized(self, store):
         ok, _ = _success_run(store)
-        store.append_attempt(
-            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
-            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
-        )
+        # FD #155: a standalone SUCCESS attempt is refused by the public API, so this
+        # legacy half-state is constructed through the explicitly non-public test route.
+        _legacy_orphan_success_attempt(store, "L-1", n=1)
         other = _build_success(_request())
         with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
             accept_success_result(
@@ -2067,12 +2092,9 @@ class TestResultProvenance:
 
     def test_b5_an_orphan_never_acquires_a_caller_supplied_hash(self, store):
         ok, _ = _success_run(store)
-        store.append_attempt(
-            "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
-            provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
-            completed_at=_FIXED_NOW.isoformat(), outcome=TerminalStatus.SUCCESS,
-            error=None, telemetry=_tel(),
-        )
+        # FD #155: a standalone SUCCESS attempt is refused by the public API, so this
+        # legacy half-state is constructed through the explicitly non-public test route.
+        _legacy_orphan_success_attempt(store, "L-1", n=1)
         for candidate in (_build_success(_request()), ok):
             with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
                 accept_success_result(
@@ -2130,3 +2152,99 @@ class TestResultProvenance:
             )
         rec = store.load_run("L-1")
         assert rec.attempts == () and rec.is_terminal is False
+
+
+# =====================================================================
+# FD #155 — PUBLIC SUCCESS API HARDENING (Path H): M6.5 integration
+# =====================================================================
+
+class TestPublicSuccessApiHardeningFd155:
+    """M6.5 keeps working, and never touches a standalone generic SUCCESS writer."""
+
+    def test_fd155_21_accept_success_result_still_works_via_the_atomic_finalizer(self, store):
+        """Explicit FD #155 confirmation of the accepted M6.5 SUCCESS path."""
+        ok, _ = _success_run(store)
+        rec = accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        assert rec.terminal_status is TerminalStatus.SUCCESS
+        assert rec.result_sha256 == ok.result_sha256              # exact binding
+        assert rec.result_artifact_ref == ok.result_artifact_ref
+        assert [a.attempt_number for a in rec.attempts] == [1]
+        assert [a.outcome for a in rec.attempts] == [TerminalStatus.SUCCESS.value]
+
+    def test_fd155_22_m65_success_path_never_calls_a_generic_success_writer(
+        self, store, monkeypatch
+    ):
+        """Behavioural probe: instrument BOTH generic mutators for the whole flow."""
+        calls: list[tuple[str, object]] = []
+        real_append = store.append_attempt
+        real_terminalize = store.terminalize
+
+        def spy_append(*args, **kw):
+            calls.append(("append_attempt", kw.get("outcome")))
+            return real_append(*args, **kw)
+
+        def spy_terminalize(*args, **kw):
+            calls.append(("terminalize", kw.get("terminal_status")))
+            return real_terminalize(*args, **kw)
+
+        monkeypatch.setattr(store, "append_attempt", spy_append, raising=False)
+        monkeypatch.setattr(store, "terminalize", spy_terminalize, raising=False)
+
+        ok, _ = _success_run(store)
+        accept_success_result(
+            store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+            transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+        )
+        # NOT ONE call reached either generic mutator on the accepted SUCCESS path
+        assert calls == []
+        assert store.load_run("L-1").terminal_status is TerminalStatus.SUCCESS
+
+        # CONTROL — the spy really does observe generic (non-SUCCESS) traffic, and the
+        # new SUCCESS guard really does refuse a direct attempt
+        store.create_run(**_create_kwargs("IDEM-FD155-CTRL", ledger_id="L-2",
+                                          research_run_id="RR-2"))
+        with pytest.raises(LedgerValidationError):
+            store.append_attempt(
+                "L-2", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.SUCCESS, error=None, telemetry=_tel(),
+            )
+        assert calls == [("append_attempt", TerminalStatus.SUCCESS)]
+        calls.clear()
+        _append(store, "L-2", n=1)
+        assert calls == [("append_attempt", "TRANSPORT_FAILURE")]
+        with pytest.raises(LedgerValidationError):
+            store.terminalize("L-2", terminal_status=TerminalStatus.SUCCESS)
+        assert calls[-1] == ("terminalize", TerminalStatus.SUCCESS)
+
+    def test_fd155_23_legacy_orphan_success_cannot_be_adopted(self, store):
+        """A legacy orphan is (a) no longer publicly creatable and (b) still refused."""
+        ok, _ = _success_run(store)
+        # (a) the supported public API can no longer create the orphan at all
+        with pytest.raises(LedgerValidationError):
+            store.append_attempt(
+                "L-1", attempt_number=1, retry_mode=RetryMode.INITIAL_ATTEMPT,
+                provider_surface="gemini_notebook", transport_type="BROWSER_UI_AUTOMATION",
+                outcome=TerminalStatus.SUCCESS, error=None, telemetry=_tel(),
+            )
+        assert store.load_run("L-1").attempts == ()
+        # (b) the pre-FD-#155 legacy state remains constructible ONLY via the
+        #     explicitly non-public test route (the old supported writer is gone)
+        _legacy_orphan_success_attempt(store, "L-1", n=1)
+        assert [a.outcome for a in store.load_run("L-1").attempts] == [
+            TerminalStatus.SUCCESS.value
+        ]
+        # (c) and it is still refused FAIL-CLOSED — never adopted, never given a hash
+        with pytest.raises(RetryPolicyError, match="ORPHAN SUCCESS"):
+            accept_success_result(
+                store, ledger_id="L-1", result=ok, plan=_plan(1), provider_set=_PS,
+                transport_type="BROWSER_UI_AUTOMATION", telemetry=_tel(),
+            )
+        rec = store.load_run("L-1")
+        assert rec.is_terminal is False
+        assert rec.result_sha256 is None
+        assert rec.result_artifact_ref is None
+
