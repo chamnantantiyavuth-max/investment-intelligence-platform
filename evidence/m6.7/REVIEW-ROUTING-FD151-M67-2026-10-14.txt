@@ -1,0 +1,28 @@
+FD #151 M6.7 INDEPENDENT REVIEW - ROUTING PROVENANCE
+date: 2026-10-14 08:03 UTC
+reviewed commit: e8fd9663aa2506a8c3143541bf5ce285088484bc
+previous accepted HEAD: c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+
+guard command:
+  python routing_provenance.py --producer deepseek/deepseek-v4.1-flash --reviewer openai/gpt-6-luna --reasoning high --provider openrouter --escalation-reason "M6.7 independent implementation review (FD #151)" --json
+
+observed output:
+{"producer_model": "deepseek/deepseek-v4.1-flash", "producer_family": "deepseek", "reviewer_model": "openai/gpt-6-luna", "reviewer_family": "openai", "reasoning_effort": "high", "provider": "openrouter", "fallback_used": false, "escalation_reason": "M6.7 independent implementation review (FD #151)", "family_independent": true}
+guard exit=0
+
+require-independent validation:
+{
+  "producer_model": "deepseek/deepseek-v4.1-flash",
+  "producer_family": "deepseek",
+  "reviewer_model": "openai/gpt-6-luna",
+  "reviewer_family": "openai",
+  "reasoning_effort": null,
+  "provider": null,
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT"
+}
+guard exit=0
+
+delegation override during review: provider=openrouter model=openai/gpt-6-luna (restored to the workforce default immediately after dispatch)

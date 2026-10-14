@@ -1,5 +1,79 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-14 — M6.7 provider adapter + deterministic mock transport (MOCK ONLY, local commit, review in flight)
+
+The deterministic offline execution path you asked for is built and GREEN — a full run now goes
+request → mock transport → trusted mock proof check → source dispositions → orchestration →
+atomic SUCCESS finalization → durable read-back, with real failure and retry paths.
+
+**What was built (non-canonical, provider-neutral)**
+
+- `qad/m6/provider.py` — the adapter contract (`ProviderOutcome`, `ProviderOutcomeKind`,
+  `TransportEvidence`, truthful NOT_EXPOSED telemetry). No credential parameter, no network import.
+- `qad/m6/mock_transport.py` — deterministic offline transport. It only produces outcomes:
+  it never picks an attempt number, never decides retry policy, never mints a proof and never
+  touches the ledger. For each of the two proof kinds it mints execution evidence over the FULL
+  observed fact set, through a module-private write guard.
+- `qad/m6/mock_proof.py` — the trusted mock resolver (explicit test-only injection only).
+  It resolves the evidence reference to the recorded observations, refuses unknown / edited /
+  non-harness records, checks the exact six-field binding, and then **re-checks the real property**
+  (closed-corpus inventory / request isolation). It never echoes what the provider claims.
+  With no resolver injected, M6.4's deny-all default stands and SUCCESS fails closed.
+- `qad/m6/orchestration.py` — additive `run_provider_attempt(...)`: sequences the accepted M6.5
+  services and uses `accept_success_result` → FD #153 atomic finalizer. No second retry engine,
+  no second source registry, no second atomic SUCCESS writer. `ledger.py`, `source_bridge.py` and
+  `research_contract.py` are untouched.
+
+**Proof it actually works (not just compiles)**
+
+- 30 new tests = all 20 scenarios you listed + 6 extra + 4 negative tests.
+- Executed end-to-end: durable terminal SUCCESS, `result_sha256 = fcc3a0b2…`,
+  artifact ref `mock://synthesis/1`, and the durable event order proves the source candidates are
+  settled BEFORE the run is terminalized. Reopening on a fresh store instance reproduces the exact
+  same accepted state — history is not rewritten.
+- Failure path: three scripted transport failures → retry, retry, then the existing
+  `RESEARCH_UNAVAILABLE` outcome, with NO success written.
+- Source references settle truthfully as `DEFERRED / NO_TRUSTED_ORIGINAL_SOURCE_VERIFIER_CONFIGURED` —
+  nothing about original-source verification or EV-01/EAR-01 evidence is fabricated.
+- RED baseline captured before the modules existed; two mutation demonstrations were run and each
+  was restored byte-identically (mutation A → `test_02` RED; mutation B → exactly the
+  property-re-check tests RED, the rest correctly staying green).
+
+**Regression (this run, on the local commit)**
+
+m6.3 52 · hardening 26 · m6.5 118 · m6.6 80 · m6.7 30 · `tests/qad/m6` 463 · M5.3 116 · M5.2 292 ·
+`tests/qad` 998 passed / 1 known inherited failure (`test_schema_build_identity`) · ops 94 ·
+locked 17F/144P/1E (baseline-identical) · gate-check exit 0 · isolation-scan exit 0 ·
+68 canonical schemas, no migration · no SQLite residue.
+
+**State**
+
+Local commit `e8fd966` on `impl/m6-gemini-notebook`. Nothing pushed (your R6 rule). `main` unchanged
+`5bf10777`. 5/5 cron PAUSED. M6.8 NOT started.
+
+**Independent review came back C — stopped, as your rule requires**
+
+One family-independent review (deepseek → GPT-6 Luna high) ran against a frozen copy of that exact
+commit. It returned **C — MATERIAL DEFECT / FAIL**. Nine of the ten probes came back VERIFIED
+(the whole happy path, the durable result identity, the retry/exhaustion/idempotent behaviour, the
+PIT boundary, the FD #155 guards, the FD #153 atomic-writer exclusivity, the diff provenance,
+68 schemas, no egress/credentials). Probe 10 failed, with three material findings. I re-ran every one
+of them myself, and then re-checked them on the PREVIOUS accepted commit to see whether M6.7 was
+actually the cause:
+
+- **Finding 3 — real, and MY bug.** A caller-supplied `create_run_kwargs` that disagrees with the
+  request creates a run and writes candidates + dispositions BEFORE the binding is checked, so a
+  refusal leaves a half-built, non-terminal run behind. The good path is unaffected.
+- **Findings 1 and 2 — real, but NOT introduced by M6.7.** Both reproduce identically on the previous
+  accepted commit: the FD #152 resolver seam already trusts a caller-supplied resolver, and the
+  FD #153 atomic writer already accepts a caller-supplied hash/ref. Fixing those would change accepted
+  contracts, which M6.7 is not allowed to do on its own.
+
+Because the rule is *C → STOP, hand back a decision package, no automatic correction loop*, I did not
+fix anything, did not run a second review, did not close M6.7 out, and pushed nothing.
+Decision package: `evidence/m6.7/FOUNDER-DECISION-PACKAGE-M67-REVIEW-C-2026-10-14.md`
+(recommended: bounded fix of finding 3 + one closure-focused re-review).
+
 ## 2026-10-14 — FD #155 (PATH H): the last raw SUCCESS door through the M6.3 ledger is now shut
 
 You chose **Path H**: stop letting the ledger's two general-purpose methods write SUCCESS on their own,
