@@ -71,12 +71,13 @@ def test_decisions_register_contiguous_and_parsed():
     # Authority-date synchronization (CP4-7, 13 Sep 2026 → CP5, 14 Sep
     # 2026 → M5.3 FINAL CLOSEOUT, 21 Sep 2026 → O3 FINAL RULING, 23 Sep
     # 2026 → IIP MODEL ROUTING REFRESH, 29 Sep 2026): the latest registered
-    # Founder Decision is FD #152 dated 9 Oct 2026 (Acceptance-Lock updated
-    # under FD #152 authority — QAD M6.4 TRUSTED PROOF-VERIFICATION SEAM /
-    # FOUNDER OPTION B — register-tail sync; locked-test-governance
-    # procedure: every FD append co-touches this expected date).
+    # Founder Decision is FD #155 dated 14 Oct 2026 (Acceptance-Lock updated
+    # under FD #155 authority — QAD M6.3 PUBLIC SUCCESS API HARDENING /
+    # PRE-M6.7 RAW SUCCESS GATE RESOLUTION (PATH H) — register-tail sync;
+    # locked-test-governance procedure: every FD append co-touches this
+    # expected date). Prior register-tail: FD #152/#153/#154, 9 Oct 2026.
     latest = decisions[-1]
-    assert latest["date"] == "9 Oct 2026", f"latest decision date {latest['date']!r}"
+    assert latest["date"] == "14 Oct 2026", f"latest decision date {latest['date']!r}"
 
 
 def test_git_log_and_corrections():
@@ -111,4 +112,4 @@ def test_model_registry_matches_adapter_version():
     assert set(body["versions"].keys()) >= {"v1", "v2", "v3", "v4", "v5"}
     for v, h in body["versions"].items():
         assert len(h) == 64, f"registry {v} must store a sha-256 code hash"
-# footer: 2026-10-09 11:20 UTC+7
+# footer: 2026-10-14 12:45 UTC+7

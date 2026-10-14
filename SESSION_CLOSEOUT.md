@@ -1,5 +1,81 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-14 — FD #155 (PATH H): the last raw SUCCESS door through the M6.3 ledger is now shut
+
+You chose **Path H**: stop letting the ledger's two general-purpose methods write SUCCESS on their own,
+and force every new SUCCESS through the one atomic finalizer. Done — as a bounded amendment, with the
+old half-written states now impossible through any supported public call.
+
+**Baseline (checked before touching anything)**
+
+- `origin/main` = `5bf1077…` · `origin/impl/m6-gemini-notebook` = `b8eb25c…` (matches local)
+- M6.6 is CLOSED; its reviewed implementation is `d67f2a6…`; round 17 came back **B**, material findings NONE
+- Register was 154 items → this decision is **FD #155**, fd_count **171**
+- All five cron jobs PAUSED; no reset, no rebase, no force push, nothing merged to `main`
+
+**What was actually wrong (the two half-states)**
+
+1. `append_attempt(outcome=SUCCESS)` could save a SUCCESS attempt with **no** terminal result record.
+2. `terminalize(terminal_status=SUCCESS)` could save a SUCCESS terminal record with **no** attempt.
+
+Both were reachable by any ordinary caller of the supported public API. FD #153 had already built the
+correct thing — one atomic finalizer that writes both records and their audit events in a single
+SQLite transaction — but nothing stopped a caller from going around it.
+
+**The fix (two guards, both inside the API itself)**
+
+- `append_attempt` now **refuses** SUCCESS — enum `TerminalStatus.SUCCESS` and the plain string
+  `"SUCCESS"` — with a typed `LedgerValidationError` telling the caller to use
+  `finalize_success_attempt_atomic(...)`. It refuses **before** opening the database, so no attempt row,
+  no audit event and no terminal record can appear.
+- `terminalize` now **refuses** `terminal_status=SUCCESS` the same way. A filled-in `result_sha256` or
+  `result_artifact_ref` does **not** get you around it.
+- Nothing else changed: non-SUCCESS behaviour, telemetry, ordering, retry modes, the candidate
+  disposition rule, terminal immutability and the atomic finalizer itself are all untouched. No schema
+  change — there is still no result-hash column on the attempt table, and the canonical schema count
+  stays **68**.
+
+**The honest limit of the claim**
+
+This closes every *supported public* SUCCESS path. It does **not** claim to stop deliberate raw SQLite
+edits, use of private helpers, or hostile code already running inside the process. Old malformed records
+stay invalid and untrusted — nothing was silently repaired.
+
+**Old tests, sorted one by one (not deleted, not blanket-replaced)**
+
+Class A — tests about keeping a valid SUCCESS, its result hash, or post-terminal immutability → their
+setup now uses the legitimate atomic finalizer with real telemetry and a real attempt number.
+Class B — tests about ordinary non-SUCCESS terminalization or the candidate-disposition rule → they use
+a non-SUCCESS terminal status, which keeps their original meaning exactly.
+Class C — tests that demonstrated the old standalone SUCCESS behaviour → replaced with negative tests
+that prove it is now refused.
+Pre-FD-#155 orphan-SUCCESS fixtures still exist, because we still need to prove those legacy states are
+refused — but they are now built through an explicitly labelled non-public test-only route.
+
+**New proof (25 required checks)** — enum and string refusal on both methods, zero new attempts, zero
+new audit events, no terminal record, prior attempts and dispositions untouched, the atomic path still
+works and still writes exactly one attempt + one terminal with the exact hash and artifact reference
+that survive a process reopen, atomic rollback on injected failure, second atomic finalization refused,
+post-terminal mutations still refused, FAILED / TRANSPORT_FAILURE / RESEARCH_UNAVAILABLE still accepted,
+M6.5 `accept_success_result()` still working through the atomic finalizer, M6.5 never touching the
+standalone SUCCESS APIs, a legacy orphan still unadoptable, a call-site audit proving no accepted
+standalone SUCCESS writer remains, and schema count still 68. Plus a real mutation demonstration: remove
+one guard → the new test goes RED; restore the file byte-identically → GREEN.
+
+**Gate** — `M6_RAW_SUCCESS_API_GATE` was **not** closed just because the tests pass. It closes only on the
+full evidence set in FD #155 §12 (public refusals in place, atomic finalizer retained, M6.3/M6.5/M6.6
+regressions green, an independent A/B verdict with no material finding, `main` unchanged, 5/5 cron still
+paused, M6.7 not started).
+
+**Recommended next action**
+
+After the independent review returns A or B with no material finding: record
+`M6_RAW_SUCCESS_API_GATE = CLOSED / VERIFIED` (facts-only closeout) and then plan M6.7 — planning only,
+no provider execution.
+Alternatives: (b) if the reviewer returns C, stop and return a minimal decision package instead of
+iterating; (c) if the reviewer raises a non-blocking point, close the gate and just note it in the
+closeout.
+
 ## 2026-10-12 (final) — M6.6 IS NOW CLOSED: ROUND 17 RETURNED "B", SO CLOSEOUT WAS AUTHORIZED
 
 You chose Option A again — make the doorway test a true identity test, not an equality test. I did it,
