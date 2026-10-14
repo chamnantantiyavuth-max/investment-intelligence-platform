@@ -1,5 +1,38 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-14 — M6.7 pushed to origin, then M6.8 Stage A: the NotebookLM transport is still broken
+
+**Part 1 — the four M6.7 commits are now on the remote.** Fast-forward only: `c288aeb..57d8972`
+on `origin/impl/m6-gemini-notebook`. I checked the refs, the clean worktree and the ancestry
+*before* pushing, then re-fetched: remote = `57d8972…` = local, ahead/behind **0 0**, all four
+commits on the remote. `main` untouched (`5bf10777…`).
+
+**Part 2 — Stage A read-only check: it still fails.**
+
+- Your session is fine: `doctor` and `auth check` both pass (30 cookies, SID present, profile
+  authenticated).
+- The actual read fails: `notebooklm list` exits **2** with
+  `CSRF token not found in HTML. Final URL: https://notebook.google.com/`.
+- **The installed client version is still 0.7.3** — the same version as when this was first
+  recorded. So the old finding stands, verified again rather than assumed.
+- The cause is classified by the client's **own** code: it separates "auth expired" from "page
+  structure changed", and we got the **page-structure (UI drift)** case, not the auth case. So
+  re-logging-in is probably not the fix — the Web-page scraping itself is out of date.
+
+**The good news: a maintained fix exists.** The package has moved on — installed **0.7.3**, latest
+**0.8.5**. Release notes show **0.8.2 added a whole alternative "Android" backend** that talks to
+NotebookLM's native mobile API instead of scraping the web page, and 0.8.3–0.8.5 followed. That is
+the shortest path forward. I did **not** upgrade anything — changing a dependency needs your
+approval.
+
+**What I need from you next (one thing):** authorize a bounded dependency update
+`notebooklm-py 0.7.3 → 0.8.5` in the Hermes venv so I can re-run the *same* read-only probe once.
+No M6.8 code gets written until a read-only call actually succeeds.
+
+**Nothing state-changing happened** — I only ran `profile list`, `doctor`, `auth check`,
+`auth check --test` and one `list`. No login, no refresh, no notebook created/renamed/deleted, no
+upload, no Deep Research, no cron change, no merge to `main`. Registered as **FD #156**.
+
 ## 2026-10-14 — M6.7 Round-2: fixed the defect the review found (Option A)
 
 Round 1 came back **C** with one defect that was mine: a caller could pass run-creation
