@@ -76,6 +76,48 @@ Alternatives: (b) if the reviewer returns C, stop and return a minimal decision 
 iterating; (c) if the reviewer raises a non-blocking point, close the gate and just note it in the
 closeout.
 
+### Later the same day — the gate is now CLOSED
+
+The independent reviewer came back **B** with **no material finding**, so your rule says do the
+facts-only closeout. Done.
+
+- Reviewer: GPT-6 Luna high, a different model family from the DeepSeek worker (family-independence
+  guard exit 0). It worked on a disposable copy with no git, read-only, and it changed nothing — I
+  re-hashed all six reviewed files after the run and they match exactly.
+- Its answer to the main question: **YES** — no ordinary caller of the supported public APIs can make
+  a standalone SUCCESS any more. It proved this by running probes, not by reading code: every refused
+  call opened **zero** database connections, and the M6.5 accept path used the atomic finalizer once
+  and touched neither generic method.
+- Its one non-blocking point was an **evidence gap**, not a bug: without a pre-change snapshot it could
+  not do a literal assertion-by-assertion comparison of the reconciled tests. I closed that myself by
+  handing over the exact delta — the old and new file hashes plus the full pre→post diff of the two
+  reconciled test files (213 added / 71 removed lines, each one accounted for).
+
+**Recorded:**
+
+`M6_RAW_SUCCESS_API_GATE = CLOSED / VERIFIED`
+
+Scope, exactly as you set it: *"All supported NEW public Ledger SUCCESS writes require FD #153 atomic
+finalization. Legacy malformed records and direct unsupported database mutations are outside this
+gate's claimed guarantee."*
+
+**Commit chain (all on `impl/m6-gemini-notebook`, nothing pushed, `main` untouched):**
+
+1. `e10e3ad` — FD #155 governance
+2. `fa449cd` — Path H implementation + tests
+3. `f077164` — independent review evidence
+4. (this closeout commit)
+
+**Still true:** `main` = `5bf1077…` unchanged · 5/5 cron PAUSED (0 active) · M6.7 NOT STARTED · no
+Gemini/Notebook/browser/provider work · no production-readiness claim.
+
+**Recommended next action**
+
+Plan M6.7 (Provider Adapter + Mock Transport) — **planning only**, no provider execution.
+Alternatives: (b) take a fresh Founder decision on whether to push `impl/m6-gemini-notebook` to
+origin (it is currently local-only); (c) if you want the ledger invariant stated even more strongly,
+that would be a NEW decision beyond FD #155 — it is not required to close this gate.
+
 ## 2026-10-12 (final) — M6.6 IS NOW CLOSED: ROUND 17 RETURNED "B", SO CLOSEOUT WAS AUTHORIZED
 
 You chose Option A again — make the doorway test a true identity test, not an equality test. I did it,
