@@ -48,3 +48,15 @@ origin/main : 5bf107774b29e5a5fe4dcec5846800b9b48361ba
 origin/impl : c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
 local impl  : 891523cade091955661e7c50b766765dc9c4f09c
 ROUND2_REGRESSION_DONE exit=0
+
+================ POST-SWEEP CLARIFICATION ================
+This sweep ran against the WORKING TREE carrying the Round-2 correction on top of
+891523c (hence the HEAD line above). The correction was subsequently committed as
+30b0ece03a845786d2bf018cceb2c8bd39db3feb and the committed blobs are LF-normalised
+IDENTICAL to the swept working tree (verified: orchestration.py LF sha256
+62c60157495758adc6b826b0c13bcf32db676304ea7400cf2d2c01923bcedd33), so these counts
+describe the committed artifact.
+
+GATE NOTE: gate-check.sh exit 1 at sweep time was Gate 6 ONLY (the Round-1 commits
+carried no verification tag). The correction commit carries [TEST_VERIFIED] and
+gate-check.sh now reports 'All automated gates passed' (exit 0) at HEAD 30b0ece.

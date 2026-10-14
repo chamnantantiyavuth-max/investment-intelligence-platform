@@ -1,0 +1,27 @@
+FD #151 M6.7 ROUND-2 INDEPENDENT REVIEW - ROUTING PROVENANCE
+date: 2026-10-14 09:00 UTC
+reviewed commit: 30b0ece03a845786d2bf018cceb2c8bd39db3feb
+round-1 commit chain: e8fd966 (impl) -> 891523c (review/decision) -> 30b0ece (correction)
+previous accepted HEAD: c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+
+guard command:
+  python routing_provenance.py --producer deepseek/deepseek-v4.1-flash --reviewer openai/gpt-6-luna --reasoning high --provider openrouter --escalation-reason "M6.7 Round-2 confirmation review (FD #151 finding 3 correction)" --json
+
+observed output:
+{"producer_model": "deepseek/deepseek-v4.1-flash", "producer_family": "deepseek", "reviewer_model": "openai/gpt-6-luna", "reviewer_family": "openai", "reasoning_effort": "high", "provider": "openrouter", "fallback_used": false, "escalation_reason": "M6.7 Round-2 confirmation review (FD #151 finding 3 correction)", "family_independent": true}
+guard exit=0
+
+require-independent validation:
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT"
+}
+guard exit=0
+
+frozen reviewed artifact (read-only detached worktree):
+  path: C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/m67-review-r2
+  HEAD: 30b0ece03a845786d2bf018cceb2c8bd39db3feb (verified, worktree pristine)
+  LF-normalised identity vs the working tree: orchestration.py MATCH, test file MATCH
+  frozen M6.7 suite: 61 passed
+
+delegation override during review: provider=openrouter model=openai/gpt-6-luna (restored to the workforce default immediately after dispatch)

@@ -1,5 +1,66 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-14 — M6.7 Round-2: fixed the defect the review found (Option A)
+
+Round 1 came back **C** with one defect that was mine: a caller could pass run-creation
+arguments that disagreed with the request, and the code created the run and wrote source
+candidates before checking. That left a half-built run behind. You chose **Option A**.
+
+**The fix (commit `30b0ece`, local only)**
+
+Now nothing is written until the caller's arguments have been checked against the request:
+
+- every request-bound field is compared (ledger id, run ids, RRM, case id/version, evidence
+  gap, request id, PIT context/mode, as-of, snapshot hash);
+- the idempotency key is re-derived and compared, and so is the transport type;
+- a retry plan on a brand-new run is refused;
+- the executing provider must match the plan — checked **before** anything is written
+  (previously it was checked after);
+- after creation the stored record is checked again against the request.
+- **Mode A fallback still works**: the run's own provider is validated separately from the
+  provider the request names, so a real fallback is not falsely rejected.
+
+**Proof**
+
+- 31 new tests (all 15 cases you listed) + 61 tests total in the M6.7 suite.
+- Removing the new check turns **26 of the new tests RED**; restoring the file
+  byte-identically turns them GREEN again.
+- The exact repro from Round 1 now refuses **before any write** — the ledger has no run at
+  all — while a correctly-formed call still produces the same SUCCESS with the same
+  `result_sha256 fcc3a0b2…`.
+- End-to-end result, event order, reopen read-back and the retry→exhaustion path are
+  unchanged.
+- Regression: M6.7 61 · m6 494 · tests/qad 1029 passed / 1 known inherited failure · ops 94 ·
+  locked 17F/144P/1E (same as baseline) · isolation-scan exit 0 · 68 canonical schemas.
+
+**Two things you should know**
+
+- I found and disclosed a process slip of mine: the two Round-1 M6.7 commits had no
+  verification tag, so `gate-check` Gate 6 failed at that HEAD. The correction commit carries
+  `[TEST_VERIFIED]` and all gates pass again. I did not rewrite the Round-1 messages.
+- Round-1 findings 1 and 2 were **not** touched (they are pre-existing, not mine). Their
+  evidence is preserved, the trust assumptions are written down, and your instruction was
+  recorded as a named M6.8 acceptance requirement:
+  `M6.8-TRUST-BOUNDARY-ACCEPTANCE` in
+  `evidence/m6.7/TRUST-BOUNDARY-AND-M6.8-ACCEPTANCE-REQUIREMENT-2026-10-14.md`.
+
+**State — M6.7 IS CLOSED**
+
+Round 2 (family-independent, GPT-6 Luna high) ran against a frozen copy of `30b0ece` and returned
+**B — PASS WITH NON-BLOCKING FINDING, material findings NONE**: every probe verified except the one
+non-blocking note, which was a wording slip in my own probe instruction (I asked for a diff range
+that also contains the Round-1 implementation commit) — not a defect in the code, and the reviewer
+said so explicitly. The fix is confirmed: every bad identity field is refused **before anything is
+written**, an existing run is never left altered, and the good path is byte-for-byte the same
+result as before.
+
+M6.7 is now **closed** with the status line *M6.7 MOCK PROVIDER EXECUTION CLOSED / REQUEST-RUN
+PREFLIGHT VERIFIED / PROOF-VERIFIED SYNTHETIC SUCCESS / ATOMIC LEDGER FINALIZATION VERIFIED*.
+
+Still true: nothing pushed (the four M6.7 commits are local), `main` unchanged, 5/5 cron PAUSED,
+68 canonical schemas, and **M6.8 not started** — M6.8 needs a new decision from you, and
+`M6.8-TRUST-BOUNDARY-ACCEPTANCE` is a mandatory acceptance condition if you authorize it.
+
 ## 2026-10-14 — M6.7 provider adapter + deterministic mock transport (MOCK ONLY, local commit, review in flight)
 
 The deterministic offline execution path you asked for is built and GREEN — a full run now goes
