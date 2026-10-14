@@ -31,6 +31,13 @@ from typing import Any, Mapping
 
 from qad.models.family_b import EvidenceGapOperational_status
 
+from qad.m6.provider import (
+    DeepResearchProvider,
+    ProviderOutcome,
+    ProviderOutcomeKind,
+)
+from qad.m6.source_bridge import BridgeOutcome, process_discovered_sources
+
 from qad.m6.ledger import (
     ATTEMPT_NUMBER_MAX,
     ATTEMPT_NUMBER_MIN,
@@ -47,6 +54,7 @@ from qad.m6.research_contract import (
     S10_CAPABILITY,
     DeepResearchRequest,
     DeepResearchResult,
+    ResearchResultStatus,
 )
 
 __all__ = [
@@ -1173,3 +1181,288 @@ def terminalize_research_unavailable(
         failure_detail=failure_detail,
     )
     return store.load_run(ledger_id)
+
+
+# ---------------------------------------------------------------------------
+# M6.7 - PROVIDER EXECUTION ENTRY POINT (FD #151, ADDITIVE)
+# ---------------------------------------------------------------------------
+#
+# Additive only: no existing accepted function in this module changes. The entry point
+# SEQUENCES the already-accepted M6.5 machinery around a provider adapter outcome; it
+# introduces no second retry engine, no second source registry and no second atomic
+# SUCCESS writer.
+
+
+class ProviderExecutionOutcome(str, Enum):
+    """Bounded end state of ONE provider attempt."""
+
+    SUCCESS_FINALIZED = "SUCCESS_FINALIZED"
+    RETRY_SCHEDULED = "RETRY_SCHEDULED"
+    RESEARCH_UNAVAILABLE = "RESEARCH_UNAVAILABLE"
+    FAIL_CLOSED = "FAIL_CLOSED"
+
+
+#: M6.4 result status -> the ledger's bounded attempt-outcome vocabulary.
+_RESULT_STATUS_TO_ATTEMPT_OUTCOME = {
+    ResearchResultStatus.SUCCESS.value: TerminalStatus.SUCCESS.value,
+    ResearchResultStatus.TRANSPORT_FAILURE.value: TerminalStatus.TRANSPORT_FAILURE.value,
+    ResearchResultStatus.RESEARCH_UNAVAILABLE.value:
+        TerminalStatus.RESEARCH_UNAVAILABLE.value,
+    ResearchResultStatus.PIT_BLOCK.value: TerminalStatus.PIT_BLOCK.value,
+    ResearchResultStatus.INCOMPLETE.value: TerminalStatus.INCOMPLETE.value,
+    ResearchResultStatus.PROVIDER_CANNOT_ENFORCE_SEALED_INPUT.value:
+        TerminalStatus.FAILED.value,
+    ResearchResultStatus.REQUEST_ISOLATION_UNVERIFIED.value: TerminalStatus.FAILED.value,
+}
+
+#: Bounded adapter outcome -> the ledger's bounded attempt-outcome vocabulary.
+_PROVIDER_OUTCOME_TO_ATTEMPT_OUTCOME = {
+    ProviderOutcomeKind.TRANSPORT_FAILURE.value: TerminalStatus.TRANSPORT_FAILURE.value,
+    ProviderOutcomeKind.PIT_BLOCK.value: TerminalStatus.PIT_BLOCK.value,
+    ProviderOutcomeKind.PROVIDER_CAPABILITY_INSUFFICIENT.value:
+        TerminalStatus.FAILED.value,
+    ProviderOutcomeKind.PROOF_NOT_VERIFIED.value: TerminalStatus.FAILED.value,
+}
+
+
+@dataclass(frozen=True)
+class ProviderExecutionResult:
+    """What ONE provider attempt produced, with the durable read-back."""
+
+    outcome: ProviderExecutionOutcome
+    ledger_id: str
+    attempt_number: int
+    record: RunRecord
+    provider_outcome: ProviderOutcome
+    retry_decision: RetryDecision | None = None
+    bridge_outcome: BridgeOutcome | None = None
+    proof_verified: bool = False
+    result_sha256: str | None = None
+    result_artifact_ref: str | None = None
+
+    @property
+    def is_success(self) -> bool:
+        return self.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+
+
+def _require_request_run_binding(record: RunRecord, request: Any) -> None:
+    """Bind a logical request to the TARGET durable ledger run (no cross-run reuse)."""
+    for name, got, bound in (
+        ("research_run_id", request.research_run_id, record.research_run_id),
+        ("request_id", request.request_id, record.request_id),
+        ("ledger_id", request.ledger_id, record.ledger_id),
+        ("case_id", request.case_id, record.case_id),
+        ("case_version", request.case_version, record.case_version),
+        ("evidence_gap_id", request.evidence_gap_id, record.evidence_gap_id),
+        ("input_snapshot_hash", request.input_snapshot_hash, record.input_snapshot_hash),
+        ("pit_context_id", request.pit_context_id, record.pit_context_id),
+        ("pit_mode", request.pit_mode, record.pit_mode),
+        ("as_of", request.as_of, record.as_of),
+    ):
+        if got != bound:
+            raise RetryPolicyError(
+                "the Deep Research request's " + name + " " + repr(got)
+                + " is not bound to the target ledger run " + repr(record.ledger_id)
+                + " (" + name + "=" + repr(bound) + ")"
+            )
+
+
+def run_provider_attempt(
+    store: DeepResearchRunLedgerStore,
+    *,
+    request: Any,
+    provider: Any,
+    provider_set: ProviderSet,
+    transport_type: str,
+    plan: AttemptPlan,
+    telemetry: Mapping[str, Any] | None = None,
+    proof_resolver: Any = None,
+    original_source_verifier: Any = None,
+    archive: Any = None,
+    evidence_registry: Any = None,
+    evidence_builder: Any = None,
+    pit_context_store: Any = None,
+    discovery_timestamp: str | None = None,
+    create_run_kwargs: Mapping[str, Any] | None = None,
+    started_at: str | None = None,
+    completed_at: str | None = None,
+) -> ProviderExecutionResult:
+    """Execute ONE provider attempt through the accepted M6.5 machinery.
+
+    Sequence (no rule is re-implemented here):
+
+      1. resolve/create the ONE logical run (idempotent by the M6.5 key);
+      2. validate the request<->run binding and the deterministic attempt plan;
+      3. ``provider.execute(...)`` -> a bounded :class:`ProviderOutcome`;
+      4. map the outcome onto the EXISTING bounded attempt vocabulary;
+      5. on SUCCESS: proof-gate FIRST, then settle EVERY discovered source candidate
+         through the accepted M6.6 bridge, then terminalize through
+         :func:`accept_success_result` (FD #153 atomic finalization);
+      6. on failure: ``record_failed_attempt`` + ``decide_retry``; exhaustion terminates
+         through :func:`terminalize_research_unavailable`.
+
+    A fail-closed outcome is NEVER retried merely because budget remains, and a
+    non-retryable outcome is left non-terminal for the caller to dispose explicitly (no
+    new terminalization policy is invented here).
+    """
+    if not isinstance(plan, AttemptPlan):
+        raise OrchestrationError("run_provider_attempt requires a validated AttemptPlan")
+    if not isinstance(provider_set, ProviderSet):
+        raise OrchestrationError("run_provider_attempt requires a ProviderSet")
+    declared_transport = getattr(provider, "transport_type", None)
+    if declared_transport is not None and declared_transport != transport_type:
+        raise OrchestrationError(
+            "the provider's transport_type " + repr(declared_transport)
+            + " does not match the recorded transport_type " + repr(transport_type)
+        )
+
+    ledger_id = request.ledger_id
+    if store.contains(ledger_id):
+        record = store.load_run(ledger_id)
+        _require_request_run_binding(record, request)
+    else:
+        if create_run_kwargs is None:
+            raise OrchestrationError(
+                "ledger run " + repr(ledger_id)
+                + " does not exist and no create_run_kwargs were supplied")
+        resolution = resolve_or_create_logical_run(
+            store, idempotency_key=idempotency_key_for_request(request),
+            create_run_kwargs=dict(create_run_kwargs),
+        )
+        record = store.load_run(resolution.ledger_id)
+
+    if record.is_terminal:
+        raise RetryPolicyError(
+            "ledger run " + repr(ledger_id) + " is already terminal; a provider attempt "
+            "must not rewrite a terminal run")
+
+    _, expected = _next_attempt_guard(store, ledger_id)
+    _validate_plan_against_record(record, plan, provider_set, expected)
+
+    provider_surface = getattr(provider, "surface", None)
+    if provider_surface != plan.provider_surface:
+        raise RetryPolicyError(
+            "the executing provider surface " + repr(provider_surface)
+            + " must equal the validated attempt plan provider "
+            + repr(plan.provider_surface))
+
+    outcome = provider.execute(
+        request, proof_resolver=proof_resolver, attempt_number=plan.attempt_number)
+    if not isinstance(outcome, ProviderOutcome):
+        raise OrchestrationError("the provider must return a ProviderOutcome")
+
+    effective_telemetry = outcome.telemetry if telemetry is None else telemetry
+
+    # ---- SUCCESS path -----------------------------------------------------
+    if outcome.is_success:
+        result = outcome.result
+        # FD #152: the trusted proof gate runs BEFORE any durable or downstream
+        # consumption (accept_success_result re-asserts it — defence in depth).
+        result.assert_proof_verified()
+        bridge = None
+        if result.source_pointers:
+            resolved_discovery = (
+                discovery_timestamp or completed_at or started_at)
+            if not resolved_discovery:
+                raise OrchestrationError(
+                    "settling discovered source candidates requires a non-blank "
+                    "discovery_timestamp (or completed_at/started_at); no hidden "
+                    "wall-clock value is invented")
+            bridge = process_discovered_sources(
+                store,
+                ledger_id=ledger_id,
+                references=list(result.source_pointers),
+                discovery_timestamp=resolved_discovery,
+                archive=archive,
+                verifier=original_source_verifier,
+                registry=evidence_registry,
+                evidence_builder=evidence_builder,
+                pit_context_store=pit_context_store,
+            )
+        accepted = accept_success_result(
+            store,
+            ledger_id=ledger_id,
+            result=result,
+            plan=plan,
+            provider_set=provider_set,
+            transport_type=transport_type,
+            telemetry=effective_telemetry,
+            started_at=started_at,
+            completed_at=completed_at,
+        )
+        return ProviderExecutionResult(
+            outcome=ProviderExecutionOutcome.SUCCESS_FINALIZED,
+            ledger_id=ledger_id,
+            attempt_number=plan.attempt_number,
+            record=accepted,
+            provider_outcome=outcome,
+            bridge_outcome=bridge,
+            proof_verified=True,
+            result_sha256=accepted.result_sha256,
+            result_artifact_ref=accepted.result_artifact_ref,
+        )
+
+    # ---- failure path -----------------------------------------------------
+    if outcome.kind is ProviderOutcomeKind.RESULT:
+        attempt_outcome = _RESULT_STATUS_TO_ATTEMPT_OUTCOME.get(
+            outcome.result.status.value, TerminalStatus.FAILED.value)
+    else:
+        attempt_outcome = _PROVIDER_OUTCOME_TO_ATTEMPT_OUTCOME.get(
+            outcome.kind.value, TerminalStatus.FAILED.value)
+
+    failure_text = _bounded_failure_text(outcome)
+    record_failed_attempt(
+        store,
+        ledger_id=ledger_id,
+        plan=plan,
+        provider_set=provider_set,
+        transport_type=transport_type,
+        outcome=attempt_outcome,
+        error=failure_text,
+        telemetry=effective_telemetry,
+        started_at=started_at,
+        completed_at=completed_at,
+    )
+    decision = decide_retry(
+        provider_set=provider_set,
+        attempt_number=plan.attempt_number,
+        outcome=attempt_outcome,
+        previous_provider_surface=plan.provider_surface,
+        evidence_gap_id=request.evidence_gap_id,
+    )
+    if decision.should_retry:
+        return ProviderExecutionResult(
+            outcome=ProviderExecutionOutcome.RETRY_SCHEDULED,
+            ledger_id=ledger_id,
+            attempt_number=plan.attempt_number,
+            record=store.load_run(ledger_id),
+            provider_outcome=outcome,
+            retry_decision=decision,
+        )
+    if decision.terminal_status is TerminalStatus.RESEARCH_UNAVAILABLE:
+        terminal = terminalize_research_unavailable(
+            store, ledger_id=ledger_id, failure_detail=failure_text)
+        return ProviderExecutionResult(
+            outcome=ProviderExecutionOutcome.RESEARCH_UNAVAILABLE,
+            ledger_id=ledger_id,
+            attempt_number=plan.attempt_number,
+            record=terminal,
+            provider_outcome=outcome,
+            retry_decision=decision,
+        )
+    return ProviderExecutionResult(
+        outcome=ProviderExecutionOutcome.FAIL_CLOSED,
+        ledger_id=ledger_id,
+        attempt_number=plan.attempt_number,
+        record=store.load_run(ledger_id),
+        provider_outcome=outcome,
+        retry_decision=decision,
+    )
+
+
+def _bounded_failure_text(outcome: ProviderOutcome) -> str:
+    """One bounded, credential-free failure line (code + bounded diagnostic)."""
+    code = outcome.failure_code or "PROVIDER_FAILURE"
+    diagnostic = (outcome.diagnostic or "").strip()
+    text = code if not diagnostic else code + ": " + diagnostic
+    return text[:400]

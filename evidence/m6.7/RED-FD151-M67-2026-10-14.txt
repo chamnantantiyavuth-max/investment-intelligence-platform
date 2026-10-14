@@ -1,0 +1,22 @@
+FD #151 M6.7 (Provider Adapter + Mock Transport) - RED BASELINE (executed)
+Date: 2026-10-14
+Branch: impl/m6-gemini-notebook
+Purpose: targeted RED tests for the NEW M6.7 execution path, written BEFORE the
+implementation modules exist. Expected RED: the suite cannot import them.
+
+command: python -m pytest tests/qad/m6/test_m67_provider_adapter.py -q
+_________ ERROR collecting tests/qad/m6/test_m67_provider_adapter.py __________
+ImportError while importing test module 'C:\Users\Admin\Desktop\Antigravity\investment-intelligence-platform-impl\tests\qad\m6\test_m67_provider_adapter.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\qad\m6\test_m67_provider_adapter.py:28: in <module>
+    from qad.m6.mock_proof import MockProofResolver
+E   ModuleNotFoundError: No module named 'qad.m6.mock_proof'
+=========================== short test summary info ===========================
+ERROR tests/qad/m6/test_m67_provider_adapter.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.26s
+exit code: 2

@@ -93,6 +93,8 @@ from qad.m6.orchestration import (
     OrchestrationError,
     OrchestrationMode,
     ProviderSet,
+    ProviderExecutionOutcome,
+    ProviderExecutionResult,
     ResolutionOutcome,
     RetryDecision,
     RetryPolicyError,
@@ -109,6 +111,7 @@ from qad.m6.orchestration import (
     plan_attempt,
     record_failed_attempt,
     resolve_or_create_logical_run,
+    run_provider_attempt,
     terminalize_research_unavailable,
     validate_attempt_plan,
 )
@@ -123,7 +126,48 @@ from qad.m6.snapshot import (
     input_snapshot_identity_payload,
 )
 
+from qad.m6.provider import (
+    MOCK_PROVIDER_NOT_EXPOSED_REASON,
+    MOCK_PROVIDER_SURFACE,
+    MOCK_TRANSPORT_TYPE,
+    ProviderAdapterError,
+    ProviderOutcome,
+    ProviderOutcomeKind,
+    TransportEvidence,
+    not_exposed_provider_telemetry,
+)
+from qad.m6.mock_transport import (
+    MOCK_EVIDENCE_PRODUCER,
+    DeterministicMockTransport,
+    MockEvidenceStore,
+    MockExecutionEvidence,
+    MockTransportScript,
+)
+from qad.m6.mock_proof import (
+    MOCK_PROOF_RESOLVER_IS_TEST_ONLY,
+    MockProofResolver,
+)
+
 __all__ = [
+    # M6.7 — provider adapter + deterministic mock transport (FD #151)
+    "MOCK_PROVIDER_SURFACE",
+    "MOCK_TRANSPORT_TYPE",
+    "MOCK_PROVIDER_NOT_EXPOSED_REASON",
+    "ProviderAdapterError",
+    "ProviderOutcome",
+    "ProviderOutcomeKind",
+    "TransportEvidence",
+    "not_exposed_provider_telemetry",
+    "MOCK_EVIDENCE_PRODUCER",
+    "MockEvidenceStore",
+    "MockExecutionEvidence",
+    "MockTransportScript",
+    "DeterministicMockTransport",
+    "MOCK_PROOF_RESOLVER_IS_TEST_ONLY",
+    "MockProofResolver",
+    "ProviderExecutionOutcome",
+    "ProviderExecutionResult",
+    "run_provider_attempt",
     "SealedEligibility",
     "SRCV_ONLY_CAPTURE_PROOF_INELIGIBLE",
     "evaluate_sealed_source_eligibility",

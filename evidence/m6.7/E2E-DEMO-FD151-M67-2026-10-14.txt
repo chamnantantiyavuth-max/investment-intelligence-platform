@@ -1,0 +1,100 @@
+==============================================================================
+M6.7 DETERMINISTIC MOCK EXECUTION - END TO END
+==============================================================================
+
+[REQUEST]
+  request_id            : REQ-1
+  research_run_id       : RR-1
+  ledger_id             : L-1
+  input_snapshot_hash   : 9ad02fcd1b1160db92780c0f4bcff1957b469edbe91e4cd6f397eb3e25d28dc6
+  corpus source_ids     : ('S1', 'S2')
+  provider_surface      : gemini_notebook_mock
+  attempt plan          : attempt 1 | provider gemini_notebook_mock | retry_mode INITIAL_ATTEMPT
+  trusted resolver      : MockProofResolver injected explicitly (no resolver => deny-all default)
+
+[TRANSPORT]
+  kind                  : RESULT
+  transport_type        : MOCK_DETERMINISTIC_TRANSPORT
+  network_used          : False
+  sealed_bytes_verified : True
+  sent source_ids       : ('S1', 'S2')
+  telemetry             : {'model_identity': {'status': 'NOT_EXPOSED', 'value': None, 'reason': 'NOT_EXPOSED_BY_MOCK_PROVIDER'}, 'prompt_tokens': {'status': 'NOT_EXPOSED', 'value': None, 'reason': 'NOT_EXPOSED_BY_MOCK_PROVIDER'}, 'completion_tokens': {'status': 'NOT_EXPOSED', 'value': None, 'reason': 'NOT_EXPOSED_BY_MOCK_PROVIDER'}, 'cost': {'status': 'NOT_EXPOSED', 'value': None, 'reason': 'NOT_EXPOSED_BY_MOCK_PROVIDER'}, 'model_version': {'status': 'NOT_EXPOSED', 'value': None, 'reason': 'NOT_EXPOSED_BY_MOCK_PROVIDER'}}
+
+[TRUSTED MOCK PROOF VERIFICATION - INDEPENDENTLY CHECKED]
+  CLOSED_CORPUS_ENFORCEMENT:
+     evidence_ref      : MOCK-EVID-63c21981fe3a9bdd4880a41d
+     observed inventory: ('S1', 'S2')
+     approved corpus   : ('S1', 'S2')
+     extraneous        : (none)
+     foreign canaries  : (none)
+     ref self-consistent: True
+  REQUEST_ISOLATION:
+     evidence_ref      : MOCK-EVID-7013a285a0b73ee67ebc4e66
+     observed inventory: ('S1', 'S2')
+     approved corpus   : ('S1', 'S2')
+     extraneous        : (none)
+     foreign canaries  : (none)
+     ref self-consistent: True
+  verified-proof attestation minted (M6.4 trusted seam):
+     binds request_id    : REQ-1
+     binds research_run  : RR-1
+     binds ledger_id     : L-1
+     binds provider      : gemini_notebook_mock
+     binds snapshot hash : 9ad02fcd1b1160db92780c0f4bcff1957b469edbe91e4cd6f397eb3e25d28dc6
+     binds result_sha256 : fcc3a0b23768dd3196968c0207f1b7ed9095966e9fd349ee36a451f3097ee2bb
+     binds corpus ref    : MOCK-EVID-63c21981fe3a9bdd4880a41d
+     binds isolation ref : MOCK-EVID-7013a285a0b73ee67ebc4e66
+
+[RESULT]
+  outcome               : SUCCESS_FINALIZED
+  terminal status       : SUCCESS
+  result_sha256         : fcc3a0b23768dd3196968c0207f1b7ed9095966e9fd349ee36a451f3097ee2bb
+  result_artifact_ref   : mock://synthesis/1
+  attempts              : [(1, 'SUCCESS', <RetryMode.INITIAL_ATTEMPT: 'INITIAL_ATTEMPT'>)]
+
+[SOURCE CANDIDATE DISPOSITIONS - SETTLED BEFORE SUCCESS]
+  pointer 0 mock://source/S1
+     candidate_id    : SC-d59d0fb2e8dfbd2d84518222
+     disposition     : DEFERRED | reason: NO_TRUSTED_ORIGINAL_SOURCE_VERIFIER_CONFIGURED
+     src01_id        : None | evidence_ids: () | ear_ids: ()
+  pointer 1 mock://source/S2
+     candidate_id    : SC-bbf900a6ebd2a193192fdae7
+     disposition     : DEFERRED | reason: NO_TRUSTED_ORIGINAL_SOURCE_VERIFIER_CONFIGURED
+     src01_id        : None | evidence_ids: () | ear_ids: ()
+  durable candidates    : ['SC-bbf900a6ebd2a193192fdae7', 'SC-d59d0fb2e8dfbd2d84518222']
+  durable dispositions  : [('SC-bbf900a6ebd2a193192fdae7', <CandidateDisposition.DEFERRED: 'DEFERRED'>), ('SC-d59d0fb2e8dfbd2d84518222', <CandidateDisposition.DEFERRED: 'DEFERRED'>)]
+
+[DURABLE EVENTS]
+   1 RUN_CREATED
+   2 CANDIDATE_REGISTERED
+   3 CANDIDATE_REGISTERED
+   4 CANDIDATE_DISPOSED
+   5 CANDIDATE_DISPOSED
+   6 ATTEMPT_APPENDED
+   7 RUN_TERMINALIZED
+
+[READ-BACK AFTER PROCESS REOPEN - NO HISTORY REWRITTEN]
+  is_terminal           : True
+  terminal_status       : SUCCESS
+  result_sha256         : fcc3a0b23768dd3196968c0207f1b7ed9095966e9fd349ee36a451f3097ee2bb
+  result_artifact_ref   : mock://synthesis/1
+  identical to finalize : True
+  attempts reloaded     : [(1, 'SUCCESS')]
+
+==============================================================================
+FAILURE / RETRY / EXHAUSTION PATH (deterministic scripted transport failure)
+==============================================================================
+  attempt 1: outcome=RETRY_SCHEDULED provider_kind=TRANSPORT_FAILURE diagnostic='scripted deterministic transport failure'
+             retry_decision: should_retry=True terminal_status=None next_attempt=2
+  attempt 2: outcome=RETRY_SCHEDULED provider_kind=TRANSPORT_FAILURE diagnostic='scripted deterministic transport failure'
+             retry_decision: should_retry=True terminal_status=None next_attempt=3
+  attempt 3: outcome=RESEARCH_UNAVAILABLE provider_kind=TRANSPORT_FAILURE diagnostic='scripted deterministic transport failure'
+             retry_decision: should_retry=False terminal_status=RESEARCH_UNAVAILABLE
+  final attempts        : [(1, 'TRANSPORT_FAILURE'), (2, 'TRANSPORT_FAILURE'), (3, 'TRANSPORT_FAILURE')]
+  terminal_status       : RESEARCH_UNAVAILABLE
+  failure_detail        : MOCK_SCRIPTED_TRANSPORT_FAILURE: scripted deterministic transport failure
+  result_sha256         : None (no SUCCESS was written)
+
+==============================================================================
+M6.7 END-TO-END DEMONSTRATION COMPLETE
+==============================================================================

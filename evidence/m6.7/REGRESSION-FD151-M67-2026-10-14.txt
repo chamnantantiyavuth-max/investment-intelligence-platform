@@ -1,0 +1,70 @@
+FD #151 M6.7 CROSS-CLUSTER REGRESSION
+date: 2026-10-14 07:53 UTC
+branch: impl/m6-gemini-notebook
+HEAD:   c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+
+M6.3 run ledger                52 passed in 7.07s
+M6.3 public hardening          26 passed in 1.93s
+M6.5 retry/idempotency         118 passed in 6.17s
+M6.6 source bridge             80 passed in 4.97s
+M6.7 provider adapter          30 passed in 2.72s
+ALL tests/qad/m6               463 passed in 22.33s
+M5.3 PIT                       116 passed in 0.88s
+M5.2 persistence               292 passed, 11 warnings in 1.17s
+ALL tests/qad                  1 failed, 998 passed, 11 warnings in 25.16s
+ALL tests/ops                  94 passed in 164.04s (0:02:44)
+LOCKED suites (legacy)         17 failed, 144 passed, 1 error in 2.50s
+
+=========== GATES ===========
+gate-check.sh exit=0
+  [0;32m✓[0m API surface includes ii-signals + auth
+
+=== Gate Check Complete ===
+[0;32mAll automated gates passed[0m
+isolation-scan.sh exit=0
+
+  [0;32m✓[0m No forbidden-path violations in working tree
+
+=== Isolation Scan Complete ===
+
+=========== SCHEMA COUNT ===========
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+ImportError: cannot import name 'CANONICAL_SCHEMAS' from 'qad.m6.ledger' (C:\Users\Admin\Desktop\Antigravity\investment-intelligence-platform-impl\qad\m6\ledger.py)
+
+=========== RESIDUE / WORKTREE ===========
+-- sqlite files in worktree (excluding .git) --
+./backend/data/iip.db
+-- backend/data/iip.db ignored by git? --
+.gitignore:15:/backend/data/*.db*	backend/data/iip.db
+-- git status --porcelain --
+ M qad/m6/__init__.py
+ M qad/m6/orchestration.py
+?? evidence/m6.7/
+?? qad/m6/mock_proof.py
+?? qad/m6/mock_transport.py
+?? qad/m6/provider.py
+?? tests/qad/m6/test_m67_provider_adapter.py
+
+=========== CRON (must be 5 PAUSED) ===========
+5
+  73e611584447 [paused]
+  1f5f03f9236d [paused]
+  8b1cd19aba7d [paused]
+  8ba233e88015 [paused]
+  cda817d17236 [paused]
+
+=========== REMOTE / MAIN ===========
+origin/main        : 5bf107774b29e5a5fe4dcec5846800b9b48361ba
+origin/impl        : c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+local impl HEAD    : c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+REGRESSION_DONE exit=0
+
+=========== SCHEMA COUNT (corrected command) ===========
+CANONICAL_SCHEMA_COUNT   = 68
+len(CANONICAL_SCHEMAS)    = 68
+len(NON_CANONICAL_SCHEMAS)= 0
+
+=========== M6.7 TEST COUNT ===========
+
+30 tests collected in 0.20s

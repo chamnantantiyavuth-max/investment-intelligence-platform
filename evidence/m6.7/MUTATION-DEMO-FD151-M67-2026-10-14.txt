@@ -1,0 +1,39 @@
+=== FROZEN SNAPSHOT HASHES ===
+mock_transport.py raw=2991c2c3780fb92b5674b7de0dc1a72f9f098b913c607212054268d1a9ce952f lf=2991c2c3780fb92b5674b7de0dc1a72f9f098b913c607212054268d1a9ce952f
+mock_proof.py     raw=12d71c48ac5ce7464e5905372c6e8e43f47307494d527bfa225171d66573f03f lf=12d71c48ac5ce7464e5905372c6e8e43f47307494d527bfa225171d66573f03f
+
+=== BASELINE (unmutated) ===
+..............................                                           [100%]
+30 passed in 2.77s
+
+=== MUTATION A ===
+transport auto-injects the trusted resolver when none is given, destroying the
+deny-all production default -> test_02 must turn RED
+mutation A applied
+tests\qad\m6\test_m67_provider_adapter.py:307: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_02_without_an_injected_resolver_success_is_rejected
+1 failed in 0.37s
+restored; byte-identical? raw=YES lf=YES
+.                                                                        [100%]
+1 passed in 0.29s
+
+=== MUTATION B ===
+resolver stops re-checking the PROVEN PROPERTY and treats a matching identity as
+proof. The property-re-check layer tests must go RED. Tests that depend on the
+separate resolve/self-consistency layer (missing evidence, tampered reference)
+are expected to stay GREEN, because that layer is untouched by this mutation.
+mutation B applied
+=========================== short test summary info ===========================
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_06_reused_provider_context_leaks_and_is_refused
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_09b_out_of_corpus_citation_is_a_hard_failure
+2 failed, 3 passed in 0.66s
+restored; byte-identical? raw=YES lf=YES
+
+=== POST-RESTORE GREEN (full M6.7 suite) ===
+..............................                                           [100%]
+30 passed in 2.86s
+
+=== FINAL HASH CHECK vs FROZEN SNAPSHOT ===
+mock_transport.py raw_match=YES
+mock_proof.py     raw_match=YES
