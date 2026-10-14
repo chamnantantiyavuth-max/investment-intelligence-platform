@@ -1,0 +1,178 @@
+ROLE
+INDEPENDENT ADVERSARIAL IMPLEMENTATION REVIEWER — QAD M6.3 PUBLIC SUCCESS API HARDENING
+(FD #155, "Path H"), on branch impl/m6-gemini-notebook.
+
+Producer = DeepSeek V4.1 Flash (deepseek family). You are the OpenAI family (GPT-6 Luna,
+high) — family-independent. Report only what you can VERIFY from the artifacts in THIS
+copy. Do not soften. Do not aim for a PASS verdict — a finding is a valid and useful
+result. A verdict of C is a perfectly acceptable outcome if the code deserves it.
+
+============================================================
+REVIEWED ARTIFACT
+============================================================
+Reviewed commit: fa449cd7f1a295f64dccc710920f36954b425286
+Disposable copy (no git metadata): see ENVIRONMENT below.
+LF-normalised sha256 of the reviewed files at that commit:
+
+61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c  qad/m6/ledger.py
+4443b1f17f66f4f6e8c1b43b430599c940b37526a585e19ec6355f5a228fb65b  qad/m6/orchestration.py
+320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871  qad/m6/source_bridge.py
+59458d1f0ecadd9e38e19d3788432a2e596940f069847b4828610947eb4bd169  tests/qad/m6/test_m63_run_ledger.py
+c1068414a7ded6cbad695382ce4a36e3e50c59152c845663c4dab8ae55851396  tests/qad/m6/test_m63_public_success_hardening.py
+c6ecd386dc09dc9bb1bdf735b6388120c33486dd218c9b1f5d6cf440a5e2a9e6  tests/qad/m6/test_m65_retry_telemetry_idempotency.py
+
+(Two governance surfaces are also in the copy: operational/FOUNDERS-DECISIONS.md item 155,
+PROJECT_STATE.md. The Acceptance-Lock co-touch is tests/locked/test_audit_api.py.)
+
+============================================================
+PRINCIPAL QUESTION (answer this first, explicitly)
+============================================================
+"Can any ordinary caller of the supported M6.3 public Ledger mutation APIs still create a
+standalone SUCCESS attempt or a standalone SUCCESS terminal record — or has every supported
+NEW SUCCESS write been confined to FD #153's atomic finalizer
+(DeepResearchRunLedgerStore.finalize_success_attempt_atomic)?"
+
+Answer YES (confinement holds) or NO (+ the exact bypass). Direct BEHAVIOURAL PROBES are
+required — source inspection alone is NOT sufficient evidence for this question.
+
+============================================================
+WHAT FD #155 CHANGED (the claim you must attack)
+============================================================
+1. DeepResearchRunLedgerStore.append_attempt(...) must REFUSE a normalized SUCCESS outcome
+   — both outcome=TerminalStatus.SUCCESS and outcome="SUCCESS" — with a typed
+   LedgerValidationError naming finalize_success_attempt_atomic(...), and must do so
+   BEFORE any mutation (no attempt row, no audit event, no terminal record).
+2. DeepResearchRunLedgerStore.terminalize(...) must REFUSE
+   terminal_status=SUCCESS (enum and string) the same way, regardless of a non-empty
+   result_sha256 / result_artifact_ref.
+3. Everything NON-SUCCESS must be unchanged: validation, telemetry truthfulness,
+   append-only behaviour, attempt identity/ordering, retry modes, event semantics,
+   terminal immutability, candidate-disposition prerequisites, typed failure semantics.
+4. finalize_success_attempt_atomic must be UNCHANGED: one BEGIN IMMEDIATE, run existence,
+   mutable/non-terminal check, candidate-disposition completeness, exact final SUCCESS
+   attempt, exact terminal SUCCESS result-hash binding, audit events, one COMMIT, full
+   ROLLBACK on any failure. It must NOT be routed through the newly restricted public
+   methods and there must be no second atomic-success implementation.
+5. No schema expansion or migration: no ledger_attempt result-hash column, no
+   ledger_terminal change, no new table or trigger, no data migration; canonical schema
+   count stays 68.
+6. Honest scope: the claim covers SUPPORTED PUBLIC APIs only. Deliberate raw SQLite
+   mutation, private-helper abuse and hostile in-process code are OUTSIDE the claim.
+   Legacy malformed records stay invalid/untrusted and must NOT have been repaired.
+
+============================================================
+THREAT-MODEL BOUNDARY — READ CAREFULLY (Founder-set)
+============================================================
+* The accepted trust model does NOT require defence against a party that already controls
+  arbitrary in-process Python execution. Do NOT turn this into an unrestricted search for
+  speculative same-process attack models (monkeypatching module globals, bytecode
+  tampering, hostile descriptors, rewriting the module source at runtime).
+* That said: any bypass reachable by an ORDINARY caller of the public API — including a
+  caller that passes an unusual-but-legal argument shape, a subclass/custom object, a
+  partially-initialized store, a concurrent second process, a re-entrant call, or a
+  legacy record on disk — IS in scope and must be reported.
+* Do NOT suppress genuine reproducible material defects.
+
+============================================================
+SETTLED POLICY — DO NOT RE-LITIGATE
+============================================================
+FD #149 (M6.3 ledger contract), FD #150 (archive-owned admitted_at attestation), FD #151
+(M6 implementation scope), FD #152 (M6.4 trusted proof seam), FD #153 (atomic SUCCESS
+finalization — authoritative and not to be re-litigated), FD #154 (the carry-forward gate
+M6_RAW_SUCCESS_API_GATE, which FD #155 resolves by Path H). M6.6 (source bridge) is CLOSED
+and out of scope for change. FD #155 is itself the Founder decision you are reviewing the
+IMPLEMENTATION of — you may report implementation defects; you may NOT reverse the policy.
+
+============================================================
+PROBES (each: VERIFIED / NOT VERIFIED / DEFECT + one line, with the evidence)
+============================================================
+ 1. BOTH GENERIC SUCCESS GUARDS EXIST AND ARE ENFORCED BY THE API — call
+    append_attempt(outcome=TerminalStatus.SUCCESS) and append_attempt(outcome="SUCCESS")
+    and terminalize(terminal_status=TerminalStatus.SUCCESS) and
+    terminalize(terminal_status="SUCCESS") on a fresh run; each must raise the typed
+    LedgerValidationError. Show the real output.
+ 2. ENUM AND STRING NORMALIZATION — prove the guard is on the NORMALIZED value, not on an
+    enum identity check that a string could slip past. Try any other spelling/case you can
+    construct as a legal argument (e.g. a str subclass, a lower-case string) and report
+    what happens.
+ 3. REJECTION BEFORE MUTATION — after each refusal, prove ZERO new rows in ledger_attempt,
+    ZERO new rows in ledger_event and ZERO rows in ledger_terminal (read the SQLite file
+    directly), and that the rejected call did not even open a write transaction you can
+    detect (e.g. no new ledger_event seq).
+ 4. NO AUDIT-EVENT LEAKAGE — events() before/after identical; no ATTEMPT_APPENDED and no
+    RUN_TERMINALIZED event appears from a refused call.
+ 5. NON-SUCCESS API BEHAVIOUR RETAINED — FAILED attempt append works and persists with
+    telemetry truthfulness; TRANSPORT_FAILURE and RESEARCH_UNAVAILABLE terminalization
+    work; an unknown outcome/status is still refused; duplicate attempt identity is still
+    LedgerIdentityConflict; attempt ordering is preserved.
+ 6. ATOMIC SUCCESS UNCHANGED — finalize_success_attempt_atomic still writes exactly ONE
+    SUCCESS attempt + ONE SUCCESS terminal with the exact result_sha256 and
+    result_artifact_ref, both audit events, and both survive a process reopen.
+ 7. TRANSACTION ROLLBACK UNCHANGED — inject a failure inside the atomic transaction
+    (e.g. wrap the connection so COMMIT raises, or make an audit-event write raise) and
+    prove BOTH records and BOTH events roll back, the run stays non-terminal, and a
+    subsequent legitimate finalization still succeeds.
+ 8. CANDIDATE-DISPOSITION REQUIREMENT RETAINED — an undisposed registered candidate blocks
+    the atomic finalization AND blocks non-SUCCESS terminalization, writing nothing.
+ 9. M6.5 SUCCESS CONSUMPTION STILL PROOF-VERIFIED — run M6.5's accept_success_result path
+    and confirm it (a) still enforces the M6.4 proof gate, (b) still terminalizes through
+    the atomic finalizer, and (c) never calls a standalone generic SUCCESS writer. If you
+    can, instrument BOTH generic mutators during a full accept_success_result flow and
+    report every call they received.
+10. HISTORICAL ORPHAN RECORDS STILL FAIL CLOSED — construct a legacy orphan SUCCESS attempt
+    through a NON-public route (direct SQL or the ledger's private single-transaction
+    helper) and prove it is still refused fail-closed and never acquires a caller-supplied
+    result hash; and prove the public API can no longer create that state at all.
+11. NO SCHEMA MIGRATION — read the live SQLite schema: table set, trigger set, and the
+    ledger_attempt / ledger_terminal columns. Report the actual sets and confirm no
+    result-hash column was added to ledger_attempt and no new trigger/table appeared.
+    Confirm the canonical schema registry count is still 68.
+12. NO PROVIDER / BROWSER IMPLEMENTATION — AST/source check: no Gemini, no Notebook
+    transport, no browser/CDP automation, no network calls, no credentials anywhere in the
+    changed code; no M6.7/M6.8 implementation introduced.
+13. M6.6 UNMODIFIED — qad/m6/source_bridge.py must hash to
+    320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871 (LF-normalised), i.e.
+    byte-identical to the round-17 reviewed artifact. Verify by hashing.
+14. TEST-INTEGRITY CHECK — the reconciled M6.3/M6.5 tests must not have been weakened to
+    obtain GREEN. Spot-check at least three reconciled tests (one converted to the atomic
+    finalizer, one converted to a non-SUCCESS terminal status, one legacy-orphan fixture
+    now built through the non-public route) and report whether the ORIGINAL assertion
+    strength is retained. Report any test that lost real coverage.
+15. REGRESSION COUNTS — run the suites and report ACTUAL counts (see ENVIRONMENT), including
+    any failure/error. Report the inherited failures separately and say whether they look
+    NEW or pre-existing relative to the change under review.
+
+TEST-STRENGTH CHECK (bounded): in YOUR OWN COPY inside the basetemp, remove ONE public
+SUCCESS guard and confirm the new negative tests turn RED; restore and confirm GREEN.
+Report exact commands and output. Do NOT build a fuzzing framework.
+
+============================================================
+ENVIRONMENT (use exactly; write NOTHING outside the copy and your basetemp)
+============================================================
+- Your copy (disposable, NO .git — do not run git):
+  C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/copy
+- Python: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe
+- ALWAYS pass an explicit --basetemp whose PARENT ALREADY EXISTS, e.g.:
+    mkdir -p "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp"
+    "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp"
+  (pytest fails with FileNotFoundError if the basetemp PARENT does not exist — create it first)
+- Do NOT modify qad/m6/ledger.py or its tests in place: copy them into a subdirectory of your
+  basetemp before any mutation experiment.
+- Do NOT run git (this copy has no git metadata — hash the files instead).
+- Report exact commands + real observed output. Never report a count you did not observe.
+
+============================================================
+DELIVERABLE — answer in exactly this shape
+============================================================
+PRINCIPAL QUESTION: YES / NO + one paragraph.
+VERDICT: A | B | C
+  A = PASS
+  B = PASS WITH GENUINELY NON-BLOCKING FINDINGS
+  C = MATERIAL DEFECT / FAIL
+PROBE RESULTS: 1..15 — VERIFIED / NOT VERIFIED / DEFECT + one line each.
+MATERIAL FINDINGS: numbered; (a) concrete evidence, (b) why material, (c) smallest
+   correction, (d) how to verify. "NONE" if none.
+NON-BLOCKING FINDINGS: numbered, same shape. "NONE" if none.
+EVIDENCE GAPS: "NONE" if none.
+COMMANDS RUN: exact commands + observed results.
+POLICY DISAGREEMENT: does NOT change your verdict; the policy is Founder-set.

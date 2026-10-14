@@ -1,0 +1,131 @@
+==================================================================
+FD #155 (Path H) — CROSS-CLUSTER REGRESSION
+Date: 2026-10-14  ·  Branch: impl/m6-gemini-notebook
+Implementation commit: fa449cd7f1a295f64dccc710920f36954b425286
+Python: Python 3.11.15
+==================================================================
+
+### M6.3 ledger suite
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m63_run_ledger.py -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m63
+....................................................                     [100%]
+52 passed in 4.04s
+exit code: 0
+
+### M6.3 hardening suite
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m63_public_success_hardening.py -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m63h
+..........................                                               [100%]
+26 passed in 1.91s
+exit code: 0
+
+### M6.5 retry/telemetry/idem
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m65_retry_telemetry_idempotency.py -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m65
+........................................................................ [ 61%]
+..............................................                           [100%]
+118 passed in 6.11s
+exit code: 0
+
+### M6.6 source bridge
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6/test_m66_source_bridge.py -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m66
+........................................................................ [ 90%]
+........                                                                 [100%]
+80 passed in 4.94s
+exit code: 0
+
+### all tests/qad/m6
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m6 -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m6all
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+........................................................................ [ 49%]
+........................................................................ [ 66%]
+........................................................................ [ 83%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+433 passed in 19.59s
+exit code: 0
+
+### M5.2 persistence suite
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/persistence -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/pers
+
+tests/qad/persistence/test_evidence_admission_gate.py::TestLValidationFailureZeroPartial::test_ear_invalid_admission_method_rejected_by_validator
+  C:\Users\Admin\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\pydantic\main.py:475: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `enum` - serialized value may not be as expected [field_name='admission_method', input_value='NOT_A_VALID_METHOD', input_type=str])
+    return self.__pydantic_serializer__.to_python(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+292 passed, 11 warnings in 1.10s
+exit code: 0
+
+### M5.3 PIT suite
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad/m53 -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/m53
+........................................................................ [ 62%]
+............................................                             [100%]
+116 passed in 0.96s
+exit code: 0
+
+### all tests/qad
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/qad -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/qad
+  C:\Users\Admin\AppData\Local\hermes\hermes-agent\venv\Lib\site-packages\pydantic\main.py:475: UserWarning: Pydantic serializer warnings:
+    PydanticSerializationUnexpectedValue(Expected `enum` - serialized value may not be as expected [field_name='admission_method', input_value='NOT_A_VALID_METHOD', input_type=str])
+    return self.__pydantic_serializer__.to_python(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/qad/test_contract_conformance.py::test_schema_build_identity - A...
+1 failed, 968 passed, 11 warnings in 21.30s
+exit code: 1
+
+### tests/ops
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/ops -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/ops
+........................................................................ [ 76%]
+......................                                                   [100%]
+94 passed in 166.19s (0:02:46)
+exit code: 0
+
+### tests/locked
+command: C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe -m pytest tests/locked -q --basetemp=C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-reg/locked
+FAILED tests/locked/test_real_data_api.py::test_dashboard_per_component_provenance_and_cs_agreement
+FAILED tests/locked/test_real_data_api.py::test_ingest_upsert_and_immutable_reject
+FAILED tests/locked/test_real_data_api.py::test_endpoint_to_db_lineage_wired
+FAILED tests/locked/test_real_data_api.py::test_api_reads_lineage_records_real_status_and_hash
+FAILED tests/locked/test_real_data_api.py::test_atomic_replace_during_read_never_partial
+FAILED tests/locked/test_real_data_api.py::test_e2e_subprocess_envelope_produce_and_serve
+ERROR tests/locked/test_real_data_api.py::test_am_queue_serves_real_artifact_fields
+17 failed, 144 passed, 1 error in 2.49s
+exit code: 1
+
+### scripts/gate-check.sh
+=== Gate Check v3.3.0 (IIP) ===
+
+Gate 3: Deployment Verify
+  [0;32m✓[0m SQLite schema version compatible
+
+Gate 5: Batch Atomicity
+  [0;32m✓[0m Runners use atomic os.replace writes
+
+Gate 6: Verification Evidence Tags
+  [0;32m✓[0m Evidence tags found in last commit (1 tag(s))
+
+Gate 1: Root-Cause Check
+  [0;32m✓[0m Root-cause check: no isolated formula changes detected
+
+Gate 4: Feature Complete (API surface)
+  [0;32m✓[0m API surface includes ii-signals + auth
+
+=== Gate Check Complete ===
+[0;32mAll automated gates passed[0m
+exit code: 0
+
+### scripts/isolation-scan.sh
+=== Isolation Scan (FD #46) ===
+
+  [0;32m✓[0m No forbidden-path violations in working tree
+
+=== Isolation Scan Complete ===
+exit code: 0
+
+### runtime SQLite residue in the governed worktree
+none
+git status --porcelain:
+?? evidence/m6.3/REGRESSION-FD155-2026-10-14.txt
+?? evidence/m6.3/REVIEW-FD155-2026-10-14-PROMPT.txt
+canonical schema count: 99:CANONICAL_SCHEMA_COUNT = 68

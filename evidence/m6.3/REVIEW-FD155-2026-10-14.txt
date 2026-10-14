@@ -1,0 +1,131 @@
+PRINCIPAL QUESTION: YES — confinement holds for the supported public APIs. On fresh runs, append_attempt rejected both TerminalStatus.SUCCESS and "SUCCESS", and terminalize rejected both enum and string SUCCESS; each raised LedgerValidationError before opening its connection. Direct SQLite reads showed zero attempt/terminal rows and no new event, and an instrumented M6.5 accept_success_result used finalize_success_attempt_atomic exactly once and neither generic mutator. The tested atomic finalizer persisted the exact SUCCESS attempt and terminal result binding together and rolled both back under injected failure. This conclusion is limited to supported public APIs; deliberate raw SQLite writes, private-helper abuse, and hostile arbitrary in-process execution remain outside the Founder-set claim.
+
+VERDICT: B — PASS WITH ONE GENUINELY NON-BLOCKING EVIDENCE FINDING. No material implementation defect was reproduced. One narrow historical test-comparison limitation remains: the no-git disposable artifact contains no pre-FD #155 test snapshot, so literal assertion-by-assertion comparison against the original tests could not be independently made. The current tests retain and execute the relevant behaviors.
+
+PROBE RESULTS:
+1. VERIFIED — All four required fresh-run calls raised LedgerValidationError with finalize_success_attempt_atomic(...) named; the direct probe output is included under COMMANDS RUN.
+2. VERIFIED — Guard operates on normalized values: enum, plain string, and a str subclass carrying "SUCCESS" were rejected; lower-case "success" was refused as an unknown outcome.
+3. VERIFIED — After each refusal direct SQLite reads reported 0 attempts, 0 terminal records, 0 event rows beyond RUN_CREATED; the instrumented public call made 0 connection opens.
+4. VERIFIED — events() before and after each rejected call were identical (the sole existing event was RUN_CREATED); neither attempt nor terminal event leaked.
+5. VERIFIED — FAILED and TRANSPORT_FAILURE attempts persisted with truthful NOT_EXPOSED telemetry, ordering [1, 2] and SAME_PROVIDER_RETRY were retained, duplicate identity raised LedgerIdentityConflict, TRANSPORT_FAILURE and RESEARCH_UNAVAILABLE terminalized, and unknown outcome/status raised LedgerValidationError.
+6. VERIFIED — Atomic finalization persisted exactly 1 SUCCESS attempt and 1 SUCCESS terminal with hash c…c and artifact://exact; both ATTEMPT_APPENDED and RUN_TERMINALIZED were present after reopening the database.
+7. VERIFIED — Injected failure while writing RUN_TERMINALIZED rolled back both records and both new events; the run remained non-terminal and a subsequent legitimate finalization succeeded.
+8. VERIFIED — An undisposed candidate blocked both atomic SUCCESS finalization and TRANSPORT_FAILURE terminalization with no row/event changes; after disposition, atomic finalization succeeded.
+9. VERIFIED — An invalidated M6.4 proof was refused with ResearchResultError and wrote nothing; a valid M6.4 result was accepted through exactly one atomic-finalizer call, with zero append_attempt/terminalize calls and the exact result hash.
+10. VERIFIED — A legacy orphan was constructed only via the private helper; accept_success_result refused it as ORPHAN SUCCESS, it remained non-terminal with no result hash, and both public generic SUCCESS APIs remained unable to recreate it.
+11. VERIFIED — Live SQLite inspection found six ledger tables plus SQLite-internal sqlite_sequence; the exact trigger and column sets appear under PROBE11. ledger_attempt has no result-hash/ref column; ledger_terminal retains both binding columns; the canonical registry and constant both reported 68. No migration-named file was found under qad/.
+12. VERIFIED — AST/source scan of ledger.py, orchestration.py, and source_bridge.py found no provider/network/browser imports or calls and no credential assignments; no M6.7/M6.8 modules were present. Gemini/Notebook/browser terms found in comments or domain labels are declarations, not transport/automation code; FOUNDER_ROLE_TOKEN and _MINT_TOKEN are role/sentinel constants, not credentials.
+13. VERIFIED — LF-normalized source_bridge.py SHA-256 was 320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871, matching the round-17 artifact. All six supplied reviewed-file hashes matched.
+14. NOT VERIFIED — Current test bodies and runtime behavior retain the three requested functional assertions: M6.3 test_04 finalizes SUCCESS then reopens and checks attempt number/outcome; the candidate-prerequisite test checks refusal before disposition and acceptance after; M6.5 r4_06 builds a private legacy orphan and verifies refusal/no terminal/no hash. No current functional coverage loss was observed. Exact comparison to each pre-change assertion cannot be established because no parent test snapshot is included and git use is prohibited.
+15. VERIFIED — The specified M6 suite returned 433 passed, with no failure/error. No inherited failure was observed; since there were no failures, none could be classified as new or inherited.
+
+MATERIAL FINDINGS: NONE.
+
+NON-BLOCKING FINDINGS:
+1. Historical test assertion comparison is unavailable. (a) The disposable copy has no git metadata or pre-FD #155 test-file snapshot; only current test sources and the reviewed-file hashes are available. (b) This prevents a literal assertion-by-assertion statement that every original assertion is unchanged, but does not undermine the direct behavior checks or the current tests' verified functional coverage. (c) Smallest correction: retain/provide immutable pre-amendment versions of the reconciled test files for future exact comparison. (d) Verify by hashing and comparing those files against the reviewed versions, then rerun the three targeted tests and the M6 suite.
+
+EVIDENCE GAPS: Exact pre-FD #155 test-source comparison for Probe 14 is unavailable as described above. All behavioral probes, current test executions, reviewed-file hashes, schema inspection, and the M6.6 source-bridge hash were observed directly.
+
+COMMANDS RUN:
+
+1. Environment preparation, interpreter, and initial LF-normalized artifact hashes:
+Command:
+`mkdir -p "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp" && "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" --version && "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; import hashlib; root=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/copy'); files=['qad/m6/ledger.py','qad/m6/orchestration.py','qad/m6/source_bridge.py','tests/qad/m6/test_m63_run_ledger.py','tests/qad/m6/test_m63_public_success_hardening.py','tests/qad/m6/test_m65_retry_telemetry_idempotency.py']; print('\\n'.join(f'{hashlib.sha256((root/f).read_bytes().replace(bytes([13,10]),bytes([10])).replace(bytes([13]),bytes([10]))).hexdigest()}  {f}' for f in files))"`
+Observed output:
+`Python 3.11.15`
+`61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c  qad/m6/ledger.py`
+`4443b1f17f66f4f6e8c1b43b430599c940b37526a585e19ec6355f5a228fb65b  qad/m6/orchestration.py`
+`320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871  qad/m6/source_bridge.py`
+`59458d1f0ecadd9e38e19d3788432a2e596940f069847b4828610947eb4bd169  tests/qad/m6/test_m63_run_ledger.py`
+`c1068414a7ded6cbad695382ce4a36e3e50c59152c845663c4dab8ae55851396  tests/qad/m6/test_m63_public_success_hardening.py`
+`c6ecd386dc09dc9bb1bdf735b6388120c33486dd218c9b1f5d6cf440a5e2a9e6  tests/qad/m6/test_m65_retry_telemetry_idempotency.py`
+
+2. Full specified regression suite (explicit basetemp; its parent existed):
+Command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6 -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp"`
+Observed output:
+`........................................................................ [ 16%]`
+`........................................................................ [ 33%]`
+`........................................................................ [ 49%]`
+`........................................................................ [ 66%]`
+`........................................................................ [ 83%]`
+`........................................................................ [ 99%]`
+`.                                                                        [100%]`
+`433 passed in 22.03s`
+
+3. Direct behavioral/schema/AST probe harness. The script and its generated databases were under basetemp; no reviewed source file was edited.
+Command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "import shutil; from pathlib import Path; p=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/probe_data'); shutil.rmtree(p, ignore_errors=True)" && "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/fd155_probe.py"`
+Observed output (verbatim):
+`PROBE1/3/4 append_enum: {"api_connect_calls": 0, "attempt_rows": 0, "event_rows_after_create": 0, "events": [[1, "RUN_CREATED", "2026-10-14T06:07:58.765007+00:00"]], "events_unchanged": true, "result": "LedgerValidationError: append_attempt refuses a standalone SUCCESS attempt (FD #155): a SUCCESS attempt must be recorded together with its exact terminal result binding in ONE transaction via finalize_success_attempt_atomic(...). Nothing was written (no attempt, no audit event, no terminal record).", "terminal_rows": 0}`
+`PROBE1/3/4 append_string: {"api_connect_calls": 0, "attempt_rows": 0, "event_rows_after_create": 0, "events": [[1, "RUN_CREATED", "2026-10-14T06:07:58.833512+00:00"]], "events_unchanged": true, "result": "LedgerValidationError: append_attempt refuses a standalone SUCCESS attempt (FD #155): a SUCCESS attempt must be recorded together with its exact terminal result binding in ONE transaction via finalize_success_attempt_atomic(...). Nothing was written (no attempt, no audit event, no terminal record).", "terminal_rows": 0}`
+`PROBE1/3/4 terminal_enum: {"api_connect_calls": 0, "attempt_rows": 0, "event_rows_after_create": 0, "events": [[1, "RUN_CREATED", "2026-10-14T06:07:58.897896+00:00"]], "events_unchanged": true, "result": "LedgerValidationError: terminalize refuses terminal_status=SUCCESS (FD #155): a SUCCESS terminal record must carry its exact result binding and must be written together with its SUCCESS attempt in ONE transaction via finalize_success_attempt_atomic(...). A non-empty result_sha256 / result_artifact_ref does not bypass this rule. Nothing was written (no terminal record, no attempt, no audit event).", "terminal_rows": 0}`
+`PROBE1/3/4 terminal_string: {"api_connect_calls": 0, "attempt_rows": 0, "event_rows_after_create": 0, "events": [[1, "RUN_CREATED", "2026-10-14T06:07:58.966920+00:00"]], "events_unchanged": true, "result": "LedgerValidationError: terminalize refuses terminal_status=SUCCESS (FD #155): a SUCCESS terminal record must carry its exact result binding and must be written together with its SUCCESS attempt in ONE transaction via finalize_success_attempt_atomic(...). A non-empty result_sha256 / result_artifact_ref does not bypass this rule. Nothing was written (no terminal record, no attempt, no audit event).", "terminal_rows": 0}`
+`PROBE2 plain: {"argument_type": "str", "attempt_rows": 0, "result": "LedgerValidationError: append_attempt refuses a standalone SUCCESS attempt (FD #155): a SUCCESS attempt must be recorded together with its exact terminal result binding in ONE transaction via finalize_success_attempt_atomic(...). Nothing was written (no attempt, no audit event, no terminal record)."}`
+`PROBE2 str_subclass: {"argument_type": "SuccessString", "attempt_rows": 0, "result": "LedgerValidationError: append_attempt refuses a standalone SUCCESS attempt (FD #155): a SUCCESS attempt must be recorded together with its exact terminal result binding in ONE transaction via finalize_success_attempt_atomic(...). Nothing was written (no attempt, no audit event, no terminal record)."}`
+`PROBE2 lowercase: {"argument_type": "str", "attempt_rows": 0, "result": "LedgerValidationError: unknown attempt outcome 'success'"}`
+`PROBE5 attempts: {"duplicate_result": "LedgerIdentityConflict", "mode2": "SAME_PROVIDER_RETRY", "numbers": [1, 2], "outcomes": ["FAILED", "TRANSPORT_FAILURE"], "telemetry_truth": true}`
+`PROBE5 terminal TRANSPORT_FAILURE: {"failure_detail": "expected", "stored": "TRANSPORT_FAILURE"}`
+`PROBE5 terminal RESEARCH_UNAVAILABLE: {"failure_detail": "expected", "stored": "RESEARCH_UNAVAILABLE"}`
+`PROBE5 unknown_outcome: {"result": "LedgerValidationError"}`
+`PROBE5 unknown_status: {"result": "LedgerValidationError"}`
+`PROBE6: {"artifact": "artifact://exact", "attempt_outcome": "SUCCESS", "attempt_rows": 1, "events": [[1, "RUN_CREATED", "2026-10-14T06:07:59.548256+00:00"], [2, "ATTEMPT_APPENDED", "2026-10-14T06:07:59.553960+00:00"], [3, "RUN_TERMINALIZED", "2026-10-14T06:07:59.553960+00:00"]], "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "terminal_rows": 1, "terminal_status": "SUCCESS"}`
+`PROBE7: {"after_failure_attempts": 0, "after_failure_terminals": 0, "events_unchanged": true, "injected_result": "RuntimeError: INJECTED terminal event failure", "subsequent_success": "SUCCESS", "success_attempts_final": 1, "success_terminals_final": 1, "terminal_after_failure": false}`
+`PROBE8: {"after_disposition_atomic_status": "SUCCESS", "blocked_results": ["atomic:LedgerValidationError", "non_success_terminal:LedgerValidationError"], "counts_after_refusals": [0, 0, 2], "counts_before": [0, 0, 2], "no_writes": true}`
+`PROBE9: {"atomic_finalizer_calls": 1, "attempt_outcomes": ["SUCCESS"], "final_status": "SUCCESS", "generic_mutator_calls": {"append_attempt": 0, "terminalize": 0}, "proof_failure_wrote_nothing": true, "result_hash_exact": true, "unverified_result": "ResearchResultError"}`
+`PROBE10: {"accept_result": "RetryPolicyError: ledger run 'L-1' has a persisted SUCCESS attempt but no terminal record \u2014 a pre-amendment ORPHAN SUCCESS state. Recovery is REFUSED (fail-closed): a newly supplied result must never be attached to an orphan SUCCESS attempt", "orphan_still_unterminalized": true, "private_route_created_orphan": true, "public_recreation_attempts": ["append:LedgerValidationError", "terminalize:LedgerValidationError"], "result_hash_still_none": true}`
+`PROBE11: {"attempt_has_result_hash": false, "canonical_registry_count": 68, "constant": 68, "ledger_attempt_columns": ["ledger_id", "attempt_number", "retry_mode", "provider_surface", "transport_type", "started_at", "completed_at", "outcome", "error", "telemetry_json"], "ledger_terminal_columns": ["ledger_id", "terminal_at", "terminal_status", "result_artifact_ref", "result_sha256", "failure_detail"], "tables": ["ledger_attempt", "ledger_candidate", "ledger_disposition", "ledger_event", "ledger_run", "ledger_terminal", "sqlite_sequence"], "triggers": ["ledger_attempt_guard_insert", "ledger_attempt_immutable_delete", "ledger_attempt_immutable_update", "ledger_attempt_telemetry_guard", "ledger_candidate_guard_insert", "ledger_candidate_immutable_delete", "ledger_candidate_immutable_update", "ledger_disposition_guard_insert", "ledger_disposition_immutable_delete", "ledger_disposition_immutable_update", "ledger_event_immutable_delete", "ledger_event_immutable_update", "ledger_event_no_replace", "ledger_event_terminal_backed", "ledger_run_immutable_delete", "ledger_run_immutable_update", "ledger_run_no_replace", "ledger_terminal_guard_insert", "ledger_terminal_immutable_delete", "ledger_terminal_immutable_update"]}`
+`PROBE12: {"m67_m68_modules": [], "production_files": ["ledger.py", "orchestration.py", "source_bridge.py"], "provider_network_browser_credential_findings": [], "provider_surface_or_notebook_transport_implementation_markers": ["ledger.py", "orchestration.py", "source_bridge.py"]}`
+
+4. Required one-guard mutation test. The reviewed copy's ledger.py was copied into basetemp/mutation-copy, edited there only, restored from the disposable copy, then checked. The mutation command removed exactly one append guard; the later hash check confirmed the restored mutation-copy ledger matches the source copy.
+Mutation setup command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "import shutil; from pathlib import Path; src=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/copy'); dst=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/mutation-copy'); shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src,dst,ignore=shutil.ignore_patterns('__pycache__','.pytest_cache','*.sqlite3')); p=dst/'qad/m6/ledger.py'; t=p.read_text(encoding='utf-8'); block='        if outcome_value == TerminalStatus.SUCCESS.value:\\n            raise LedgerValidationError(\\n                \\"append_attempt refuses a standalone SUCCESS attempt (FD #155): a \\"\\n                \\"SUCCESS attempt must be recorded together with its exact terminal \\"\\n                \\"result binding in ONE transaction via \\"\\n                \\"finalize_success_attempt_atomic(...). Nothing was written \\"\\n                \\"(no attempt, no audit event, no terminal record).\\"\\n            )\\n'; assert t.count(block)==1, f'guard matches={t.count(block)}'; p.write_text(t.replace(block,''),encoding='utf-8'); print('copied_to='+str(dst)); print('removed_append_guard_matches=1'); print('source_copy_unchanged=True')"`
+Observed output:
+`copied_to=C:\Users\Admin\AppData\Local\hermes\profiles\iip\cache\scratch\fd155-review\basetemp\mutation-copy`
+`removed_append_guard_matches=1`
+`source_copy_unchanged=True`
+
+Mutation-red command (explicit basetemp; parent existed):
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_01_append_attempt_refuses_enum_success tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_02_append_attempt_refuses_string_success -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/mutation-pytest-temp"`
+Observed output:
+`FF                                                                       [100%]`
+`test_01_append_attempt_refuses_enum_success: Failed: DID NOT RAISE LedgerValidationError`
+`test_02_append_attempt_refuses_string_success: Failed: DID NOT RAISE LedgerValidationError`
+`2 failed in 0.59s` (exit code 1; expected red result)
+
+Restore + mutation-green command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "import shutil; from pathlib import Path; src=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/copy/qad/m6/ledger.py'); dst=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/mutation-copy/qad/m6/ledger.py'); shutil.copy2(src,dst); print('restored_from_disposable_copy=True')" && "C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -m pytest tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_01_append_attempt_refuses_enum_success tests/qad/m6/test_m63_public_success_hardening.py::TestAppendAttemptRefusesStandaloneSuccess::test_02_append_attempt_refuses_string_success -q --basetemp="C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/mutation-pytest-temp"`
+Observed output:
+`restored_from_disposable_copy=True`
+`..                                                                       [100%]`
+`2 passed in 0.32s`
+
+5. Final LF-normalized hashes and QAD migration-name scan (workdir: disposable copy):
+Command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; import hashlib; root=Path.cwd(); fs=['qad/m6/ledger.py','qad/m6/orchestration.py','qad/m6/source_bridge.py','tests/qad/m6/test_m63_run_ledger.py','tests/qad/m6/test_m63_public_success_hardening.py','tests/qad/m6/test_m65_retry_telemetry_idempotency.py']; print('LF_NORMALIZED_SHA256'); [print(hashlib.sha256((root/f).read_bytes().replace(bytes([13,10]),bytes([10])).replace(bytes([13]),bytes([10]))).hexdigest()+'  '+f) for f in fs]; print('QAD_MIGRATION_NAMED_FILES'); [print(p.relative_to(root).as_posix()) for p in sorted((root/'qad').rglob('*')) if p.is_file() and 'migrat' in p.name.lower()]"`
+Observed output:
+`LF_NORMALIZED_SHA256`
+`61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c  qad/m6/ledger.py`
+`4443b1f17f66f4f6e8c1b43b430599c940b37526a585e19ec6355f5a228fb65b  qad/m6/orchestration.py`
+`320c70bec704664783b2a00ad22bbfd2e6dc5f5eaa77e4c286924145b3d1f871  qad/m6/source_bridge.py`
+`59458d1f0ecadd9e38e19d3788432a2e596940f069847b4828610947eb4bd169  tests/qad/m6/test_m63_run_ledger.py`
+`c1068414a7ded6cbad695382ce4a36e3e50c59152c845663c4dab8ae55851396  tests/qad/m6/test_m63_public_success_hardening.py`
+`c6ecd386dc09dc9bb1bdf735b6388120c33486dd218c9b1f5d6cf440a5e2a9e6  tests/qad/m6/test_m65_retry_telemetry_idempotency.py`
+`QAD_MIGRATION_NAMED_FILES` (no paths followed)
+
+6. Restored mutation-copy ledger hash comparison and report-path pre-write check:
+Command:
+`"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" -c "from pathlib import Path; import hashlib; src=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/copy/qad/m6/ledger.py'); dst=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/mutation-copy/qad/m6/ledger.py'); out=Path('C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/REVIEW-FD155-2026-10-14.txt'); norm=lambda p:hashlib.sha256(p.read_bytes().replace(bytes([13,10]),bytes([10])).replace(bytes([13]),bytes([10]))).hexdigest(); print('source_ledger_sha256='+norm(src)); print('mutation_copy_ledger_sha256='+norm(dst)); print('mutation_copy_matches_source='+str(norm(src)==norm(dst))); print('review_output_already_exists='+str(out.exists()))"` (workdir: fd155-review)
+Observed output:
+`source_ledger_sha256=61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c`
+`mutation_copy_ledger_sha256=61860a713a1d25056eb228c27756bc6f61f7106f824a8881e50fc2e21370b27c`
+`mutation_copy_matches_source=True`
+`review_output_already_exists=False`
+
+
+
+An initial probe-script invocation failed before probes because Python lacked the disposable-copy root on its import path.
+Command: `"C:/Users/Admin/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe" "C:/Users/Admin/AppData/Local/hermes/profiles/iip/cache/scratch/fd155-review/basetemp/fd155_probe.py"`
+Observed result: `ModuleNotFoundError: No module named 'qad'`. The script was corrected in basetemp and the final run above succeeded. The command under item 3 was also attempted once with a malformed local regex; it emitted probes 1–11 and then ended with `re.error: missing ), unterminated subpattern at position 4`. The regex was corrected in basetemp and the final AST/source probe above succeeded. Neither failure changed reviewed files. No git command was run.
+
+POLICY DISAGREEMENT: NONE. The reviewed policy is Founder-set and accepted; this verdict does not reconsider or amend it.

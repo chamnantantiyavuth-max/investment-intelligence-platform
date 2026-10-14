@@ -1,0 +1,20 @@
+{
+  "producer_model": "deepseek/deepseek-v4.1-flash",
+  "producer_family": "deepseek",
+  "reviewer_model": "openai/gpt-6-luna",
+  "reviewer_family": "openai",
+  "reasoning_effort": "high",
+  "provider": "openrouter",
+  "fallback_used": false,
+  "escalation_reason": null,
+  "family_independent": true,
+  "verdict": "INDEPENDENT",
+  "guard": "profiles/iip/scripts/routing_provenance.py --producer deepseek/deepseek-v4.1-flash --reviewer openai/gpt-6-luna --reasoning high --provider openrouter --escalation-reason none --require-independent (exit 0)",
+  "harness": "disposable no-.git copy (git archive HEAD fa449cd | tar -x) + explicit external basetemp; read-only; LF-normalised hashes verified against REVIEW-TARGET-PROVENANCE.txt",
+  "reviewed_commit": "fa449cd7f1a295f64dccc710920f36954b425286",
+  "review_scope": "bounded confirmation review of the FD #155 (Path H) public SUCCESS-API hardening — 15 mandated behavioural probes with explicit threat-model boundary + regression counts",
+  "review_overrides": {
+    "mechanism": "task-level premium override: delegation.provider=openrouter + delegation.model=openai/gpt-6-luna set immediately before dispatch and restored to deepseek/deepseek-v4.1-flash immediately after the reviewer returned (the per-task Kanban override path was not used because no dispatch board was live in this session; this is the equivalent explicit task-level override, recorded truthfully)",
+    "recorded_by": "Parent (DeepSeek V4.1 Flash)"
+  }
+}
