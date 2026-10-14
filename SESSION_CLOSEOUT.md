@@ -1,5 +1,47 @@
 # Session — 2026-10-09 (QAD M6.6 — IMPLEMENTED, five review rounds all C and all fixed; M6.6 NOT CLOSED — Founder decision pending)
 
+## 2026-10-14 — FD #156 synced, and my earlier diagnosis was wrong: it's an expired login
+
+**You were right to push back on my cause claim.** I synced FD #156 first (fast-forward
+`57d8972..a163749`, remote verified = `a163749…`, `main` untouched), then tested `notebooklm-py
+0.8.5` in a **throwaway environment outside the repo** so your working 0.7.3 setup stayed intact.
+
+**What 0.8.5 says, in the tool's own words**
+
+- `auth check --test --passive` → **✗ "Authentication expired or invalid. Run 'notebooklm login' to
+  re-authenticate."**
+- `list --backend web` → **exit 1, "Authentication error: Authentication expired or invalid.
+  notebook.google.com served a signed-out page, and its sign-in check redirected to
+  accounts.google.com"**
+
+So the old v0.7.3 message (`CSRF token not found in HTML`) was **real but misleading**: that version
+couldn't tell a signed-out session from a real page change, and 0.8.5 fixes exactly that (its release
+notes say so). **My "not an authentication failure" conclusion is withdrawn** — the actual cause is an
+expired/signed-out session. Also withdrawn: "30 cookies + a SID present" is *not* proof of a live
+server-side session; it only proves the local cookie file is populated.
+
+**Result class: B — AUTHENTICATION REQUIRED.** I stopped the provider test there.
+
+**What you need to do (one ordinary action):** sign in once, in a real browser window, using the
+isolated 0.8.5 client:
+
+```
+<your iip profile>\cache\scratch\m68-venv-085\Scripts\notebooklm.exe --profile default login
+```
+
+Then I re-run the same read-only probe once. I did **not** attempt any login, token refresh,
+credential recovery or credential migration myself.
+
+**Android backend: not recommended now.** Web isn't broken — the session is just expired. Android
+would additionally need a separate "master token" (0.8.5 reports it as *not present*), extra
+dependencies and its own bootstrap, and its read-only capability is unverified. Retry Web after the
+login first.
+
+**Nothing changed in production or governance:** M6.7 stays CLOSED, M6.8 not implemented, five cron
+jobs PAUSED, `main` unchanged, 68 canonical schemas. No notebook was created, modified or deleted, no
+upload, no Deep Research, no state-changing provider call. Full detail:
+`evidence/m6.8/STAGE-A-CORRECTION-AND-085-COMPAT-PROBE-2026-10-14.md`.
+
 ## 2026-10-14 — M6.7 pushed to origin, then M6.8 Stage A: the NotebookLM transport is still broken
 
 **Part 1 — the four M6.7 commits are now on the remote.** Fast-forward only: `c288aeb..57d8972`
