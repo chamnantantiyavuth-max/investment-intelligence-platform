@@ -1,0 +1,18 @@
+==============================================================================
+PARENT VERIFICATION - FINDING 3: create_run_kwargs vs request binding
+==============================================================================
+
+[1] call result
+   raised              : RetryPolicyError: create_run_kwargs is not bound to the authoritative Deep Research request; refusing BEFORE any mutation: request_id supplied 'REQ-WRONG' != request 'REQ-R'
+   outcome             : None
+
+[2] durable ledger state AFTER the refusal
+   run L-R exists      : False
+
+[3] VERDICT: no run persisted - finding NOT reproduced
+
+[4] control: the SAME call with correctly bound kwargs
+   control outcome     : SUCCESS_FINALIZED
+   control terminal    : TerminalStatus.SUCCESS | hash: fcc3a0b23768dd3196968c0207f1b7ed9095966e9fd349ee36a451f3097ee2bb
+
+==============================================================================

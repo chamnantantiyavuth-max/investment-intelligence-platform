@@ -1251,6 +1251,7 @@ def _require_request_run_binding(record: RunRecord, request: Any) -> None:
         ("research_run_id", request.research_run_id, record.research_run_id),
         ("request_id", request.request_id, record.request_id),
         ("ledger_id", request.ledger_id, record.ledger_id),
+        ("rrm_manifest_id", request.rrm_manifest_id, record.rrm_manifest_id),
         ("case_id", request.case_id, record.case_id),
         ("case_version", request.case_version, record.case_version),
         ("evidence_gap_id", request.evidence_gap_id, record.evidence_gap_id),
@@ -1265,6 +1266,132 @@ def _require_request_run_binding(record: RunRecord, request: Any) -> None:
                 + " is not bound to the target ledger run " + repr(record.ledger_id)
                 + " (" + name + "=" + repr(bound) + ")"
             )
+
+
+#: Run fields that are AUTHORITATIVE in the ``DeepResearchRequest``. A caller-supplied
+#: ``create_run_kwargs`` must not disagree with ANY of them.
+_REQUEST_BOUND_RUN_FIELDS: tuple[str, ...] = (
+    "ledger_id",
+    "research_run_id",
+    "rrm_manifest_id",
+    "case_id",
+    "case_version",
+    "evidence_gap_id",
+    "request_id",
+    "pit_context_id",
+    "pit_mode",
+    "as_of",
+    "input_snapshot_hash",
+)
+
+#: The complete accepted ``create_run`` keyword set. An unknown key is REFUSED rather than
+#: silently carried into the ledger call.
+_CREATE_RUN_KEYWORDS: tuple[str, ...] = (
+    "ledger_id", "research_run_id", "rrm_manifest_id", "case_id", "case_version",
+    "evidence_gap_id", "request_id", "idempotency_key", "notebook_identity",
+    "pit_context_id", "pit_mode", "as_of", "input_snapshot_hash", "provider_surface",
+    "transport_type", "started_at",
+)
+
+#: The keys a caller MUST supply (``started_at`` is the ledger's own optional clock).
+_CREATE_RUN_REQUIRED_KEYWORDS: tuple[str, ...] = tuple(
+    k for k in _CREATE_RUN_KEYWORDS if k != "started_at"
+)
+
+
+def _preflight_create_run_kwargs(
+    request: Any,
+    create_run_kwargs: Mapping[str, Any],
+    *,
+    plan: AttemptPlan,
+    provider_set: ProviderSet,
+    transport_type: str,
+) -> None:
+    """READ-ONLY preflight of caller-supplied run kwargs against the request.
+
+    FD #151 Round-1 finding 3: the ``DeepResearchRequest`` is authoritative. This runs
+    BEFORE any run resolution/creation, provider execution, source registration, source
+    disposition, attempt write or terminal write, so an inconsistent caller can never
+    leave a half-populated run behind. Nothing here mutates anything.
+
+    The ledger run's OWN configured provider surface is deliberately validated SEPARATELY
+    from ``request.provider.provider_surface``: a legitimate Mode A fallback request may
+    declare the surface that ultimately produces the result while the run is configured
+    with the surface used by the deterministic INITIAL attempt. No new equality
+    requirement is invented between those two.
+    """
+    kwargs = create_run_kwargs
+
+    unknown = sorted(set(kwargs) - set(_CREATE_RUN_KEYWORDS))
+    if unknown:
+        raise OrchestrationError(
+            "create_run_kwargs carries unknown run field(s) " + repr(unknown)
+            + "; refusing to create a run from an unrecognized keyword set"
+        )
+    missing = [k for k in _CREATE_RUN_REQUIRED_KEYWORDS if k not in kwargs]
+    if missing:
+        raise OrchestrationError(
+            "create_run_kwargs is missing required run field(s) " + repr(missing)
+            + "; authoritative identity fields are never defaulted"
+        )
+
+    mismatches = [
+        (field, kwargs[field], getattr(request, field))
+        for field in _REQUEST_BOUND_RUN_FIELDS
+        if kwargs[field] != getattr(request, field)
+    ]
+    if mismatches:
+        raise RetryPolicyError(
+            "create_run_kwargs is not bound to the authoritative Deep Research request; "
+            "refusing BEFORE any mutation: "
+            + "; ".join(
+                f + " supplied " + repr(supplied) + " != request " + repr(authoritative)
+                for f, supplied, authoritative in mismatches
+            )
+        )
+
+    expected_key = idempotency_key_for_request(request)
+    if kwargs["idempotency_key"] != expected_key:
+        raise RetryPolicyError(
+            "create_run_kwargs.idempotency_key " + repr(kwargs["idempotency_key"])
+            + " is not the authoritative M6.5 derivation for this request "
+            + repr(expected_key)
+        )
+    if kwargs["transport_type"] != transport_type:
+        raise RetryPolicyError(
+            "create_run_kwargs.transport_type " + repr(kwargs["transport_type"])
+            + " does not match the recorded transport type " + repr(transport_type)
+        )
+    for field in ("notebook_identity", "provider_surface", "idempotency_key"):
+        value = kwargs[field]
+        if not isinstance(value, str) or not value.strip():
+            raise OrchestrationError(
+                "create_run_kwargs." + field + " must be a non-blank string"
+            )
+
+    # The INITIAL attempt on a NEW run: a retry plan implies an EXISTING run, and the
+    # plan must match the surface the run is configured with. These mirror the accepted
+    # M6.5 rules (`_validate_plan_against_record`) in READ-ONLY form, because that helper
+    # cannot run until the record exists — the retry rules themselves are NOT
+    # re-implemented here.
+    if plan.attempt_number != ATTEMPT_NUMBER_MIN:
+        raise RetryPolicyError(
+            "attempt " + str(plan.attempt_number) + " is a retry and requires an "
+            "EXISTING ledger run; a NEW run must start at attempt "
+            + str(ATTEMPT_NUMBER_MIN)
+        )
+    if plan.retry_mode is not RetryMode.INITIAL_ATTEMPT:
+        raise RetryPolicyError(
+            "the initial attempt on a NEW ledger run must use retry_mode "
+            "INITIAL_ATTEMPT, got " + repr(plan.retry_mode)
+        )
+    if plan.provider_surface != kwargs["provider_surface"]:
+        raise RetryPolicyError(
+            "the initial attempt provider must equal the provider surface the ledger run "
+            "is created with (" + repr(kwargs["provider_surface"]) + "), got "
+            + repr(plan.provider_surface)
+        )
+    validate_attempt_plan(plan, provider_set)
 
 
 def run_provider_attempt(
@@ -1291,14 +1418,17 @@ def run_provider_attempt(
 
     Sequence (no rule is re-implemented here):
 
-      1. resolve/create the ONE logical run (idempotent by the M6.5 key);
-      2. validate the request<->run binding and the deterministic attempt plan;
-      3. ``provider.execute(...)`` -> a bounded :class:`ProviderOutcome`;
-      4. map the outcome onto the EXISTING bounded attempt vocabulary;
-      5. on SUCCESS: proof-gate FIRST, then settle EVERY discovered source candidate
+      1. READ-ONLY preflight of any caller-supplied ``create_run_kwargs`` against the
+         AUTHORITATIVE request (identity fields, idempotency key, transport type and the
+         initial attempt plan) — before any mutation of any kind;
+      2. resolve/create the ONE logical run (idempotent by the M6.5 key);
+      3. validate the request<->run binding and the deterministic attempt plan;
+      4. ``provider.execute(...)`` -> a bounded :class:`ProviderOutcome`;
+      5. map the outcome onto the EXISTING bounded attempt vocabulary;
+      6. on SUCCESS: proof-gate FIRST, then settle EVERY discovered source candidate
          through the accepted M6.6 bridge, then terminalize through
          :func:`accept_success_result` (FD #153 atomic finalization);
-      6. on failure: ``record_failed_attempt`` + ``decide_retry``; exhaustion terminates
+      7. on failure: ``record_failed_attempt`` + ``decide_retry``; exhaustion terminates
          through :func:`terminalize_research_unavailable`.
 
     A fail-closed outcome is NEVER retried merely because budget remains, and a
@@ -1317,8 +1447,29 @@ def run_provider_attempt(
         )
 
     ledger_id = request.ledger_id
+
+    # An executing provider that disagrees with the validated plan is a caller error and
+    # must be refused BEFORE any mutation (this is read-only and branch-independent).
+    provider_surface = getattr(provider, "surface", None)
+    if provider_surface != plan.provider_surface:
+        raise RetryPolicyError(
+            "the executing provider surface " + repr(provider_surface)
+            + " must equal the validated attempt plan provider "
+            + repr(plan.provider_surface))
+
+    # --- READ-ONLY PREFLIGHT (FD #151 Round-1 finding 3) -------------------
+    # Runs BEFORE run resolution/creation, provider execution, source registration,
+    # source disposition and any attempt/terminal write, so an inconsistent caller can
+    # never leave a half-populated non-terminal run behind.
+    if create_run_kwargs is not None:
+        _preflight_create_run_kwargs(
+            request, create_run_kwargs, plan=plan, provider_set=provider_set,
+            transport_type=transport_type,
+        )
+
     if store.contains(ledger_id):
         record = store.load_run(ledger_id)
+        # refuse BEFORE invoking the provider or the source bridge
         _require_request_run_binding(record, request)
     else:
         if create_run_kwargs is None:
@@ -1330,6 +1481,9 @@ def run_provider_attempt(
             create_run_kwargs=dict(create_run_kwargs),
         )
         record = store.load_run(resolution.ledger_id)
+        # defence in depth: the PERSISTED record must also bind to the request (never
+        # assume creation stored exactly what the preflight validated)
+        _require_request_run_binding(record, request)
 
     if record.is_terminal:
         raise RetryPolicyError(
@@ -1338,13 +1492,6 @@ def run_provider_attempt(
 
     _, expected = _next_attempt_guard(store, ledger_id)
     _validate_plan_against_record(record, plan, provider_set, expected)
-
-    provider_surface = getattr(provider, "surface", None)
-    if provider_surface != plan.provider_surface:
-        raise RetryPolicyError(
-            "the executing provider surface " + repr(provider_surface)
-            + " must equal the validated attempt plan provider "
-            + repr(plan.provider_surface))
 
     outcome = provider.execute(
         request, proof_resolver=proof_resolver, attempt_number=plan.attempt_number)

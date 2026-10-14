@@ -1,0 +1,42 @@
+FD #151 M6.7 ROUND-2 RECONCILED-TEST RECORD (finding 3 correction, 2026-10-14)
+============================================================================
+
+One previously accepted M6.7 test carried ONE assertion that encoded the OLD, WEAKER
+behaviour that the correction replaces. It is reconciled below under the project's
+established discipline: classify individually, preserve the substantive coverage,
+document old behaviour -> revised contract -> retained assertion, and NEVER weaken an
+assertion to obtain GREEN.
+
+--------------------------------------------------------------------------
+FILE: tests/qad/m6/test_m67_provider_adapter.py
+TEST: test_neg_run_provider_capability_mismatch_is_refused
+--------------------------------------------------------------------------
+
+PURPOSE (unchanged): a plan naming a provider surface OUTSIDE the configured compliant
+ProviderSet must be refused, and no attempt may exist afterwards.
+
+OLD BEHAVIOUR (Round-1 accepted):
+    the run was CREATED first and the refusal happened afterwards, leaving an empty,
+    unusable non-terminal run behind:
+        assert store.load_run("L-1").attempts == ()
+
+REVISED CONTRACT (FD #151 Round-1 finding 3, Founder Option A):
+    every read-only preflight — including plan/provider-set validation and the
+    executing-provider check — now precedes run creation, so a refusal writes NOTHING:
+        assert not store.contains("L-1")
+        with pytest.raises(LedgerNotFound):
+            store.load_run("L-1")
+
+RETAINED ASSERTION: the same refusal (RetryPolicyError) for the same input, with a
+strictly STRONGER post-condition. No other test, and no other assertion in this test,
+was modified.
+
+CLASSIFICATION: NOT a weakened assertion; the replacement is a strictly stronger
+guarantee (zero durable trace instead of an empty run). The old assertion would now be
+FALSE by construction of the corrected behaviour.
+
+DELTA: 1 assertion replaced (2 statements), 1 import added (`LedgerNotFound`).
+
+All 30 Round-1 tests remain present with their substantive assertions; 31 new
+preflight tests were added (criteria 1-15 of the Founder's correction mandate), for
+61 tests total in the M6.7 suite.

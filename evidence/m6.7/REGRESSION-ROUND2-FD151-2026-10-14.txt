@@ -1,0 +1,50 @@
+FD #151 M6.7 ROUND-2 CROSS-CLUSTER REGRESSION (finding 3 correction)
+date: 2026-10-14 08:51 UTC
+branch: impl/m6-gemini-notebook
+HEAD:   891523cade091955661e7c50b766765dc9c4f09c
+
+M6.7 targeted                  61 passed in 5.96s
+M6.3 run ledger                52 passed in 4.41s
+M6.3 public hardening          26 passed in 1.98s
+M6.5 retry/idempotency         118 passed in 6.40s
+M6.6 source bridge             80 passed in 5.18s
+ALL tests/qad/m6               494 passed in 27.31s
+M5.3 PIT                       116 passed in 0.92s
+M5.2 persistence               292 passed, 11 warnings in 1.25s
+ALL tests/qad                  1 failed, 1029 passed, 11 warnings in 29.17s
+ALL tests/ops                  94 passed in 158.56s (0:02:38)
+LOCKED suites (legacy)         17 failed, 144 passed, 1 error in 2.65s
+
+=========== GATES ===========
+gate-check.sh exit=1
+
+=== Gate Check Complete ===
+[0;31m1 gate(s) failed[0m
+isolation-scan.sh exit=0
+  [0;32m✓[0m No forbidden-path violations in working tree
+
+=== Isolation Scan Complete ===
+
+=========== SCHEMA / RESIDUE / REPO ===========
+CANONICAL_SCHEMA_COUNT    = 68
+len(CANONICAL_SCHEMAS)     = 68
+len(NON_CANONICAL_SCHEMAS) = 0
+./backend/data/iip.db
+-- git status --porcelain --
+ M qad/m6/orchestration.py
+ M tests/qad/m6/test_m67_provider_adapter.py
+?? evidence/m6.7/E2E-DEMO-ROUND2-FD151-2026-10-14.txt
+?? evidence/m6.7/MUTATION-DEMO-ROUND2-FD151-2026-10-14.txt
+?? evidence/m6.7/RECONCILED-TESTS-ROUND2-2026-10-14.txt
+?? evidence/m6.7/REGRESSION-ROUND2-FD151-2026-10-14.txt
+?? evidence/m6.7/REJECTED-BINDING-ZERO-MUTATION-ROUND2-2026-10-14.txt
+?? evidence/m6.7/TRUST-BOUNDARY-AND-M6.8-ACCEPTANCE-REQUIREMENT-2026-10-14.md
+
+=========== CRON (must be 5) ===========
+5
+
+=========== REMOTES ===========
+origin/main : 5bf107774b29e5a5fe4dcec5846800b9b48361ba
+origin/impl : c288aebec523b3d0a9aa73c7802c39d0cdf06cf6
+local impl  : 891523cade091955661e7c50b766765dc9c4f09c
+ROUND2_REGRESSION_DONE exit=0

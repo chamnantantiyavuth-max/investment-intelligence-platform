@@ -20,6 +20,7 @@ import pytest
 from qad.m6.ledger import (
     CandidateDisposition,
     DeepResearchRunLedgerStore,
+    LedgerNotFound,
     LedgerValidationError,
     RetryMode,
     TelemetryStatus,
@@ -32,6 +33,7 @@ from qad.m6.mock_transport import (
     MockTransportScript,
 )
 from qad.m6.orchestration import (
+    OrchestrationError,
     OrchestrationMode,
     ProviderExecutionOutcome,
     ProviderSet,
@@ -909,7 +911,13 @@ def test_neg_run_provider_capability_mismatch_is_refused(tmp_path):
             proof_resolver=harness.resolver, archive=archive,
             create_run_kwargs=_create_kwargs(request),
         )
-    assert store.load_run("L-1").attempts == ()
+    # FD #151 Round-1 finding 3 reconciliation: the refusal now precedes run creation.
+    # The previous accepted assertion ("the run exists with zero attempts") encoded the
+    # WEAKER behaviour where an unusable run was left behind; the corrected contract is
+    # strictly stronger, so the assertion is strengthened, not weakened.
+    assert not store.contains("L-1")
+    with pytest.raises(LedgerNotFound):
+        store.load_run("L-1")
 
 
 def test_neg_request_must_be_bound_to_the_target_run(tmp_path):
@@ -927,3 +935,360 @@ def test_neg_request_must_be_bound_to_the_target_run(tmp_path):
                  plan=plan_attempt(provider_set=_ps(), attempt_number=1),
                  archive=archive, kwargs=False)
     assert store.load_run("L-1").attempts == ()
+
+
+# =====================================================================
+# ROUND 2 - REQUEST/RUN IDENTITY PREFLIGHT (FD #151 Round-1 finding 3)
+# =====================================================================
+#
+# The authoritative DeepResearchRequest must be validated against any caller-supplied
+# `create_run_kwargs` BEFORE any run creation, provider execution, source registration,
+# source disposition or attempt/terminal write. A refusal must leave ZERO durable trace.
+
+
+class _CountingTransport:
+    """Wraps a real provider and counts execute() calls (proves no provider call)."""
+
+    def __init__(self, inner):
+        self._inner = inner
+        self.calls = 0
+        self.transport_type = inner.transport_type
+        self.surface = inner.surface
+
+    def capability(self):
+        return self._inner.capability()
+
+    def execute(self, request, *, proof_resolver=None, attempt_number=1):
+        self.calls += 1
+        return self._inner.execute(
+            request, proof_resolver=proof_resolver, attempt_number=attempt_number)
+
+
+def _run_with_kwargs(store, request, harness, archive, *, overrides=None, drop=(),
+                     plan=None, transport=None):
+    """Call the entry point with (possibly corrupted) caller-supplied run kwargs."""
+    kwargs = _create_kwargs(request)
+    if overrides:
+        kwargs.update(overrides)
+    for key in drop:
+        kwargs.pop(key, None)
+    return run_provider_attempt(
+        store, request=request, provider=transport or harness.transport,
+        provider_set=_ps(), transport_type=MOCK_TRANSPORT_TYPE,
+        plan=plan or plan_attempt(provider_set=_ps(), attempt_number=1),
+        telemetry=not_exposed_provider_telemetry(),
+        proof_resolver=harness.resolver, archive=archive,
+        discovery_timestamp=DISCOVERED_AT, create_run_kwargs=kwargs,
+    )
+
+
+def _assert_zero_mutation(store, ledger_id, *, alias=None):
+    """No run, no candidates, no dispositions, no attempts, no terminal, no events."""
+    assert not store.contains(ledger_id), "a rejected call must not create the run"
+    if alias is not None:
+        assert not store.contains(alias)
+    assert store.events(ledger_id) == [], "a rejected call must write NO audit events"
+
+
+@pytest.mark.parametrize(
+    "field,bad_value",
+    [
+        ("ledger_id", "L-OTHER"),              # 1
+        ("request_id", "REQ-WRONG"),           # 2
+        ("research_run_id", "RR-WRONG"),       # 3
+        ("input_snapshot_hash", "d" * 64),     # 4
+        ("pit_context_id", "PITC-WRONG"),      # 5a
+        ("pit_mode", "LIVE_OPINION"),          # 5b
+        ("as_of", "2026-06-01"),               # 5c
+        ("case_id", "CASE-WRONG"),             # 6a
+        ("case_version", "v9"),                # 6b
+        ("evidence_gap_id", "EG-WRONG"),       # 6c
+        ("rrm_manifest_id", "RRM-WRONG"),      # 6d
+        ("idempotency_key", "IK-WRONG"),       # 7
+    ],
+)
+def test_pref_01_to_07_identity_mismatch_is_refused_before_any_mutation(
+    tmp_path, field, bad_value
+):
+    """Criteria 1-7: any request-bound field that disagrees is refused pre-mutation."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+    counter = _CountingTransport(harness.transport)
+
+    with pytest.raises(RetryPolicyError, match=field):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={field: bad_value}, transport=counter)
+
+    assert counter.calls == 0, "the provider must NOT be called before validation"
+    _assert_zero_mutation(store, request.ledger_id,
+                          alias=bad_value if field == "ledger_id" else None)
+    assert store.load_run_by_idempotency_key(idempotency_key_for_request(request)) is None
+
+
+@pytest.mark.parametrize(
+    "missing", ["ledger_id", "request_id", "research_run_id", "input_snapshot_hash",
+                "idempotency_key", "pit_context_id", "case_version", "evidence_gap_id"]
+)
+def test_pref_08_missing_identity_field_is_refused(tmp_path, missing):
+    """Criterion 8: a missing authoritative identity field is never defaulted."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+    counter = _CountingTransport(harness.transport)
+
+    with pytest.raises(OrchestrationError, match="missing required run field"):
+        _run_with_kwargs(store, request, harness, archive, drop=(missing,),
+                         transport=counter)
+
+    assert counter.calls == 0
+    _assert_zero_mutation(store, request.ledger_id)
+
+
+def test_pref_08b_unknown_identity_field_is_refused(tmp_path):
+    """An unrecognized run keyword is refused rather than silently carried."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+
+    with pytest.raises(OrchestrationError, match="unknown run field"):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={"not_a_run_field": "x"})
+    _assert_zero_mutation(store, request.ledger_id)
+
+
+def test_pref_08c_blank_identity_value_is_refused(tmp_path):
+    """A blank (present-but-empty) identity value is refused, not accepted."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+
+    with pytest.raises(OrchestrationError, match="non-blank"):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={"notebook_identity": "   "})
+    _assert_zero_mutation(store, request.ledger_id)
+
+
+def test_pref_09_existing_run_with_mismatched_request_is_refused_and_preserved(tmp_path):
+    """Criterion 9: an existing run + mismatched request is refused, record untouched."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    store = _store(tmp_path)
+    failing = Harness(archive, MockTransportScript(
+        attempt_outcomes=((1, "TRANSPORT_FAILURE"),)))
+    first = _run_with_kwargs(store, request, failing, archive)
+    assert first.outcome is ProviderExecutionOutcome.RETRY_SCHEDULED
+
+    before = store.load_run("L-1")
+    events_before = store.events("L-1")
+
+    # a DIFFERENT logical request reusing the same ledger id must be refused
+    other = _request(snapshot, request_id="REQ-OTHER", research_run_id="RR-OTHER")
+    counter = _CountingTransport(Harness(archive).transport)
+    with pytest.raises(RetryPolicyError, match="not bound to the target ledger run"):
+        run_provider_attempt(
+            store, request=other, provider=counter, provider_set=_ps(),
+            transport_type=MOCK_TRANSPORT_TYPE,
+            plan=plan_attempt(provider_set=_ps(), attempt_number=2,
+                              previous_provider_surface=MOCK_PROVIDER_SURFACE),
+            telemetry=not_exposed_provider_telemetry(),
+            proof_resolver=Harness(archive).resolver, archive=archive,
+            discovery_timestamp=DISCOVERED_AT,
+        )
+    assert counter.calls == 0, "refusal must precede provider execution"
+
+    after = store.load_run("L-1")
+    assert [(a.attempt_number, a.outcome) for a in after.attempts] == \
+        [(a.attempt_number, a.outcome) for a in before.attempts]
+    assert after.candidates == before.candidates
+    assert after.dispositions == before.dispositions
+    assert after.terminal_status == before.terminal_status
+    assert after.result_sha256 == before.result_sha256
+    assert store.events("L-1") == events_before, "no new durable events"
+
+
+def test_pref_10_existing_run_with_consistent_identity_supports_a_valid_retry(tmp_path):
+    """Criterion 10: a valid retry on an existing consistent run still works."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    store = _store(tmp_path)
+    failing = Harness(archive, MockTransportScript(
+        attempt_outcomes=((1, "TRANSPORT_FAILURE"),)))
+    first = _run_with_kwargs(store, request, failing, archive)
+    assert first.retry_decision.should_retry is True
+    nxt = first.retry_decision.next_attempt
+
+    healthy = Harness(archive)
+    second = run_provider_attempt(
+        store, request=request, provider=healthy.transport, provider_set=_ps(),
+        transport_type=MOCK_TRANSPORT_TYPE, plan=nxt,
+        telemetry=not_exposed_provider_telemetry(),
+        proof_resolver=healthy.resolver, archive=archive,
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    assert second.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+    rec = store.load_run("L-1")
+    assert rec.terminal_status is TerminalStatus.SUCCESS
+    assert [a.attempt_number for a in rec.attempts] == [1, 2]
+    assert rec.result_sha256 == second.result_sha256
+
+
+def test_pref_11_mode_a_fallback_is_not_falsely_rejected_by_the_preflight(tmp_path):
+    """Criterion 11: the preflight must NOT force request-surface == run-surface.
+
+    A Mode A request declares the surface that ultimately produces the result while the
+    ledger run is configured with the INITIAL attempt's surface. The preflight must accept
+    that combination (no new equality requirement that would break legitimate fallback).
+    """
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot, provider_surface=SURFACE_B)
+    ps = ProviderSet((SURFACE_A, SURFACE_B))
+    store = _store(tmp_path)
+    kwargs = _create_kwargs(request)
+    kwargs["provider_surface"] = SURFACE_A          # the run's INITIAL configured surface
+    harness_a = Harness(archive, MockTransportScript(
+        attempt_outcomes=((1, "TRANSPORT_FAILURE"),)), surface=SURFACE_A)
+
+    first = run_provider_attempt(
+        store, request=request, provider=harness_a.transport, provider_set=ps,
+        transport_type=MOCK_TRANSPORT_TYPE,
+        plan=plan_attempt(provider_set=ps, attempt_number=1),
+        telemetry=not_exposed_provider_telemetry(),
+        proof_resolver=harness_a.resolver, archive=archive,
+        discovery_timestamp=DISCOVERED_AT, create_run_kwargs=kwargs,
+    )
+    assert store.load_run("L-1").provider_surface == SURFACE_A
+    assert first.outcome is ProviderExecutionOutcome.RETRY_SCHEDULED
+    nxt = first.retry_decision.next_attempt
+    assert nxt.provider_surface == SURFACE_B
+
+    harness_b = Harness(archive, surface=SURFACE_B)
+    second = run_provider_attempt(
+        store, request=request, provider=harness_b.transport, provider_set=ps,
+        transport_type=MOCK_TRANSPORT_TYPE, plan=nxt,
+        telemetry=not_exposed_provider_telemetry(),
+        proof_resolver=harness_b.resolver, archive=archive,
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    assert second.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+    assert store.load_run("L-1").terminal_status is TerminalStatus.SUCCESS
+
+
+def test_pref_11b_retry_plan_on_a_new_run_is_refused(tmp_path):
+    """A retry plan cannot create a run: a retry implies an existing attempt history."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+
+    with pytest.raises(RetryPolicyError, match="requires an EXISTING ledger run"):
+        _run_with_kwargs(
+            store, request, harness, archive, transport=_CountingTransport(
+                harness.transport),
+            plan=plan_attempt(provider_set=_ps(), attempt_number=2,
+                              previous_provider_surface=MOCK_PROVIDER_SURFACE),
+        )
+    _assert_zero_mutation(store, request.ledger_id)
+
+
+def test_pref_11c_initial_plan_surface_must_match_the_created_run_surface(tmp_path):
+    """The initial attempt must use the surface the run is created with."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    ps = ProviderSet((SURFACE_A, SURFACE_B))
+    harness = Harness(archive, surface=SURFACE_B)
+    store = _store(tmp_path)
+    kwargs = _create_kwargs(request)
+    kwargs["provider_surface"] = SURFACE_A
+
+    with pytest.raises(RetryPolicyError, match="executing provider surface"):
+        run_provider_attempt(
+            store, request=request, provider=harness.transport, provider_set=ps,
+            transport_type=MOCK_TRANSPORT_TYPE,
+            plan=plan_attempt(provider_set=ps, attempt_number=1),
+            telemetry=not_exposed_provider_telemetry(),
+            proof_resolver=harness.resolver, archive=archive,
+            discovery_timestamp=DISCOVERED_AT, create_run_kwargs=kwargs,
+        )
+    _assert_zero_mutation(store, request.ledger_id)
+
+
+def test_pref_12_re_entry_after_a_rejected_request_leaves_no_pollution(tmp_path):
+    """Criterion 12: after a refusal the SAME store accepts a valid request cleanly."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+
+    with pytest.raises(RetryPolicyError):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={"request_id": "REQ-WRONG"})
+
+    good = _run_with_kwargs(store, request, harness, archive)
+    assert good.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+    rec = store.load_run("L-1")
+    assert rec.request_id == request.request_id
+    assert len(rec.attempts) == 1
+    assert len(rec.candidates) == 2 and len(rec.dispositions) == 2
+    assert rec.terminal_status is TerminalStatus.SUCCESS
+    assert [e[1] for e in store.events("L-1")] == [
+        "RUN_CREATED", "CANDIDATE_REGISTERED", "CANDIDATE_REGISTERED",
+        "CANDIDATE_DISPOSED", "CANDIDATE_DISPOSED", "ATTEMPT_APPENDED",
+        "RUN_TERMINALIZED",
+    ]
+
+
+def test_pref_13_valid_mock_execution_keeps_the_exact_result_binding(tmp_path):
+    """Criterion 13: the corrected path preserves the exact result identity."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+    counter = _CountingTransport(harness.transport)
+
+    result = _run_with_kwargs(store, request, harness, archive, transport=counter)
+    assert counter.calls == 1
+    assert result.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+    rec = store.load_run("L-1")
+    assert rec.result_sha256 == hashlib.sha256(
+        harness.transport.result_bytes).hexdigest()
+    assert rec.result_sha256 == result.result_sha256
+    assert rec.result_artifact_ref == harness.transport.synthesis_ref
+    assert result.result_artifact_ref == harness.transport.synthesis_ref
+
+
+def test_pref_14_no_provider_call_before_authoritative_identity_validation(tmp_path):
+    """Criterion 14: identity validation strictly precedes provider execution."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+    counter = _CountingTransport(harness.transport)
+
+    with pytest.raises(RetryPolicyError):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={"case_version": "v9"}, transport=counter)
+    assert counter.calls == 0
+
+    valid = _run_with_kwargs(store, request, harness, archive, transport=counter)
+    assert valid.outcome is ProviderExecutionOutcome.SUCCESS_FINALIZED
+    assert counter.calls == 1
+
+
+def test_pref_15_zero_new_durable_events_on_refusal(tmp_path):
+    """Criterion 15: a refusal writes no events at all (new run)."""
+    archive, pit_store, snapshot = _world()
+    request = _request(snapshot)
+    harness = Harness(archive)
+    store = _store(tmp_path)
+
+    with pytest.raises(RetryPolicyError):
+        _run_with_kwargs(store, request, harness, archive,
+                         overrides={"input_snapshot_hash": "e" * 64})
+
+    assert store.events("L-1") == []
+    assert not store.contains("L-1")

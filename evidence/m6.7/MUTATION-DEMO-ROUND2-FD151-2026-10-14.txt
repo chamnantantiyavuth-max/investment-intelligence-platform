@@ -1,0 +1,25 @@
+=== FROZEN SNAPSHOT ===
+orchestration.py raw=62c60157495758adc6b826b0c13bcf32db676304ea7400cf2d2c01923bcedd33 lf=62c60157495758adc6b826b0c13bcf32db676304ea7400cf2d2c01923bcedd33
+
+=== BASELINE (with the preflight) ===
+.............................................................            [100%]
+61 passed in 6.22s
+
+=== MUTATION: disable the preflight call ===
+mutation applied (preflight bypassed)
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_pref_08c_blank_identity_value_is_refused
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_pref_11b_retry_plan_on_a_new_run_is_refused
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_pref_12_re_entry_after_a_rejected_request_leaves_no_pollution
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_pref_14_no_provider_call_before_authoritative_identity_validation
+FAILED tests/qad/m6/test_m67_provider_adapter.py::test_pref_15_zero_new_durable_events_on_refusal
+26 failed, 5 passed, 30 deselected in 3.63s
+
+=== RESTORE from the frozen snapshot ===
+byte-identical? raw=YES lf=YES
+
+=== POST-RESTORE GREEN (full M6.7 suite) ===
+.............................................................            [100%]
+61 passed in 5.90s
+
+=== FINAL HASH CHECK ===
+orchestration.py raw_match=YES
