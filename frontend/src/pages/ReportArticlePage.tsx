@@ -53,6 +53,11 @@ function TitleBlock({ r }: { r: ReportDetail }) {
           {r.status}
         </span>
       </p>
+      {r.status === "draft" && (
+        <p data-testid="draft-banner" className="mt-4 border-t border-rule pt-3 text-[12.5px] font-semibold text-warning">
+          Research draft — not published. Not investment advice. No recommendation, price target, or position size.
+        </p>
+      )}
       {/* Provenance — borderless hairline strip (FD #85/B, FD #84 no-box) */}
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-rule pt-3 text-[11px] text-ink-2">
         <span className="inline-flex items-center gap-1.5">
