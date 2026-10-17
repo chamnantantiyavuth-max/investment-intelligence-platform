@@ -25,6 +25,7 @@ from discovery.quality_asymmetry.fixture_evidence import (
     canonical_fixture_bytes,
     evidence_from_fixture,
     load_fixture,
+    render_envelope,
 )
 
 REPO = Path(__file__).resolve().parents[1]
@@ -229,3 +230,56 @@ def test_cli_prints_the_envelope_and_rejects_a_missing_file():
     assert missing.returncode == 2
     assert "fixture rejected" in missing.stderr
     assert missing.stdout == ""
+
+
+def _cli(path: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "-m", "discovery.quality_asymmetry.fixture_evidence",
+         "--fixture", str(path)],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+@pytest.mark.parametrize("literal", ["NaN", "Infinity", "-Infinity"])
+def test_cli_rejects_nonfinite_input_with_no_stdout(tmp_path, literal):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["fin"]["operating_income"][-1] = float(literal)
+    path = tmp_path / "nonfinite.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    proc = _cli(path)
+    assert proc.returncode == 2
+    assert proc.stdout == ""
+    assert "finite" in proc.stderr
+
+
+def test_cli_rejects_nonfinite_derived_output_with_no_stdout(tmp_path):
+    """Finite inputs can still overflow a ratio. The CLI must not print a partial body."""
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["fin"]["operating_income"][-1] = 1e308
+    payload["fin"]["cash"][-1] = 50
+    payload["fin"]["total_assets"][-1] = 50 + 1e-10
+    path = tmp_path / "overflow.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    proc = _cli(path)
+    assert proc.returncode == 2
+    assert proc.stdout == ""
+    assert "non-finite evidence output" in proc.stderr
+    with pytest.raises(FixtureRejected, match="non-finite evidence output"):
+        render_envelope({"roic_latest": float("nan")})
+
+
+def test_unknown_fin_key_is_rejected():
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["fin"]["revenues"] = list(payload["fin"]["revenue"])
+    with pytest.raises(FixtureRejected, match="unknown fin field revenues"):
+        evidence_from_fixture(payload)
+
+
+def test_unequal_annual_series_lengths_are_rejected():
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["fin"]["revenue"] = payload["fin"]["revenue"][:-1]
+    with pytest.raises(FixtureRejected, match="equal length"):
+        evidence_from_fixture(payload)

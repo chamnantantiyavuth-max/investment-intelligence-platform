@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -39,6 +40,22 @@ _FORBIDDEN_KEYS = frozenset({
 })
 
 _TOP_LEVEL = frozenset({"ticker", "fin", "market", "recon"})
+
+# archetypes.py input contract: these 12 annual columns, oldest→newest, same length.
+_FIN_FIELDS = frozenset({
+    "revenue",
+    "net_income",
+    "operating_income",
+    "total_assets",
+    "total_equity",
+    "total_debt",
+    "cash",
+    "ocf",
+    "capex",
+    "dividends_paid",
+    "buybacks_paid",
+    "ebitda",
+})
 
 _MARKET_FIELDS = frozenset({
     "price",
@@ -82,6 +99,8 @@ def _require_number(value: object, label: str) -> None:
         return
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise FixtureRejected(f"{label} must be a number or null")
+    if not math.isfinite(value):
+        raise FixtureRejected(f"{label} must be a finite number or null")
 
 
 def _validate(payload: object) -> dict:
@@ -99,11 +118,20 @@ def _validate(payload: object) -> dict:
     fin = payload.get("fin")
     if not isinstance(fin, dict):
         raise FixtureRejected("fin must be an object")
+    unknown_fin = set(fin) - _FIN_FIELDS
+    if unknown_fin:
+        raise FixtureRejected(f"unknown fin field {sorted(unknown_fin)[0]}")
+    lengths: list[int] = []
     for key, series in fin.items():
         if not isinstance(series, list):
             raise FixtureRejected(f"fin.{key} must be a list")
+        lengths.append(len(series))
         for index, item in enumerate(series):
             _require_number(item, f"fin.{key}[{index}]")
+    if len(set(lengths)) > 1:
+        raise FixtureRejected(
+            "annual series must have equal length; pad missing years with null"
+        )
     market = payload.get("market")
     if market is not None:
         if not isinstance(market, dict):
@@ -161,6 +189,15 @@ def evidence_from_fixture(payload: dict) -> dict:
     }
 
 
+def render_envelope(envelope: dict) -> str:
+    """Serialize the whole envelope, or reject it. Never returns partial JSON."""
+    try:
+        body = json.dumps(envelope, indent=2, sort_keys=True, allow_nan=False)
+    except ValueError as exc:
+        raise FixtureRejected(f"non-finite evidence output: {exc}") from exc
+    return body + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if args[:1] != ["--fixture"] or len(args) != 2:
@@ -170,12 +207,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     try:
-        envelope = evidence_from_fixture(load_fixture(args[1]))
+        text = render_envelope(evidence_from_fixture(load_fixture(args[1])))
     except FixtureRejected as exc:
         print(f"fixture rejected: {exc}", file=sys.stderr)
         return 2
-    json.dump(envelope, sys.stdout, indent=2, sort_keys=True, allow_nan=False)
-    sys.stdout.write("\n")
+    sys.stdout.write(text)
     return 0
 
 
