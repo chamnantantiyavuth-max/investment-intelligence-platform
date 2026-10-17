@@ -46,6 +46,8 @@ def test_draft_is_hidden_from_the_published_filter_and_readable_by_slug():
     assert article.status_code == 200
     body = article.json()["report"]
     assert body["status"] == "draft"
-    assert "Independent Skeptic — pending" in body["content"]
+    assert "## Independent Skeptic" in body["content"]
+    assert "Independent Skeptic — pending" not in body["content"]
+    assert "วิทยานิพนธ์ฝั่งเสื่อมโครงสร้าง" in body["content"]
     assert "ไม่ใช่คำแนะนำการลงทุน" in body["content"]
     assert body["content"].count("ราคาเป้าหมาย") >= 1
