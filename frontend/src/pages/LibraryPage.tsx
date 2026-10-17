@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getReports, type ReportMeta } from "@/api/reportClient";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,6 +81,8 @@ function companionOf(r: ReportMeta, pool: ReportMeta[]): ReportMeta | undefined 
 }
 
 export default function LibraryPage() {
+  const [searchParams] = useSearchParams();
+  const previewDrafts = searchParams.get("preview") === "draft";
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [series, setSeries] = useState<string | null>(null);
@@ -95,8 +97,11 @@ export default function LibraryPage() {
 
   const reports = useMemo(() => data?.reports ?? [], [data]);
   const published = useMemo(
-    () => reports.filter((r) => r.status === "published").sort((a, b) => b.date.localeCompare(a.date)),
-    [reports]
+    () =>
+      reports
+        .filter((r) => r.status === "published" || (previewDrafts && r.status === "draft"))
+        .sort((a, b) => b.date.localeCompare(a.date)),
+    [reports, previewDrafts]
   );
 
   /** Mains = non-opposing reports (companions are nested, FD #95). */
@@ -213,6 +218,11 @@ export default function LibraryPage() {
             ))}
           </nav>
         </header>
+        {previewDrafts && (
+          <p data-testid="draft-preview-banner" className="mt-3 text-[12.5px] font-semibold text-warning">
+            Draft preview. Unpublished drafts are listed with published notes. This is not publication.
+          </p>
+        )}
 
         {/* ── Hero feature (latest main note) ── */}
         {hero && (
