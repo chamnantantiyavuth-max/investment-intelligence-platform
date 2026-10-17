@@ -36,3 +36,29 @@ export async function getReports(): Promise<{ data_source: string; reports: Repo
 export async function getReport(slug: string): Promise<{ data_source: string; report: ReportDetail }> {
   return getJSON<{ data_source: string; report: ReportDetail }>(`/reports/${slug}`);
 }
+
+export interface QadCaseStage {
+  stage_name: string
+  stage_state: string
+  stage_id: string
+  responsible_role: string
+  started_at: string
+  checkpoint_ref: string | null
+}
+
+export interface QadCaseView {
+  case_id: string
+  case_version: string
+  as_of_date: string
+  case_state: string
+  entry_route: string
+  report_slug: string
+  report_status: string
+  founder_decision_present: boolean
+  stages: QadCaseStage[]
+  skeptic: { challenge_id: string; reviewer: string; outcome: string; findings: string[] }
+}
+
+export async function getCaseByReport(slug: string): Promise<QadCaseView> {
+  return getJSON<QadCaseView>(`/qad/cases/by-report/${slug}`);
+}

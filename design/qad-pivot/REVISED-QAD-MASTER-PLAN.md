@@ -1,6 +1,6 @@
 # Revised QAD Migration Master Plan (M0 → M15)
 
-> **Status:** Design artifact — M0/M1 phases COMPLETE + RATIFIED (16–17 Aug 2026); **M1 = FINAL PASS (17 Aug, independent review PASS WITH FINDINGS → all findings resolved)**; M2–M4B remain pre-code design phases; M5+ implementation gated.
+> **Status:** PROPOSED design artifact — this file is not reissued as a new plan version. M0/M1 phases COMPLETE + RATIFIED (16–17 Aug 2026); **M1 = FINAL PASS (17 Aug, independent review PASS WITH FINDINGS → all findings resolved)**; M2–M4B remain pre-code design phases; M5+ implementation gated.
 > **Key change from original:** M4 split into M4A (Schemas) + M4B (Evaluation Contract before first code).
 
 ---

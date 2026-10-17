@@ -244,6 +244,18 @@ hermes --profile iip
 START → AGENTS.md → Domain Index → PROJECT_STATE.md → CLOSEOUT → Verify → Execute → CLOSEOUT ↩
 ```<!-- 2026-08-04 11:50 UTC+7 -->
 
+## Cloud-portable bootstrap
+
+The Complete Loop above is the historical Windows Hermes workstation. A cloud or POSIX agent does not use that path or the Hermes CLI.
+
+1. Work from the repository root (`git rev-parse --show-toplevel`). Do not change directory to a Windows profile path.
+2. Read, in order: `AGENTS.md`, `02-PROJECT-CONSTITUTION.md`, `operational/FOUNDERS-DECISIONS.md`, `PROJECT_STATE.md`, and the QAD specs named by the task.
+3. Python tests run as `python3 -m pytest` from the repository root. Offline QAD work uses the packages already imported by `qad/` and `backend/` (FastAPI, Pydantic, PyYAML, pytest, httpx). Do not install Hermes, and do not load Google credentials, for an offline case slice.
+4. Frontend check: `cd frontend && npm ci && npm run build`.
+5. Do not start cron, do not deploy, and do not merge to `main` unless the task says so.
+
+The Windows loop and the Hermes profile notes stay in this file as history.
+
 ## ⚠️ Verify-First Rule (FD-HERMES-003)
 
 ก่อนพูด/แก้/สร้างอะไร — **อ่านไฟล์จริงก่อนทุกครั้ง**:
