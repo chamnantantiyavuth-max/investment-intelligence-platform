@@ -1,0 +1,738 @@
+{
+  "specialists": [
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public company filings and investor materials (L1)",
+        "Public customer reviews already published (L5) when the charter allows L5"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4",
+        "L7"
+      ],
+      "specialist_id": "business_quality_moat",
+      "display_name": "Business Quality & Moat",
+      "kind": "core",
+      "canonical_role": "Business & Industry Analyst",
+      "canonical_role_number": 4,
+      "investigator_type": null,
+      "protocol_citation": "project-definition/qad/QAD-BUSINESS-INDUSTRY-MANAGEMENT.md §2",
+      "domain_instructions": "Answer whether the business is high quality and what the moat is. Use the business anatomy in §2.1, customer economics in §2.2, the six moat types in §2.3 (Share of Mind, Network Effect, High Switching Cost, Cost Advantage, Intangible Assets, Efficient Scale), and width, depth, trend, and durability in §2.4. Run the false-quality test in §2.6. Quality states remain VERIFIED / PROBABLE / UNRESOLVED / FAILED (§2.5). Do not invent a seventh moat type."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Government and regulator data (L3)",
+        "Public competitor filings (L1)",
+        "Industry and trade publications (L4)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4",
+        "L7"
+      ],
+      "specialist_id": "industry_economics_capital_cycle",
+      "display_name": "Industry Economics & Capital Cycle",
+      "kind": "core",
+      "canonical_role": "Business & Industry Analyst",
+      "canonical_role_number": 4,
+      "investigator_type": "INDUSTRY_SPECIALIST",
+      "protocol_citation": "project-definition/qad/QAD-BUSINESS-INDUSTRY-MANAGEMENT.md §3; QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Industry Specialist",
+      "domain_instructions": "Follow the industry chain in §3: demand, supply, capacity, utilization, pricing, margins, ROIC, capital entry/exit, future capacity. Use Porter's five forces only as context (§3.2). The Industry Specialist row in the scuttlebutt registry covers deep industry expertise and cross-company patterns. Competitor public filings are in scope as L1/L3 sources. The canonical role remains Business & Industry Analyst."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "SEC filings: 10-K, 10-Q, 8-K, proxy (L1)",
+        "Companyfacts and other government data (L3)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3"
+      ],
+      "specialist_id": "financial_reconstruction_accounting_quality",
+      "display_name": "Financial Reconstruction & Accounting Quality",
+      "kind": "core",
+      "canonical_role": "Financial & Management Analyst",
+      "canonical_role_number": 5,
+      "investigator_type": null,
+      "protocol_citation": "project-definition/qad/QAD-ECONOMIC-UNDERWRITING.md §2",
+      "domain_instructions": "Reconstruct the financial history the filings support, including the elements in §2.2 (income statement, revenue bridge, margins, cash flow, working capital, capital allocation, balance sheet, ROIC, leverage, dilution, per-share economics, M&A history). Every derived figure needs the lineage in §2.3. Normalization tags are PERMANENT / TEMPORARY / UNCERTAIN (§2.4). Do not invent a fair value."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "SEC filings, proxy, and public outlook exhibits (L1)",
+        "Government data that records the outcome of a public claim (L3)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3"
+      ],
+      "specialist_id": "management_capital_allocation",
+      "display_name": "Management & Capital Allocation",
+      "kind": "core",
+      "canonical_role": "Financial & Management Analyst",
+      "canonical_role_number": 5,
+      "investigator_type": null,
+      "protocol_citation": "project-definition/qad/QAD-BUSINESS-INDUSTRY-MANAGEMENT.md §4",
+      "domain_instructions": "Assess management through decision history, not charisma (§4). Build the public claim ledger in §4.1 and the capital allocation ledger in §4.2 (buybacks, issuance, M&A, dividends, per-share effect) from filings. There is no IC-01 investigator_type for this desk. The canonical role remains Financial & Management Analyst."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Company filings (L1)",
+        "Peer filings and government data for the peer test (L3)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4",
+        "L7"
+      ],
+      "specialist_id": "impairment_diagnosis_recovery",
+      "display_name": "Impairment Diagnosis & Recovery",
+      "kind": "core",
+      "canonical_role": "Impairment Diagnosis Specialist",
+      "canonical_role_number": 6,
+      "investigator_type": null,
+      "protocol_citation": "project-definition/qad/QAD-IMPAIRMENT-AND-RECOVERY.md §§2–3",
+      "domain_instructions": "Identify what broke (§2.1) and apply the peer, moat, reversibility, runway, and price tests in §2.2. Diagnosis states stay TEMPORARY / MOSTLY_TEMPORARY / MIXED / STRUCTURAL / UNRESOLVED (§3.1). Do not collapse the diagnosis into a single bullish label."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Filings used for the economic inputs (L1)",
+        "Public price history already in the case archive (L7)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L7"
+      ],
+      "specialist_id": "valuation_market_implied_expectations",
+      "display_name": "Valuation & Market-Implied Expectations",
+      "kind": "core",
+      "canonical_role": "Valuation & Expectations Specialist",
+      "canonical_role_number": 7,
+      "investigator_type": null,
+      "protocol_citation": "project-definition/qad/QAD-ECONOMIC-UNDERWRITING.md §5",
+      "domain_instructions": "Treat valuation as a diagnostic, not a decorative fair-value number (§1, §5). Ask what the price implies, and whether price damage exceeds economic damage. Do not invent a fair value or a composite QAD score (§6 of that contract)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public filings that disclose customers, membership, or product terms (L1)",
+        "Already-published public customer reviews (L5)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L5"
+      ],
+      "specialist_id": "customer_product_investigator",
+      "display_name": "Customer / Product Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "CUSTOMER",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Customer / Product Investigator",
+      "domain_instructions": "Domain: end-user experience, product utility, switching costs, satisfaction, and churn drivers. Typical questions in §2: whether the product is differentiated and whether customers have alternatives. Use public filings and already-published reviews. Do not administer a survey or claim a site visit."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public competitor filings (L1)",
+        "Government market data (L3)",
+        "Public competitor pricing and positioning (protocol §5)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4",
+        "L7"
+      ],
+      "specialist_id": "competitor_investigator",
+      "display_name": "Competitor Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "COMPETITOR",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Competitor Investigator",
+      "domain_instructions": "Domain: competitor strategy, market share dynamics, and competitive responses. Typical questions in §2: whether competitors are taking share and whether the moat is under attack. Use public competitor filings and public positioning. No collusion and no confidential pricing."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public filings naming suppliers or input costs (L1)",
+        "Public supplier or vendor lists (protocol §5)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4"
+      ],
+      "specialist_id": "supplier_investigator",
+      "display_name": "Supplier Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "SUPPLIER",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Supplier Investigator",
+      "domain_instructions": "Domain: input cost trends, supply constraints, and supplier relationships. Typical questions in §2: whether input costs are rising unsustainably and whether the supply chain is fragile. Public supplier and vendor lists only. No confidential supplier contracts (§5)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public filings on distribution and inventory (L1)",
+        "Trade publications (L4)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4"
+      ],
+      "specialist_id": "distributor_channel_investigator",
+      "display_name": "Distributor / Channel Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "DISTRIBUTOR",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Distributor / Channel Investigator",
+      "domain_instructions": "Domain: channel health, inventory, sell-through, and distribution dynamics. Typical questions in §2: whether distributors are destocking and whether channel inventory is normal. Desk sources only. Do not claim a store visit (§5 permits public channel checks; this config does not)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public filings on workforce and organization (L1)",
+        "Public employee profiles and reviews already published (L6)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L6"
+      ],
+      "specialist_id": "employee_organization_investigator",
+      "display_name": "Employee / Organization Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "EMPLOYEE",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Employee / Organization Investigator",
+      "domain_instructions": "Domain: talent, culture, execution capability, and organizational health. Typical questions in §2: whether talent is leaving and whether organizational complexity hurts execution. Public employee data only. No confidential personnel records and no interviews (§5)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public digital observables such as patents, pricing, or web-measurable data (L7)",
+        "Company filings for the revenue comparison (L1)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L7"
+      ],
+      "specialist_id": "digital_social_investigator",
+      "display_name": "Digital / Social Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "DIGITAL",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Digital / Social Investigator",
+      "domain_instructions": "Domain: web traffic, app rankings, social sentiment, and digital footprint. Typical question in §2: whether digital engagement is consistent with reported revenue. L10 social and forum material is lead-only and is not an allowed source class in this desk-research config."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Government data and filings (L3)",
+        "Company filings that disclose regulatory matters (L1)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3"
+      ],
+      "specialist_id": "regulatory_investigator",
+      "display_name": "Regulatory Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "REGULATORY",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Regulatory Investigator",
+      "domain_instructions": "Domain: regulatory risk, pending public decisions, and policy trends. Typical questions in §2: whether regulatory risk is mispriced and whether hidden liabilities are disclosed. Government data and filings only. No non-public regulatory information (§5)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public patent literature (L7)",
+        "Company filings on R&D (L1)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L7"
+      ],
+      "specialist_id": "technology_ip_investigator",
+      "display_name": "Technology / IP Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "TECHNOLOGY",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Technology / IP Investigator",
+      "domain_instructions": "Domain: patent strength, R&D pipeline, and innovation trajectory. Typical questions in §2: whether the technology moat is real and whether competitors are catching up. Public patent and scientific literature only. No pre-publication research data (§5)."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Public scientific literature and trial registries (L7)",
+        "Regulator publications (L3)",
+        "Company filings (L1)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L7"
+      ],
+      "specialist_id": "scientific_clinical_investigator",
+      "display_name": "Scientific / Clinical Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "SCIENTIFIC",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Scientific / Clinical Investigator",
+      "domain_instructions": "Domain: clinical trial data, scientific validation, and technical feasibility. Typical questions in §2: whether the science is sound and what the public risks of failure are. Published literature and public trial registries only."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Company geographic segment disclosures (L1)",
+        "Government regional data (L3)",
+        "Trade publications (L4)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4"
+      ],
+      "specialist_id": "geographic_investigator",
+      "display_name": "Geographic Investigator",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "GEOGRAPHIC",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Geographic Investigator",
+      "domain_instructions": "Domain: regional dynamics, local competition, and regulatory variation. Typical question in §2: whether the geographic thesis is playing out in public data. No site visits."
+    },
+    {
+      "desk_research_only": true,
+      "overrides_canonical_authority": false,
+      "forbidden_actions": [
+        "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+        "No confidential or non-public documents.",
+        "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+        "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+      ],
+      "evidence_validation": [
+        "Source existence, URL, retrieval timestamp, source date, and publisher are required before admission (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §8; QAD-EVIDENCE-AND-SOURCE-MODEL.md §§1–2).",
+        "A claim without that provenance is quarantined and is not FactRecord VERIFIED.",
+        "L10 cannot support a material conclusion (QAD-EVIDENCE-AND-SOURCE-MODEL.md §1).",
+        "AI synthesis is not canonical until it is admitted through the existing evidence gate."
+      ],
+      "result_contract": "qad.specialists.result.v1",
+      "result_models": [
+        "SRC-01",
+        "EV-01",
+        "EAR-01",
+        "FACT-01",
+        "CLM-01",
+        "IR-01"
+      ],
+      "preferred_sources": [
+        "Government and industry statistics (L3, L4)",
+        "Cross-company public filings (L1)"
+      ],
+      "allowed_source_classes": [
+        "L1",
+        "L3",
+        "L4",
+        "L7"
+      ],
+      "specialist_id": "industry_specialist",
+      "display_name": "Industry Specialist",
+      "kind": "investigator",
+      "canonical_role": "Elastic Investigator",
+      "canonical_role_number": 14,
+      "investigator_type": "INDUSTRY_SPECIALIST",
+      "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Industry Specialist",
+      "domain_instructions": "Domain: deep industry expertise, cross-company patterns, and structural trends. The registry row is for industry-specific questions beyond generalist capability. This elastic role does not replace Business & Industry Analyst when that desk owns the analytical box."
+    }
+  ]
+}

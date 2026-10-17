@@ -1,0 +1,21 @@
+{
+  "allowed_source_classes": [
+    "L1",
+    "L3"
+  ],
+  "authorizing_role": "Research Director",
+  "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+  "canonical_role": "Financial & Management Analyst",
+  "desk_research_only": true,
+  "expected_information_value": "PLAUSIBLE_HIGH",
+  "falsifiable_question": "Did UnitedHealth publish a numeric 2025 outlook between the May 2025 withdrawal and year-end, and was that outlook missed?",
+  "gap_id": "01a14a2d-3880-7315-8a00-ca275c24ee13",
+  "geography": "United States",
+  "reason": "IC-01.investigator_type has no value for this core desk. Canonical role is unchanged. This object is not a new schema.",
+  "record_kind": "DESK_ASSIGNMENT",
+  "sampling_limitations": "Desk research only. Public documents. No interviews, surveys, or site visits.",
+  "schema_id": null,
+  "specialist_id": "management_capital_allocation",
+  "stop_rule": "EVIDENCE_SUFFICIENT or BUDGET_EXHAUSTED or COUNTER_EVIDENCE_FOUND or TIME_EXPIRED",
+  "time_window": "FY2023 through case as-of 2026-10-17."
+}

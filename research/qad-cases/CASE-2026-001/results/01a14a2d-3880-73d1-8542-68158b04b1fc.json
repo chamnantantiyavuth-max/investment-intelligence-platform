@@ -1,0 +1,249 @@
+{
+  "contract": "qad.specialists.result.v1",
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+  "investigator_charter_id": "01a14a2d-3880-7e73-b00f-27ebf1084926",
+  "specialist_id": "customer_product_investigator",
+  "actor_id": "elastic-investigator-customer",
+  "canonical_role": "Elastic Investigator",
+  "desk_research_only": true,
+  "disposition": "PARTIALLY_ANSWERED",
+  "falsifiable_question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+  "stop_rule_triggered": "COUNTER_EVIDENCE_FOUND",
+  "usage": {
+    "tool_calls": 5,
+    "sources": 3,
+    "minutes": 9
+  },
+  "sampling_limitations": "Desk research only. No interviews, surveys, or site visits. Three UnitedHealth filings only: the 2025 Form 10-K, the June 30, 2026 Form 10-Q, and the July 16, 2026 earnings release filed as an 8-K exhibit. CMS monthly Medicare Advantage enrollment files, separate plan or county exit notices, provider-network statements, competitor filings, and already-published customer reviews were not retrieved. usage.tool_calls counts five external retrieval calls, two web searches and three EDGAR filing-index fetches, and does not count local reads of the task packet or of text already retrieved. usage.sources counts the three cited filings. retrieval_timestamp is the UTC time the retrieved filing text was locked in this session, not an HTTP Date header. The company does not print a Medicare Advantage-only operating margin. The 965,000 figure and the Medicare Advantage row are different populations. No Q3 2026 document is in this source set. The three filings are the same filer and are not independent of one another.",
+  "claims": [
+    {
+      "statement": "In the 2025 Form 10-K consolidated results table, whose year columns are 2025, 2024 and 2023, the medical care ratio is 89.1%, 85.5% and 83.2%, and the operating margin is 4.2, 8.1 and 8.7.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "Medical care ratio (a) | 89.1% | 85.5% | 83.2% | 3.6% | |\n| Operating cost ratio | 13.3 | 13.2 | 14.7 | 0.1 | |\n| Operating margin | 4.2 | 8.1 | 8.7 | (3.9) | |"
+      }
+    },
+    {
+      "statement": "In the 2025 Form 10-K segment operating-margin table, columns 2025, 2024 and 2023, UnitedHealthcare is 2.7%, 5.2% and 5.8%, Optum Health is (0.3), 7.4 and 6.9, and the consolidated operating margin is 4.2%, 8.1% and 8.7%.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "| UnitedHealthcare | 2.7% | 5.2% | 5.8% | (2.5)% | |\n| Optum Health | (0.3) | 7.4 | 6.9 | (7.7) | |\n| Optum Insight | 13.5 | 16.5 | 22.5 | (3.0) | |\n| Optum Rx | 4.6 | 4.4 | 4.4 | 0.2 | |\n| Optum | 3.5 | 6.6 | 7.0 | (3.1) | |\n| Consolidated operating margin | 4.2% | 8.1% | 8.7% | (3.9)% | |"
+      }
+    },
+    {
+      "statement": "The 2025 Form 10-K people-served table, in thousands, with columns December 31, 2025, 2024 and 2023, prints Medicare Advantage at 8,445, 7,845 and 7,695, a 2025 versus 2024 change of 600, or 8 percent. The same extract prints commercial risk-based membership at 8,165, 8,845 and 8,115, a change of (680).",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "(in thousands, except percentages) | 2025 | 2024 | 2023 | 2025 vs. 2024 | |\n| Commercial: | | | | | |\n| Risk-based | 8,165 | 8,845 | 8,115 | (680) | (8)% |\n| Fee-based | 21,485 | 20,885 | 19,200 | 600 | 3 |\n| Total commercial | 29,650 | 29,730 | 27,315 | (80) | — |\n| Medicare Advantage | 8,445 | 7,845 | 7,695 | 600 | 8 |"
+      }
+    },
+    {
+      "statement": "UnitedHealth states that UnitedHealthcare served 415,000 more people domestically in 2025, driven by growth in fee-based commercial offerings and Medicare Advantage, partially offset by risk-based commercial offerings.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "UnitedHealthcare served 415,000 more people domestically, driven by growth in fee-based commercial offerings and Medicare Advantage, partially offset by risk-based commercial offerings."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "UnitedHealth states that 2025 medical costs increased in part because of growth in people served through Medicare Advantage, and that the medical care ratio increased because of Medicare funding reductions, elevated medical cost trend, the profile of newly added value-based patients, acceleration of certain 2026 Optum Health contract losses, decreased favorable development, the Inflation Reduction Act effect on Medicare Part D, and individual-exchange morbidity, partly offset by 2024 Change Healthcare provider accommodations. The paragraph does not name membership shrinkage.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "Medical costs increased primarily due to the IRA-driven impacts on Medicare Part D plans, elevated medical cost trend and growth in people served through Medicare Advantage and those with higher acuity needs. The MCR increased as a result of the revenue effects of the Medicare funding reductions, elevated medical cost trend, the member profile of newly added patients under value-based care arrangements, the acceleration of anticipated future losses in 2026 related to certain Optum Health value-based care contracts, decreased favorable development, the impacts of the IRA on Medicare Part D and the impacts of market morbidity changes on our individual exchange offerings, partially offset by the incremental medical costs for accommodations made to care providers in 2024 as a result of the Change Healthcare cyberattack."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "UnitedHealth states that UnitedHealthcare earnings from operations decreased primarily because of Medicare Advantage funding reductions, elevated medical cost trend, 2024 portfolio gains that did not repeat, individual-exchange morbidity, write-offs and settlements, and restructuring, partly offset by the absence of 2024 Change Healthcare provider accommodations.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "Earnings from operations decreased primarily due to the impacts of Medicare Advantage funding reductions, elevated medical cost trend, gains related to business portfolio refinement in 2024, the impacts of market morbidity changes on our individual exchange offerings, other write-offs and settlements, and restructuring and other actions, partially offset by the incremental medical costs for accommodations to support care providers in 2024 as a result of the Change Healthcare cyberattack."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "In the 2025 Form 10-K, UnitedHealth says continued Medicare Advantage funding pressure produced benefit and pricing actions, and that it expects Medicare Advantage membership to contract in 2026. The sentence places that contraction after the 2025 result and describes it as expected, not as the cause of the 2025 margin break.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-03-02",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-K for the fiscal year ended December 31, 2025",
+        "quotation": "As a result of continued funding pressures, which have resulted in benefit and pricing actions, we expect that our Medicare Advantage membership will contract in 2026."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "The June 30, 2026 Form 10-Q people-served table, in thousands, with columns June 30, 2026 and June 30, 2025, prints Medicare Advantage at 7,565 versus 8,350, a decrease of 785, or 9 percent.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000197/unh-20260630.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-08-10",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-Q for the quarterly period ended June 30, 2026",
+        "quotation": "(in thousands, except percentages) | 2026 | 2025 | 2026 vs. 2025 | |\n| Commercial: | | | | |\n| Risk-based | 7,655 | 8,440 | (785) | (9)% |\n| Fee-based | 22,265 | 21,530 | 735 | 3 |\n| Total Commercial | 29,920 | 29,970 | (50) | — |\n| Medicare Advantage | 7,565 | 8,350 | (785) | (9) |"
+      }
+    },
+    {
+      "statement": "The June 30, 2026 Form 10-Q consolidated results table prints a three-month medical care ratio of 86.7% versus 89.4%, and a three-month operating margin of 7.1 versus 4.6, for the periods ended June 30, 2026 and June 30, 2025.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000197/unh-20260630.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-08-10",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-Q for the quarterly period ended June 30, 2026",
+        "quotation": "Medical care ratio (a) | 86.7% | 89.4% | (2.7)% | | 85.3% | 87.1% | (1.8)% | |\n| Operating cost ratio | 12.7 | 12.3 | 0.4 | | 13.3 | 12.4 | 0.9 | |\n| Operating margin | 7.1 | 4.6 | 2.5 | | 7.6 | 6.5 | 1.1 | |"
+      }
+    },
+    {
+      "statement": "UnitedHealth states in the June 30, 2026 Form 10-Q that the medical care ratio decreased because of favorable prior-period reserve development, affordability and medical cost management initiatives, and pricing trends, partly offset by a medical cost trend that remains above historical levels. That sentence does not name membership shrinkage.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000197/unh-20260630.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-08-10",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-Q for the quarterly period ended June 30, 2026",
+        "quotation": "The MCR decreased due to favorable prior period reserve development, affordability and medical cost management initiatives, and pricing trends, partially offset by medical costs trend which remains above historical levels and continues to be affected by higher provider reimbursement under the No Surprises Act and increased service and coding intensity in commercial."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "UnitedHealth states in the same 10-Q that medical cost dollars decreased primarily because fewer people were served across UnitedHealthcare and Optum Health and because of favorable prior-period reserve development. That sentence is about the dollar cost base, not the medical care ratio.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000197/unh-20260630.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-08-10",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-Q for the quarterly period ended June 30, 2026",
+        "quotation": "Medical costs decreased primarily due to fewer people served across UnitedHealthcare and Optum Health and favorable prior period reserve development, partially offset by elevated medical cost trend which remains above historical levels and continues to be affected by higher provider reimbursement under the No Surprises Act and increased service and coding intensity in commercial."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "UnitedHealth states in the June 30, 2026 Form 10-Q that continued funding pressure led to benefit and pricing actions, causing contraction in Medicare Advantage membership, which it expects to continue throughout 2026.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000197/unh-20260630.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-08-10",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 10-Q for the quarterly period ended June 30, 2026",
+        "quotation": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership, which we expect to continue throughout 2026."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "The July 16, 2026 earnings release, filed as an 8-K exhibit, says the second-quarter medical care ratio fell from 89.4% to 86.7% and that the year-over-year decrease was driven by benefit design and pricing discipline, member mix and medical cost management initiatives, with net medical reserve development of $860 million in the quarter.",
+      "evidence_type": "CLAIM",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000191/earningsrelease2q26_7152.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-07-16",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 8-K Exhibit 99.1, second quarter 2026 earnings release",
+        "quotation": "The second quarter 2026 medical care ratio was 86.7% compared to 89.4% in the second quarter 2025. The year-over-year decrease was driven by benefit design and pricing discipline, member mix and medical cost management initiatives. Net medical reserve development was $860 million in the quarter."
+      },
+      "claimant": "MANAGEMENT"
+    },
+    {
+      "statement": "The same earnings release says seniors served through Medicare Advantage, including programs serving complex populations included in Medicaid, contracted by 965,000 since year-end 2025.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000191/earningsrelease2q26_7152.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-07-16",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 8-K Exhibit 99.1, second quarter 2026 earnings release",
+        "quotation": "Seniors served through Medicare Advantage, including programs serving complex populations included in Medicaid, have contracted by 965,000 since year-end 2025."
+      }
+    },
+    {
+      "statement": "The earnings-release people-served columns are June 30, 2026, March 31, 2026, December 31, 2025 and June 30, 2025. Under that header the Medicare Advantage row is 7,565, 7,555, 8,445 and 8,350, in thousands.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000191/earningsrelease2q26_7152.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:30Z",
+        "source_date": "2026-07-16",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 8-K Exhibit 99.1, second quarter 2026 earnings release",
+        "quotation": "People Served June 30, 2026 March 31, 2026 December 31, 2025 June 30, 2025 Commercial: Risk-based ................................................................................. 7,655 7,725 8,165 8,440 Fee-based .................................................................................. 22,265 22,340 21,485 21,530 Total Commercial ................................................................... 29,920 30,065 29,650 29,970 Medicare Advantage .................................................................... 7,565 7,555 8,445 8,350"
+      }
+    }
+  ],
+  "findings": [
+    "The 2025 operating-margin break is not explained by Medicare Advantage membership shrinkage. Consolidated operating margin fell from 8.1 in 2024 to 4.2 in 2025 and the medical care ratio rose from 85.5% to 89.1%, while the Medicare Advantage people-served row rose from 7,845 thousand to 8,445 thousand. UnitedHealthcare operating margin fell from 5.2% to 2.7%, and Optum Health operating margin fell from 7.4 to (0.3). Management names Medicare funding reductions, elevated medical cost trend, the profile of newly added value-based patients, decreased favorable development, the Inflation Reduction Act, and individual-exchange morbidity. It names growth in Medicare Advantage membership as a reason medical cost dollars rose.",
+    "The contraction comes later. The 2025 10-K expects 2026 Medicare Advantage membership to contract because of benefit and pricing actions taken under funding pressure. The June 30, 2026 10-Q prints 7,565 thousand versus 8,350 thousand a year earlier. The July 16, 2026 earnings release prints 7,565 thousand at June 30, 2026 versus 8,445 thousand at December 31, 2025. Over the year-earlier quarter, consolidated operating margin rose from 4.6% to 7.1% and the medical care ratio fell from 89.4% to 86.7%. Shrinkage coincides with the later margin repair, not with the 2025 break.",
+    "Counter-evidence to the tested mechanism is the 2025 direction of membership. Membership moved up while the margin broke, and the filed explanation of that break does not cite shrinkage. The investigation stopped on COUNTER_EVIDENCE_FOUND before using the remaining source budget.",
+    "What remains partial is the 2026 ratio. The June 30, 2026 10-Q attributes the medical care ratio decline to reserve development, affordability and medical cost management, and pricing, and does not name membership shrinkage. The July 16, 2026 earnings release attributes that same ratio decline to benefit design and pricing discipline, member mix, and medical cost management, and separately prints $860 million of net reserve development. Member mix is consistent with a smaller book, but neither document isolates how many points of the ratio came from Medicare Advantage shrinkage versus pricing, reserves, or cost management. The 10-Q does say medical cost dollars fell primarily because fewer people were served. That is a volume statement, not a ratio mechanism.",
+    "The 965,000 figure is a different population from the Medicare Advantage row. The earnings release applies 965,000 to seniors served through Medicare Advantage including complex populations included in Medicaid. The Medicare Advantage row in the same release moves from 8,445 thousand at December 31, 2025 to 7,565 thousand at June 30, 2026. The row agrees with the 10-K year-end figure and with the 10-Q comparison of 7,565 thousand versus 8,350 thousand.",
+    "Commercial risk-based membership did shrink in 2025, from 8,845 thousand to 8,165 thousand. That is not the Medicare Advantage row the question asks about.",
+    "Hypothesis impact, with no recommendation and no valuation. This role does not change H1-H5 plausibility. Those hypotheses remain Director-drafted and are not Founder-approved. The evidence is material to the mechanism they would use. H1 cannot treat the 2025 margin break as the result of Medicare Advantage membership loss, because that book grew. H2 is not shown to be permanent damage, but the filings describe multi-year Medicare funding pressure and a 2026 contraction caused by benefit and pricing actions. H3 is the hypothesis the evidence touches most directly: the 2025 margin damage occurred on a larger Medicare Advantage book, and the 2026 margin repair occurred on a smaller one, so the repair is not a same-book recovery and the economics are mixed. H4 is not tested. H5 is not tested, because no price work was done.",
+    "Unknowns left inside the stop: no CMS contract-level enrollment file, no county-exit notice beyond the filings' statement that the company chooses counties annually, no provider-network statement, no competitor filing, and no customer review. No Medicare Advantage-only margin bridge. No Q3 2026 document."
+  ]
+}

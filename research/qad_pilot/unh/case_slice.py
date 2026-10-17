@@ -191,6 +191,7 @@ class UnhCaseBundle:
     stage_ids: dict[str, str]
     challenge_id: str
     evidence_ids: dict[str, str] = field(default_factory=dict)
+    ingest_replay: dict = field(default_factory=dict)
 
 
 def _uid(seed: str) -> str:
@@ -761,6 +762,29 @@ def build_unh_case(*, finalize_partial: bool = True) -> UnhCaseBundle:
         )
         gap_ids.append(gap_id)
 
+    # B1 primary-source slice. Not part of the routed gap list and not an
+    # INITIAL_ANALYSIS output. The question stays unclassified so routing
+    # does not select it.
+    registry.store(
+        EvidenceGap(
+            gap_id="EG-2026-001-B1-01",
+            case_id=CASE_ID,
+            created_by=RESEARCH_DIRECTOR,
+            importance="MEDIUM",
+            operational_status=EvidenceGapOperational_status.UNRESOLVED,
+            question=(
+                "Which contiguous sentence in the primary filing describes "
+                "funding pressure and pricing actions on the Medicare Advantage book?"
+            ),
+            resolvability_class="RESOLVABLE_WITH_EXISTING_SOURCES",
+            created_at=OPENED_AT,
+            falsifiable_question=(
+                "Confirmed only if that sentence is a contiguous substring of "
+                "bytes fetched from the publisher. An absent sentence falsifies it."
+            ),
+        )
+    )
+
     quality_evidence = [
         evidence_ids["companyfacts:FY2025:revenues"],
         evidence_ids["companyfacts:FY2025:earnings_from_operations"],
@@ -933,14 +957,24 @@ def build_unh_case(*, finalize_partial: bool = True) -> UnhCaseBundle:
     return bundle
 
 
-def recover_case(case_id: str = CASE_ID) -> UnhCaseBundle:
-    """Rebuild the case from the committed cache and load it by case id."""
+def recover_case(case_id: str = CASE_ID, *, replay: bool = True) -> UnhCaseBundle:
+    """Rebuild the case from the committed cache and load it by case id.
+
+    ``replay=True`` re-admits committed specialist ingest journals into a new
+    in-memory bundle. That is file replay for this pilot case. It is not a
+    hosted durable database and it is not, by itself, process-restart proof.
+    The CLI passes ``replay=False`` and writes the journal after its own ingest.
+    """
     bundle = build_unh_case()
     if case_id != bundle.case_id:
         raise KeyError(case_id)
     loaded = bundle.registry.load("CASE-01", case_id)
     if loaded.case_version != CASE_VERSION or loaded.as_of_date != AS_OF_DATE:
         raise KeyError(case_id)
+    if replay:
+        from qad.specialists.ingestion import replay_committed_ingests
+
+        replay_committed_ingests(bundle)
     return bundle
 
 
@@ -984,7 +1018,7 @@ def _coverage(bundle: UnhCaseBundle) -> list[dict]:
         ("QAD-FULL-RESEARCH-PROTOCOL", "Stage 3 seven-to-ten-year primary source foundation", "Cache is a subset plus a transcription."),
         ("QAD-FULL-RESEARCH-PROTOCOL", "Stage 4 full evidence gap map", "Five gaps only. Not a map a scuttlebutt investigator can execute across every dimension."),
         ("QAD-FULL-RESEARCH-PROTOCOL", "Stage 5 deep research", "No additional sources were collected for this registration."),
-        ("QAD-MODERN-SCUTTLEBUTT-PROTOCOL", "Investigation charter and every investigator type", "No IC-01. Stage SCUTTLEBUTT is NOT_STARTED."),
+        ("QAD-MODERN-SCUTTLEBUTT-PROTOCOL", "Investigation charter and every investigator type", "Replayed specialist charters do not cover every investigator type. SCUTTLEBUTT is not COMPLETE."),
         ("QAD-BUSINESS-INDUSTRY-MANAGEMENT", "Customer economics", "CAC, LTV, churn, and revenue per customer were not measured."),
         ("QAD-BUSINESS-INDUSTRY-MANAGEMENT", "Moat types and moat dimensions", "No MoatAssessment. Six-type classification was not done."),
         ("QAD-BUSINESS-INDUSTRY-MANAGEMENT", "False-quality test and reinvestment runway", "false_quality_test_completed=false."),
@@ -1051,6 +1085,7 @@ def case_view(bundle: UnhCaseBundle) -> dict:
         },
         "coverage": _coverage(bundle),
         "missing_capabilities": list(MISSING_CAPABILITIES),
+        "specialist_recovery": _specialist_recovery(bundle, stages),
         "reused_modules": [
             "qad.persistence.reference.InMemoryRawSourceArchive.admit_source",
             "qad.persistence.reference.InMemoryEvidenceRegistry.admit_evidence",
@@ -1060,6 +1095,24 @@ def case_view(bundle: UnhCaseBundle) -> dict:
             "qad.ids.deterministic_uuid7",
             "scripts.qad_pilot.unh_reconcile.reconcile",
         ],
+    }
+
+
+def _specialist_recovery(bundle: UnhCaseBundle, stages: list[dict]) -> dict:
+    recovery = dict(bundle.ingest_replay or {})
+    if recovery:
+        return recovery
+    scuttlebutt = next(
+        (row["stage_state"] for row in stages if row["stage_name"] == "SCUTTLEBUTT"),
+        "",
+    )
+    return {
+        "accepted_evidence": [],
+        "quarantined": [],
+        "preserved": [],
+        "investigations": [],
+        "scuttlebutt_stage_state": scuttlebutt,
+        "verified_fact_count": 0,
     }
 
 

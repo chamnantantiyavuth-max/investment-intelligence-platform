@@ -1,0 +1,20 @@
+{
+  "allowed_source_classes": [
+    "L1"
+  ],
+  "authorizing_role": "Research Director",
+  "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+  "canonical_role": "Business & Industry Analyst",
+  "desk_research_only": true,
+  "expected_information_value": "PLAUSIBLE_MEDIUM",
+  "falsifiable_question": "Confirmed only if that sentence is a contiguous substring of bytes fetched from the publisher. An absent sentence falsifies it.",
+  "gap_id": "EG-2026-001-B1-01",
+  "geography": "United States",
+  "reason": "IC-01.investigator_type has no value for this core desk. Canonical role is unchanged. This object is not a new schema.",
+  "record_kind": "DESK_ASSIGNMENT",
+  "sampling_limitations": "Desk research only. One primary filing. No interviews, surveys, or site visits.",
+  "schema_id": null,
+  "specialist_id": "industry_economics_capital_cycle",
+  "stop_rule": "EVIDENCE_SUFFICIENT or BUDGET_EXHAUSTED or COUNTER_EVIDENCE_FOUND or TIME_EXPIRED",
+  "time_window": "Q1 2026 filing through case as-of 2026-10-17."
+}
