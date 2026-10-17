@@ -139,6 +139,27 @@ Official Grok Bot documentation reviewed 2026-10-17/18: paid Cursor individual p
 
 **Founder directive (2026-10-18): PROVISION ALL 26 durable Grok Bot identities NOW in the first Bot-provisioning work package**, not in later research milestones. Total = 17 dimension-specialist Bots + 9 coordination/assurance/publication Bots, **including the existing IIP Lead Bot**, so provision **25 new Bots plus retain/confirm Lead**. The creation backlog must not disappear after pilot work begins. Register the actual Bot links/IDs and owner/role in the **26-row Bot Provisioning Tracker in Section L**; until proved, state remains `UNVERIFIED`, not `CREATED`. Completion target: **within 48 hours of delivery of the first provisioning prompt**, subject to platform limits and mandatory user interaction; if blocked, return the exact blocked Bot(s), mechanism and next UI action immediately. This is a scheduling target, not a claim of unattended guaranteed completion or approval of paid usage. **Create/configure the roster in one bounded campaign, but activate each Bot only when a task exists**: no 26-way simultaneous runs, idle schedules, speculative research, or standing group-chat messages. Confirm actual entitlement and use existing subscription; never enable paid overages without approval.
 
+### F0. Seven Departments — permanent homes, case-based matrix execution
+
+**Founder clarification (2026-10-18):** organize all **26 already-authorized durable Bots** into seven departments. A department is an organizational home/sidebar Section, **not** a new canonical role, independent security tenant, ongoing agent run or new paid Bot. Research cases form **temporary cross-department Case Teams**, directed by the Research Director under the existing M3 contracts.
+
+| Department / suggested Sidebar Section | Bots | Members |
+|---|---:|---|
+| **01 · Executive & Research Management** | 2 | `IIP-Lead`, `IIP-Research-Director` |
+| **02 · Data & Discovery** | 2 | `IIP-Discovery-Scout`, `IIP-Evidence-Lead` |
+| **03 · Equity & Valuation Research** | 5 | `IIP-Business-Moat`, `IIP-Financial-Accounting`, `IIP-Management-Allocation`, `IIP-Impairment-Recovery`, `IIP-Valuation-Expectations` |
+| **04 · Industry & Competitive Intelligence** | 6 | `IIP-Industry-Economics`, `IIP-Competitor`, `IIP-Supplier`, `IIP-Channel-Distribution`, `IIP-Geographic`, `IIP-Industry-Specialist` |
+| **05 · Customer & Specialized Intelligence** | 6 | `IIP-Customer-Product`, `IIP-Employee-Organization`, `IIP-Digital-Social`, `IIP-Regulatory`, `IIP-Technology-IP`, `IIP-Scientific-Clinical` |
+| **06 · Independent Assurance & Underwriting** | 3 | `IIP-Structural-Red-Team`, `IIP-Independent-Auditor`, `IIP-Chief-Underwriter` |
+| **07 · Editorial & Knowledge** | 2 | `IIP-Thai-Editor`, `IIP-Thesis-Steward` |
+| **Total** | **26** | The original 26 roles, with no additions or omissions |
+
+**Authority, not just chart layout:** Founder makes final decisions. `IIP-Lead` manages engineering/work queues and Bot coordination, while `IIP-Research-Director` owns Case Charters, assignments and evidence gaps. Research teams do not control deterministic S1 candidate selection or S2 budget authorization. The Evidence Lead is in Data & Discovery for source ownership but cannot audit its own admission; Discovery Scout cannot assign selection states. Red Team, Independent Auditor and Chief Underwriter are structurally separate from upstream producers and from each other; Research Director/Lead cannot silence dissent or declare their PASS. Editorial does not approve investments.
+
+**No artificial Data Bot proliferation:** SEC ingestion, source archiving, entity normalization, PIT locks, numeric extraction, selection rules and budget controllers are already-approved software/services; they are **not additional Bots**. Assign software coding to bounded Cloud Agents under IIP-Lead as needed without changing the standing 26-Bot roster.
+
+**Actual UI arrangement:** Grok Bot supports Sidebar **Sections** on iOS/desktop. Create the seven named sections and place the actual persistent Bots in them (iOS: hold a Bot → New Section / Move to). Departmental Sections do not set credentials or access controls. Use temporary 2–6-Bot group chats for a single case and async direct handoffs, never one 26-Bot room.
+
 ### F1. Durable Bot roster — control, independence and publication (9)
 
 | Bot name (create/retain) | Canonical QAD responsibility | Independent boundary / concrete deliverable |
@@ -338,34 +359,34 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 **Trigger:** Founder sends the first Bot-provisioning instruction to IIP-Lead. **Due target:** all 26 distinct Bot identities within **48 hours from prompt receipt**; if account/UI limitations block progress, promptly return a complete blocked roster and the action needed rather than silently delaying B0. Do not infer actual creation from a report, group-chat role, subagent file, shared computer folder or `actor_id`. The roster is a deployment index only; IIP analytical records remain authoritative for research. GitHub cannot itself create personal Grok Bots.
 
-| # | Bot name | Org group | Verified state at plan update | Actual Bot link / ID |
+| # | Bot name | Department | Org group | Verified state at plan update | Actual Bot link / ID |
 |---:|---|---|---|---|
-| 1 | `IIP-Lead` | Control | EXISTING — link to verify | — |
-| 2 | `IIP-Discovery-Scout` | Control | UNVERIFIED | — |
-| 3 | `IIP-Research-Director` | Control | UNVERIFIED | — |
-| 4 | `IIP-Evidence-Lead` | Assurance | UNVERIFIED | — |
-| 5 | `IIP-Structural-Red-Team` | Assurance | UNVERIFIED | — |
-| 6 | `IIP-Independent-Auditor` | Assurance | UNVERIFIED | — |
-| 7 | `IIP-Chief-Underwriter` | Assurance | UNVERIFIED | — |
-| 8 | `IIP-Thai-Editor` | Publication | UNVERIFIED | — |
-| 9 | `IIP-Thesis-Steward` | Monitoring | UNVERIFIED | — |
-| 10 | `IIP-Business-Moat` | Core | UNVERIFIED | — |
-| 11 | `IIP-Industry-Economics` | Core | UNVERIFIED | — |
-| 12 | `IIP-Financial-Accounting` | Core | UNVERIFIED | — |
-| 13 | `IIP-Management-Allocation` | Core | UNVERIFIED | — |
-| 14 | `IIP-Impairment-Recovery` | Core | UNVERIFIED | — |
-| 15 | `IIP-Valuation-Expectations` | Core | UNVERIFIED | — |
-| 16 | `IIP-Customer-Product` | Investigator | UNVERIFIED | — |
-| 17 | `IIP-Competitor` | Investigator | UNVERIFIED | — |
-| 18 | `IIP-Supplier` | Investigator | UNVERIFIED | — |
-| 19 | `IIP-Channel-Distribution` | Investigator | UNVERIFIED | — |
-| 20 | `IIP-Employee-Organization` | Investigator | UNVERIFIED | — |
-| 21 | `IIP-Digital-Social` | Investigator | UNVERIFIED | — |
-| 22 | `IIP-Regulatory` | Investigator | UNVERIFIED | — |
-| 23 | `IIP-Technology-IP` | Investigator | UNVERIFIED | — |
-| 24 | `IIP-Scientific-Clinical` | Investigator | UNVERIFIED | — |
-| 25 | `IIP-Geographic` | Investigator | UNVERIFIED | — |
-| 26 | `IIP-Industry-Specialist` | Investigator | UNVERIFIED | — |
+| 1 | `IIP-Lead` | Executive & Research Management | Control | EXISTING — link to verify | — |
+| 2 | `IIP-Discovery-Scout` | Data & Discovery | Control | UNVERIFIED | — |
+| 3 | `IIP-Research-Director` | Executive & Research Management | Control | UNVERIFIED | — |
+| 4 | `IIP-Evidence-Lead` | Data & Discovery | Assurance | UNVERIFIED | — |
+| 5 | `IIP-Structural-Red-Team` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
+| 6 | `IIP-Independent-Auditor` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
+| 7 | `IIP-Chief-Underwriter` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
+| 8 | `IIP-Thai-Editor` | Editorial & Knowledge | Publication | UNVERIFIED | — |
+| 9 | `IIP-Thesis-Steward` | Editorial & Knowledge | Monitoring | UNVERIFIED | — |
+| 10 | `IIP-Business-Moat` | Equity & Valuation Research | Core | UNVERIFIED | — |
+| 11 | `IIP-Industry-Economics` | Industry & Competitive Intelligence | Core | UNVERIFIED | — |
+| 12 | `IIP-Financial-Accounting` | Equity & Valuation Research | Core | UNVERIFIED | — |
+| 13 | `IIP-Management-Allocation` | Equity & Valuation Research | Core | UNVERIFIED | — |
+| 14 | `IIP-Impairment-Recovery` | Equity & Valuation Research | Core | UNVERIFIED | — |
+| 15 | `IIP-Valuation-Expectations` | Equity & Valuation Research | Core | UNVERIFIED | — |
+| 16 | `IIP-Customer-Product` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 17 | `IIP-Competitor` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
+| 18 | `IIP-Supplier` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
+| 19 | `IIP-Channel-Distribution` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
+| 20 | `IIP-Employee-Organization` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 21 | `IIP-Digital-Social` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 22 | `IIP-Regulatory` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 23 | `IIP-Technology-IP` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 24 | `IIP-Scientific-Clinical` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
+| 25 | `IIP-Geographic` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
+| 26 | `IIP-Industry-Specialist` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
  
 **Public-repository safety:** This GitHub repository is public. Track non-sensitive Bot names, provisioned counts and masked/opaque references here. Do **not** publish private conversation deep links, invite/share tokens, credentials, or secret-bearing identifiers in this tracker. Keep full private Bot links and verification screenshots in the Founder's private Grok Bot workspace, with an unambiguous private-registry pointer here. An accessible personal Bot link for the Founder may be returned in the private IIP Lead chat instead of being committed to GitHub. Genuine proof remains required; public-safe redaction is not proof of non-existence.
 
@@ -376,6 +397,58 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 **One-case working proof:** IIP Lead (existing) → real Director Bot hands a specific *unresolved* UNH gap to a real specialist Bot → specialist reopens public source and returns falsifiable analysis with original-document anchors → Evidence Lead checks source content and provenance → separate Red Team challenges → proof stored/recovered in IIP Case → Founder reads the report on iPhone. If a step is technically missing, deliver the last verified working step and name the missing component without marking it complete.
 
 **Workflow rules:** No separate persistence or source-of-truth in Bot chat or an old `grok-research-team` repo; no 17 permanent worker polling loops; no confidential thesis in public IIP repository. Treat Bot creation as authorized by this Founder decision but any external service account login, quota overage, secret grant, production release or mandatory policy override still follows its actual applicable approval.
+
+## M. Department workflow and Rout​ines/Schedules — proposed, not activated
+
+### M1. Organizational workflow — permanent departments vs per-case team
+
+```text
+Founder → IIP-Lead (Executive: coordination / engineering)
+            ├─ Data & Discovery: structured source sensors + Scout
+            │       → Registry → S1 policy Selection Engine (software, not Bot)
+            └─ Research Director (Executive: one accountable Case owner)
+                    → H1–H5 Charter + gap map + Evidence Lead check + S2 budget
+                    → Equity & Valuation Research: Business, Financial, Management
+                    ↔ Industry & Competitive Intelligence: sector, peers, supply chain
+                    ↔ Customer & Specialized Intelligence: customer, tech, policy etc.
+                       (select only material Evidence Gaps; <=3 active investigators)
+                    → Data & Discovery: Evidence Lead independently checks originals
+                    → Equity: Impairment/Recovery → Valuation/Expectations
+                    → Independent Assurance: Structural Red Team → Independent Audit
+                    → Independent Assurance: Chief Underwriter adjudication
+                    → Editorial & Knowledge: Thai Editor drafts report
+                    → Founder Review / Decision (human authority)
+                    → Thesis Steward monitors approved thesis and new evidence
+```
+
+This depicts **artifact flow, not approval authority or an override of M3 state transitions**. The binding order, stop conditions, independent audit/underwriting requirements and 18 research stages remain in `project-definition/qad/QAD-FULL-RESEARCH-PROTOCOL.md`, M3-01 and M3 role/service registry. Original source material must independently substantiate each VERIFIED financial claim; a Bot's citation is not proof. No QA/Audit/Underwriting gate is replaced by a simple Bot opinion.
+
+A Case Team (e.g. `QAD/CASE-2026-001`) assembles 1 Research Director, relevant dimension Bots (usually 2–3), Evidence Lead and separately scheduled challenge/assurance Bots. Every handoff names case ID/version, evidence gap, charter/source refs, PIT, hypothesis, work owner, output, limits and receipt. Preserve disagreement. **Durable knowledge resides in canonical IIP Case/Evidence services**, not group chats.
+
+### M2. Routine/Schedule operating model (all suggested routines **OFF**)
+
+**Create 26 Bot identities in B0 with ZERO scheduled routines.** A Bot may own a Grok Routine triggered by time or a supported event; **a Routine is not a Bot, a GitHub Action, nor an IIP cron job**. On-demand Bot-to-Bot messaging from a triggered owner is permissible within role/budget constraints. Keep existing IIP **five cron jobs PAUSED (5/5)**; no implicit activation. Below are **candidate cadences in Asia/Bangkok**, not operational schedules or authorization:
+
+| Proposed cadence/trigger | Owner(s) | Intended behavior | Status |
+|---|---|---|---|
+| Event: an approved ingestion job detects new SEC filing / source | Deterministic Data services + Evidence Lead | Archive original, check issuer/period/hash/PIT, update provenance; cheap software first, not LLM polling | **PAUSED / EVENT NOT WIRED** |
+| Weekdays Bangkok morning, after prior U.S. trading session | Discovery Scout (one trial owner), summary via IIP-Lead | Digest ONLY material new candidate/gap deltas; deterministic S1 owns selection; zero-change result explicit or suppressed as authorized | **NOT CONFIGURED** |
+| Event: approved candidate or Founder direction | Research Director | Case-open/H1–H5 charter and source plan, idempotent `case_id` | **MANUAL; NOT WIRED** |
+| Event: valid high-EIV material Evidence Gap and authorized budget | Relevant Core/Elastic Bot | Bounded investigation, source checks, contradictory facts, stop condition; max 3 active investigators | **MANUAL ONLY** |
+| Event: specialist evidence awaiting admission | Evidence Lead | Independently read original sources; fact remains RAW/UNVERIFIED until real verification and durable admission | **MANUAL; PR #6 TRUST FIX OPEN** |
+| Event: required stage outputs truly ready | Structural Red Team, Auditor, Underwriter in approved order | Separate source-facing challenge, source/calculation audit and independent adjudication | **MANUAL ONLY** |
+| Weekly Friday Bangkok morning, approved active cases only | Thesis Steward | Watch thesis falsifiers and material changes; reopen research question only under approved state transition | **NOT CONFIGURED** |
+| Weekly Monday Bangkok morning, or bundled into daily digest | IIP-Lead | One compact operating report: 26/26 roster, work-in-progress, case queue, stalled gaps, usage | **NOT CONFIGURED** |
+| Monthly / manual | IIP-Lead + deterministic checks | Verify Bot links/roles, run history, schedule health and data-source coverage without 26-Bot roll call | **MANUAL** |
+
+**Rules and activation sequence:**
+1. First **B0: create/configure all 26**, no scheduled work; B1: prove manual Bot-to-Bot collaboration; B2: fix PR #6 evidence trust and persistence; B5: validate one meaningful vertical research workflow. Then Founder may separately authorize **one low-cost pilot Routine** with actual usage cap, source freshness and stop behavior. No automatic schedule rollout merely because a Bot is created.
+2. At approval time specify owner, exact interval/time zone, event filter, idempotency key, input bounds, maximum tools/sources/cost, scope, allowed writes, empty and error outputs, escalation and pause/kill control. Set each owner Bot's Timezone to `Asia/Bangkok` where applicable and inspect routine saved schedule/run history in the Bot profile.
+3. Avoid duplicate workflows between 5 paused cron jobs, Routines and GitHub Actions. Prefer cheap structured sensors for universe-wide work; let a paid reasoning Bot work only on a narrowed, evidence-bearing candidate. No 26-way daily polling, and no automatic trade/production/Founder approval.
+4. All five prior IIP cron jobs remain PAUSED until individually reauthorized with working evidence, unaffected by this document. Failed source retrieval, quota exhaustion or no new evidence must not fabricate research findings.
+5. Group chats and Bot-to-Bot messages consume usage. Depart​ment staffing does not imply scheduled work or secure isolation; all personal Bots share their owner's cloud computer/logins.
+
+**Platform references:** https://prod.cursor.com/help/grok-bot/how-to (iOS/desktop Sections); https://prod.cursor.com/help/grok-bot/group-chats (actual Bot-to-Bot/group behavior); https://prod.cursor.com/help/grok-bot/routines (schedule/event Routines, timezone, usage and paused state).
 
 ---
 
