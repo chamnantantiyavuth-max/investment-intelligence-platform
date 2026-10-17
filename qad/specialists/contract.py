@@ -83,11 +83,13 @@ LIMITATIONS: tuple[str, ...] = (
     "Founder-approved. MANUAL_PILOT is not a canonical entry_route. The case "
     "entry route remains FOUNDER_DIRECTED.",
     "Provenance checks require a URL, retrieval timestamp, source date, and "
-    "publisher. The boundary does not re-fetch the URL. A local snapshot is "
+    "publisher. A local snapshot is not a receipt. A hand-inserted SRC-01 is "
     "not a receipt. A FACT stays UNVERIFIED unless the passage is in an "
-    "existing S5/M6 receipt or trusted archived source, and the statement's "
-    "numbers and core proposition match that passage or an Evidence Lead "
-    "sign-off is already recorded on RC-01.",
+    "S5/M6 receipt minted by an independent HTTP fetch, and the statement's "
+    "numbers, negation, direction words, and detectable actors match that "
+    "passage. That match is lexical inclusion, not semantic entailment. A "
+    "generic RC-01 does not override a mismatch. A sign-off counts only when "
+    "it is bound to this case, gap, claim, source, and passage hash.",
     "qad.m53.retry_kernel meters canonical stage retries (initial plus 3). "
     "It is not used to retry an external specialist. Those runs are outside "
     "this process, and a self-reported failure is not a kernel retry.",

@@ -11,6 +11,7 @@ from qad.models.family_c import (
     ResearchStageRecord,
     ResearchStageRecordStage_state,
 )
+from qad.persistence.errors import ImmutabilityViolation, TransactionFailure
 
 
 class StageCompletionRejected(Exception):
@@ -81,7 +82,13 @@ def transition_stage(
             update["issues"] = issues
             pending_issue = False
         updated = current.model_copy(update=update)
-        registry.store(updated)
+        try:
+            registry.store(updated)
+        except (ImmutabilityViolation, TransactionFailure):
+            # A terminal stage cannot take another issue. IN_PROGRESS can.
+            if not steps and _enum(current.stage_state) != "IN_PROGRESS":
+                return find_stage(registry, case_id, stage_name)
+            raise
         if not steps:
             break
     loaded = find_stage(registry, case_id, stage_name)

@@ -762,6 +762,29 @@ def build_unh_case(*, finalize_partial: bool = True) -> UnhCaseBundle:
         )
         gap_ids.append(gap_id)
 
+    # B1 primary-source slice. Not part of the routed gap list and not an
+    # INITIAL_ANALYSIS output. The question stays unclassified so routing
+    # does not select it.
+    registry.store(
+        EvidenceGap(
+            gap_id="EG-2026-001-B1-01",
+            case_id=CASE_ID,
+            created_by=RESEARCH_DIRECTOR,
+            importance="MEDIUM",
+            operational_status=EvidenceGapOperational_status.UNRESOLVED,
+            question=(
+                "Which contiguous sentence in the primary filing describes "
+                "funding pressure and pricing actions on the Medicare Advantage book?"
+            ),
+            resolvability_class="RESOLVABLE_WITH_EXISTING_SOURCES",
+            created_at=OPENED_AT,
+            falsifiable_question=(
+                "Confirmed only if that sentence is a contiguous substring of "
+                "bytes fetched from the publisher. An absent sentence falsifies it."
+            ),
+        )
+    )
+
     quality_evidence = [
         evidence_ids["companyfacts:FY2025:revenues"],
         evidence_ids["companyfacts:FY2025:earnings_from_operations"],

@@ -1,0 +1,44 @@
+{
+  "contract": "qad.specialists.result.v1",
+  "case_id": "CASE-2026-001",
+  "gap_id": "EG-2026-001-B1-01",
+  "investigator_charter_id": null,
+  "specialist_id": "industry_economics_capital_cycle",
+  "actor_id": "industry-economics",
+  "canonical_role": "Business & Industry Analyst",
+  "desk_research_only": true,
+  "disposition": "PARTIALLY_ANSWERED",
+  "falsifiable_question": "Confirmed only if that sentence is a contiguous substring of bytes fetched from the publisher. An absent sentence falsifies it.",
+  "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+  "source_fetch": "s5-m6-http",
+  "usage": {
+    "tool_calls": 1,
+    "sources": 1,
+    "minutes": 5
+  },
+  "sampling_limitations": "One sentence from the Q1 2026 Form 10-Q. Separate HTML table cells and other sentences in the specialist packet are not this fact. No interviews, surveys, or site visits.",
+  "findings": [
+    "Specialist industry-economics recorded claim IE-SQ4-01. The checker is evidence-lead, a different actor. A generic charter is not a sign-off for this claim.",
+    "The verified proposition is only the contiguous sentence in the quotation. It is lexical inclusion of that sentence, not semantic entailment and not a paraphrase.",
+    "People-served cells 7,555, 8,245, (690), and (8) are separate HTML cells. They are not part of this proposition.",
+    "Market-exit wording, a 1.1 million figure, and an 8,445 comparison are not this fact."
+  ],
+  "claims": [
+    {
+      "claim_id": "IE-SQ4-01",
+      "statement": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000127/unh-20260331.htm",
+        "retrieval_timestamp": "2026-10-17T20:00:00Z",
+        "source_date": "2026-03-31",
+        "publisher": "UnitedHealth Group Inc.",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Inc. Form 10-Q for the quarterly period ended March 31, 2026",
+        "expected_sha256": "6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7",
+        "quotation": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026."
+      }
+    }
+  ]
+}

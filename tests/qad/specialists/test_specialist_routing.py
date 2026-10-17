@@ -34,6 +34,7 @@ from qad.specialists.catalog import (
     _validate,
     load_catalog,
 )
+from qad.models.family_c import ResearchCharterCharter_state
 from qad.specialists.contract import RESULT_CONTRACT_ID
 from qad.specialists.ingestion import (
     decide_scuttlebutt_state,
@@ -248,13 +249,32 @@ def _admit_trusted_source(bundle, claim: dict, document: bytes, *, retriever: st
     return source_id
 
 
+def _mint(url: str, document: bytes, *, source_tier: str = "L3", source_type: str = "GOVERNMENT_DATA"):
+    from qad.m6.original_fetch import mint_http_source
+
+    def opener(got, _user_agent, _timeout):
+        assert got == url
+        return document
+
+    verification, error = mint_http_source(
+        url,
+        opener=opener,
+        source_tier=source_tier,
+        source_type=source_type,
+        title="fixture",
+        publication_date="2026-04-06",
+    )
+    assert verification is not None, error
+    return verification
+
+
 def test_provenance_survives_ingest_and_later_update():
     bundle, routed = _routed(_priority())
     item = routed.selected[1]
     claim = _claim()
     claim["statement"] = claim["source"]["quotation"]
     document = _snapshot_for(claim)[claim["source"]["url"]]
-    _admit_trusted_source(bundle, claim, document)
+    receipt = _mint(claim["source"]["url"], document)
     outcome = ingest_result(
         bundle,
         _result(item, disposition="ANSWERED", claims=[claim]),
@@ -262,6 +282,7 @@ def test_provenance_survives_ingest_and_later_update():
         [],
         issued_ids=[row.gap_id for row in routed.selected],
         reported_ids=set(),
+        source_verifications=[receipt],
     )
     assert outcome.admitted_evidence_ids
     evidence_id = outcome.admitted_evidence_ids[0]
@@ -270,7 +291,7 @@ def test_provenance_survives_ingest_and_later_update():
     source = bundle.archive.load("SRC-01", source_id)
     assert evidence.validation_status.value == "RAW"
     assert source.url_or_identifier.startswith("https://www.cms.gov/")
-    assert source.retrieval_date == "2026-10-17T14:30:16Z"
+    assert source.retrieval_date == receipt.retrieval_date
     assert source.publication_date == "2026-04-06"
     assert source.author == "CMS"
     facts = [
@@ -287,8 +308,8 @@ def test_provenance_survives_ingest_and_later_update():
     assert source.content_hash != hashlib.sha256(
         claim["source"]["quotation"].encode("utf-8")
     ).hexdigest()
-    assert source.retrieval_method == "committed_cache"
-    assert source.retriever == "companyfacts-archive"
+    assert source.retrieval_method == "M6 original-source verification receipt"
+    assert source.retriever == "qad.m6.source_bridge"
     assert source.retriever != "agent-a"
     updated = evidence.model_copy(
         update={"validation_status": EvidenceRecordValidation_status.DISPUTED}
@@ -400,7 +421,7 @@ def test_statement_numeric_mismatch_is_not_verified():
     document = (
         "CMS rate announcement fixture.\n" + passage + "\nEnd of archived source.\n"
     ).encode("utf-8")
-    _admit_trusted_source(bundle, genuine, document)
+    receipt = _mint(genuine["source"]["url"], document)
     outcome = ingest_result(
         bundle,
         _result(item, disposition="ANSWERED", claims=[mismatched, genuine]),
@@ -408,6 +429,7 @@ def test_statement_numeric_mismatch_is_not_verified():
         [],
         issued_ids=[item.gap_id],
         reported_ids=set(),
+        source_verifications=[receipt],
     )
     assert len(outcome.quarantined) == 1
     assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
@@ -438,6 +460,7 @@ def test_replay_does_not_overwrite_an_adverse_fact():
     fact_id = str(deterministic_uuid7(f"fact:{seed}", ts_ms=ANCHOR_TS_MS))
     evidence_id = str(deterministic_uuid7(f"ev:{seed}", ts_ms=ANCHOR_TS_MS))
     source_id = _admit_trusted_source(bundle, claim, document)
+    receipt = _mint(url, document)
     bundle.registry.admit_evidence(
         EvidenceRecord(
             admitting_role="Evidence Intelligence Lead",
@@ -478,6 +501,7 @@ def test_replay_does_not_overwrite_an_adverse_fact():
         [],
         issued_ids=[item.gap_id],
         reported_ids=set(),
+        source_verifications=[receipt],
     )
     kept = bundle.registry.load("FACT-01", fact_id)
     assert kept.verification_status == FactRecordVerification_status.DISPUTED
@@ -489,6 +513,142 @@ def test_replay_does_not_overwrite_an_adverse_fact():
     assert outcome.admitted_evidence_ids == []
     assert outcome.preserved
     assert "not overwritten" in outcome.preserved[0]["reason"]
+
+
+def test_unrelated_signoff_negation_and_reversed_direction_stay_unverified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    passage = "UnitedHealth reported contraction in Medicare Advantage membership by 2.48 percent"
+    url = "https://www.sec.gov/Archives/edgar/data/731766/000073176626000127/unh-20260331.htm"
+    document = f"Filing fixture.\n{passage}\n".encode("utf-8")
+    receipt = _mint(url, document, source_tier="L1", source_type="SEC_FILING")
+    existing = next(row for row in bundle.registry.list_all("RC-01") if row.case_id == bundle.case_id)
+    bundle.registry.store(
+        existing.model_copy(
+            update={
+                "charter_id": str(deterministic_uuid7("rc:unrelated-b22", ts_ms=ANCHOR_TS_MS)),
+                "charter_state": ResearchCharterCharter_state.VALIDATED,
+                "evidence_lead": "Evidence Intelligence Lead",
+                "evidence_lead_validation": "Validated a different question with no claim binding.",
+            }
+        )
+    )
+
+    def _fact(statement: str, claim_id: str) -> dict:
+        claim = _claim(
+            url=url,
+            quotation=passage,
+            publisher="UnitedHealth Group Inc.",
+            source_tier="L1",
+            source_type="SEC_FILING",
+        )
+        claim["statement"] = statement
+        claim["claim_id"] = claim_id
+        return claim
+
+    negated = _fact(
+        "UnitedHealth reported no contraction in Medicare Advantage membership by 2.48 percent",
+        "IE-NEG",
+    )
+    reversed_direction = _fact(
+        "UnitedHealth reported expansion in Medicare Advantage membership by 2.48 percent",
+        "IE-REV",
+    )
+    swapped = _fact(
+        "Aetna reported contraction in Medicare Advantage membership by 2.48 percent",
+        "IE-ACTOR",
+    )
+    genuine = _fact(passage, "IE-OK")
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[negated, reversed_direction, swapped, genuine]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+        source_verifications=[receipt],
+    )
+    assert len(outcome.quarantined) == 3
+    assert all(row["verification_status"] == "UNVERIFIED" for row in outcome.quarantined)
+    assert all("core proposition" in row["reason"] for row in outcome.quarantined)
+    assert outcome.verified_fact_ids
+    kept = bundle.registry.load("FACT-01", outcome.verified_fact_ids[0])
+    assert kept.statement == passage
+    rejected = {
+        row.statement
+        for row in bundle.registry.list_all("FACT-01")
+        if row.verification_status == FactRecordVerification_status.VERIFIED
+    }
+    assert negated["statement"] not in rejected
+    assert reversed_direction["statement"] not in rejected
+    assert swapped["statement"] not in rejected
+
+
+def test_bound_signoff_records_one_mismatch_generic_charter_does_not():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    passage = "expected net 2.48 percent"
+    claim = _claim(quotation=passage)
+    claim["statement"] = "expected net 24.8 percent"
+    claim["claim_id"] = "IE-MISMATCH"
+    document = f"CMS fixture.\n{passage}\n".encode("utf-8")
+    receipt = _mint(claim["source"]["url"], document)
+    passage_sha = hashlib.sha256(passage.encode("utf-8")).hexdigest()
+    existing = next(row for row in bundle.registry.list_all("RC-01") if row.case_id == bundle.case_id)
+    bundle.registry.store(
+        existing.model_copy(
+            update={
+                "charter_id": str(deterministic_uuid7("rc:bound-b22", ts_ms=ANCHOR_TS_MS)),
+                "charter_state": ResearchCharterCharter_state.VALIDATED,
+                "evidence_lead": "Evidence Intelligence Lead",
+                "evidence_lead_validation": (
+                    f"gap_id={item.gap_id} claim_id=IE-MISMATCH "
+                    f"source_id={receipt.source_id} passage_sha256={passage_sha}"
+                ),
+            }
+        )
+    )
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[claim]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+        source_verifications=[receipt],
+    )
+    assert outcome.verified_fact_ids
+    kept = bundle.registry.load("FACT-01", outcome.verified_fact_ids[0])
+    assert kept.statement == claim["statement"]
+    assert kept.verification_status == FactRecordVerification_status.VERIFIED
+
+
+def test_hand_inserted_source_with_arbitrary_retriever_is_not_verified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    claim = _claim()
+    claim["statement"] = claim["source"]["quotation"]
+    document = _snapshot_for(claim)[claim["source"]["url"]]
+    _admit_trusted_source(bundle, claim, document, retriever="arbitrary-retriever-text")
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[claim]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+    )
+    assert outcome.verified_fact_ids == []
+    assert outcome.admitted_evidence_ids == []
+    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
+    assert "hand-inserted" in outcome.quarantined[0]["reason"]
+    promoted = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.verification_status == FactRecordVerification_status.VERIFIED
+        and row.statement == claim["statement"]
+    ]
+    assert promoted == []
 
 
 def test_self_supplied_quote_without_snapshot_is_not_verified():

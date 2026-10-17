@@ -1,17 +1,21 @@
 """Ingest a specialist result through the existing admission boundary.
 
 A claim with a URL, retrieval timestamp, source date, and publisher may reach
-FACT-01 VERIFIED only when two separate checks both pass.
+FACT-01 VERIFIED only when three separate checks all pass.
 
-1. The cited passage occurs in bytes already bound to an S5/M6 original-source
-   verification receipt, or to a trusted archived source identity: source id,
-   sha256 of the stored bytes, retrieval/observation time, and a retriever
-   that is not the submitting specialist and not this ingest loader. A local
-   snapshot (``.bin`` + ``.url``, ``manifest.json``, or an explicit mapping)
-   is not that receipt.
-2. For a FACT, the statement's numeric values and core proposition are
-   contained in that passage. A paraphrase that does not match stays
-   UNVERIFIED unless an Evidence Lead sign-off is already recorded on RC-01.
+1. The cited passage occurs in bytes on an S5/M6 original-source verification
+   receipt minted by ``verify_and_admit_source`` after an independent HTTP
+   fetch (sha256 of those bytes, retrieval time, fetch reason). A local
+   snapshot is not that receipt. A hand-inserted SRC-01, including one with
+   an arbitrary retriever string and a self-consistent hash, is not that
+   receipt.
+2. For a FACT, the statement's numbers and core words occur in the passage,
+   and the passage does not disagree on negation, direction words, or a
+   detectable actor. This is lexical inclusion. It is not semantic entailment.
+   Anything uncertain stays unsupported.
+3. An Evidence Lead sign-off can override an unsupported statement only when
+   the RC-01 is bound to this case, gap, claim, source, and passage hash, and
+   the lead is not the specialist. A generic validated charter does not.
 
 Quarantine is the S4 / scuttlebutt quality-gate word for "not admitted". It
 is not a new canonical status. The fact status used on that path is the
@@ -97,11 +101,34 @@ _WORD_RE = re.compile(r"[A-Za-z][A-Za-z'-]*")
 
 UNTRUSTED_SNAPSHOT_REASON = (
     "local snapshot is not bound to an S5/M6 original-source verification receipt "
-    "or a trusted archived source identity"
+    "minted by an independent fetch"
+)
+HAND_INSERTED_SOURCE_REASON = (
+    "hand-inserted archived source is not an S5/M6 receipt minted by an independent fetch"
 )
 STATEMENT_UNSUPPORTED_REASON = (
     "FACT statement numeric values or core proposition were not found in the cited "
-    "passage; no Evidence Lead sign-off is recorded"
+    "passage; no Evidence Lead sign-off is recorded for this case, gap, claim, "
+    "source, and passage"
+)
+_NEGATION_RE = re.compile(r"\b(?:no|not|never|none|without|cannot)\b|n't", re.IGNORECASE)
+_DIRECTION_PAIRS: tuple[tuple[frozenset[str], frozenset[str]], ...] = (
+    (frozenset({"increase", "increases", "increased", "increasing"}),
+     frozenset({"decrease", "decreases", "decreased", "decreasing"})),
+    (frozenset({"rise", "rises", "rose", "rising"}),
+     frozenset({"fall", "falls", "fell", "falling"})),
+    (frozenset({"expand", "expands", "expanded", "expanding", "expansion"}),
+     frozenset({"contract", "contracts", "contracted", "contracting", "contraction"})),
+    (frozenset({"more"}), frozenset({"fewer"})),
+    (frozenset({"gain", "gains", "gained"}),
+     frozenset({"loss", "losses", "lost"})),
+)
+_SENTENCE_STARTERS = frozenset(
+    """
+    a an the of and or to in on for with by from that this these those is are
+    was were be been being as at it its than then into over per continued during
+    after before when while which who what
+    """.split()
 )
 
 
@@ -172,11 +199,50 @@ def _proposition_words(text: str) -> list[str]:
     ]
 
 
-def statement_supported_by_passage(statement: str, passage: str) -> bool:
-    """True when the statement's numbers and core words occur in the passage.
+def _negation_tokens(text: str) -> list[str]:
+    return [match.group(0).lower() for match in _NEGATION_RE.finditer(text or "")]
 
-    ``24.8`` does not match ``2.48``. Percent and bare numbers are different
-    marks. This is not a paraphrase judgment.
+
+def _word_set(text: str) -> set[str]:
+    return {word.lower() for word in _WORD_RE.findall(text or "")}
+
+
+def _direction_supported(statement: str, passage: str) -> bool:
+    """Each direction word in the statement must itself occur in the passage.
+
+    ``contraction`` does not stand in for ``decrease``. Opposite sides of one
+    pair fail. Missing a synonym is unsupported, not a match.
+    """
+    statement_words = _word_set(statement)
+    passage_words = _word_set(passage)
+    for left, right in _DIRECTION_PAIRS:
+        for side in (left, right):
+            used = statement_words & side
+            if used and not used <= passage_words:
+                return False
+    return True
+
+
+def _proper_nouns(text: str) -> set[str]:
+    """Capitalized tokens. Ordinary sentence starters are not actors."""
+    found: set[str] = set()
+    for match in _WORD_RE.finditer(text or ""):
+        word = match.group(0)
+        if not word[0].isupper():
+            continue
+        if word.lower() in _SENTENCE_STARTERS:
+            continue
+        found.add(word.lower())
+    return found
+
+
+def statement_supported_by_passage(statement: str, passage: str) -> bool:
+    """True only when the statement is lexically included in the passage.
+
+    ``24.8`` does not match ``2.48``. Negation tokens must match. A reversed
+    direction word fails. A capitalized actor in the statement that is absent
+    from the passage fails. This is not semantic entailment. Uncertainty is
+    not support.
     """
     statement_numbers = _numeric_marks(statement)
     remaining = _numeric_marks(passage)
@@ -184,11 +250,24 @@ def statement_supported_by_passage(statement: str, passage: str) -> bool:
         if mark not in remaining:
             return False
         remaining.remove(mark)
-    words = _proposition_words(statement)
+    if _negation_tokens(statement) != _negation_tokens(passage):
+        return False
+    if not _direction_supported(statement, passage):
+        return False
+    passage_nouns = _proper_nouns(passage)
+    passage_words = _word_set(passage)
+    for noun in _proper_nouns(statement):
+        if noun not in passage_nouns and noun not in passage_words:
+            return False
+    words = [
+        word
+        for word in _proposition_words(statement)
+        if word not in _negation_tokens(statement)
+    ]
     if not statement_numbers and not words:
         return False
-    passage_words = set(_proposition_words(passage))
-    return all(word in passage_words for word in words)
+    known = set(_proposition_words(passage))
+    return all(word in known for word in words)
 
 
 def _blocked_retrievers(*identities: str) -> set[str]:
@@ -217,35 +296,35 @@ def _hash_checked_blob(archive, source_id: str) -> bytes | None:
     return raw
 
 
-def _trusted_archived_source(archive, url: str, quotation: str, blocked: set[str]):
-    """Existing SRC-01 whose identity is independent of the submitting specialist."""
+def _archived_passage(archive, url: str, quotation: str) -> bool:
+    """True when some stored SRC-01 blob for this URL contains the passage.
+
+    The blob is not a fetch receipt. Retriever text is ignored on purpose.
+    """
     try:
         rows = list(archive.list_all("SRC-01"))
     except Exception:
-        return None
-    fallback = None
+        return False
     for row in rows:
         if getattr(row, "url_or_identifier", None) != url:
             continue
         source_id = str(getattr(row, "source_id", "") or "").strip()
-        retriever = str(getattr(row, "retriever", "") or "").strip()
-        observed = str(getattr(row, "retrieval_date", "") or "").strip()
-        if not source_id or not retriever or not observed or retriever in blocked:
+        if not source_id:
             continue
         raw = _hash_checked_blob(archive, source_id)
-        if raw is None:
-            continue
-        if passage_occurs_in_independent_bytes(quotation, raw):
-            return row, raw
-        if fallback is None:
-            fallback = (row, raw)
-    return fallback
+        if raw is not None and passage_occurs_in_independent_bytes(quotation, raw):
+            return True
+    return False
 
 
 def _matching_receipt(verifications, url: str, quotation: str):
-    """Minted M6 receipt whose bytes contain the passage and name this URL."""
+    """Minted fetch receipt whose bytes contain the passage and name this URL."""
+    from qad.m6.original_fetch import FETCH_REASON
+
     for verification in verifications or ():
         if not isinstance(verification, OriginalSourceVerification):
+            continue
+        if verification.reason != FETCH_REASON:
             continue
         if not verification.is_verified_verdict_for(source_id=verification.source_id or ""):
             continue
@@ -279,18 +358,40 @@ def _local_snapshot_bytes(
     return None
 
 
-def evidence_lead_signoff_recorded(registry, specialist_actor: str) -> bool:
-    """True only for an RC-01 Evidence Lead sign-off already in the registry.
+def evidence_lead_signoff_recorded(
+    registry,
+    specialist_actor: str,
+    *,
+    case_id: str,
+    gap_id: str,
+    claim_id: str,
+    source_id: str,
+    passage_sha256: str,
+) -> bool:
+    """True only for an RC-01 bound to this case, gap, claim, source, and passage.
 
-    A specialist result cannot record this. DRAFT and NOT_VALIDATED charters
-    do not count.
+    The binding is written in the existing ``evidence_lead_validation`` or
+    ``evidence_scope`` strings. A validated charter that names a different
+    question does not override a mismatch. The lead must be a different actor
+    from the specialist. DRAFT and NOT_VALIDATED charters do not count.
     """
+    required = {
+        "case_id": str(case_id or "").strip(),
+        "gap_id": str(gap_id or "").strip(),
+        "claim_id": str(claim_id or "").strip(),
+        "source_id": str(source_id or "").strip(),
+        "passage_sha256": str(passage_sha256 or "").strip(),
+    }
+    if not all(required.values()):
+        return False
     try:
         rows = list(registry.list_all("RC-01"))
     except Exception:
         return False
     actor = str(specialist_actor or "").strip()
     for row in rows:
+        if str(getattr(row, "case_id", "") or "").strip() != required["case_id"]:
+            continue
         lead = str(getattr(row, "evidence_lead", None) or "").strip()
         validation = str(getattr(row, "evidence_lead_validation", None) or "").strip()
         state = _enum(getattr(row, "charter_state", ""))
@@ -299,6 +400,25 @@ def evidence_lead_signoff_recorded(registry, specialist_actor: str) -> bool:
         if not lead or lead == actor:
             continue
         if not validation or validation.upper().startswith("NOT_VALIDATED"):
+            continue
+        blob = "\n".join(
+            [
+                validation,
+                str(getattr(row, "evidence_scope", None) or ""),
+                str(getattr(row, "source_plan", None) or ""),
+            ]
+        )
+        claim_token = (
+            f"claim_id={required['claim_id']}" in blob
+            or f"evidence_id={required['claim_id']}" in blob
+        )
+        if not claim_token:
+            continue
+        if f"gap_id={required['gap_id']}" not in blob:
+            continue
+        if f"source_id={required['source_id']}" not in blob:
+            continue
+        if f"passage_sha256={required['passage_sha256']}" not in blob:
             continue
         return True
     return False
@@ -440,30 +560,39 @@ def _admit_claim(
     independent_snapshots: dict[str, bytes] | None,
     snapshot_dir: Path | None,
     source_verifications=None,
+    fetch_errors: dict[str, str] | None = None,
 ) -> dict:
     """Admit one claim, or return a quarantine/preserved reason.
 
     The specialist ``quotation`` is the passage to find. It is never archived
     as the original document and its hash is never the verification proof.
-    A local snapshot that contains the passage is still not a receipt.
+    Only a minted independent-fetch receipt supplies the bytes.
     """
     source = claim["source"]
     quotation = str(source["quotation"])
     url = str(source["url"])
     statement = str(claim["statement"])
     actor = str(result["actor_id"])
-    blocked = _blocked_retrievers(actor, str(result.get("specialist_id") or ""), str(result.get("canonical_role") or ""))
+    blocked = _blocked_retrievers(
+        actor,
+        str(result.get("specialist_id") or ""),
+        str(result.get("canonical_role") or ""),
+    )
     archive = bundle.archive
     registry = bundle.registry
+    fetch_error = (fetch_errors or {}).get(url)
+    if fetch_error:
+        return {
+            "status": "QUARANTINED",
+            "verification_status": "UNVERIFIED",
+            "reason": fetch_error,
+        }
     local = _local_snapshot_bytes(
         url,
         independent_snapshots=independent_snapshots,
         snapshot_dir=snapshot_dir,
     )
-    trusted = _trusted_archived_source(archive, url, quotation, blocked)
-    receipt = None if trusted and passage_occurs_in_independent_bytes(quotation, trusted[1]) else _matching_receipt(
-        source_verifications, url, quotation
-    )
+    receipt = _matching_receipt(source_verifications, url, quotation)
     if receipt is not None and archive.contains("SRC-01", receipt.source_id):
         stored = _hash_checked_blob(archive, receipt.source_id)
         row = archive.load("SRC-01", receipt.source_id)
@@ -472,13 +601,10 @@ def _admit_claim(
         same_url = getattr(row, "url_or_identifier", None) == url
         if not same_bytes or not same_url or (retriever and retriever in blocked):
             receipt = None
-    trusted_bytes = None
-    if trusted is not None and passage_occurs_in_independent_bytes(quotation, trusted[1]):
-        trusted_bytes = trusted[1]
-    elif receipt is not None:
-        trusted_bytes = receipt.raw_bytes
-    if not passage_occurs_in_independent_bytes(quotation, trusted_bytes):
-        if passage_occurs_in_independent_bytes(quotation, local):
+    if receipt is None or not passage_occurs_in_independent_bytes(quotation, receipt.raw_bytes):
+        if _archived_passage(archive, url, quotation):
+            reason = HAND_INSERTED_SOURCE_REASON
+        elif passage_occurs_in_independent_bytes(quotation, local):
             reason = UNTRUSTED_SNAPSHOT_REASON
         else:
             reason = PASSAGE_ABSENT_REASON
@@ -487,25 +613,39 @@ def _admit_claim(
             "verification_status": "UNVERIFIED",
             "reason": reason,
         }
-    assert trusted_bytes is not None
+    expected = str(source.get("expected_sha256") or "").strip()
+    if expected and receipt.content_hash != expected:
+        return {
+            "status": "QUARANTINED",
+            "verification_status": "UNVERIFIED",
+            "reason": (
+                f"fetched sha256 {receipt.content_hash} != expected {expected}"
+            ),
+        }
+    trusted_bytes = receipt.raw_bytes
+    passage_digest = hashlib.sha256(quotation.encode("utf-8")).hexdigest()
+    claim_id = str(claim.get("claim_id") or claim.get("evidence_id") or "").strip()
     if claim["evidence_type"] == "FACT" and not statement_supported_by_passage(statement, quotation):
-        if not evidence_lead_signoff_recorded(registry, actor):
+        if not evidence_lead_signoff_recorded(
+            registry,
+            actor,
+            case_id=str(result.get("case_id") or bundle.case_id),
+            gap_id=str(result.get("gap_id") or ""),
+            claim_id=claim_id,
+            source_id=str(receipt.source_id),
+            passage_sha256=passage_digest,
+        ):
             return {
                 "status": "QUARANTINED",
                 "verification_status": "UNVERIFIED",
                 "reason": STATEMENT_UNSUPPORTED_REASON,
             }
     digest = hashlib.sha256(trusted_bytes).hexdigest()
-    passage_digest = hashlib.sha256(quotation.encode("utf-8")).hexdigest()
     seed = f"{result['gap_id']}:{index}:{digest}:{passage_digest}"
     evidence_id = str(deterministic_uuid7(f"ev:{seed}", ts_ms=ts_ms))
     tier = str(source["source_tier"])
-    if trusted is not None and passage_occurs_in_independent_bytes(quotation, trusted[1]):
-        source_id = trusted[0].source_id
-    elif receipt is not None and archive.contains("SRC-01", receipt.source_id):
-        source_id = receipt.source_id
-    elif receipt is not None:
-        source_id = receipt.source_id
+    source_id = receipt.source_id
+    if not archive.contains("SRC-01", source_id):
         try:
             archive.admit_source(
                 SourceRecord(
@@ -516,6 +656,7 @@ def _admit_claim(
                     source_type=SourceRecordSource_type(receipt.source_type),
                     url_or_identifier=url,
                     publication_date=receipt.publication_date,
+                    author=str(source.get("publisher") or "") or None,
                     retrieval_method="M6 original-source verification receipt",
                     retriever=_M6_RETRIEVER,
                     title=(receipt.title or statement)[:240],
@@ -528,12 +669,6 @@ def _admit_claim(
                 "verification_status": "UNVERIFIED",
                 "reason": UNTRUSTED_SNAPSHOT_REASON,
             }
-    else:
-        return {
-            "status": "QUARANTINED",
-            "verification_status": "UNVERIFIED",
-            "reason": UNTRUSTED_SNAPSHOT_REASON,
-        }
     evidence = EvidenceRecord(
         admitting_role="Evidence Intelligence Lead",
         as_of=str(source["source_date"])[:10],
@@ -546,8 +681,8 @@ def _admit_claim(
         validation_status=EvidenceRecordValidation_status.RAW,
         extraction_method=RESULT_CONTRACT_ID,
         validation_method=(
-            "cited passage found in an S5/M6 receipt or trusted archived source, "
-            "and the FACT statement matches that passage or an Evidence Lead sign-off is recorded"
+            "cited passage found in an S5/M6 receipt minted by an independent fetch, "
+            "and the FACT statement matches that passage or a claim-bound Evidence Lead sign-off is recorded"
         ),
     )
     admission = EvidenceAdmissionRecord(
@@ -558,14 +693,14 @@ def _admit_claim(
         evidence_id=evidence_id,
         source_tier_check=tier,
         validation_method=(
-            "cited passage found in an S5/M6 receipt or trusted archived source, "
-            "and the FACT statement matches that passage or an Evidence Lead sign-off is recorded"
+            "cited passage found in an S5/M6 receipt minted by an independent fetch, "
+            "and the FACT statement matches that passage or a claim-bound Evidence Lead sign-off is recorded"
         ),
         source_as_of=str(source["source_date"])[:10],
         validation_notes=(
-            "Passage located in a pre-existing trusted source identity or minted "
-            "M6 receipt. A local snapshot was not the receipt. The specialist "
-            "quotation hash was not the source hash."
+            "Passage located in a minted M6 independent-fetch receipt. "
+            "A local snapshot and a hand-inserted archive row were not the receipt. "
+            "The specialist quotation hash was not the source hash."
         ),
     )
     evidence_state = _admit_evidence_preserving(registry, evidence, admission)
@@ -697,6 +832,9 @@ def ingest_result(
         actor_id=actor,
         canonical_role=str(result["canonical_role"]),
     )
+    fetch_errors: dict[str, str] = {}
+    if source_verifications is None and result.get("source_fetch") == "s5-m6-http":
+        source_verifications, fetch_errors = _fetch_receipts(result)
     if snapshot_dir is None:
         candidate = case_directory(bundle.case_id) / "snapshots"
         snapshot_dir = candidate if candidate.is_dir() else None
@@ -749,6 +887,7 @@ def ingest_result(
             independent_snapshots=independent_snapshots,
             snapshot_dir=snapshot_dir,
             source_verifications=source_verifications,
+            fetch_errors=fetch_errors,
         )
         if decision["status"] == "QUARANTINED":
             outcome.quarantined.append(
@@ -839,6 +978,42 @@ def ingest_result(
     outcome.stage_state = _enum(stage.stage_state)
     ledger.append((actor, str(result["canonical_role"])))
     return outcome
+
+
+def _fetch_receipts(result: dict) -> tuple[list, dict[str, str]]:
+    """Mint one independent-fetch receipt per distinct claim URL.
+
+    Failures stay on the URL. They do not fall back to a local file.
+    """
+    from qad.m6.original_fetch import mint_http_source
+
+    receipts = []
+    errors: dict[str, str] = {}
+    seen: set[str] = set()
+    for claim in result.get("claims") or []:
+        source = claim.get("source") if isinstance(claim, dict) else None
+        if not isinstance(source, dict):
+            continue
+        url = str(source.get("url") or "").strip()
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        verification, error = mint_http_source(
+            url,
+            source_tier=str(source.get("source_tier") or "L1"),
+            source_type=str(source.get("source_type") or "SEC_FILING"),
+            title=str(source.get("title") or "") or None,
+            publication_date=(str(source.get("source_date") or "")[:10] or None),
+        )
+        if verification is None:
+            errors[url] = error or "S5/M6 independent fetch did not mint a receipt"
+            continue
+        expected = str(source.get("expected_sha256") or "").strip()
+        if expected and verification.content_hash != expected:
+            errors[url] = f"fetched sha256 {verification.content_hash} != expected {expected}"
+            continue
+        receipts.append(verification)
+    return receipts, errors
 
 
 def load_charter_file(path: Path) -> dict:
@@ -990,6 +1165,9 @@ def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
                     "verification_status": verification,
                     "source_url": source.url_or_identifier,
                     "content_hash": source.content_hash,
+                    "retrieval_method": source.retrieval_method,
+                    "retriever": source.retriever,
+                    "retrieval_date": source.retrieval_date,
                 }
             )
         if outcome.investigation_id and bundle.registry.contains("IR-01", outcome.investigation_id):
