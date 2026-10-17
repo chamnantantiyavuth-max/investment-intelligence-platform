@@ -1,0 +1,373 @@
+"""Offline tests for specialist routing and result ingestion."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from qad.models.family_b import EvidenceRecordValidation_status, FactRecordVerification_status
+from qad.specialists.budget import (
+    PER_CHARTER_CEILING,
+    Budget,
+    BudgetBoundError,
+    assert_within_charter_ceiling,
+)
+from qad.specialists.catalog import (
+    EXPECTED_DISPLAY_NAMES,
+    EXPECTED_ROLE,
+    CatalogError,
+    _validate,
+    load_catalog,
+)
+from qad.specialists.contract import RESULT_CONTRACT_ID
+from qad.specialists.ingestion import (
+    decide_scuttlebutt_state,
+    ingest_result,
+    scuttlebutt_contract_complete,
+)
+from qad.specialists.routing import route_case
+from qad.specialists.separation import SeparationViolation
+from qad.specialists.stages import StageCompletionRejected, find_stage, transition_stage
+from research.qad_pilot.unh.case_slice import build_unh_case
+
+
+ROOT = Path("research/qad-cases/CASE-2026-001/founder-priority.json")
+
+
+def _priority() -> dict:
+    return json.loads(ROOT.read_text(encoding="utf-8"))
+
+
+def _routed(priority: dict | None = None):
+    bundle = build_unh_case()
+    result = route_case(bundle, max_n=3, founder_priority=priority)
+    return bundle, result
+
+
+def _charter(item) -> dict:
+    return {
+        "gap_id": item.gap_id,
+        "specialist_id": item.specialist_id,
+        "canonical_role": item.canonical_role,
+        "investigator_charter_id": item.investigator_charter_id,
+        "allowed_source_classes": item.charter_record["allowed_source_classes"],
+        "budget": item.budget,
+        "desk_research_only": True,
+    }
+
+
+def _result(item, **overrides) -> dict:
+    payload = {
+        "contract": RESULT_CONTRACT_ID,
+        "case_id": "CASE-2026-001",
+        "gap_id": item.gap_id,
+        "investigator_charter_id": item.investigator_charter_id,
+        "specialist_id": item.specialist_id,
+        "actor_id": "agent-a",
+        "canonical_role": item.canonical_role,
+        "desk_research_only": True,
+        "disposition": "UNRESOLVED",
+        "falsifiable_question": item.falsifiable_question,
+        "stop_rule_triggered": None,
+        "usage": {"tool_calls": 1, "sources": 1, "minutes": 5},
+        "sampling_limitations": "Public documents only.",
+        "claims": [],
+        "findings": [],
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _claim(**source_overrides) -> dict:
+    source = {
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement",
+        "retrieval_timestamp": "2026-10-17T14:30:16Z",
+        "source_date": "2026-04-06",
+        "publisher": "CMS",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage Rate Announcement",
+        "quotation": "expected net 2.48 percent",
+    }
+    source.update(source_overrides)
+    return {
+        "statement": "CMS printed an industry rate bridge with expected net 2.48 percent.",
+        "evidence_type": "FACT",
+        "source": source,
+    }
+
+
+def test_catalog_covers_exact_canonical_names():
+    catalog = load_catalog()
+    names = {row["display_name"] for row in catalog.values()}
+    assert names == EXPECTED_DISPLAY_NAMES
+    assert len(catalog) == 17
+    core = [row for row in catalog.values() if row["kind"] == "core"]
+    investigators = [row for row in catalog.values() if row["kind"] == "investigator"]
+    assert len(core) == 6
+    assert len(investigators) == 11
+    for specialist_id, row in catalog.items():
+        assert row["canonical_role"] == EXPECTED_ROLE[specialist_id]
+        assert row["desk_research_only"] is True
+        assert row["overrides_canonical_authority"] is False
+    broken = json.loads(Path("qad/specialists/configs/dimensions.json").read_text(encoding="utf-8"))
+    broken["specialists"][0]["canonical_role"] = "Chief Underwriter"
+    with pytest.raises(CatalogError):
+        _validate(broken["specialists"])
+
+
+def test_dimension_selection_and_founder_override():
+    bundle, natural = _routed(None)
+    assert [item.specialist_id for item in natural.selected] == [
+        "management_capital_allocation",
+        "customer_product_investigator",
+        "financial_reconstruction_accounting_quality",
+    ]
+    assert natural.override["applied"] is False
+    _bundle, routed = _routed(_priority())
+    assert [item.specialist_id for item in routed.selected] == [
+        "industry_economics_capital_cycle",
+        "customer_product_investigator",
+        "management_capital_allocation",
+    ]
+    assert routed.override["applied"] is True
+    assert "industry_economics_capital_cycle" in routed.override["reason"]
+    assert routed.override["founder_approved"] is False
+    charter = bundle.registry.load("RC-01", natural.charter_id)
+    assert charter.charter_state.value == "DRAFT"
+    labels = sorted(
+        row.hypothesis_label.value
+        for row in bundle.registry.list_all("HYP-01")
+        if row.case_id == bundle.case_id
+    )
+    assert labels == ["H1", "H2", "H3", "H4", "H5"]
+    assert "Not Founder-approved" in bundle.registry.list_all("HYP-01")[0].statement
+
+
+def test_charter_gap_binding_and_budget_string():
+    bundle, routed = _routed(_priority())
+    for item in routed.selected:
+        assert item.task_packet["gap_id"] == item.gap_id
+        assert item.charter_record["gap_id"] == item.gap_id
+        assert item.budget == "max_tool_calls=8;max_sources=6;max_minutes=90"
+        assert item.task_packet["result_path"].endswith(f"/results/{item.gap_id}.json")
+        if item.investigator_charter_id:
+            stored = bundle.registry.load("IC-01", item.investigator_charter_id)
+            assert stored.gap_id == item.gap_id
+            assert stored.budget == item.budget
+        else:
+            assert item.charter_record["record_kind"] == "DESK_ASSIGNMENT"
+            assert item.canonical_role == "Financial & Management Analyst"
+    stage = find_stage(bundle.registry, bundle.case_id, "SCUTTLEBUTT")
+    assert stage.stage_state.value == "IN_PROGRESS"
+    charter_stage = find_stage(bundle.registry, bundle.case_id, "CHARTER")
+    assert charter_stage.stage_state.value == "IN_PROGRESS"
+
+
+def test_budget_bounds_enforced():
+    with pytest.raises(BudgetBoundError):
+        assert_within_charter_ceiling(
+            Budget(
+                max_tool_calls=PER_CHARTER_CEILING.max_tool_calls + 1,
+                max_sources=1,
+                max_minutes=1,
+            )
+        )
+    bundle = build_unh_case()
+    with pytest.raises(ValueError):
+        route_case(
+            bundle,
+            max_n=3,
+            charter_budget=Budget(max_tool_calls=9, max_sources=6, max_minutes=90),
+        )
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    ledger: list[tuple[str, str]] = []
+    with pytest.raises(BudgetBoundError):
+        ingest_result(
+            bundle,
+            _result(item, usage={"tool_calls": 99, "sources": 1, "minutes": 5}, claims=[_claim()]),
+            _charter(item),
+            ledger,
+            issued_ids=[row.gap_id for row in routed.selected],
+            reported_ids=set(),
+        )
+    assert ledger == []
+    assert bundle.registry.list_all("FACT-01") == [] or all(
+        row.statement != _claim()["statement"] for row in bundle.registry.list_all("FACT-01")
+    )
+
+
+def test_provenance_survives_ingest_and_later_update():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[_claim()]),
+        _charter(item),
+        [],
+        issued_ids=[row.gap_id for row in routed.selected],
+        reported_ids=set(),
+    )
+    assert outcome.admitted_evidence_ids
+    evidence_id = outcome.admitted_evidence_ids[0]
+    source_id = outcome.admitted_source_ids[0]
+    evidence = bundle.registry.load("EV-01", evidence_id)
+    source = bundle.archive.load("SRC-01", source_id)
+    assert evidence.validation_status.value == "RAW"
+    assert source.url_or_identifier.startswith("https://www.cms.gov/")
+    assert source.retrieval_date == "2026-10-17T14:30:16Z"
+    assert source.publication_date == "2026-04-06"
+    assert source.author == "CMS"
+    facts = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.evidence_id == evidence_id
+    ]
+    assert len(facts) == 1
+    assert facts[0].verification_status == FactRecordVerification_status.VERIFIED
+    assert facts[0].source_location == source.url_or_identifier
+    updated = evidence.model_copy(
+        update={"validation_status": EvidenceRecordValidation_status.DISPUTED}
+    )
+    bundle.registry.store(updated)
+    reloaded = bundle.registry.load("EV-01", evidence_id)
+    reloaded_source = bundle.archive.load("SRC-01", reloaded.source_id)
+    assert reloaded.validation_status.value == "DISPUTED"
+    assert reloaded.source_id == source_id
+    assert reloaded.as_of == evidence.as_of
+    assert reloaded.content == evidence.content
+    assert reloaded_source.url_or_identifier == source.url_or_identifier
+    assert reloaded_source.retrieval_date == source.retrieval_date
+    assert reloaded_source.publication_date == source.publication_date
+    assert reloaded_source.author == source.author
+    fact = bundle.registry.load("FACT-01", facts[0].fact_id)
+    assert fact.verification_status == FactRecordVerification_status.VERIFIED
+    assert fact.source_location == source.url_or_identifier
+    gap = bundle.registry.load("EG-01", item.gap_id)
+    assert gap.operational_status.value == "UNRESOLVED"
+    assert outcome.gap_status["written"] is False
+    assert outcome.gap_status["canonical_status"] == "UNRESOLVED"
+
+
+def test_unsupported_claim_is_quarantined_unverified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    bad = _claim(url="", publisher="")
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[bad]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+    )
+    assert outcome.admitted_evidence_ids == []
+    assert outcome.quarantined[0]["status"] == "QUARANTINED"
+    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
+    assert outcome.investigation_disposition == "UNRESOLVED"
+    verified = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.verification_status == FactRecordVerification_status.VERIFIED
+        and row.statement == bad["statement"]
+    ]
+    assert verified == []
+
+
+def test_unresolved_investigation_stays_unresolved():
+    bundle, routed = _routed(_priority())
+    item = next(row for row in routed.selected if row.investigator_charter_id)
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="UNRESOLVED"),
+        _charter(item),
+        [],
+        issued_ids=[row.gap_id for row in routed.selected],
+        reported_ids=set(),
+    )
+    report = bundle.registry.load("IR-01", outcome.investigation_id)
+    assert report.disposition.value == "NOT_ANSWERED"
+    assert "specialist_disposition=UNRESOLVED" in report.findings
+    assert report.evidence_gap_id == item.gap_id
+    gap = bundle.registry.load("EG-01", item.gap_id)
+    assert gap.operational_status.value == "UNRESOLVED"
+    assert outcome.investigation_disposition == "UNRESOLVED"
+    assert outcome.stage_state == "IN_PROGRESS"
+    stage = find_stage(bundle.registry, bundle.case_id, "SCUTTLEBUTT")
+    assert stage.stage_state.value != "COMPLETE"
+
+
+def test_separation_of_duties_violation_rejected():
+    bundle, routed = _routed(_priority())
+    item = next(row for row in routed.selected if row.canonical_role == "Elastic Investigator")
+    ledger: list[tuple[str, str]] = []
+    ingest_result(
+        bundle,
+        _result(item),
+        _charter(item),
+        ledger,
+        issued_ids=[row.gap_id for row in routed.selected],
+        reported_ids=set(),
+    )
+    before = len(bundle.registry.list_all("EV-01"))
+    with pytest.raises(SeparationViolation):
+        ingest_result(
+            bundle,
+            _result(item, additional_roles=["Independent Research Auditor"]),
+            _charter(item),
+            ledger,
+            issued_ids=[row.gap_id for row in routed.selected],
+            reported_ids={item.gap_id},
+        )
+    assert len(bundle.registry.list_all("EV-01")) == before
+
+
+def test_scuttlebutt_complete_only_when_contract_allows():
+    assert decide_scuttlebutt_state(
+        ["g1"], {"g1"}, desk_research_only=True, contract_complete=True
+    ) == "INCOMPLETE"
+    assert decide_scuttlebutt_state(
+        ["g1", "g2"], {"g1"}, desk_research_only=False, contract_complete=True
+    ) == "IN_PROGRESS"
+    assert (
+        decide_scuttlebutt_state(
+            ["g1"],
+            {"g1"},
+            desk_research_only=False,
+            contract_complete=scuttlebutt_contract_complete(
+                [
+                    {
+                        "disposition": "ANSWERED",
+                        "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+                        "admitted_evidence_ids": ["ev"],
+                    }
+                ]
+            ),
+        )
+        == "COMPLETE"
+    )
+    bundle, routed = _routed(_priority())
+    with pytest.raises(StageCompletionRejected):
+        transition_stage(
+            bundle.registry,
+            bundle.case_id,
+            "SCUTTLEBUTT",
+            "COMPLETE",
+            "not allowed",
+            [],
+            complete_allowed=False,
+        )
+    item = routed.selected[0]
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="UNRESOLVED"),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+    )
+    assert outcome.stage_state == "INCOMPLETE"
+    assert find_stage(bundle.registry, bundle.case_id, "SCUTTLEBUTT").stage_state.value == "INCOMPLETE"

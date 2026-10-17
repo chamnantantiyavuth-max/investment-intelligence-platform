@@ -1,0 +1,25 @@
+{
+  "case_id": "CASE-2026-001",
+  "label": "MANUAL/FOUNDER_DIRECTED pilot",
+  "founder_approved": false,
+  "priority": [
+    "industry_economics_capital_cycle",
+    "customer_product_investigator",
+    "management_capital_allocation"
+  ],
+  "priority_labels": {
+    "industry_economics_capital_cycle": "Competitor/Industry Economics",
+    "customer_product_investigator": "Customer/Provider Ecosystem",
+    "management_capital_allocation": "Management & Capital Allocation"
+  },
+  "draft_gaps": [
+    {
+      "specialist_id": "industry_economics_capital_cycle",
+      "importance": "HIGH",
+      "resolvability_class": "RESOLVABLE_WITH_EXISTING_SOURCES",
+      "question": "Does the CMS 2027 Medicare Advantage rate announcement, together with UnitedHealth's public star statement that at least 69 percent of plan enrollment sits in plans rated four stars or higher, show a company-specific funding gap versus the industry rate bridge (effective growth 5.33 percent, expected net 2.48 percent)?",
+      "falsifiable_question": "Falsified if those public documents, read together, state no UnitedHealth-specific funding effect beyond the printed industry rate bridge. Confirmed if an admitted UnitedHealth filing states a funding effect worse than that industry bridge.",
+      "source_note": "Director-drafted from reports/unh-qad-pilot-2026-10-17.md sections อะไรจะคุ้มค่าต่อการศึกษาต่อ item 5 and ตำแหน่งแข่งขันและกฎระเบียบ. Not Founder-approved. Not a stored Evidence Gap until this override."
+    }
+  ]
+}

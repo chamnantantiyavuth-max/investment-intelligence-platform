@@ -1,0 +1,97 @@
+[
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "current_plausibility": "UNCLEAR",
+    "evidence_against": null,
+    "evidence_for": null,
+    "falsification_criteria": "Falsified if UnitedHealth is not a high-quality business, or the margin break is not a temporary headwind with a likely recovery.",
+    "hypothesis_id": "01a14a2d-3880-7551-80f9-c662240c9355",
+    "hypothesis_label": "H1",
+    "initial_plausibility": "UNCLEAR",
+    "last_updated": null,
+    "originator": "Research Director",
+    "research_charter": null,
+    "schema_id": "HYP-01",
+    "statement": "H1 Temporary impairment: UnitedHealth is a quality business whose 2025 operating-margin break is a temporary headwind with a likely recovery. Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2. Not Founder-approved.",
+    "status_history": [
+      "2026-10-17T14:04:00Z Director-drafted UNCLEAR. Not Founder-approved. MANUAL/FOUNDER_DIRECTED pilot."
+    ]
+  },
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "current_plausibility": "UNCLEAR",
+    "evidence_against": null,
+    "evidence_for": null,
+    "falsification_criteria": "Falsified if neither the business model nor the industry is permanently damaged.",
+    "hypothesis_id": "01a14a2d-3880-7354-ba5e-f43c237c105f",
+    "hypothesis_label": "H2",
+    "initial_plausibility": "UNCLEAR",
+    "last_updated": null,
+    "originator": "Research Director",
+    "research_charter": null,
+    "schema_id": "HYP-01",
+    "statement": "H2 Structural deterioration: the business model or the industry funding of UnitedHealth is permanently damaged, rather than delayed. Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2. Not Founder-approved.",
+    "status_history": [
+      "2026-10-17T14:04:00Z Director-drafted UNCLEAR. Not Founder-approved. MANUAL/FOUNDER_DIRECTED pilot."
+    ]
+  },
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "current_plausibility": "UNCLEAR",
+    "evidence_against": null,
+    "evidence_for": null,
+    "falsification_criteria": "Falsified if the damage is not mixed, or the net direction is clear.",
+    "hypothesis_id": "01a14a2d-3880-7f85-b305-455fd81b72ef",
+    "hypothesis_label": "H3",
+    "initial_plausibility": "UNCLEAR",
+    "last_updated": null,
+    "originator": "Research Director",
+    "research_charter": null,
+    "schema_id": "HYP-01",
+    "statement": "H3 Mixed: some UnitedHealth economics are genuinely impaired and others remain intact, and the net direction is unclear. Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2. Not Founder-approved.",
+    "status_history": [
+      "2026-10-17T14:04:00Z Director-drafted UNCLEAR. Not Founder-approved. MANUAL/FOUNDER_DIRECTED pilot."
+    ]
+  },
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "current_plausibility": "UNCLEAR",
+    "evidence_against": null,
+    "evidence_for": null,
+    "falsification_criteria": "Falsified if the quality premise holds and it was a high-quality business.",
+    "hypothesis_id": "01a14a2d-3880-7257-850b-eccac112514a",
+    "hypothesis_label": "H4",
+    "initial_plausibility": "UNCLEAR",
+    "last_updated": null,
+    "originator": "Research Director",
+    "research_charter": null,
+    "schema_id": "HYP-01",
+    "statement": "H4 Quality assumption wrong: UnitedHealth was never a high-quality business, so the quality premise of the case fails. Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2. Not Founder-approved.",
+    "status_history": [
+      "2026-10-17T14:04:00Z Director-drafted UNCLEAR. Not Founder-approved. MANUAL/FOUNDER_DIRECTED pilot."
+    ]
+  },
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "current_plausibility": "UNCLEAR",
+    "evidence_against": null,
+    "evidence_for": null,
+    "falsification_criteria": "Falsified if a real impairment is not already reflected in the price, so asymmetry remains, or if there is no real impairment.",
+    "hypothesis_id": "01a14a2d-3880-760f-b3a7-302f2ed712d4",
+    "hypothesis_label": "H5",
+    "initial_plausibility": "UNCLEAR",
+    "last_updated": null,
+    "originator": "Research Director",
+    "research_charter": null,
+    "schema_id": "HYP-01",
+    "statement": "H5 Valuation already fair: the impairment may be real, but the market price already reflects it, so there is no asymmetry. Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2. Not Founder-approved.",
+    "status_history": [
+      "2026-10-17T14:04:00Z Director-drafted UNCLEAR. Not Founder-approved. MANUAL/FOUNDER_DIRECTED pilot."
+    ]
+  }
+]

@@ -1,0 +1,105 @@
+{
+  "case_id": "CASE-2026-001",
+  "charter_id": "01a14a2d-3880-7360-9c9d-6ea1a9373d84",
+  "charter_state": "DRAFT",
+  "founder_approved": false,
+  "label": "MANUAL/FOUNDER_DIRECTED pilot",
+  "limitations": [
+    "Tool-call, source, and time budgets of an external Grok Cloud agent are self-reported on the result file. Ingest enforces those reported numbers against the charter cap. It does not meter the agent's actual calls.",
+    "Independence is by separate agent execution plus the same-actor ledger. It is not cryptographic and not an operating-system identity check.",
+    "EG-01 is RECORD_IMMUTABLE in the generated descriptor, including operational_status and investigator_charter_id. A status rewrite is rejected. Disposition is recorded on IR-01 when an IC-01 exists, and in the ingest journal. The stored gap stays at its current status.",
+    "Desk-research-only work cannot move SCUTTLEBUTT to COMPLETE. QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §1: scuttlebutt is not desk research. The stage may be IN_PROGRESS or INCOMPLETE.",
+    "No RB-01 is written. The Research Budget Controller has not approved the caps. RC-01 stays DRAFT. The Evidence Intelligence Lead has not validated the charter. The Research Director does not self-authorize the budget.",
+    "H1–H5 for this pilot are Director-drafted from QAD-FULL-RESEARCH-PROTOCOL.md §2 applied to UNH. They are not Founder-approved. MANUAL_PILOT is not a canonical entry_route. The case entry route remains FOUNDER_DIRECTED.",
+    "Provenance checks require a URL, retrieval timestamp, source date, and publisher. The boundary does not re-fetch the URL. Admitted bytes are the quotation in the result file.",
+    "qad.m53.retry_kernel meters canonical stage retries (initial plus 3). It is not used to retry an external specialist. Those runs are outside this process, and a self-reported failure is not a kernel retry.",
+    "Management & Capital Allocation has no IC-01 investigator_type. That charter is a desk assignment bound to the gap. It is not a new schema. Its claims still enter through the existing admission boundary."
+  ],
+  "natural_selection": [
+    {
+      "eiv": "PLAUSIBLE_HIGH",
+      "gap_id": "01a14a2d-3880-7315-8a00-ca275c24ee13",
+      "importance": "HIGH",
+      "question": "Did UnitedHealth publish a numeric 2025 outlook between the May 2025 withdrawal and year-end, and was that outlook missed?",
+      "resolvability_class": "RESOLVABLE_WITH_EXISTING_SOURCES",
+      "specialist_id": "management_capital_allocation"
+    },
+    {
+      "eiv": "PLAUSIBLE_HIGH",
+      "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+      "importance": "HIGH",
+      "question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+      "resolvability_class": "RESOLVABLE_WITH_SCUTTLEBUTT",
+      "specialist_id": "customer_product_investigator"
+    },
+    {
+      "eiv": "PLAUSIBLE_MEDIUM",
+      "gap_id": "01a14a2d-3880-7428-a004-4c629052cc46",
+      "importance": "CRITICAL",
+      "question": "Does a filed Q3 2026 Form 10-Q report the same revenue and earnings from operations as the 13 Oct 2026 earnings-release transcription?",
+      "resolvability_class": "RESOLVABLE_WITH_EXISTING_SOURCES",
+      "specialist_id": "financial_reconstruction_accounting_quality"
+    }
+  ],
+  "override": {
+    "applied": true,
+    "founder_approved": false,
+    "label": "MANUAL/FOUNDER_DIRECTED pilot",
+    "reason": "Natural EIV order selected management_capital_allocation, customer_product_investigator, financial_reconstruction_accounting_quality. Founder priority differs. No stored gap classifies to: industry_economics_capital_cycle. The override does not change EIV bands. It replaces the natural third slot where the requested dimension is absent or ranks below the cutoff.",
+    "requested": [
+      "industry_economics_capital_cycle",
+      "customer_product_investigator",
+      "management_capital_allocation"
+    ]
+  },
+  "selected": [
+    {
+      "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+      "canonical_role": "Business & Industry Analyst",
+      "charter_file": "01a14a2d-3880-7792-80f6-34b43bab1141.charter.json",
+      "display_name": "Industry Economics & Capital Cycle",
+      "eiv": "PLAUSIBLE_MEDIUM",
+      "falsifiable_question": "Falsified if those public documents, read together, state no UnitedHealth-specific funding effect beyond the printed industry rate bridge. Confirmed if an admitted UnitedHealth filing states a funding effect worse than that industry bridge.",
+      "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+      "investigator_charter_id": "01a14a2d-3880-7726-82dd-4d412bed3502",
+      "investigator_type": "INDUSTRY_SPECIALIST",
+      "override": true,
+      "question": "Does the CMS 2027 Medicare Advantage rate announcement, together with UnitedHealth's public star statement that at least 69 percent of plan enrollment sits in plans rated four stars or higher, show a company-specific funding gap versus the industry rate bridge (effective growth 5.33 percent, expected net 2.48 percent)?",
+      "specialist_id": "industry_economics_capital_cycle",
+      "task_file": "01a14a2d-3880-7792-80f6-34b43bab1141.task.json",
+      "why": "EIV PLAUSIBLE_MEDIUM from importance HIGH and resolvability RESOLVABLE_WITH_EXISTING_SOURCES (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §6). Selected by the documented Founder-priority override."
+    },
+    {
+      "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+      "canonical_role": "Elastic Investigator",
+      "charter_file": "01a14a2d-3880-73d1-8542-68158b04b1fc.charter.json",
+      "display_name": "Customer / Product Investigator",
+      "eiv": "PLAUSIBLE_HIGH",
+      "falsifiable_question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+      "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+      "investigator_charter_id": "01a14a2d-3880-7e73-b00f-27ebf1084926",
+      "investigator_type": "CUSTOMER",
+      "override": true,
+      "question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+      "specialist_id": "customer_product_investigator",
+      "task_file": "01a14a2d-3880-73d1-8542-68158b04b1fc.task.json",
+      "why": "EIV PLAUSIBLE_HIGH from importance HIGH and resolvability RESOLVABLE_WITH_SCUTTLEBUTT (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §6). Selected by the documented Founder-priority override."
+    },
+    {
+      "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+      "canonical_role": "Financial & Management Analyst",
+      "charter_file": "01a14a2d-3880-7315-8a00-ca275c24ee13.charter.json",
+      "display_name": "Management & Capital Allocation",
+      "eiv": "PLAUSIBLE_HIGH",
+      "falsifiable_question": "Did UnitedHealth publish a numeric 2025 outlook between the May 2025 withdrawal and year-end, and was that outlook missed?",
+      "gap_id": "01a14a2d-3880-7315-8a00-ca275c24ee13",
+      "investigator_charter_id": null,
+      "investigator_type": null,
+      "override": true,
+      "question": "Did UnitedHealth publish a numeric 2025 outlook between the May 2025 withdrawal and year-end, and was that outlook missed?",
+      "specialist_id": "management_capital_allocation",
+      "task_file": "01a14a2d-3880-7315-8a00-ca275c24ee13.task.json",
+      "why": "EIV PLAUSIBLE_HIGH from importance HIGH and resolvability RESOLVABLE_WITH_EXISTING_SOURCES (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §6). Selected by the documented Founder-priority override."
+    }
+  ]
+}
