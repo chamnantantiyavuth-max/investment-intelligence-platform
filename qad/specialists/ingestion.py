@@ -1,10 +1,15 @@
 """Ingest a specialist result through the existing admission boundary.
 
-A claim with a URL, retrieval timestamp, source date, and publisher is
-admitted as SRC-01 bytes plus EV-01/EAR-01. A claim missing any of those
-is quarantined. Quarantine is the S4 / scuttlebutt quality-gate word for
-"not admitted". It is not a new canonical status. The fact status used is
-the existing FactRecord value UNVERIFIED, and no VERIFIED fact is stored.
+A claim with a URL, retrieval timestamp, source date, and publisher may be
+admitted only when its cited passage occurs in original bytes the ingest
+step itself loaded: a snapshot file, an explicit snapshot mapping, or a
+hash-checked raw blob already in the archive for that URL. The specialist
+quotation and any hash of that quotation are not those bytes.
+
+A passage that is not found is quarantined. Quarantine is the S4 /
+scuttlebutt quality-gate word for "not admitted". It is not a new canonical
+status. The fact status used on that path is the existing FactRecord value
+UNVERIFIED. FACT-01 VERIFIED is stored only after the passage check passes.
 
 UNRESOLVED is not an IR-01 disposition. The report stores NOT_ANSWERED and
 the findings record specialist_disposition=UNRESOLVED. The gap journal
@@ -16,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -42,7 +48,12 @@ from qad.models.family_c import (
     InvestigationReportDisposition,
     InvestigationReportStop_rule,
 )
+from qad.m6.source_bridge import (
+    PASSAGE_ABSENT_REASON,
+    passage_occurs_in_independent_bytes,
+)
 from qad.persistence.errors import IntegrityConflict, TransactionFailure
+from qad.persistence.serialization import compute_canonical_hash
 from qad.specialists.budget import BudgetBoundError, assert_usage_within, parse_budget
 from qad.specialists.contract import (
     IR_DISPOSITION_FOR_SPECIALIST,
@@ -67,6 +78,8 @@ class IngestOutcome:
     admitted_evidence_ids: list[str] = field(default_factory=list)
     admitted_source_ids: list[str] = field(default_factory=list)
     quarantined: list[dict] = field(default_factory=list)
+    preserved: list[dict] = field(default_factory=list)
+    verified_fact_ids: list[str] = field(default_factory=list)
     investigation_disposition: str = ""
     ir_disposition: str | None = None
     investigation_id: str | None = None
@@ -74,6 +87,94 @@ class IngestOutcome:
     stage_state: str = ""
     actor_id: str = ""
     canonical_role: str = ""
+
+
+def case_directory(case_id: str) -> Path:
+    """Directory of committed case files. ``QAD_CASE_ROOT`` overrides the repo path."""
+    override = os.environ.get("QAD_CASE_ROOT")
+    base = Path(override) if override else Path("research/qad-cases")
+    return base / case_id
+
+
+def load_url_snapshots(snapshot_dir: Path | None) -> dict[str, bytes]:
+    """Load snapshot bytes the ingest step reads from disk. No network."""
+    if snapshot_dir is None or not snapshot_dir.is_dir():
+        return {}
+    loaded: dict[str, bytes] = {}
+    manifest = snapshot_dir / "manifest.json"
+    if manifest.is_file():
+        mapping = json.loads(manifest.read_text(encoding="utf-8"))
+        for url, name in (mapping.get("urls") or {}).items():
+            path = snapshot_dir / str(name)
+            if path.is_file():
+                loaded[str(url)] = path.read_bytes()
+    for path in sorted(snapshot_dir.glob("*.bin")):
+        url_file = path.with_suffix(".url")
+        if url_file.is_file():
+            url = url_file.read_text(encoding="utf-8").strip()
+            loaded.setdefault(url, path.read_bytes())
+    return loaded
+
+
+def _archive_bytes_for_url(archive, url: str) -> bytes | None:
+    """Hash-checked raw blob already stored for this URL. Not the specialist quote."""
+    try:
+        rows = archive.list_all("SRC-01")
+    except Exception:
+        return None
+    for row in rows:
+        if getattr(row, "url_or_identifier", None) != url:
+            continue
+        source_id = row.source_id
+        try:
+            raw = archive.load_raw_blob(source_id)
+            stored_hash = archive.get_raw_blob_hash(source_id)
+        except Exception:
+            continue
+        digest = hashlib.sha256(raw).hexdigest()
+        if stored_hash != digest or getattr(row, "content_hash", None) != digest:
+            continue
+        return raw
+    return None
+
+
+def resolve_independent_bytes(
+    url: str,
+    *,
+    archive,
+    independent_snapshots: dict[str, bytes] | None,
+    snapshot_dir: Path | None,
+) -> bytes | None:
+    """Bytes the ingest step loaded. The claim's quotation is not consulted."""
+    if independent_snapshots and url in independent_snapshots:
+        raw = independent_snapshots[url]
+        if isinstance(raw, bytes) and raw:
+            return raw
+    loaded = load_url_snapshots(snapshot_dir).get(url)
+    if loaded:
+        return loaded
+    return _archive_bytes_for_url(archive, url)
+
+
+def _store_preserving(registry, schema_id: str, record_id: str, record) -> str:
+    """Store once. An existing different record is left as it is."""
+    if registry.contains(schema_id, record_id):
+        existing = registry.load(schema_id, record_id)
+        if compute_canonical_hash(existing) == compute_canonical_hash(record):
+            return "idempotent"
+        return "preserved"
+    registry.store(record)
+    return "stored"
+
+
+def _admit_evidence_preserving(registry, evidence, admission) -> str:
+    if registry.contains("EV-01", evidence.evidence_id):
+        existing = registry.load("EV-01", evidence.evidence_id)
+        if compute_canonical_hash(existing) == compute_canonical_hash(evidence):
+            return "idempotent"
+        return "preserved"
+    registry.admit_evidence(evidence, admission)
+    return "stored"
 
 
 def _enum(value: object) -> str:
@@ -181,19 +282,64 @@ def _gap_journal(registry, gap_id: str, journal_status: str) -> dict:
     }
 
 
-def _admit_claim(bundle, result: dict, claim: dict, index: int, ts_ms: int) -> tuple[str, str]:
+def _admit_claim(
+    bundle,
+    result: dict,
+    claim: dict,
+    index: int,
+    ts_ms: int,
+    *,
+    independent_snapshots: dict[str, bytes] | None,
+    snapshot_dir: Path | None,
+) -> dict:
+    """Admit one claim, or return a quarantine/preserved reason.
+
+    The specialist ``quotation`` is the passage to find. It is never archived
+    as the original document and its hash is never the verification proof.
+    """
     source = claim["source"]
     quotation = str(source["quotation"])
-    raw = quotation.encode("utf-8")
-    digest = hashlib.sha256(raw).hexdigest()
-    seed = f"{result['gap_id']}:{index}:{digest}"
-    source_id = str(deterministic_uuid7(f"src:{seed}", ts_ms=ts_ms))
+    url = str(source["url"])
+    independent = resolve_independent_bytes(
+        url,
+        archive=bundle.archive,
+        independent_snapshots=independent_snapshots,
+        snapshot_dir=snapshot_dir,
+    )
+    if not passage_occurs_in_independent_bytes(quotation, independent):
+        return {
+            "status": "QUARANTINED",
+            "verification_status": "UNVERIFIED",
+            "reason": PASSAGE_ABSENT_REASON,
+        }
+    assert independent is not None
+    digest = hashlib.sha256(independent).hexdigest()
+    passage_digest = hashlib.sha256(quotation.encode("utf-8")).hexdigest()
+    seed = f"{result['gap_id']}:{index}:{digest}:{passage_digest}"
+    source_id = str(deterministic_uuid7(f"independent-src:{url}:{digest}", ts_ms=ts_ms))
     evidence_id = str(deterministic_uuid7(f"ev:{seed}", ts_ms=ts_ms))
     archive = bundle.archive
     registry = bundle.registry
     tier = str(source["source_tier"])
     source_type = str(source.get("source_type") or "OTHER")
-    if not archive.contains("SRC-01", source_id):
+    matched = _archive_bytes_for_url(archive, url)
+    if matched is not None and matched == independent:
+        for row in archive.list_all("SRC-01"):
+            if row.url_or_identifier == url and hashlib.sha256(matched).hexdigest() == row.content_hash:
+                source_id = row.source_id
+                break
+    if archive.contains("SRC-01", source_id):
+        stored = archive.load_raw_blob(source_id)
+        if hashlib.sha256(stored).hexdigest() != digest:
+            return {
+                "status": "QUARANTINED",
+                "verification_status": "UNVERIFIED",
+                "reason": (
+                    "stored source bytes differ from the independent snapshot; "
+                    "not overwritten"
+                ),
+            }
+    else:
         archive.admit_source(
             SourceRecord(
                 content_hash=digest,
@@ -201,79 +347,109 @@ def _admit_claim(bundle, result: dict, claim: dict, index: int, ts_ms: int) -> t
                 source_id=source_id,
                 source_tier=SourceRecordSource_tier(tier),
                 source_type=SourceRecordSource_type(source_type),
-                url_or_identifier=str(source["url"]),
+                url_or_identifier=url,
                 author=str(source["publisher"]),
                 publication_date=str(source["source_date"]),
-                retrieval_method="specialist result quotation",
-                retriever=str(result["actor_id"]),
+                retrieval_method="independent snapshot loaded by ingest",
+                retriever="qad.specialists.ingest",
                 title=str(source.get("title") or claim["statement"])[:240],
             ),
-            raw,
+            independent,
         )
-    if not registry.contains("EV-01", evidence_id):
-        evidence = EvidenceRecord(
-            admitting_role="Evidence Intelligence Lead",
-            as_of=str(source["source_date"])[:10],
-            content=quotation,
-            evidence_id=evidence_id,
-            evidence_type=EvidenceRecordEvidence_type(claim["evidence_type"]),
-            extractor=str(result["actor_id"]),
-            source_id=source_id,
-            source_tier=tier,
-            validation_status=EvidenceRecordValidation_status.RAW,
-            extraction_method=RESULT_CONTRACT_ID,
-            validation_method="provenance fields present; URL not re-fetched",
-        )
-        registry.admit_evidence(
-            evidence,
-            EvidenceAdmissionRecord(
-                admission_id=str(deterministic_uuid7(f"ear:{seed}", ts_ms=ts_ms)),
-                admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
-                admission_timestamp=str(source["retrieval_timestamp"]),
-                admitting_role="Evidence Intelligence Lead",
-                evidence_id=evidence_id,
-                source_tier_check=tier,
-                validation_method="provenance fields present; URL not re-fetched",
-                source_as_of=str(source["source_date"])[:10],
-                validation_notes=(
-                    "Quotation bytes from the specialist result. "
-                    "The ingest boundary did not re-fetch the URL."
-                ),
-            ),
-        )
+    evidence = EvidenceRecord(
+        admitting_role="Evidence Intelligence Lead",
+        as_of=str(source["source_date"])[:10],
+        content=quotation,
+        evidence_id=evidence_id,
+        evidence_type=EvidenceRecordEvidence_type(claim["evidence_type"]),
+        extractor=str(result["actor_id"]),
+        source_id=source_id,
+        source_tier=tier,
+        validation_status=EvidenceRecordValidation_status.RAW,
+        extraction_method=RESULT_CONTRACT_ID,
+        validation_method="cited passage found in independently loaded original source bytes",
+    )
+    admission = EvidenceAdmissionRecord(
+        admission_id=str(deterministic_uuid7(f"ear:{seed}", ts_ms=ts_ms)),
+        admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+        admission_timestamp=str(source["retrieval_timestamp"]),
+        admitting_role="Evidence Intelligence Lead",
+        evidence_id=evidence_id,
+        source_tier_check=tier,
+        validation_method="cited passage found in independently loaded original source bytes",
+        source_as_of=str(source["source_date"])[:10],
+        validation_notes=(
+            "Passage located in original bytes loaded by the ingest step. "
+            "The specialist quotation hash was not the source hash."
+        ),
+    )
+    evidence_state = _admit_evidence_preserving(registry, evidence, admission)
+    if evidence_state == "preserved":
+        return {
+            "status": "PRESERVED",
+            "evidence_id": evidence_id,
+            "reason": "existing canonical evidence differs; not overwritten",
+        }
+    verified_fact_id = None
     evidence_type = claim["evidence_type"]
     if evidence_type == "FACT":
         fact_id = str(deterministic_uuid7(f"fact:{seed}", ts_ms=ts_ms))
-        if not registry.contains("FACT-01", fact_id):
-            record_verified_fact(
-                registry,
-                archive,
-                FactRecord(
-                    evidence_id=evidence_id,
-                    fact_id=fact_id,
-                    source_location=str(source["url"]),
-                    statement=str(claim["statement"]),
-                    verification_status=FactRecordVerification_status.VERIFIED,
-                    as_of=str(source["source_date"])[:10],
-                    extractor=str(result["actor_id"]),
-                ),
-            )
+        fact = FactRecord(
+            evidence_id=evidence_id,
+            fact_id=fact_id,
+            source_location=url,
+            statement=str(claim["statement"]),
+            verification_status=FactRecordVerification_status.VERIFIED,
+            as_of=str(source["source_date"])[:10],
+            extractor=str(result["actor_id"]),
+        )
+        fact_state = "stored"
+        if registry.contains("FACT-01", fact_id):
+            existing = registry.load("FACT-01", fact_id)
+            if compute_canonical_hash(existing) == compute_canonical_hash(fact):
+                fact_state = "idempotent"
+            else:
+                fact_state = "preserved"
+        else:
+            record_verified_fact(registry, archive, fact)
+        if fact_state == "preserved":
+            return {
+                "status": "PRESERVED",
+                "evidence_id": evidence_id,
+                "source_id": source_id,
+                "reason": "existing FACT-01 differs; adverse record was not overwritten",
+            }
+        verified_fact_id = fact_id
     elif evidence_type == "CLAIM":
         claim_id = str(deterministic_uuid7(f"clm:{seed}", ts_ms=ts_ms))
-        if not registry.contains("CLM-01", claim_id):
-            claimant = str(claim.get("claimant") or "OTHER")
-            registry.store(
-                ClaimRecord(
-                    claim_date=str(source["source_date"])[:10],
-                    claim_id=claim_id,
-                    claimant=ClaimRecordClaimant_type(claimant),
-                    evidence_id=evidence_id,
-                    statement=str(claim["statement"]),
-                    extractor=str(result["actor_id"]),
-                    source=source_id,
-                )
-            )
-    return evidence_id, source_id
+        claimant = str(claim.get("claimant") or "OTHER")
+        claim_state = _store_preserving(
+            registry,
+            "CLM-01",
+            claim_id,
+            ClaimRecord(
+                claim_date=str(source["source_date"])[:10],
+                claim_id=claim_id,
+                claimant=ClaimRecordClaimant_type(claimant),
+                evidence_id=evidence_id,
+                statement=str(claim["statement"]),
+                extractor=str(result["actor_id"]),
+                source=source_id,
+            ),
+        )
+        if claim_state == "preserved":
+            return {
+                "status": "PRESERVED",
+                "evidence_id": evidence_id,
+                "source_id": source_id,
+                "reason": "existing CLM-01 differs; not overwritten",
+            }
+    return {
+        "status": "ADMITTED",
+        "evidence_id": evidence_id,
+        "source_id": source_id,
+        "verified_fact_id": verified_fact_id,
+    }
 
 
 def ingest_result(
@@ -285,6 +461,8 @@ def ingest_result(
     issued_ids: list[str],
     reported_ids: set[str],
     ts_ms: int = ANCHOR_TS_MS,
+    independent_snapshots: dict[str, bytes] | None = None,
+    snapshot_dir: Path | None = None,
 ) -> IngestOutcome:
     missing = [name for name in RESULT_FIELDS if name not in result]
     if missing:
@@ -333,6 +511,9 @@ def ingest_result(
         actor_id=actor,
         canonical_role=str(result["canonical_role"]),
     )
+    if snapshot_dir is None:
+        candidate = case_directory(bundle.case_id) / "snapshots"
+        snapshot_dir = candidate if candidate.is_dir() else None
     allowed = list(charter["allowed_source_classes"])
     for index, claim in enumerate(result["claims"]):
         if not isinstance(claim, dict) or any(name not in claim for name in ("statement", "evidence_type", "source")):
@@ -373,9 +554,38 @@ def ingest_result(
                 }
             )
             continue
-        evidence_id, source_id = _admit_claim(bundle, result, claim, index, ts_ms)
-        outcome.admitted_evidence_ids.append(evidence_id)
-        outcome.admitted_source_ids.append(source_id)
+        decision = _admit_claim(
+            bundle,
+            result,
+            claim,
+            index,
+            ts_ms,
+            independent_snapshots=independent_snapshots,
+            snapshot_dir=snapshot_dir,
+        )
+        if decision["status"] == "QUARANTINED":
+            outcome.quarantined.append(
+                {
+                    "statement": claim["statement"],
+                    "status": "QUARANTINED",
+                    "verification_status": "UNVERIFIED",
+                    "reason": decision["reason"],
+                }
+            )
+            continue
+        if decision["status"] == "PRESERVED":
+            outcome.preserved.append(
+                {
+                    "statement": claim["statement"],
+                    "evidence_id": decision.get("evidence_id"),
+                    "reason": decision["reason"],
+                }
+            )
+            continue
+        outcome.admitted_evidence_ids.append(decision["evidence_id"])
+        outcome.admitted_source_ids.append(decision["source_id"])
+        if decision.get("verified_fact_id"):
+            outcome.verified_fact_ids.append(decision["verified_fact_id"])
 
     effective = disposition
     if disposition == "ANSWERED" and not outcome.admitted_evidence_ids:
@@ -483,3 +693,139 @@ def attach_role_from_task(charter: dict, task_path: Path) -> dict:
 def gap_eiv_unchanged(gap) -> str:
     """Re-read helper so tests can show scoring still uses the same rule."""
     return assign_eiv(gap.importance, _enum(gap.resolvability_class), gap.question)
+
+
+def replay_committed_ingests(bundle, *, case_dir: Path | None = None) -> list[IngestOutcome]:
+    """Replay committed ingest journals into a freshly built case.
+
+    The journal names the gap. The result file is re-admitted under the
+    current trust rule. Record identity comes from ``deterministic_uuid7``.
+    An existing different canonical record is left in place.
+    """
+    from qad.specialists.routing import reload_case_records
+    from qad.specialists.stages import find_stage, transition_stage
+
+    case_dir = case_dir or case_directory(bundle.case_id)
+    journal_dir = case_dir / "ingest"
+    charter_dir = case_dir / "charters"
+    outcomes: list[IngestOutcome] = []
+    if not journal_dir.is_dir() or not charter_dir.is_dir():
+        bundle.ingest_replay = _recovery_payload(bundle, outcomes)
+        return outcomes
+    journal_ids = {path.stem for path in journal_dir.glob("*.json")}
+    if not journal_ids:
+        bundle.ingest_replay = _recovery_payload(bundle, outcomes)
+        return outcomes
+    order: list[str] = []
+    manifest_path = charter_dir / "route-manifest.json"
+    manifest = {}
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        order = [row["gap_id"] for row in manifest.get("selected") or []]
+    ordered = [gap_id for gap_id in order if gap_id in journal_ids]
+    ordered.extend(sorted(gap_id for gap_id in journal_ids if gap_id not in ordered))
+    reload_case_records(bundle, charter_dir)
+    stage = find_stage(bundle.registry, bundle.case_id, "SCUTTLEBUTT")
+    if _enum(stage.stage_state) == "NOT_STARTED":
+        transition_stage(
+            bundle.registry,
+            bundle.case_id,
+            "SCUTTLEBUTT",
+            "IN_PROGRESS",
+            "Result ingest reopened SCUTTLEBUTT on a rebuilt case.",
+            [],
+        )
+    issued = [row["gap_id"] for row in manifest.get("selected") or []] or list(ordered)
+    reported: set[str] = set()
+    ledger: list[tuple[str, str]] = []
+    snapshot_dir = case_dir / "snapshots"
+    for gap_id in ordered:
+        payload = json.loads((case_dir / "results" / f"{gap_id}.json").read_text(encoding="utf-8"))
+        charter = attach_role_from_task(
+            load_charter_file(charter_dir / f"{gap_id}.charter.json"),
+            charter_dir / f"{gap_id}.task.json",
+        )
+        outcome = ingest_result(
+            bundle,
+            payload,
+            charter,
+            ledger,
+            issued_ids=issued,
+            reported_ids=reported,
+            snapshot_dir=snapshot_dir if snapshot_dir.is_dir() else None,
+        )
+        reported.add(outcome.gap_id)
+        outcomes.append(outcome)
+    bundle.ingest_replay = _recovery_payload(bundle, outcomes)
+    return outcomes
+
+
+def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
+    from qad.specialists.stages import find_stage
+
+    accepted: list[dict] = []
+    quarantined: list[dict] = []
+    preserved: list[dict] = []
+    investigations: list[dict] = []
+    for outcome in outcomes:
+        quarantined.extend(outcome.quarantined)
+        preserved.extend(outcome.preserved)
+        for evidence_id, source_id in zip(
+            outcome.admitted_evidence_ids, outcome.admitted_source_ids
+        ):
+            evidence = bundle.registry.load("EV-01", evidence_id)
+            source = bundle.archive.load("SRC-01", source_id)
+            facts = [
+                row
+                for row in bundle.registry.list_all("FACT-01")
+                if row.evidence_id == evidence_id
+            ]
+            claims = [
+                row
+                for row in bundle.registry.list_all("CLM-01")
+                if row.evidence_id == evidence_id
+            ]
+            verification = None
+            statement = evidence.content
+            if facts:
+                verification = _enum(facts[0].verification_status)
+                statement = facts[0].statement
+            elif claims:
+                statement = claims[0].statement
+            accepted.append(
+                {
+                    "gap_id": outcome.gap_id,
+                    "evidence_id": evidence_id,
+                    "source_id": source_id,
+                    "evidence_type": _enum(evidence.evidence_type),
+                    "validation_status": _enum(evidence.validation_status),
+                    "statement": statement,
+                    "verification_status": verification,
+                    "source_url": source.url_or_identifier,
+                    "content_hash": source.content_hash,
+                }
+            )
+        if outcome.investigation_id and bundle.registry.contains("IR-01", outcome.investigation_id):
+            report = bundle.registry.load("IR-01", outcome.investigation_id)
+            investigations.append(
+                {
+                    "investigation_id": report.investigation_id,
+                    "gap_id": outcome.gap_id,
+                    "evidence_gap_id": report.evidence_gap_id,
+                    "disposition": _enum(report.disposition),
+                }
+            )
+    try:
+        stage_state = _enum(find_stage(bundle.registry, bundle.case_id, "SCUTTLEBUTT").stage_state)
+    except KeyError:
+        stage_state = ""
+    return {
+        "accepted_evidence": accepted,
+        "quarantined": quarantined,
+        "preserved": preserved,
+        "investigations": investigations,
+        "scuttlebutt_stage_state": stage_state,
+        "verified_fact_count": sum(
+            1 for row in accepted if row["verification_status"] == "VERIFIED"
+        ),
+    }

@@ -4,35 +4,81 @@
   "investigation_disposition": "PARTIALLY_ANSWERED",
   "ir_disposition": "PARTIALLY_ANSWERED",
   "investigation_id": "01a14a2d-3880-7825-a4c2-7eeec1d36d84",
-  "admitted_count": 11,
-  "quarantined_count": 0,
-  "admitted_evidence_ids": [
-    "01a14a2d-3880-74f1-b05c-d48b21c4472c",
-    "01a14a2d-3880-78e9-a85f-a78e3b5781a5",
-    "01a14a2d-3880-7ae3-b68d-cc7af49a4bc7",
-    "01a14a2d-3880-73a9-aac7-06bedd0d276c",
-    "01a14a2d-3880-7618-ab93-a39b0b07a14c",
-    "01a14a2d-3880-740a-91de-c8ed735730da",
-    "01a14a2d-3880-7db6-a8bf-83ad244f7a85",
-    "01a14a2d-3880-7176-b967-e26013bb90b6",
-    "01a14a2d-3880-7dd7-84b9-30d9eae84ddb",
-    "01a14a2d-3880-77d1-bacd-50735e10c2f6",
-    "01a14a2d-3880-7f0f-bf84-113105831b04"
+  "admitted_count": 0,
+  "quarantined_count": 11,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
+  "preserved": [],
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "CMS's 6 April 2026 fact sheet states that the final CY 2027 Rate Announcement policies are projected to increase payments to MA plans by 2.48 percent, or over $13 billion, and that including the estimated MA risk-score trend the increase is 4.98 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The same fact sheet prints the industry year-to-year bridge for the 2027 Rate Announcement as effective growth rate 5.33 percent, rebasing/re-pricing -0.17 percent, change in star ratings -0.03 percent, MA coding pattern adjustment 0 percent, risk model revision and normalization -1.12 percent, sources of diagnoses -1.53 percent, and overall expected average change 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS states that the change-in-star-ratings line reflects the estimated effect of changes in quality bonus payments for the upcoming payment year.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS states that the overall expected average change does not include underlying MA coding trend, and that CMS expects MA risk scores to increase on average by 2.50 percent in CY 2027 because of that trend.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS's 6 April 2026 press release calls the 2.48 percent figure a net average increase for CY 2027 and states that this expected increase includes 2026 Star Ratings for 2027 quality bonus payments.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In the same press release, CMS states that the payment impact of excluding unlinked chart-review diagnoses will be greater for MA organizations that heavily rely on those records. The sentence does not name UnitedHealth and does not state a company rate versus 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The CY 2027 Rate Announcement states that the MA risk-score trend shown in the fact sheet is an industry average and that individual plans' experience will vary. That sentence is about the risk-score trend, not a UnitedHealth star-rating funding gap.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS's 8 October 2026 star-ratings fact sheet states that the 2027 Star Ratings will impact 2028 MA quality bonus payments.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The same star-ratings fact sheet states that about 37 percent of MA-PD contracts (188 contracts) earned four stars or higher for 2027, while about 71 percent of MA-PD enrollees, weighted by enrollment, are in contracts that will have four or more stars in 2027.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth Group's 13 October 2026 earnings release states that the 2027 Medicare Advantage Stars results put at least 69 percent of members in 4+ star plans and that those results were in line with expectations. The release does not state a funding percentage versus the 5.33 percent or 2.48 percent industry bridge.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth's 13 October 2026 prepared remarks call the initial star ratings a payment-year 2028 matter and say the company expects to approach 75 percent of total members in 4-plus star plans, compared with an industry average of 70 percent. That passage does not state a revenue effect worse than 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    }
   ],
-  "admitted_source_ids": [
-    "01a14a2d-3880-79e5-b8e9-43cc67f7e206",
-    "01a14a2d-3880-7664-91b9-cba68a0cece0",
-    "01a14a2d-3880-7832-aa33-5f8f0c6fd676",
-    "01a14a2d-3880-75b0-a720-ad5f991c097c",
-    "01a14a2d-3880-7bb2-ad75-c6d76ab43476",
-    "01a14a2d-3880-7355-b037-607c14c74db8",
-    "01a14a2d-3880-73c3-878a-5eac53fddd09",
-    "01a14a2d-3880-7a9f-94de-974f7fa73509",
-    "01a14a2d-3880-70b2-9822-29812b301bf7",
-    "01a14a2d-3880-720b-b10e-5a1ddb760887",
-    "01a14a2d-3880-722a-b044-cb2817316e5b"
-  ],
-  "quarantined": [],
   "gap_status": {
     "written": false,
     "reason": "Transaction validation failed with 1 error(s)",

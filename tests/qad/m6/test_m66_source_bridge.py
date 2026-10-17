@@ -2608,3 +2608,57 @@ def test_63_a_dynamically_created_same_name_class_cannot_enter_reconciliation():
         )
     assert excinfo.value is spoof
     assert spy.calls == 0
+
+
+def test_64_fact_passage_must_occur_in_independent_bytes(store):
+    """A FACT is admitted only when its passage is in the verifier's raw bytes."""
+    document = b"The document says expected net 2.48 percent on page 1.\n"
+    archive = _archive()
+    _make_run(store)
+    register_discovered_candidates(
+        store, ledger_id="L-1", references=[_ptr(0, "https://sec.gov/rate")],
+        discovery_timestamp=DISCOVERED_AT,
+    )
+    cid = _cid("L-1", 0, "https://sec.gov/rate")
+    verdict = verify_and_admit_source(
+        store, ledger_id="L-1", source_candidate_id=cid,
+        verifier=_StubVerifier({cid: _verified("SRC-RATE", raw=document)}),
+        archive=archive,
+    ).verification
+    assert verdict is not None
+    registry = _registry(archive)
+
+    def _fact(evidence_id, content):
+        return EvidenceRecord(
+            admitting_role="Research Director",
+            as_of=AS_OF,
+            content=content,
+            evidence_id=evidence_id,
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            extractor="M6.6 bridge fixture",
+            source_id="SRC-RATE",
+            source_tier="L1",
+            validation_status=EvidenceRecordValidation_status.RAW,
+        )
+
+    admit_candidate_evidence(
+        registry,
+        evidence=_fact("EV-REAL", "expected net 2.48 percent"),
+        admission=_ear("EV-REAL", "EAR-REAL"),
+        ledger_id="L-1",
+        source_candidate_id=cid,
+        verified_source_id="SRC-RATE",
+        verification=verdict,
+    )
+    assert registry.contains("EV-01", "EV-REAL")
+    with pytest.raises(SourceBridgeError, match="independently loaded"):
+        admit_candidate_evidence(
+            registry,
+            evidence=_fact("EV-FAKE", "expected net 99.99 percent invented dividend"),
+            admission=_ear("EV-FAKE", "EAR-FAKE"),
+            ledger_id="L-1",
+            source_candidate_id=cid,
+            verified_source_id="SRC-RATE",
+            verification=verdict,
+        )
+    assert registry.contains("EV-01", "EV-FAKE") is False

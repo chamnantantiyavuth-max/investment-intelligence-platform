@@ -4,45 +4,111 @@
   "investigation_disposition": "PARTIALLY_ANSWERED",
   "ir_disposition": null,
   "investigation_id": null,
-  "admitted_count": 16,
-  "quarantined_count": 0,
-  "admitted_evidence_ids": [
-    "01a14a2d-3880-70b2-8882-36bbb5a74685",
-    "01a14a2d-3880-745c-9f11-6b6c0bfd07db",
-    "01a14a2d-3880-75c4-bd53-2c1f15919ae7",
-    "01a14a2d-3880-7e17-bc3f-7a8407efa4b4",
-    "01a14a2d-3880-73f9-aa03-b1d854e1cb1c",
-    "01a14a2d-3880-7bf0-91fd-00d1286245cd",
-    "01a14a2d-3880-774d-8a31-0a7dec1b8725",
-    "01a14a2d-3880-7177-8fe6-70f18e4bfeab",
-    "01a14a2d-3880-7fae-a921-c0290e0940c3",
-    "01a14a2d-3880-710f-83d7-a44f51806674",
-    "01a14a2d-3880-7ded-bb25-72f142da987b",
-    "01a14a2d-3880-7b31-8f04-54a2f5d4de8a",
-    "01a14a2d-3880-71d8-b548-3faa5ec3d267",
-    "01a14a2d-3880-7443-b19d-d8f11fa9b4b7",
-    "01a14a2d-3880-7c8e-91cf-00688f4f415e",
-    "01a14a2d-3880-754c-9d5b-848fb4b77819"
+  "admitted_count": 0,
+  "quarantined_count": 16,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
+  "preserved": [],
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "On May 13, 2025, UnitedHealth Group suspended its 2025 outlook, citing higher-than-anticipated medical expenditures, and said it expected to return to growth in 2026. The retrieved press release states no dollar revenue or earnings-per-share figure for 2025.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On May 13, 2025, Stephen J. Hemsley described a long-term growth objective of 13 to 16 percent. The sentence is not dated to 2025 and is not a full-year 2025 revenue or EPS outlook.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Effective May 12, 2025, Andrew Witty stepped down as chief executive officer and the board appointed Steve Hemsley chief executive officer. Hemsley remained chair. Witty was to serve as a senior advisor.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On May 14, 2025, the board approved Hemsley's CEO pay as a $1,000,000 annual base salary, no annual cash incentive, and a one-time $60,000,000 nonqualified stock-option award with a three-year cliff vest and no additional annual equity awards during the first three years.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth re-established a numeric full-year 2025 outlook: revenue of $445.5 billion to $448.0 billion, net earnings of at least $14.65 per share, and adjusted earnings of at least $16.00 per share. The outlook table shows the same revenue range as $445,500\u2013$448,000 million and the same per-share floors. The company said it expected to return to earnings growth in 2026.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth also set numeric full-year 2025 ratio outlooks: a medical cost ratio of 89.25% plus or minus 25 basis points, and an operating cost ratio of 12.75% plus or minus 25 basis points.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In June 2025 the company increased its quarterly dividend rate by 5% to $2.21 per share and said it returned $4.5 billion to shareholders through dividends and share repurchases in the second quarter.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Cash common-share repurchases were $5,545 million in the six months ended June 30, 2025, compared with $3,072 million in the six months ended June 30, 2024. Dividends paid were $3,912 million and $3,664 million in those respective periods. Cash paid for acquisitions and other transactions, net, was $734 million in the 2025 six-month period.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On October 28, 2025, UnitedHealth raised its full-year 2025 earnings outlook to net earnings of at least $14.90 per share and adjusted net earnings of at least $16.25 per share. The retrieved exhibit's outlook bullets do not restate the July 29 revenue range.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth closed the Amedisys transaction on August 14, 2025. The third-quarter release cites that close as included in the September 30, 2025 debt-to-capital ratio of 44.1%.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Cash common-share repurchases remained $5,545 million for the nine months ended September 30, 2025. Dividends paid were $5,914 million in that period. Cash paid for acquisitions and other transactions, net, was $4,436 million.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "For the year ended December 31, 2025, UnitedHealth reported total revenues of $447,567 million, diluted earnings per share of $13.23, and adjusted earnings per share of $16.35. Diluted weighted-average common shares were 911 million, compared with 929 million in 2024. Column order on that statement is the quarter ended December 31, 2025, the quarter ended December 31, 2024, the year ended December 31, 2025, and the year ended December 31, 2024.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The company described a fourth-quarter 2025 charge of $1.6 billion net of taxes, or $1.78 per share, and said those impacts were excluded from adjusted earnings and adjusted earnings per share.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Full-year 2025 reported medical care ratio was 89.1% and the adjusted medical care ratio was 88.9%. The reported operating cost ratio was 13.3% and the adjusted operating cost ratio was 12.9%.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "For the year ended December 31, 2025, cash common-share repurchases were $5,545 million, compared with $9,000 million in 2024. Dividends paid were $7,916 million, compared with $7,533 million in 2024. Cash paid for acquisitions and other transactions, net, was $4,509 million, compared with $13,408 million in 2024.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On January 27, 2026, UnitedHealth's 2026 outlook called for revenue greater than $439.0 billion, which the company described as a 2% year-over-year decline from planned right-sizing, and for earnings from operations greater than $24.0 billion. That revenue sentence is a 2026 outlook, not a revision of the 2025 outlook.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    }
   ],
-  "admitted_source_ids": [
-    "01a14a2d-3880-7829-b10f-d1007cfc3419",
-    "01a14a2d-3880-7f67-8c14-3d1d8bf10716",
-    "01a14a2d-3880-7e25-b58c-42ce855ef6c2",
-    "01a14a2d-3880-79fa-b6e4-e351ce396f36",
-    "01a14a2d-3880-772d-aa2d-fdb1590eb835",
-    "01a14a2d-3880-7395-9b6e-e155e602f235",
-    "01a14a2d-3880-7416-ad1e-3f3af3144a5b",
-    "01a14a2d-3880-7d02-910a-98d0803ee275",
-    "01a14a2d-3880-7199-a8c2-49d205ab025b",
-    "01a14a2d-3880-77af-9335-e0ada2978f82",
-    "01a14a2d-3880-72e5-aa95-6a2501173b6a",
-    "01a14a2d-3880-7f62-b67d-c5b36870d4ba",
-    "01a14a2d-3880-79fe-a511-c6538261327a",
-    "01a14a2d-3880-7bf1-bdbf-95fc35fe22d3",
-    "01a14a2d-3880-7388-9dd1-c2ee386d75d6",
-    "01a14a2d-3880-7c75-9675-16827a960185"
-  ],
-  "quarantined": [],
   "gap_status": {
     "written": false,
     "reason": "Transaction validation failed with 1 error(s)",

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
@@ -85,7 +84,13 @@ def test_committed_unh_results_ingest_offline():
     assert outcomes[1].ir_disposition == "PARTIALLY_ANSWERED"
     assert outcomes[2].ir_disposition is None
     assert outcomes[2].investigation_id is None
-    assert all(item.quarantined == [] for item in outcomes)
+    assert [len(item.quarantined) for item in outcomes] == [len(payload["claims"]) for payload in payloads]
+    assert all(item.admitted_evidence_ids == [] for item in outcomes)
+    assert all(item.verified_fact_ids == [] for item in outcomes)
+    for outcome in outcomes:
+        assert all(row["status"] == "QUARANTINED" for row in outcome.quarantined)
+        assert all(row["verification_status"] == "UNVERIFIED" for row in outcome.quarantined)
+        assert all("independently loaded" in row["reason"] for row in outcome.quarantined)
 
     industry = bundle.registry.load("IR-01", outcomes[0].investigation_id)
     customer = bundle.registry.load("IR-01", outcomes[1].investigation_id)
@@ -109,57 +114,22 @@ def test_committed_unh_results_ingest_offline():
         assert role not in INDEPENDENCE_ROLES
         assert role not in INDEPENDENCE_ACTORS
 
-    for payload, outcome in zip(payloads, outcomes):
-        assert len(outcome.admitted_evidence_ids) == len(payload["claims"])
-        for claim, evidence_id, source_id in zip(
-            payload["claims"],
-            outcome.admitted_evidence_ids,
-            outcome.admitted_source_ids,
-        ):
-            source = claim["source"]
-            stored = bundle.archive.load("SRC-01", source_id)
-            raw = bundle.archive.load_raw_blob(source_id)
-            assert stored.url_or_identifier == source["url"]
-            assert stored.retrieval_date == source["retrieval_timestamp"]
-            assert stored.publication_date == source["source_date"]
-            assert stored.author == source["publisher"]
-            assert raw == source["quotation"].encode("utf-8")
-            assert stored.content_hash == hashlib.sha256(raw).hexdigest()
-            evidence = bundle.registry.load("EV-01", evidence_id)
-            assert evidence.source_id == source_id
-            assert evidence.content == source["quotation"]
-            facts = [
-                row
-                for row in bundle.registry.list_all("FACT-01")
-                if row.evidence_id == evidence_id and row.fact_id not in prior_fact_ids
-            ]
-            if claim["evidence_type"] == "FACT":
-                assert len(facts) == 1
-                assert facts[0].verification_status == FactRecordVerification_status.VERIFIED
-            else:
-                assert facts == []
-
-    admitted_ids = {
-        evidence_id
-        for outcome in outcomes
-        for evidence_id in outcome.admitted_evidence_ids
-    }
     new_verified = [
         fact
         for fact in bundle.registry.list_all("FACT-01")
         if fact.fact_id not in prior_fact_ids
         and fact.verification_status == FactRecordVerification_status.VERIFIED
     ]
-    assert new_verified
-    for fact in new_verified:
-        assert fact.evidence_id in admitted_ids
-        evidence = bundle.registry.load("EV-01", fact.evidence_id)
-        source = bundle.archive.load("SRC-01", evidence.source_id)
-        assert str(source.url_or_identifier).startswith("http")
-        assert source.publication_date
-        assert source.retrieval_date
-        assert source.author
-        assert bundle.archive.load_raw_blob(source.source_id)
+    assert new_verified == []
+    for payload in payloads:
+        for claim in payload["claims"]:
+            matched = [
+                fact
+                for fact in bundle.registry.list_all("FACT-01")
+                if fact.statement == claim["statement"]
+                and fact.verification_status == FactRecordVerification_status.VERIFIED
+            ]
+            assert matched == []
 
     for gap_id in RESULT_IDS:
         gap = bundle.registry.load("EG-01", gap_id)

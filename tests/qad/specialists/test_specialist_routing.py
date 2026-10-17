@@ -2,12 +2,25 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
-from qad.models.family_b import EvidenceRecordValidation_status, FactRecordVerification_status
+from qad.ids import deterministic_uuid7
+from qad.models.family_b import (
+    EvidenceAdmissionRecord,
+    EvidenceAdmissionRecordAdmission_method,
+    EvidenceRecord,
+    EvidenceRecordEvidence_type,
+    EvidenceRecordValidation_status,
+    FactRecord,
+    FactRecordVerification_status,
+    SourceRecord,
+    SourceRecordSource_tier,
+    SourceRecordSource_type,
+)
 from qad.specialists.budget import (
     PER_CHARTER_CEILING,
     Budget,
@@ -30,7 +43,7 @@ from qad.specialists.ingestion import (
 from qad.specialists.routing import route_case
 from qad.specialists.separation import SeparationViolation
 from qad.specialists.stages import StageCompletionRejected, find_stage, transition_stage
-from research.qad_pilot.unh.case_slice import build_unh_case
+from research.qad_pilot.unh.case_slice import ANCHOR_TS_MS, build_unh_case
 
 
 ROOT = Path("research/qad-cases/CASE-2026-001/founder-priority.json")
@@ -200,16 +213,30 @@ def test_budget_bounds_enforced():
     )
 
 
+def _snapshot_for(claim: dict, document: bytes | None = None) -> dict[str, bytes]:
+    source = claim["source"]
+    if document is None:
+        document = (
+            "CMS rate announcement fixture.\n"
+            + source["quotation"]
+            + "\nEnd of independently loaded snapshot.\n"
+        ).encode("utf-8")
+    return {source["url"]: document}
+
+
 def test_provenance_survives_ingest_and_later_update():
     bundle, routed = _routed(_priority())
     item = routed.selected[1]
+    claim = _claim()
+    snapshot = _snapshot_for(claim)
     outcome = ingest_result(
         bundle,
-        _result(item, disposition="ANSWERED", claims=[_claim()]),
+        _result(item, disposition="ANSWERED", claims=[claim]),
         _charter(item),
         [],
         issued_ids=[row.gap_id for row in routed.selected],
         reported_ids=set(),
+        independent_snapshots=snapshot,
     )
     assert outcome.admitted_evidence_ids
     evidence_id = outcome.admitted_evidence_ids[0]
@@ -229,6 +256,13 @@ def test_provenance_survives_ingest_and_later_update():
     assert len(facts) == 1
     assert facts[0].verification_status == FactRecordVerification_status.VERIFIED
     assert facts[0].source_location == source.url_or_identifier
+    raw = bundle.archive.load_raw_blob(source_id)
+    assert claim["source"]["quotation"].encode("utf-8") in raw
+    assert raw != claim["source"]["quotation"].encode("utf-8")
+    assert source.content_hash != hashlib.sha256(
+        claim["source"]["quotation"].encode("utf-8")
+    ).hexdigest()
+    assert source.retrieval_method == "independent snapshot loaded by ingest"
     updated = evidence.model_copy(
         update={"validation_status": EvidenceRecordValidation_status.DISPUTED}
     )
@@ -250,6 +284,147 @@ def test_provenance_survives_ingest_and_later_update():
     assert gap.operational_status.value == "UNRESOLVED"
     assert outcome.gap_status["written"] is False
     assert outcome.gap_status["canonical_status"] == "UNRESOLVED"
+
+
+def test_fabricated_quote_at_a_real_snapshot_is_not_verified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    genuine = _claim()
+    document = _snapshot_for(genuine)[genuine["source"]["url"]]
+    fabricated = _claim(
+        quotation="expected net 99.99 percent and an invented special dividend",
+    )
+    fabricated["statement"] = "CMS printed an invented 99.99 percent special dividend."
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[fabricated, genuine]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+        independent_snapshots={genuine["source"]["url"]: document},
+    )
+    assert len(outcome.quarantined) == 1
+    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
+    assert "independently loaded" in outcome.quarantined[0]["reason"]
+    assert len(outcome.verified_fact_ids) == 1
+    verified = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.verification_status == FactRecordVerification_status.VERIFIED
+        and row.statement == fabricated["statement"]
+    ]
+    assert verified == []
+    kept = bundle.registry.load("FACT-01", outcome.verified_fact_ids[0])
+    assert kept.statement == genuine["statement"]
+    assert kept.verification_status == FactRecordVerification_status.VERIFIED
+
+
+def test_replay_does_not_overwrite_an_adverse_fact():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    claim = _claim()
+    document = _snapshot_for(claim)[claim["source"]["url"]]
+    url = claim["source"]["url"]
+    digest = hashlib.sha256(document).hexdigest()
+    passage_digest = hashlib.sha256(claim["source"]["quotation"].encode("utf-8")).hexdigest()
+    seed = f"{item.gap_id}:0:{digest}:{passage_digest}"
+    fact_id = str(deterministic_uuid7(f"fact:{seed}", ts_ms=ANCHOR_TS_MS))
+    evidence_id = str(deterministic_uuid7(f"ev:{seed}", ts_ms=ANCHOR_TS_MS))
+    source_id = str(deterministic_uuid7(f"independent-src:{url}:{digest}", ts_ms=ANCHOR_TS_MS))
+    bundle.archive.admit_source(
+        SourceRecord(
+            content_hash=digest,
+            retrieval_date=claim["source"]["retrieval_timestamp"],
+            source_id=source_id,
+            source_tier=SourceRecordSource_tier.L3,
+            source_type=SourceRecordSource_type.GOVERNMENT_DATA,
+            url_or_identifier=url,
+            author="CMS",
+            publication_date="2026-04-06",
+            retrieval_method="independent snapshot loaded by ingest",
+            retriever="qad.specialists.ingest",
+            title="prior",
+        ),
+        document,
+    )
+    bundle.registry.admit_evidence(
+        EvidenceRecord(
+            admitting_role="Evidence Intelligence Lead",
+            as_of="2026-04-06",
+            content="ADVERSE PRIOR PASSAGE",
+            evidence_id=evidence_id,
+            evidence_type=EvidenceRecordEvidence_type.FACT,
+            extractor="prior-review",
+            source_id=source_id,
+            source_tier="L3",
+            validation_status=EvidenceRecordValidation_status.DISPUTED,
+        ),
+        EvidenceAdmissionRecord(
+            admission_id=str(deterministic_uuid7(f"ear:{seed}", ts_ms=ANCHOR_TS_MS)),
+            admission_method=EvidenceAdmissionRecordAdmission_method.DIRECT_SOURCE,
+            admission_timestamp=claim["source"]["retrieval_timestamp"],
+            admitting_role="Evidence Intelligence Lead",
+            evidence_id=evidence_id,
+            source_tier_check="L3",
+            validation_method="prior adverse admission",
+        ),
+    )
+    bundle.registry.store(
+        FactRecord(
+            evidence_id=evidence_id,
+            fact_id=fact_id,
+            source_location=url,
+            statement="Adverse prior reading of the same passage.",
+            verification_status=FactRecordVerification_status.DISPUTED,
+            as_of="2026-04-06",
+            extractor="prior-review",
+        )
+    )
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[claim]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+        independent_snapshots={claim["source"]["url"]: document},
+    )
+    kept = bundle.registry.load("FACT-01", fact_id)
+    assert kept.verification_status == FactRecordVerification_status.DISPUTED
+    assert kept.statement == "Adverse prior reading of the same passage."
+    evidence = bundle.registry.load("EV-01", evidence_id)
+    assert evidence.content == "ADVERSE PRIOR PASSAGE"
+    assert evidence.validation_status == EvidenceRecordValidation_status.DISPUTED
+    assert outcome.verified_fact_ids == []
+    assert outcome.admitted_evidence_ids == []
+    assert outcome.preserved
+    assert "not overwritten" in outcome.preserved[0]["reason"]
+
+
+def test_self_supplied_quote_without_snapshot_is_not_verified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    claim = _claim()
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[claim]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+    )
+    assert outcome.admitted_evidence_ids == []
+    assert outcome.verified_fact_ids == []
+    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
+    assert outcome.investigation_disposition == "UNRESOLVED"
+    verified = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.statement == claim["statement"]
+        and row.verification_status == FactRecordVerification_status.VERIFIED
+    ]
+    assert verified == []
 
 
 def test_unsupported_claim_is_quarantined_unverified():

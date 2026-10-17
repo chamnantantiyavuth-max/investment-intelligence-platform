@@ -1002,6 +1002,29 @@ def build_evidence_admission(
     )
 
 
+# A FACT claim stays unverified unless this exact passage occurs in bytes the
+# ingest step loaded itself (snapshot file or hash-checked archive blob).
+# The specialist's quotation string and any hash of that string are not those bytes.
+PASSAGE_ABSENT_REASON = (
+    "cited passage was not found in independently loaded original source bytes"
+)
+
+
+def passage_occurs_in_independent_bytes(
+    passage: str, independent_bytes: bytes | None,
+) -> bool:
+    """True when ``passage`` occurs in bytes the caller loaded independently.
+
+    ``independent_bytes`` must be the original snapshot or archive blob.
+    Passing the specialist quotation back in as the snapshot is the caller's
+    error; this function only tests presence.
+    """
+    text = passage.strip() if isinstance(passage, str) else ""
+    if not text or not independent_bytes:
+        return False
+    return text.encode("utf-8") in independent_bytes
+
+
 def admit_candidate_evidence(
     registry: Any,
     *,
@@ -1020,6 +1043,10 @@ def admit_candidate_evidence(
     run + candidate + source. Everything else fails closed BEFORE any canonical write —
     an ordinary caller cannot hand-build a verified EAR, and cannot admit evidence for a
     source that was not the one independently verified and admitted for this candidate.
+
+    A FACT record is admitted through this gate only when its content (the cited
+    passage) occurs in the minted verdict's raw bytes. Those bytes are the
+    independently obtained original, not a hash of a self-supplied quotation.
     """
     if admission.evidence_id != evidence.evidence_id:
         raise SourceBridgeError(
@@ -1053,6 +1080,10 @@ def admit_candidate_evidence(
             "evidence admission requires a minted verdict that authorizes exactly this "
             "run/candidate/source"
         )
+    if evidence.evidence_type == EvidenceRecordEvidence_type.FACT:
+        raw = getattr(verification, "raw_bytes", None)
+        if not passage_occurs_in_independent_bytes(evidence.content, raw):
+            raise SourceBridgeError(PASSAGE_ABSENT_REASON)
     return registry.admit_evidence(evidence, admission)
 
 
@@ -1578,7 +1609,9 @@ __all__ = [
     "SourceFailureKind",
     "SourceVerificationCandidate",
     "SourceVerificationRequest",
+    "PASSAGE_ABSENT_REASON",
     "admit_candidate_evidence",
+    "passage_occurs_in_independent_bytes",
     "attempt_canonical_evidence_admission",
     "build_evidence_admission",
     "classify_evidence_admission_failure",

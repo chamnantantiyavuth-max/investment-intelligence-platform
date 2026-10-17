@@ -36,7 +36,7 @@ def main(argv: list[str] | None = None) -> int:
     result_path = Path(args.result)
     payload = json.loads(result_path.read_text(encoding="utf-8"))
     charter_dir = Path(args.charters) if args.charters else result_path.parents[1] / "charters"
-    bundle = recover_case(args.case)
+    bundle = recover_case(args.case, replay=False)
     reload_case_records(bundle, charter_dir)
     # Routing also moved stages. Rebuild leaves them NOT_STARTED, so replay
     # the stage note by loading the manifest only as a record of intent.
@@ -90,6 +90,9 @@ def main(argv: list[str] | None = None) -> int:
         "investigation_id": outcome.investigation_id,
         "admitted_count": len(outcome.admitted_evidence_ids),
         "quarantined_count": len(outcome.quarantined),
+        "verified_fact_count": len(outcome.verified_fact_ids),
+        "verified_fact_ids": outcome.verified_fact_ids,
+        "preserved": outcome.preserved,
         "admitted_evidence_ids": outcome.admitted_evidence_ids,
         "admitted_source_ids": outcome.admitted_source_ids,
         "quarantined": outcome.quarantined,

@@ -83,8 +83,9 @@ LIMITATIONS: tuple[str, ...] = (
     "Founder-approved. MANUAL_PILOT is not a canonical entry_route. The case "
     "entry route remains FOUNDER_DIRECTED.",
     "Provenance checks require a URL, retrieval timestamp, source date, and "
-    "publisher. The boundary does not re-fetch the URL. Admitted bytes are "
-    "the quotation in the result file.",
+    "publisher. The boundary does not re-fetch the URL. A claim stays "
+    "UNVERIFIED unless the cited passage is found in original bytes the "
+    "ingest step loaded itself.",
     "qad.m53.retry_kernel meters canonical stage retries (initial plus 3). "
     "It is not used to retry an external specialist. Those runs are outside "
     "this process, and a self-reported failure is not a kernel retry.",
