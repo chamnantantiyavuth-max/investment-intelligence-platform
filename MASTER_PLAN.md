@@ -10,7 +10,11 @@
 
 > **One operational entrypoint after adoption:** This file is the sole current *execution roadmap and handoff entrypoint*. It links to binding contracts rather than duplicating them. Older files containing `PLAN`, `ROADMAP`, or `v0.x` become historical/domain references for execution sequencing, not competing instructions. This file **cannot override** the Constitution, approved Founder Decisions, approved QAD contracts, or real implementation/test evidence.
 >
-> **Critical adoption sequence:** first reconcile unpushed local Hermes commits, then integrate this document into the reconciled development branch, update the cloud portability notes in `AGENTS.md`, and only then designate this plan ACTIVE. Until then, the previous approved contracts and verified project state remain authoritative.
+> **Updated sequencing (Founder instruction, 2026-10-17):** Grok Cloud WP1 is authorized to proceed NOW from the last verified remote development HEAD without waiting for the absent Hermes local commits. Reconciliation of those local commits is DEFERRED, not waived or reconstructed. Keep the pilot on a new isolated branch. The plan remains PROPOSED until adopted after scoped merge and authority reconciliation; existing approved contracts remain authoritative.
+
+### 2026-10-17 Founder execution decision — remote-first cloud pilot
+
+The Founder cannot access the Windows/Hermes computer during an extended holiday and has explicitly directed Grok Bot to **start the next cloud work package without waiting**. This is a scope-limited execution instruction: it authorizes WP1 cloud engineering and safe feature-branch PRs against GitHub-verified code, **not** promotion of missing local evidence, changes to binding QAD policies, an M6.8 live success claim, production deployment, paid overages, activation of scheduled jobs, or edits to the Founder's laptop. The absent local commits remain `DEFERRED_SYNC`; do not treat them as blockers for unrelated cloud-portable work. When source paths conflict, preserve both branches and use a normal merge/cherry-pick workflow after verifying ancestry.
 
 ## A. Product objective and non-negotiable boundaries
 
@@ -139,19 +143,19 @@ Official Grok Bot documentation as reviewed 2026-10-17: paid Cursor individual p
 
 ## G. Migration execution — dependency-ordered work packages
 
-### WP0 — Freeze and reconcile the handoff (required, before Grok edits)
+### WP0 — Remote-first handoff with deferred local reconciliation (Cloud development NOT blocked)
 
-**Owner:** Founder/Hermes once, then Grok validates.
+**Owner:** Grok validates remote facts now; Founder/Hermes reconciles missing local-only work when the laptop becomes available.
 
-1. On Windows inspect status, HEAD, remotes, unpublished commits and untracked files. Create safe rollback branch/tag; check for secrets in changes before pushing.
-2. Reconcile and **fast-forward** `impl/m6-gemini-notebook` from `210610e` to the valid local descendant; preserve the two known smoke-test evidence commits. Do not force push or change main.
-3. Confirm remotely accessible M6.8 smoke evidence; inspect whether work has happened after `f62ac8f`; update `PROJECT_STATE.md` only to reflect verified observations.
-4. Integrate this planning branch's `MASTER_PLAN.md` into the reconciled development branch without replacing implementation commits. Adapt `AGENTS.md` bootstrap to work **without** `~/.hermes/profiles/iip/` or Windows-only paths, while retaining binding project rules and provenance of historic authorizations.
-5. Mark this file `ACTIVE` only after those facts and the integration are verified; keep old design files intact.
+1. **NOW — remote/cloud path:** Validate `origin/impl/m6-gemini-notebook` @ `210610e` (or its actual verified descendant), and use that remote commit as the cloud WP1 baseline. Record absent local evidence honestly. Do not infer that local M6.8 success was pushed, and do not recreate its proof.
+2. Start WP1 on a **new isolated cloud feature branch** immediately, preserving source-control ancestry and existing QAD contracts. Running cloud tests and making a scoped code improvement does not depend on a Windows notebook session.
+3. Adapt the Grok cloud bootstrap in `AGENTS.md` to remove blocking assumptions that Hermes-local profile paths exist, without deleting historical rules or treating a synthetic substitute as equivalent to a missing approved local source. Link this Master Plan as the proposed execution roadmap.
+4. **LATER — local reconciliation:** When the Windows machine becomes available, inspect local status, HEAD, untracked files and unpublished commits; check for secrets; verify `f62ac8f` ancestry and subsequent work; cherry-pick or merge safely onto a dedicated integration branch using normal Git ancestry. No hard reset, force push, overwrite of Grok's new work, or automatic trust promotion of local-only evidence.
+5. Adopt this plan as `ACTIVE` only after the necessary scope/authority reconciliation and explicit Founder decision; do not hold WP1 hostage to that adoption or laptop availability.
 
-**Done when:** remote development HEAD includes all intended local work, clean status, M6.8 evidence visible, Grok can discover one `MASTER_PLAN.md` entrypoint, no history lost.
+**Immediate Done condition:** Grok cloud produces a genuinely tested feature/portability PR anchored to a verified remote commit, without any claim that Hermes-local evidence was migrated. **Deferred Done condition:** eventually reconcile Windows-only work separately, preserving both lines of work.
 
-### WP1 — Grok Cloud GitHub and mobile coding pilot (first user-facing win)
+### WP1 — Grok Cloud GitHub and mobile coding pilot (AUTHORIZED TO START BEFORE WP0 LOCAL SYNC)
 
 1. Connect Grok Bot to the IIP GitHub repo with minimal needed permissions.
 2. Clone branch/repository on Grok cloud; read `MASTER_PLAN.md`, `PROJECT_STATE.md`, portable `AGENTS.md`. Confirm Python/Node versions and tests.
@@ -234,7 +238,7 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 ## K. Current next action (shortest valid path)
 
-**WP0 handoff reconciliation first.** The next command to the old Hermes instance should be a narrow status/push of its known local unpublished M6.8 evidence, after checking for new work and secrets. Then hand Grok the reconciled development branch and this file. The **first Grok task is WP1: produce one tested code change from cloud using only the phone**, not a wholesale architecture rewrite.
+**NOW:** Grok starts **WP1 immediately** from the currently verified remote `impl/m6-gemini-notebook` branch (reported head `210610e`), creates an isolated pilot branch, delivers a useful tested code/portability change and opens a PR. Do not wait for Hermes or demand a Windows login. The Grok handoff inspection PR #1 (`grok/handoff-inspection-20261017`) is **docs-only, not the working pilot**; treat it as evidence and keep it separate. **DEFER:** retrieve and reconcile the unpushed `f62ac8f`/M6.8 smoke evidence from the Windows laptop on its next available session, without overwriting cloud work. Do not begin live NotebookLM or production migration merely to bypass missing auth.
 
 **Open uncertainties:** actual current Windows worktree after October 14; current GitHub/Cloud Bot authorization and quota; actual NotebookLM behavior from Grok datacenter; existing deployed service/database state; whether the Founder wants a separate private repo for unpublished investment research. None is silently assumed resolved.
 
