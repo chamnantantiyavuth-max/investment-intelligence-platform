@@ -135,9 +135,9 @@ Official Grok Bot documentation reviewed 2026-10-17/18: paid Cursor individual p
 
 **Security:** This repository is public. Research drafts about holdings and private ideas go into an approved private storage/repo, not public `reports/`. No shared browser session should be treated as restricted to a single Bot.
 
-## F. Founder-approved Research Bot Organization — 26 durable Bots, phased activation
+## F. Founder-approved Research Bot Organization — provision all 26 now; activate on demand
 
-**Roster target: 26 durable Grok Bots total = 17 dimension-specialist Bots + 9 coordination/assurance/publication Bots, counting the existing IIP Lead Bot.** Register a real `Bot link/ID` and owning role for each created Bot in the roster below or a linked roster record controlled by this Master Plan. This is a **target structure, not a claim of existing Bots or permission for 26 simultaneous runs**. Set up distinct Bots progressively; dormant Bots have no scheduled routine and do no research until assigned. Confirm actual tool/plan entitlements before making assumptions.
+**Founder directive (2026-10-18): PROVISION ALL 26 durable Grok Bot identities NOW in the first Bot-provisioning work package**, not in later research milestones. Total = 17 dimension-specialist Bots + 9 coordination/assurance/publication Bots, **including the existing IIP Lead Bot**, so provision **25 new Bots plus retain/confirm Lead**. The creation backlog must not disappear after pilot work begins. Register the actual Bot links/IDs and owner/role in the **26-row Bot Provisioning Tracker in Section L**; until proved, state remains `UNVERIFIED`, not `CREATED`. Completion target: **within 48 hours of delivery of the first provisioning prompt**, subject to platform limits and mandatory user interaction; if blocked, return the exact blocked Bot(s), mechanism and next UI action immediately. This is a scheduling target, not a claim of unattended guaranteed completion or approval of paid usage. **Create/configure the roster in one bounded campaign, but activate each Bot only when a task exists**: no 26-way simultaneous runs, idle schedules, speculative research, or standing group-chat messages. Confirm actual entitlement and use existing subscription; never enable paid overages without approval.
 
 ### F1. Durable Bot roster — control, independence and publication (9)
 
@@ -211,7 +211,7 @@ The 17 specialists reuse `qad/specialists/configs/dimensions.json` from **PR #6 
 
 ### F5. Activation vs existence — truthful roster states
 
-For every target Bot, record **`NOT_CREATED` → `CREATED` → `PROFILE_CONFIGURED` → `HANDOFF_TESTED` → `ACTIVE_ON_DEMAND`** in a human-readable deployment checklist linked from this plan (not new canonical runtime enums). No Bot is declared `ACTIVE_ON_DEMAND` without a real direct or group Bot-to-Bot task with acknowledged handoff, original-source output and useful result. If creation requires Founder interaction or plan entitlement, return the exact iPhone UI step/blocker; **do not substitute subagent files, actor_id strings or Cloud Agents as proof of durable Bot creation.**
+For every target Bot, record **`UNVERIFIED` → `CREATED` → `PROFILE_CONFIGURED` → `HANDOFF_TESTED` → `ACTIVE_ON_DEMAND`** in the **Section L tracker** (these are deployment bookkeeping labels, not new canonical QAD status enums). **Provisioning Done = 26 distinct accessible Bot profiles with durable names, role instructions, and working Bot links/IDs; the untested 20+ standby Bots remain `PROFILE_CONFIGURED`, not `ACTIVE_ON_DEMAND`.** A Bot is `ACTIVE_ON_DEMAND` only after a real acknowledged handoff and output. Maintain the full 26-row roster in this one plan and report `created/26`, `configured/26`, `handoff-tested/26`; do not drop unavailable Bots silently. If creation requires Founder interaction or entitlement, return exact mobile UI steps and a per-Bot blocker without creating substitute agents. **Neither `.cursor/agents/` files, `actor_id` strings nor task-scoped Cloud Agents prove a durable Bot exists.**
 
 Separate genuine Bot collaboration from audit independence: each assurance role must use separate assignment/execution, independently reopen primary sources and document challenge/adjudication trace; shared account credentials are still shared. Human approval boundaries apply regardless of Bot count.
 
@@ -261,7 +261,7 @@ Separate genuine Bot collaboration from audit independence: each assurance role 
 
 ### WP4 — QAD research team, one real case
 
-1. Use the **26-role durable Bot target in Section F**, create real separate Bots in phases rather than activating an expensive permanent 26-way swarm. Start with the existing Lead and a small Director/Evidence/Industry/Customer/Management pilot cohort; prove real inter-Bot handoff first.
+1. **Create/configure all 26 durable Bot profiles upfront in Section L B0** (retain the existing IIP Lead plus create 25), rather than deferring role creation by research milestones. **Activate only the Director/Evidence/Industry/Customer/Management pilot cohort** for the first Bot-to-Bot demonstration; 26 created does NOT mean 26 simultaneously working.
 2. Reuse the existing UNH R&D case from PRs #3–#6. Demonstrate an actually coordinated Bot handoff on a NEW material Evidence Gap, with original-source validation and independent challenge. Do not repeat already completed UNH specialist work merely to populate Bot histories.
 3. Capture and re-open sources, derive at least one verifiable numeric assertion from source data, and show the user a readable mobile summary with source links and unresolved alternatives.
 4. Persist evidence, claims, challenged assertions, and case/version IDs to IIP's intended structured destination, without overwriting history.
@@ -316,23 +316,58 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 **Observed GitHub checkpoint (2026-10-17):** `impl/m6-gemini-notebook@210610e`; unmerged PR #2 WP1 fixture, #3 UNH draft, **#4 integrated branch@32dd21e**, **#5 UNH canonical slice@343d582**, **#6 specialist catalog/router + three UNH result artifacts@08daab0**. These form an ancestry chain of feature PRs, **not merged into development/main**. No separately created 17 Bots are proven by these files. Earlier tests are **Grok-reported**, not independently reproduced CI; PR #6 still carries **two material blockers**: (a) externally supplied quotation metadata incorrectly promoted to VERIFIED fact without independently inspecting original source; (b) in-memory specialist ingests do not survive a fresh canonical Case API read. These are repair tasks, not reasons to stop creating Bot identities.
 
-**Shortest sequence:** (1) adopt this plan in `impl/m6-gemini-notebook` (not `main`), (2) ask **IIP-Lead** to create/configure the first distinct Bots and show their actual Bot names/links/DM handoff; retain completed Grok research outputs, (3) on a bounded engineering branch fix both critical PR #6 integrity defects with tests/read-back, (4) run one fresh Evidence Gap with two distinct Bots plus Evidence Lead and Independent challenge, (5) expand durable roster to 17+9 as proof and usage justify, but only on-demand execution. Do not start 26 agents concurrently. Existing local Hermes work stays `DEFERRED_SYNC`.
+**Updated shortest sequence (Founder 2026-10-18):** (1) **IIP-Lead provisions/registers all 26 real Bots in a single first work package**, retaining the Lead and creating 25 new Bots. Record exact ID/link and baseline role config per row before leaving provisioning. (2) After all accessible Bots are created/configured, do one real bounded Director→Specialist→Evidence Lead handoff; dormant 20+ Bots incur no scheduled tasks. (3) In parallel, scoped engineering fixes both critical PR #6 evidence trust and case-recovery defects with tests. (4) Test independent assurance and a fresh UNH evidence gap, then proceed with case workflow. **Do not defer any missing Bot to an unspecified future research phase**. If platform limits prevent all 26, report the exact shortfall promptly and retain a named owner/date/next action for each remaining row. No 26-way concurrent research. Hermes local work stays `DEFERRED_SYNC`.
 
-**Immediate work package:** Section L phase B0→B2. Deliver one real Bot-to-Bot handoff and safe evidence recovery rather than another planning report.
+**Immediate work package:** Section L **B0 provisioning 26/26 first**, followed by B1 real collaboration and B2 evidence/recovery corrections in parallel where possible. Report an auditable created-count and real Bot links, not another staffing proposal.
 
 **Explicit no-go:** don't claim Group Chat transcripts, Bot IDs, bot-to-bot messages, a Vercel preview, or an agent-generated citation establishes a verified canonical fact; don't turn 5 paused cron jobs on; don't merge into `main` or deploy production; don't create a false independent assurance role in the same execution.
 
-## L. Separate Research Bot deployment plan — implementation in measurable increments
+## L. Separate Research Bot deployment plan — all 26 provisioned first, gradual operational activation
 
 | Phase | Real capability (not paper) | Acceptance check | Bot population |
 |---|---|---|---|
-| **B0 — Roster registration (immediate)** | Founder-used IIP Lead checks actual Grok Bot create/message/group features, creates or requests creation of **Research Director + Evidence Lead + 3 pilot Specialist Bots**. Each has a distinctive real Bot profile, conversation, IIP contract link and no routine. | Real Bot profile/link for each; read current repo Master Plan; none mistakenly represented by .cursor/agents files. Do not migrate credentials. | **6 including Lead** |
-| **B1 — Bot collaboration smoke (immediate)** | In a group/async handoff Director sends scoped `CASE-2026-001` question to e.g. Customer Bot and Industry Bot, Evidence Lead independently checks source. | Actual delivered + acknowledged Bot messages and returned linked output, one owner per task, no duplicated research or fake source; show links/IDs if platform exposes them. | **same 6** |
-| **B2 — Evidence/recovery fix (parallel engineering)** | Scoped correction of PR #6 unverified-fact promotion and in-memory post-ingest loss; use original source or verified source snapshot + canonical persistence/replay. | Attack test: fake quotation at real URL never yields VERIFIED; process-restart + fresh authenticated Case API returns accepted evidence, IR/stage state; old real data preserved, no new canonical schema. | **same 6** |
-| **B3 — Independent decision chain** | Instantiate Structural Red Team, Auditor, Chief Underwriter as separate durable Bots. Run a real sample challenge on the new research with fresh source reads, independent audit and evidence-grounded adjudication; leave unavailable QAD stages incomplete. | Separate Bot links and actual independent source-level challenge/audit; conflicting finding visible; no unfounded `FOUNDER_READY`. | **9 total** |
-| **B4 — Complete dimension roster** | Create/configure all remaining 6 Core +11 Investigator durable Bots; add Discovery Scout, Thai Editor and Thesis Steward at the relevant stage. Distinct Bot links, role definitions, handoff paths. **No permanent 26-way background work.** | **26 distinct Bots**, handoff smoke for each role only when triggered by a real material Evidence Gap; standby profiles not counted as a completed research run. | **26 target** |
-| **B5 — Full QAD vertical slice** | One full research case end-to-end per existing M3 contracts: Discovery→Selection→Charter H1–H5→Evidence→Core analysis→material Scuttlebutt→Impairment→Valuation→Red Team→Audit→Underwriter→Thai Editor→Founder Review→Monitoring. Reuse stage states; don't auto-complete gaps. | Genuine evidence-gated Case record and mobile reading path with source trail, independent challenge, explicit missing work and correct Founder decision requirement. | Selective on-demand Bots |
-| **B6 — Optional routines** | After B5 and quota/usage checks, propose a single low-cost signal/report routine; each existing cron separately reauthorized if ever needed. | Real measured utility, no hidden overages, 5/5 existing cron PAUSED until authorized. | As needed |
+| **B0 — Provision entire roster NOW (first work package)** | Keep/confirm **IIP-Lead**, create **all 25 other durable Bots** listed in Sections F1–F3 **before the workstream moves on**, and set each Bot's name, bounded job, canonical role, source-of-truth URL and forbidden actions. Use a manageable sequential/batched creation process; do not open 25 research jobs. | **26/26 actual Bot profiles** accessible and named, role configured, exact IDs/links recorded in tracker below. Deadline target **48 hours after prompt receipt**; if blocked by quota/UI, report exact uncreated count, concrete error, Founder-required action and updated completion date (do not fake count). | **26 provisioned; only Lead working** |
+| **B1 — Small Bot collaboration smoke** | Create one task-focused group or direct handoff: Research Director → one relevant Specialist → Evidence Lead (optionally a second specialist), using a fresh material UNH gap without duplicating old results. | Actual handoff acknowledgment, sources checked by recipient, case ID/gap ID preserved, returned research result; do **not** mark all idle Bots active merely for existing. | **26 exist; 3–4 active on one task** |
+| **B2 — Evidence/recovery fix (parallel engineering)** | Correct PR #6 unverified-fact promotion and transient post-ingest loss via approved original-source verification and persistence/replay. | Fabricated quote at real URL never becomes VERIFIED; fresh process/authenticated Case API recovers accepted evidence/IR/stage state; no new schema. | **26 remain available; no mass invocation** |
+| **B3 — Independent decision chain** | With **already-provisioned** Red Team, Independent Auditor and Chief Underwriter, run separately assigned source-level challenge, evidence audit and underwriting deliberation on the permitted partial case; preserve incomplete status. | Three **distinct existing Bot identities** actually execute independent contributions; record unresolved challenge; no false `FOUNDER_READY`. | **26 exist; 3 assurance Bots selectively activated** |
+| **B4 — Roster configuration/coverage check (NOT late Bot creation)** | Audit all 26 role scopes, links and on-demand reachability without fabricating research outputs; selectively smoke-test remaining specialist routing only when a relevant task exists. | **26/26 provisioned since B0**; confirm correct ownership, compatible contracts, no duplicate research/overlap, no automatic routines. | **26 ready/standby** |
+| **B5 — Full QAD vertical slice** | One full research case per accepted M3 stages: Discovery→Selection→H1–H5 Charter→Evidence→Core→Scuttlebutt→Impairment→Valuation→Red Team→Audit→Underwriter→Thai Editor→Founder Review→Monitoring. | Reproducible evidence-gated case record, original sources, genuine independent challenge and mobile reading; do not auto-approve missing work. | **Selective on-demand Bots only** |
+| **B6 — Optional routines** | Only after B5 and measured quota, propose at most one useful low-cost routine; existing five cron jobs remain separately gated. | Real measured value, no silent overages or unapproved job activation. | As needed |
+
+### L1. Mandatory 26-Bot Provisioning Tracker (update rows as Bots are actually created)
+
+**Trigger:** Founder sends the first Bot-provisioning instruction to IIP-Lead. **Due target:** all 26 distinct Bot identities within **48 hours from prompt receipt**; if account/UI limitations block progress, promptly return a complete blocked roster and the action needed rather than silently delaying B0. Do not infer actual creation from a report, group-chat role, subagent file, shared computer folder or `actor_id`. The roster is a deployment index only; IIP analytical records remain authoritative for research. GitHub cannot itself create personal Grok Bots.
+
+| # | Bot name | Org group | Verified state at plan update | Actual Bot link / ID |
+|---:|---|---|---|---|
+| 1 | `IIP-Lead` | Control | EXISTING — link to verify | — |
+| 2 | `IIP-Discovery-Scout` | Control | UNVERIFIED | — |
+| 3 | `IIP-Research-Director` | Control | UNVERIFIED | — |
+| 4 | `IIP-Evidence-Lead` | Assurance | UNVERIFIED | — |
+| 5 | `IIP-Structural-Red-Team` | Assurance | UNVERIFIED | — |
+| 6 | `IIP-Independent-Auditor` | Assurance | UNVERIFIED | — |
+| 7 | `IIP-Chief-Underwriter` | Assurance | UNVERIFIED | — |
+| 8 | `IIP-Thai-Editor` | Publication | UNVERIFIED | — |
+| 9 | `IIP-Thesis-Steward` | Monitoring | UNVERIFIED | — |
+| 10 | `IIP-Business-Moat` | Core | UNVERIFIED | — |
+| 11 | `IIP-Industry-Economics` | Core | UNVERIFIED | — |
+| 12 | `IIP-Financial-Accounting` | Core | UNVERIFIED | — |
+| 13 | `IIP-Management-Allocation` | Core | UNVERIFIED | — |
+| 14 | `IIP-Impairment-Recovery` | Core | UNVERIFIED | — |
+| 15 | `IIP-Valuation-Expectations` | Core | UNVERIFIED | — |
+| 16 | `IIP-Customer-Product` | Investigator | UNVERIFIED | — |
+| 17 | `IIP-Competitor` | Investigator | UNVERIFIED | — |
+| 18 | `IIP-Supplier` | Investigator | UNVERIFIED | — |
+| 19 | `IIP-Channel-Distribution` | Investigator | UNVERIFIED | — |
+| 20 | `IIP-Employee-Organization` | Investigator | UNVERIFIED | — |
+| 21 | `IIP-Digital-Social` | Investigator | UNVERIFIED | — |
+| 22 | `IIP-Regulatory` | Investigator | UNVERIFIED | — |
+| 23 | `IIP-Technology-IP` | Investigator | UNVERIFIED | — |
+| 24 | `IIP-Scientific-Clinical` | Investigator | UNVERIFIED | — |
+| 25 | `IIP-Geographic` | Investigator | UNVERIFIED | — |
+| 26 | `IIP-Industry-Specialist` | Investigator | UNVERIFIED | — |
+ 
+**Bot creation status must not be conflated with use:** `CREATED` = real separate Bot exists; `PROFILE_CONFIGURED` = role and bounded permissions configured; `HANDOFF_TESTED` = actual Bot-to-Bot message with acknowledgment; `ACTIVE_ON_DEMAND` = first substantive scoped result. All 26 are created/configured up front; only a small working subset needs a live handoff in B1. Do not schedule regular tasks for dormant profiles. Update the 26 rows in **one batch commit** when possible to avoid 26 documentation-only PRs.
 
 **Execution budget:** Research Director selects bots by Evidence Gap and EIV; at most 3 parallel active investigators unless existing policy explicitly permits more. The 17+9 Bots are durable role owners, not a quota of simultaneous LLM contexts. Capture observed per-task time/cost when the platform exposes it; record `NOT_EXPOSED` rather than fake 0. Avoid approving paid overages. Bot names must remain stable; duplicate work prevented by case/gap/version owner and idempotent storage.
 
