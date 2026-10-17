@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getReport, getReports, type ReportDetail, type ReportMeta } from "@/api/reportClient";
+import { getCaseByReport, getReport, getReports, type ReportDetail, type ReportMeta } from "@/api/reportClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,27 @@ function statusTone(status: string): string | undefined {
   if (status === "published") return "text-positive";
   if (status === "review") return "text-warning";
   return "text-ink-3";
+}
+
+function CaseStrip({ view }: { view: { case_id: string; case_version: string; as_of_date: string; case_state: string; entry_route: string; founder_decision_present: boolean; stages: { stage_name: string; stage_state: string }[]; skeptic: { reviewer: string; outcome: string; findings: string[] } } }) {
+  return (
+    <section id="qad-case" data-testid="qad-case-strip" className="mt-4 border-t border-rule pt-3 text-[12.5px] leading-5 text-ink-2">
+      <p className="font-semibold text-foreground">
+        QAD case {view.case_id}
+        <span className="ml-2 font-mono text-[11px] font-normal text-ink-3">{view.case_version}</span>
+      </p>
+      <p className="mt-1">
+        state {view.case_state} · as of {view.as_of_date} · route {view.entry_route} · draft, not published
+      </p>
+      <p className="mt-1">Founder decision: {view.founder_decision_present ? "present" : "absent"}. Not FOUNDER_READY.</p>
+      <p className="mt-1 break-words">
+        {view.stages.map((stage) => `${stage.stage_name}=${stage.stage_state}`).join(" · ")}
+      </p>
+      <p className="mt-1" data-testid="qad-skeptic-outcome">
+        {view.skeptic.reviewer}: {view.skeptic.outcome}. {view.skeptic.findings.length} findings remain visible.
+      </p>
+    </section>
+  );
 }
 
 function TitleBlock({ r }: { r: ReportDetail }) {
@@ -82,6 +103,12 @@ export default function ReportArticlePage() {
     enabled: Boolean(slug),
   });
   const index = useQuery({ queryKey: ["reports"], queryFn: getReports, staleTime: 30_000 });
+  const caseState = useQuery({
+    queryKey: ["qad-case", slug],
+    queryFn: () => getCaseByReport(slug),
+    enabled: Boolean(slug),
+    retry: false,
+  });
 
   const report = data?.report;
   const content = useMemo(() => {
@@ -134,6 +161,7 @@ export default function ReportArticlePage() {
 
       <div className="mt-4">
         <TitleBlock r={report} />
+        {caseState.data && <CaseStrip view={caseState.data} />}
       </div>
 
       {/* Table of contents — auto from h2 sections (≥3 sections only) */}
