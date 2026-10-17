@@ -1,0 +1,145 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": "PARTIALLY_ANSWERED",
+  "investigation_id": "01a14a2d-3880-7825-a4c2-7eeec1d36d84",
+  "admitted_count": 11,
+  "quarantined_count": 0,
+  "admitted_evidence_ids": [
+    "01a14a2d-3880-74f1-b05c-d48b21c4472c",
+    "01a14a2d-3880-78e9-a85f-a78e3b5781a5",
+    "01a14a2d-3880-7ae3-b68d-cc7af49a4bc7",
+    "01a14a2d-3880-73a9-aac7-06bedd0d276c",
+    "01a14a2d-3880-7618-ab93-a39b0b07a14c",
+    "01a14a2d-3880-740a-91de-c8ed735730da",
+    "01a14a2d-3880-7db6-a8bf-83ad244f7a85",
+    "01a14a2d-3880-7176-b967-e26013bb90b6",
+    "01a14a2d-3880-7dd7-84b9-30d9eae84ddb",
+    "01a14a2d-3880-77d1-bacd-50735e10c2f6",
+    "01a14a2d-3880-7f0f-bf84-113105831b04"
+  ],
+  "admitted_source_ids": [
+    "01a14a2d-3880-79e5-b8e9-43cc67f7e206",
+    "01a14a2d-3880-7664-91b9-cba68a0cece0",
+    "01a14a2d-3880-7832-aa33-5f8f0c6fd676",
+    "01a14a2d-3880-75b0-a720-ad5f991c097c",
+    "01a14a2d-3880-7bb2-ad75-c6d76ab43476",
+    "01a14a2d-3880-7355-b037-607c14c74db8",
+    "01a14a2d-3880-73c3-878a-5eac53fddd09",
+    "01a14a2d-3880-7a9f-94de-974f7fa73509",
+    "01a14a2d-3880-70b2-9822-29812b301bf7",
+    "01a14a2d-3880-720b-b10e-5a1ddb760887",
+    "01a14a2d-3880-722a-b044-cb2817316e5b"
+  ],
+  "quarantined": [],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "IN_PROGRESS",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "IN_PROGRESS",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "grok-bia-industry-economics",
+  "canonical_role": "Business & Industry Analyst",
+  "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+  "usage": {
+    "tool_calls": 6,
+    "sources": 6,
+    "minutes": 10
+  }
+}

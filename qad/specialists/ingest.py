@@ -13,7 +13,12 @@ from pathlib import Path
 
 from qad.specialists.ingestion import attach_role_from_task, ingest_result, load_charter_file
 from qad.specialists.routing import reload_case_records
-from research.qad_pilot.unh.case_slice import recover_case
+from research.qad_pilot.unh.case_slice import (
+    FounderReadyRejected,
+    assert_founder_ready_allowed,
+    case_view,
+    recover_case,
+)
 
 
 def _charter_for_gap(charter_dir: Path, gap_id: str) -> dict:
@@ -71,22 +76,55 @@ def main(argv: list[str] | None = None) -> int:
     journal_dir = charter_dir.parent / "ingest"
     journal_dir.mkdir(parents=True, exist_ok=True)
     journal_path = journal_dir / f"{outcome.gap_id}.json"
+    view = case_view(bundle)
+    founder_ready = True
+    try:
+        assert_founder_ready_allowed(bundle.registry, bundle.case_id)
+    except FounderReadyRejected:
+        founder_ready = False
     journal = {
         "case_id": outcome.case_id,
         "gap_id": outcome.gap_id,
         "investigation_disposition": outcome.investigation_disposition,
         "ir_disposition": outcome.ir_disposition,
         "investigation_id": outcome.investigation_id,
+        "admitted_count": len(outcome.admitted_evidence_ids),
+        "quarantined_count": len(outcome.quarantined),
         "admitted_evidence_ids": outcome.admitted_evidence_ids,
         "admitted_source_ids": outcome.admitted_source_ids,
         "quarantined": outcome.quarantined,
         "gap_status": outcome.gap_status,
         "stage_state": outcome.stage_state,
+        "case_state": view["case_state"],
+        "founder_ready": founder_ready,
+        "stages": [
+            {
+                "stage_name": row["stage_name"],
+                "stage_state": row["stage_state"],
+                "responsible_role": row["responsible_role"],
+            }
+            for row in view["stages"]
+        ],
         "actor_id": outcome.actor_id,
         "canonical_role": outcome.canonical_role,
+        "stop_rule_triggered": payload.get("stop_rule_triggered"),
+        "usage": payload.get("usage"),
     }
     journal_path.write_text(json.dumps(journal, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"journal": str(journal_path), "stage_state": outcome.stage_state}, indent=2))
+    print(
+        json.dumps(
+            {
+                "journal": str(journal_path),
+                "admitted_count": journal["admitted_count"],
+                "quarantined_count": journal["quarantined_count"],
+                "gap_status": outcome.gap_status,
+                "stage_state": outcome.stage_state,
+                "case_state": view["case_state"],
+                "founder_ready": founder_ready,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

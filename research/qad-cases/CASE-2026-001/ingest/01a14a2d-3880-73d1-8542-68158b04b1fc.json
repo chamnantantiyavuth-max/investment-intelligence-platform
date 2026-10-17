@@ -1,0 +1,153 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": "PARTIALLY_ANSWERED",
+  "investigation_id": "01a14a2d-3880-7706-a0ef-e9df536cb925",
+  "admitted_count": 15,
+  "quarantined_count": 0,
+  "admitted_evidence_ids": [
+    "01a14a2d-3880-70da-8d34-6d6a3e3be351",
+    "01a14a2d-3880-7497-94fc-f665608705ed",
+    "01a14a2d-3880-7199-9c6e-783be7f0f2d9",
+    "01a14a2d-3880-7ccc-98f7-c065d26ae45e",
+    "01a14a2d-3880-7c07-beeb-0b1a66e87f3a",
+    "01a14a2d-3880-725f-93a9-96527ae5fbe1",
+    "01a14a2d-3880-7f0b-a3df-f5fdca2c9f6a",
+    "01a14a2d-3880-7392-849c-ec24af1ef6d9",
+    "01a14a2d-3880-7647-85e0-40ed0a9f6551",
+    "01a14a2d-3880-7583-9c51-39ec4f3d9834",
+    "01a14a2d-3880-7157-9371-b6836c01ec6a",
+    "01a14a2d-3880-7cea-9842-88c9edf04180",
+    "01a14a2d-3880-77e1-974d-57da0b873543",
+    "01a14a2d-3880-7f4b-ad24-077192529bb5",
+    "01a14a2d-3880-711e-bc1e-202cbf0f6df6"
+  ],
+  "admitted_source_ids": [
+    "01a14a2d-3880-7107-a5e6-a226a828d3e3",
+    "01a14a2d-3880-77b4-b751-0c9cf522fbe6",
+    "01a14a2d-3880-7dc7-a0b1-fe25fc7ddfc7",
+    "01a14a2d-3880-73dd-96b1-1fcff13c5a57",
+    "01a14a2d-3880-7ce3-8756-1c34dd4eb497",
+    "01a14a2d-3880-7a51-8a4b-c880a1476245",
+    "01a14a2d-3880-7184-9d1f-e5f8f1020609",
+    "01a14a2d-3880-7870-aa30-9a98b292b3cc",
+    "01a14a2d-3880-71e8-b04c-b450f19ad84f",
+    "01a14a2d-3880-7ebc-992b-f84b39780717",
+    "01a14a2d-3880-79ab-bf4e-0257565a7b94",
+    "01a14a2d-3880-7680-a119-2ce1e5e73379",
+    "01a14a2d-3880-7bd9-8279-3b22a1d365ad",
+    "01a14a2d-3880-7416-82bd-310e8cff076a",
+    "01a14a2d-3880-7e4b-9adb-998432f8a64b"
+  ],
+  "quarantined": [],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "IN_PROGRESS",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "IN_PROGRESS",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "elastic-investigator-customer",
+  "canonical_role": "Elastic Investigator",
+  "stop_rule_triggered": "COUNTER_EVIDENCE_FOUND",
+  "usage": {
+    "tool_calls": 5,
+    "sources": 3,
+    "minutes": 9
+  }
+}
