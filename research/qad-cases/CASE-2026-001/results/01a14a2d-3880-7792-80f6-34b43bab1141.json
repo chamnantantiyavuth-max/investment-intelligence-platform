@@ -1,0 +1,188 @@
+{
+  "contract": "qad.specialists.result.v1",
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+  "investigator_charter_id": "01a14a2d-3880-7726-82dd-4d412bed3502",
+  "specialist_id": "industry_economics_capital_cycle",
+  "actor_id": "grok-bia-industry-economics",
+  "canonical_role": "Business & Industry Analyst",
+  "desk_research_only": true,
+  "disposition": "PARTIALLY_ANSWERED",
+  "falsifiable_question": "Falsified if those public documents, read together, state no UnitedHealth-specific funding effect beyond the printed industry rate bridge. Confirmed if an admitted UnitedHealth filing states a funding effect worse than that industry bridge.",
+  "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+  "usage": {
+    "tool_calls": 6,
+    "sources": 6,
+    "minutes": 10
+  },
+  "sampling_limitations": "Desk research only. Public documents. No interviews, surveys, or site visits. The population is the public-record set named in the falsifiable question, not a surveyed population. Six sources were admitted: the CMS CY 2027 rate-announcement fact sheet, the CMS press release of the same date, the CY 2027 Rate Announcement PDF, the CMS 2027 star-ratings fact sheet dated 8 October 2026, UnitedHealth's Q3 2026 earnings release on EDGAR, and UnitedHealth's Q3 2026 teleconference prepared remarks. Competitor filings (HUM, CVS, ELV, CI) were allowed and were not retrieved. The star-ratings fact sheet contains contract rows that name UnitedHealth Group affiliates; this investigation did not recompute a company enrollment-weighted star share from those rows. The 69 percent, 70 percent, and approximately 71 percent figures are not shown to use the same denominator. Trade-press figures of about 67 percent or 68 percent were seen in search results and were not admitted. No quotation claims a site visit, interview, or survey.",
+  "claims": [
+    {
+      "statement": "CMS's 6 April 2026 fact sheet states that the final CY 2027 Rate Announcement policies are projected to increase payments to MA plans by 2.48 percent, or over $13 billion, and that including the estimated MA risk-score trend the increase is 4.98 percent.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Rate Announcement",
+        "quotation": "The final policies in the CY 2027 Rate Announcement are projected to result in an increase of 2.48% or over $13 billion in payments to MA plans in CY 2027. When accounting for estimated risk score trend in MA due to factors such as population changes and coding practices, this amounts to a 4.98% increase."
+      }
+    },
+    {
+      "statement": "The same fact sheet prints the industry year-to-year bridge for the 2027 Rate Announcement as effective growth rate 5.33 percent, rebasing/re-pricing -0.17 percent, change in star ratings -0.03 percent, MA coding pattern adjustment 0 percent, risk model revision and normalization -1.12 percent, sources of diagnoses -1.53 percent, and overall expected average change 2.48 percent.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Rate Announcement",
+        "quotation": "The table below provides the expected average impact of the proposals on MA payment components compared to last year.\n\nYear-to-Year Percentage Change From 2026 to 2027\n\n| Impact | 2027 Advance Notice | 2027 Rate Announcement |\n| --- | --- | --- |\n| Effective Growth Rate | 4.97% | 5.33% |\n| Rebasing/Re-pricing | TBD 1 | -0.17% |\n| Change in Star Ratings 2 | -0.03% | -0.03% |\n| MA Coding Pattern Adjustment | 0% | 0% |\n| Risk Model Revision and Normalization 3 | -3.32% | -1.12% |\n| Sources of Diagnoses 4 | -1.53% | -1.53% |\n| Overall Expected Average Change 5 | 0.09% | 2.48% |"
+      }
+    },
+    {
+      "statement": "CMS states that the change-in-star-ratings line reflects the estimated effect of changes in quality bonus payments for the upcoming payment year.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Rate Announcement",
+        "quotation": "Change in Star Ratings reflects the estimated effect of changes in the Quality Bonus Payments for the upcoming payment year."
+      }
+    },
+    {
+      "statement": "CMS states that the overall expected average change does not include underlying MA coding trend, and that CMS expects MA risk scores to increase on average by 2.50 percent in CY 2027 because of that trend.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Rate Announcement",
+        "quotation": "The overall expected average change does not include an adjustment for underlying coding trend in MA. For CY 2027, CMS expects the MA risk scores to increase, on average, by 2.50% due to the underlying coding trend."
+      }
+    },
+    {
+      "statement": "CMS's 6 April 2026 press release calls the 2.48 percent figure a net average increase for CY 2027 and states that this expected increase includes 2026 Star Ratings for 2027 quality bonus payments.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/press-releases/cms-finalizes-2027-medicare-advantage-part-d-payment-policies-strengthen-accountability-long-term",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "CMS Finalizes 2027 Medicare Advantage and Part D Payment Policies that Strengthen Accountability and Long-Term Sustainability",
+        "quotation": "The policies in this Rate Announcement are projected to result in a net average increase of 2.48%, or over $13 billion in additional MA payments to plans in CY 2027. This expected increase includes consideration of the various elements that impact MA payments, such as growth rates of underlying costs, 2026 Star Ratings for 2027 quality bonus payments, and risk adjustment updates."
+      }
+    },
+    {
+      "statement": "In the same press release, CMS states that the payment impact of excluding unlinked chart-review diagnoses will be greater for MA organizations that heavily rely on those records. The sentence does not name UnitedHealth and does not state a company rate versus 2.48 percent.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/newsroom/press-releases/cms-finalizes-2027-medicare-advantage-part-d-payment-policies-strengthen-accountability-long-term",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "CMS Finalizes 2027 Medicare Advantage and Part D Payment Policies that Strengthen Accountability and Long-Term Sustainability",
+        "quotation": "CMS expects the payment impact to be greater for MA organizations that heavily rely on unlinked chart review records to report risk-adjustment eligible diagnoses for their enrollee population."
+      }
+    },
+    {
+      "statement": "The CY 2027 Rate Announcement states that the MA risk-score trend shown in the fact sheet is an industry average and that individual plans' experience will vary. That sentence is about the risk-score trend, not a UnitedHealth star-rating funding gap.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/files/document/announcement-calendar-year-2027-medicare-advantage-capitation-rates-part-c-part-d-payment-policies-g.pdf",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-04-06",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "Announcement of Calendar Year (CY) 2027 Medicare Advantage (MA) Capitation Rates and Part C and Part D Payment Policies",
+        "quotation": "While there may be other factors influencing MA plan revenue the MA risk score trend is included in the Fact Sheet because it has direct bearing on MA payments and the MA revenue picture would be incomplete without it. We also note the trend is an industry average and individual plans’ experience will vary."
+      }
+    },
+    {
+      "statement": "CMS's 8 October 2026 star-ratings fact sheet states that the 2027 Star Ratings will impact 2028 MA quality bonus payments.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/files/document/fact-sheet-2027-ma-part-d-star-ratings-october-8-2026.pdf",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-10-08",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Star Ratings",
+        "quotation": "The 2027 Star Ratings announced today appear on Medicare Plan Finder for 2027 Open Enrollment, which begins on October 15, 2026 and runs through December 7, 2026, and will impact 2028 MA quality bonus payments."
+      }
+    },
+    {
+      "statement": "The same star-ratings fact sheet states that about 37 percent of MA-PD contracts (188 contracts) earned four stars or higher for 2027, while about 71 percent of MA-PD enrollees, weighted by enrollment, are in contracts that will have four or more stars in 2027.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.cms.gov/files/document/fact-sheet-2027-ma-part-d-star-ratings-october-8-2026.pdf",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-10-08",
+        "publisher": "Centers for Medicare & Medicaid Services",
+        "source_tier": "L3",
+        "source_type": "GOVERNMENT_DATA",
+        "title": "2027 Medicare Advantage and Part D Star Ratings",
+        "quotation": "Approximately 37% of MA-PDs (188 contracts) that will be offered in 2027 earned four stars or higher for their 2027 overall rating. • Weighted by enrollment, approximately 71% of MA-PD enrollees are currently in contracts that will have four or more stars in 2027."
+      }
+    },
+    {
+      "statement": "UnitedHealth Group's 13 October 2026 earnings release states that the 2027 Medicare Advantage Stars results put at least 69 percent of members in 4+ star plans and that those results were in line with expectations. The release does not state a funding percentage versus the 5.33 percent or 2.48 percent industry bridge.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000255/uhgearnings_q32026vfinal.htm",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-10-13",
+        "publisher": "UnitedHealth Group",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports Third Quarter 2026 Results",
+        "quotation": "The 2027 Medicare Advantage Stars results of at least 69% of members in 4+ Star plans were in line with expectations and reflect continued investments in quality and focus on execution."
+      }
+    },
+    {
+      "statement": "UnitedHealth's 13 October 2026 prepared remarks call the initial star ratings a payment-year 2028 matter and say the company expects to approach 75 percent of total members in 4-plus star plans, compared with an industry average of 70 percent. That passage does not state a revenue effect worse than 2.48 percent.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.unitedhealthgroup.com/content/dam/UHG/PDF/investors/2026/unh-q3-2026-remarks.pdf",
+        "retrieval_timestamp": "2026-10-17T16:43:15Z",
+        "source_date": "2026-10-13",
+        "publisher": "UnitedHealth Group",
+        "source_tier": "L1",
+        "source_type": "OTHER",
+        "title": "Third Quarter 2026 Results Teleconference Prepared Remarks",
+        "quotation": "our initial Star ratings for payment year 2028 reflect our investments in quality, member experience and operating execution. As we move through 2027 and into 2028, we expect to approach 75% of total members in 4-plus Star plans, compared to the industry average of 70%."
+      }
+    }
+  ],
+  "findings": [
+    "The CY 2027 industry rate bridge is printed and positive on CMS's own labels. The 6 April 2026 fact sheet's Rate Announcement column is effective growth rate 5.33 percent, rebasing/re-pricing -0.17 percent, change in star ratings -0.03 percent, MA coding pattern adjustment 0 percent, risk model revision and normalization -1.12 percent, sources of diagnoses -1.53 percent, and overall expected average change 2.48 percent. CMS also states a 4.98 percent increase once the separate 2.50 percent average MA risk-score coding trend is counted. The question's phrase 'expected net 2.48 percent' matches these printed figures; the fact sheet's own label is 'Overall Expected Average Change,' and the press release's label is 'net average increase.'",
+    "That 2.48 percent bridge is an industry average for CY 2027 payments, and its star component uses 2026 stars. The press release states that the expected increase includes '2026 Star Ratings for 2027 quality bonus payments.' The fact sheet says the star line is the estimated quality-bonus effect for the upcoming payment year and prints that effect at -0.03 percent. The Rate Announcement says the fact-sheet risk-score trend is an industry average and that individual plans' experience will vary. None of these CMS passages names UnitedHealth or prints a UnitedHealth payment percentage.",
+    "UnitedHealth's admitted public star statement does not convert the 69 percent mix into a funding gap versus 5.33 percent or 2.48 percent. The 13 October 2026 earnings release, filed with the SEC, says the 2027 Medicare Advantage Stars results of at least 69 percent of members in 4+ star plans were in line with expectations. The same day's prepared remarks place 'initial Star ratings' in payment year 2028 and expect the membership mix to approach 75 percent in 4-plus star plans versus an industry average of 70 percent. Retrieved text of both UnitedHealth documents contains no 5.33 percent or 2.48 percent figure.",
+    "Read together, the documents do not show a UnitedHealth-specific funding effect worse than the printed CY 2027 bridge, and they also do not state that no such effect exists. CMS's 8 October 2026 star fact sheet says the 2027 Star Ratings will impact 2028 MA quality bonus payments, so the 69 percent statement is about a later bonus year than the April 2026 bridge. CMS's industry enrollment-weighted share is approximately 71 percent of MA-PD enrollees in four-or-more-star contracts, against about 37 percent of MA-PD contracts. UnitedHealth's 'at least 69 percent' is its own membership claim, not a CMS organization total, and neither party states the revenue delta between those mixes and the -0.03 percent star line or the 2.48 percent net.",
+    "Confirmation fails: no admitted UnitedHealth filing states a funding effect worse than the industry bridge. Falsification also fails: the public documents do not state that UnitedHealth has no funding effect beyond that bridge. CMS separately says the unlinked chart-review exclusion will hit harder at organizations that rely heavily on those records, which is an organization-varying component inside the bridge, but it is not a star-rating result and it does not name UnitedHealth.",
+    "Contradictions and unresolved numerical differences: (1) payment year — the 2.48 percent bridge is CY 2027 funding using 2026 stars, while the 69 percent statement and CMS's 2027 star release attach to 2028 quality bonus payments; (2) industry mix — CMS says approximately 71 percent of MA-PD enrollees are in four-or-more-star contracts, while UnitedHealth's remarks say an industry average of 70 percent, and the earnings release says at least 69 percent of UnitedHealth members, without reconciling denominators; (3) 69 percent versus an expected approach to 75 percent are both UnitedHealth statements on 13 October 2026. The remarks' path 'as we move through 2027 and into 2028' can separate a current mix from a later expectation, but the earnings release does not itself show that path. Search snippets from trade press cited about 67 percent or 68 percent; those secondary pages were not admitted. The admitted filing says 'at least 69 percent.'",
+    "Hypothesis impact: this desk does not materially change H1, H2, H3, H4, or H5. H1 is not confirmed or falsified: the CY 2027 industry print is a net increase, not a stated UnitedHealth funding hole versus that print, and the star mix disclosed here is a 2028 bonus issue that management called in line with expectations. H2 is not confirmed: the rate announcement does not state that industry funding of UnitedHealth is permanently damaged. H3 stays mixed only at the level of bridge composition (positive growth rate, several negative adjustments, positive net), which does not settle UnitedHealth's net direction. H4 is untouched: a 4-star-or-higher membership share is not evidence that the business was never high quality. H5 is untouched: these documents contain no price or valuation.",
+    "Unknowns that remain inside the question: UnitedHealth's own CY 2027 revenue change versus 2.48 percent; the percent or dollar quality-bonus effect of the 69 percent mix in payment year 2028; whether 69 percent, 70 percent, and approximately 71 percent share a denominator; and competitor funding comments in HUM, CVS, ELV, or CI filings, which were not retrieved because the named CMS and UnitedHealth documents were sufficient to test the confirm and falsify predicates.",
+    "specialist_disposition=PARTIALLY_ANSWERED"
+  ]
+}
