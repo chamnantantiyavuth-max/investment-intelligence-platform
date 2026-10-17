@@ -398,7 +398,7 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 **Workflow rules:** No separate persistence or source-of-truth in Bot chat or an old `grok-research-team` repo; no 17 permanent worker polling loops; no confidential thesis in public IIP repository. Treat Bot creation as authorized by this Founder decision but any external service account login, quota overage, secret grant, production release or mandatory policy override still follows its actual applicable approval.
 
-## M. Department workflow and Rout​ines/Schedules — proposed, not activated
+## M. Department workflow and Routines/Schedules — proposed, not activated
 
 ### M1. Organizational workflow — permanent departments vs per-case team
 
@@ -446,7 +446,7 @@ A Case Team (e.g. `QAD/CASE-2026-001`) assembles 1 Research Director, relevant d
 2. At approval time specify owner, exact interval/time zone, event filter, idempotency key, input bounds, maximum tools/sources/cost, scope, allowed writes, empty and error outputs, escalation and pause/kill control. Set each owner Bot's Timezone to `Asia/Bangkok` where applicable and inspect routine saved schedule/run history in the Bot profile.
 3. Avoid duplicate workflows between 5 paused cron jobs, Routines and GitHub Actions. Prefer cheap structured sensors for universe-wide work; let a paid reasoning Bot work only on a narrowed, evidence-bearing candidate. No 26-way daily polling, and no automatic trade/production/Founder approval.
 4. All five prior IIP cron jobs remain PAUSED until individually reauthorized with working evidence, unaffected by this document. Failed source retrieval, quota exhaustion or no new evidence must not fabricate research findings.
-5. Group chats and Bot-to-Bot messages consume usage. Depart​ment staffing does not imply scheduled work or secure isolation; all personal Bots share their owner's cloud computer/logins.
+5. Group chats and Bot-to-Bot messages consume usage. Department staffing does not imply scheduled work or secure isolation; all personal Bots share their owner's cloud computer/logins.
 
 **Platform references:** https://prod.cursor.com/help/grok-bot/how-to (iOS/desktop Sections); https://prod.cursor.com/help/grok-bot/group-chats (actual Bot-to-Bot/group behavior); https://prod.cursor.com/help/grok-bot/routines (schedule/event Routines, timezone, usage and paused state).
 
