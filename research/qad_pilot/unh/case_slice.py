@@ -937,9 +937,10 @@ def build_unh_case(*, finalize_partial: bool = True) -> UnhCaseBundle:
 def recover_case(case_id: str = CASE_ID, *, replay: bool = True) -> UnhCaseBundle:
     """Rebuild the case from the committed cache and load it by case id.
 
-    ``replay=True`` re-admits committed specialist ingest journals into the
-    fresh stores. The CLI passes ``replay=False`` and writes the journal after
-    its own ingest, so a later process can read the same records.
+    ``replay=True`` re-admits committed specialist ingest journals into a new
+    in-memory bundle. That is file replay for this pilot case. It is not a
+    hosted durable database and it is not, by itself, process-restart proof.
+    The CLI passes ``replay=False`` and writes the journal after its own ingest.
     """
     bundle = build_unh_case()
     if case_id != bundle.case_id:

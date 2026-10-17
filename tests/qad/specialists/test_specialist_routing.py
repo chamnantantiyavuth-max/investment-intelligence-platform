@@ -224,11 +224,37 @@ def _snapshot_for(claim: dict, document: bytes | None = None) -> dict[str, bytes
     return {source["url"]: document}
 
 
+def _admit_trusted_source(bundle, claim: dict, document: bytes, *, retriever: str = "companyfacts-archive"):
+    digest = hashlib.sha256(document).hexdigest()
+    source_id = str(
+        deterministic_uuid7(f"trusted-src:{claim['source']['url']}:{digest}", ts_ms=ANCHOR_TS_MS)
+    )
+    bundle.archive.admit_source(
+        SourceRecord(
+            content_hash=digest,
+            retrieval_date=claim["source"]["retrieval_timestamp"],
+            source_id=source_id,
+            source_tier=SourceRecordSource_tier(claim["source"]["source_tier"]),
+            source_type=SourceRecordSource_type(claim["source"].get("source_type") or "OTHER"),
+            url_or_identifier=claim["source"]["url"],
+            author=claim["source"]["publisher"],
+            publication_date=claim["source"]["source_date"],
+            retrieval_method="committed_cache",
+            retriever=retriever,
+            title=claim["source"].get("title") or "trusted archive",
+        ),
+        document,
+    )
+    return source_id
+
+
 def test_provenance_survives_ingest_and_later_update():
     bundle, routed = _routed(_priority())
     item = routed.selected[1]
     claim = _claim()
-    snapshot = _snapshot_for(claim)
+    claim["statement"] = claim["source"]["quotation"]
+    document = _snapshot_for(claim)[claim["source"]["url"]]
+    _admit_trusted_source(bundle, claim, document)
     outcome = ingest_result(
         bundle,
         _result(item, disposition="ANSWERED", claims=[claim]),
@@ -236,7 +262,6 @@ def test_provenance_survives_ingest_and_later_update():
         [],
         issued_ids=[row.gap_id for row in routed.selected],
         reported_ids=set(),
-        independent_snapshots=snapshot,
     )
     assert outcome.admitted_evidence_ids
     evidence_id = outcome.admitted_evidence_ids[0]
@@ -262,7 +287,9 @@ def test_provenance_survives_ingest_and_later_update():
     assert source.content_hash != hashlib.sha256(
         claim["source"]["quotation"].encode("utf-8")
     ).hexdigest()
-    assert source.retrieval_method == "independent snapshot loaded by ingest"
+    assert source.retrieval_method == "committed_cache"
+    assert source.retriever == "companyfacts-archive"
+    assert source.retriever != "agent-a"
     updated = evidence.model_copy(
         update={"validation_status": EvidenceRecordValidation_status.DISPUTED}
     )
@@ -304,26 +331,105 @@ def test_fabricated_quote_at_a_real_snapshot_is_not_verified():
         reported_ids=set(),
         independent_snapshots={genuine["source"]["url"]: document},
     )
-    assert len(outcome.quarantined) == 1
-    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
-    assert "independently loaded" in outcome.quarantined[0]["reason"]
-    assert len(outcome.verified_fact_ids) == 1
+    assert outcome.verified_fact_ids == []
+    assert len(outcome.quarantined) == 2
+    assert all(row["verification_status"] == "UNVERIFIED" for row in outcome.quarantined)
+    reasons = [row["reason"] for row in outcome.quarantined]
+    assert any("local snapshot is not bound" in reason for reason in reasons)
+    assert any("independently loaded" in reason for reason in reasons)
     verified = [
         row
         for row in bundle.registry.list_all("FACT-01")
         if row.verification_status == FactRecordVerification_status.VERIFIED
-        and row.statement == fabricated["statement"]
+        and row.statement in {fabricated["statement"], genuine["statement"]}
     ]
     assert verified == []
+
+
+def test_forged_local_snapshot_under_a_real_url_cannot_promote_a_fact(tmp_path):
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    sec_url = "https://www.sec.gov/Archives/edgar/data/731766/000073176626000042/unh-20251231.htm"
+    cms_url = "https://www.cms.gov/newsroom/fact-sheets/2027-medicare-advantage-part-d-rate-announcement"
+    sec_quote = "fabricated special dividend of 99.99 percent"
+    cms_quote = "fabricated expected net 88.00 percent"
+    snap = tmp_path / "snapshots"
+    snap.mkdir()
+    (snap / "filing.bin").write_bytes(f"SEC lookalike.\n{sec_quote}\n".encode("utf-8"))
+    (snap / "filing.url").write_text(sec_url + "\n", encoding="utf-8")
+    (snap / "rates.bin").write_bytes(f"CMS lookalike.\n{cms_quote}\n".encode("utf-8"))
+    (snap / "manifest.json").write_text(
+        json.dumps({"urls": {cms_url: "rates.bin"}}),
+        encoding="utf-8",
+    )
+    sec_claim = _claim(url=sec_url, quotation=sec_quote, publisher="SEC")
+    sec_claim["statement"] = sec_quote
+    cms_claim = _claim(url=cms_url, quotation=cms_quote)
+    cms_claim["statement"] = cms_quote
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[sec_claim, cms_claim]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+        snapshot_dir=snap,
+    )
+    assert outcome.verified_fact_ids == []
+    assert outcome.admitted_evidence_ids == []
+    assert len(outcome.quarantined) == 2
+    assert all(row["verification_status"] == "UNVERIFIED" for row in outcome.quarantined)
+    assert all("local snapshot is not bound" in row["reason"] for row in outcome.quarantined)
+    promoted = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.verification_status == FactRecordVerification_status.VERIFIED
+        and row.statement in {sec_quote, cms_quote}
+    ]
+    assert promoted == []
+
+
+def test_statement_numeric_mismatch_is_not_verified():
+    bundle, routed = _routed(_priority())
+    item = routed.selected[1]
+    passage = "expected net 2.48 percent"
+    genuine = _claim(quotation=passage)
+    genuine["statement"] = passage
+    mismatched = _claim(quotation=passage)
+    mismatched["statement"] = "expected net 24.8 percent"
+    document = (
+        "CMS rate announcement fixture.\n" + passage + "\nEnd of archived source.\n"
+    ).encode("utf-8")
+    _admit_trusted_source(bundle, genuine, document)
+    outcome = ingest_result(
+        bundle,
+        _result(item, disposition="ANSWERED", claims=[mismatched, genuine]),
+        _charter(item),
+        [],
+        issued_ids=[item.gap_id],
+        reported_ids=set(),
+    )
+    assert len(outcome.quarantined) == 1
+    assert outcome.quarantined[0]["verification_status"] == "UNVERIFIED"
+    assert "numeric values or core proposition" in outcome.quarantined[0]["reason"]
+    assert outcome.verified_fact_ids
     kept = bundle.registry.load("FACT-01", outcome.verified_fact_ids[0])
-    assert kept.statement == genuine["statement"]
+    assert kept.statement == passage
     assert kept.verification_status == FactRecordVerification_status.VERIFIED
+    rejected = [
+        row
+        for row in bundle.registry.list_all("FACT-01")
+        if row.statement == mismatched["statement"]
+        and row.verification_status == FactRecordVerification_status.VERIFIED
+    ]
+    assert rejected == []
 
 
 def test_replay_does_not_overwrite_an_adverse_fact():
     bundle, routed = _routed(_priority())
     item = routed.selected[1]
     claim = _claim()
+    claim["statement"] = claim["source"]["quotation"]
     document = _snapshot_for(claim)[claim["source"]["url"]]
     url = claim["source"]["url"]
     digest = hashlib.sha256(document).hexdigest()
@@ -331,23 +437,7 @@ def test_replay_does_not_overwrite_an_adverse_fact():
     seed = f"{item.gap_id}:0:{digest}:{passage_digest}"
     fact_id = str(deterministic_uuid7(f"fact:{seed}", ts_ms=ANCHOR_TS_MS))
     evidence_id = str(deterministic_uuid7(f"ev:{seed}", ts_ms=ANCHOR_TS_MS))
-    source_id = str(deterministic_uuid7(f"independent-src:{url}:{digest}", ts_ms=ANCHOR_TS_MS))
-    bundle.archive.admit_source(
-        SourceRecord(
-            content_hash=digest,
-            retrieval_date=claim["source"]["retrieval_timestamp"],
-            source_id=source_id,
-            source_tier=SourceRecordSource_tier.L3,
-            source_type=SourceRecordSource_type.GOVERNMENT_DATA,
-            url_or_identifier=url,
-            author="CMS",
-            publication_date="2026-04-06",
-            retrieval_method="independent snapshot loaded by ingest",
-            retriever="qad.specialists.ingest",
-            title="prior",
-        ),
-        document,
-    )
+    source_id = _admit_trusted_source(bundle, claim, document)
     bundle.registry.admit_evidence(
         EvidenceRecord(
             admitting_role="Evidence Intelligence Lead",
@@ -388,7 +478,6 @@ def test_replay_does_not_overwrite_an_adverse_fact():
         [],
         issued_ids=[item.gap_id],
         reported_ids=set(),
-        independent_snapshots={claim["source"]["url"]: document},
     )
     kept = bundle.registry.load("FACT-01", fact_id)
     assert kept.verification_status == FactRecordVerification_status.DISPUTED

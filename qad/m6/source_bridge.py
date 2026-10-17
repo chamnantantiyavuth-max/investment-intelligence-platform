@@ -1002,9 +1002,9 @@ def build_evidence_admission(
     )
 
 
-# A FACT claim stays unverified unless this exact passage occurs in bytes the
-# ingest step loaded itself (snapshot file or hash-checked archive blob).
-# The specialist's quotation string and any hash of that string are not those bytes.
+# Presence of a passage in caller-supplied bytes. A local snapshot is not a
+# verification receipt; specialist ingest decides trust separately. The
+# specialist's quotation string and any hash of that string are not those bytes.
 PASSAGE_ABSENT_REASON = (
     "cited passage was not found in independently loaded original source bytes"
 )

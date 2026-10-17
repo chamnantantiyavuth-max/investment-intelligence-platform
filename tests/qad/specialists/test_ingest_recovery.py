@@ -1,11 +1,17 @@
-"""Fresh Case API read recovers a specialist ingest from the committed journal."""
+"""Fresh Case API read recovers a specialist ingest from the committed journal.
+
+Two TestClient instances in one interpreter show file replay into new
+in-memory stores. A separate test starts a new Python process. Neither is a
+hosted durable database.
+"""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 os.environ.setdefault("IIP_AUTH_USER", "founder")
@@ -106,8 +112,8 @@ def test_fresh_case_api_recovers_accepted_and_quarantined_evidence(tmp_path, mon
     )
     assert code == 0
     journal = json.loads((dest / "ingest" / f"{GAP}.json").read_text(encoding="utf-8"))
-    assert journal["verified_fact_count"] == 1
-    assert journal["quarantined_count"] == 1
+    assert journal["verified_fact_count"] == 0
+    assert journal["quarantined_count"] == 2
     assert journal["founder_ready"] is False
     assert journal["stage_state"] == "IN_PROGRESS"
     assert journal["case_state"] == "CASE_OPEN"
@@ -123,18 +129,13 @@ def test_fresh_case_api_recovers_accepted_and_quarantined_evidence(tmp_path, mon
     assert body["case_state"] != "FOUNDER_READY"
     recovery = body["specialist_recovery"]
     assert recovery == again["specialist_recovery"]
-    assert recovery["verified_fact_count"] == 1
+    assert recovery["verified_fact_count"] == 0
     assert recovery["scuttlebutt_stage_state"] == "IN_PROGRESS"
-    assert len(recovery["accepted_evidence"]) == 1
-    assert recovery["accepted_evidence"][0]["verification_status"] == "VERIFIED"
-    assert recovery["accepted_evidence"][0]["statement"] == (
-        "The snapshot contains the genuine rate sentence."
-    )
-    quote_hash = hashlib.sha256(GENUINE.encode("utf-8")).hexdigest()
-    assert recovery["accepted_evidence"][0]["content_hash"] != quote_hash
-    assert len(recovery["quarantined"]) == 1
-    assert recovery["quarantined"][0]["verification_status"] == "UNVERIFIED"
-    assert "independently loaded" in recovery["quarantined"][0]["reason"]
+    assert recovery["accepted_evidence"] == []
+    assert len(recovery["quarantined"]) == 2
+    assert all(row["verification_status"] == "UNVERIFIED" for row in recovery["quarantined"])
+    assert any("local snapshot is not bound" in row["reason"] for row in recovery["quarantined"])
+    assert any("independently loaded" in row["reason"] for row in recovery["quarantined"])
     assert recovery["investigations"]
     assert recovery["investigations"][0]["disposition"] == "PARTIALLY_ANSWERED"
     stages = {row["stage_name"]: row["stage_state"] for row in body["stages"]}
@@ -149,3 +150,36 @@ def test_fresh_case_api_recovers_accepted_and_quarantined_evidence(tmp_path, mon
     )
     assert blocked.status_code == 409
     assert blocked.json()["detail"]["rejected"] is True
+
+    script = (
+        "import json, os\n"
+        "from research.qad_pilot.unh.case_slice import case_view, recover_case\n"
+        "view = case_view(recover_case('CASE-2026-001'))\n"
+        "recovery = view['specialist_recovery']\n"
+        "print(json.dumps({\n"
+        "    'case_state': view['case_state'],\n"
+        "    'verified_fact_count': recovery['verified_fact_count'],\n"
+        "    'quarantined': len(recovery['quarantined']),\n"
+        "    'accepted': len(recovery['accepted_evidence']),\n"
+        "    'stage': recovery['scuttlebutt_stage_state'],\n"
+        "}))\n"
+    )
+    env = os.environ.copy()
+    env["QAD_CASE_ROOT"] = str(root)
+    completed = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=str(Path(__file__).resolve().parents[3]),
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    fresh = json.loads(completed.stdout.strip().splitlines()[-1])
+    assert fresh == {
+        "case_state": "CASE_OPEN",
+        "verified_fact_count": 0,
+        "quarantined": 2,
+        "accepted": 0,
+        "stage": "IN_PROGRESS",
+    }
