@@ -290,23 +290,23 @@ Failure State            (what happens when the role cannot complete its work)
 | Field | Value |
 |-------|-------|
 | **Classification** | PU (PUBLICATION_ROLE) |
-| **Mission** | Create a coherent, source-grounded **free-form Thai Google Doc** for Founder in the private IIP/QAD Drive case folder. The legacy `/library` research-blog destination is retired for new QAD reports (Founder 2026-10-18). |
+| **Mission** | Write a coherent, source-grounded **free-form Thai Google Doc** in the private IIP/QAD Drive case folder, following the **permanent IIP Thai Writing & Editorial Standard** in `project-definition/qad/QAD-CHALLENGE-AUDIT-PUBLICATION.md §5.3.1`. Legacy `/library` is retired. |
 | **Inputs** | Research record, research verdict, Full analytical package |
 | **Canonical Inputs Allowed** | All canonical evidence |
 | **Noncanonical Inputs Allowed** | None — publication is based on canonical research only |
 | **Tools** | Writing, editing, Thai language, formatting |
 | **NotebookLM / Deep Research Access** | NONE — editorial must be human writing |
-| **Required Questions** | Does the Thai narrative explain important economic causation, conflicting evidence, unknowns, thesis implications and source traceability clearly, without forcing a fixed outline or one section per specialist? |
+| **Required Questions** | Can an intelligent Thai reader follow the economic argument without decoding translated jargon or machine-style status markers? Are causal mechanisms, essential numbers, contradictions, limitations and citations explained naturally, without forced sections? |
 | **Required Outputs** | One editable free-form Thai Google Doc (draft) in the stable private case folder; strongest opposing thesis embedded or visibly linked; true research/publication status, dates and source links |
 | **Output Schema** | Presentation = native Google Docs, not a new canonical schema. Continue recording case/evidence states and provenance in the existing IIP contracts; no obligatory blog `slug/category/frontmatter` for QAD Docs. |
-| **Authority** | Edit for clarity, readability, and Thai language correctness; propose publication draft |
+| **Authority** | Independently shape the Thai narrative: re-order explanations, simplify literal translations, improve transitions, move excess data to notes, choose an appropriate voice and propose a free-form Doc; **must not change source facts, calculation assumptions, verified status, investment conclusions or dissent** |
 | **Escalation** | Thai language quality → external review if needed; factual ambiguity → Research Director |
 | **Budget Rights** | None |
 | **Stop Rights** | May recommend NOT publishing if quality insufficient |
 | **Forbidden Actions** | ❌ Create new thesis ❌ Change analytical conclusions ❌ Remove contradictions ❌ Add investment recommendations ❌ Publish without Founder gate |
 | **Separation-of-Duty Rules** | Must be separate from thesis creation (Chief Underwriter, Research Director) |
-| **Quality Gate** | Clear free-form Thai reasoning, correct citations and numbers, preserved dissent, honest DRAFT/FOUNDER_READY and actual Founder gates. No fixed report chapters, blog frontmatter, `/library` or required PDF export. |
-| **Failure State** | Article draft incomplete; published as DRAFT only |
+| **Quality Gate** | Apply standing writing standard §5.3.1 by a **single lightweight editorial self-check**, not a separate approval layer: idiomatic connected Thai; explain the 'why' and the significance of numbers; restrained technical terms/labels; source precision and uncertainty preserved. No fixed sections, arbitrary word counts, QA score thresholds, blog frontmatter, `/library` or PDF requirement. |
+| **Failure State** | If material editorial work remains, retain DRAFT and revise narrative once within the authorized task; do not escalate into repeated stylistic gates or misstate research readiness |
 
 ---
 
