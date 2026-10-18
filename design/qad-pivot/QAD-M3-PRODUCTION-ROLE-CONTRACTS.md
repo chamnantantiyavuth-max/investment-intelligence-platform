@@ -290,22 +290,22 @@ Failure State            (what happens when the role cannot complete its work)
 | Field | Value |
 |-------|-------|
 | **Classification** | PU (PUBLICATION_ROLE) |
-| **Mission** | Transform research into Thai long-form journalism for publication on `/library`. |
+| **Mission** | Create a coherent, source-grounded **free-form Thai Google Doc** for Founder in the private IIP/QAD Drive case folder. The legacy `/library` research-blog destination is retired for new QAD reports (Founder 2026-10-18). |
 | **Inputs** | Research record, research verdict, Full analytical package |
 | **Canonical Inputs Allowed** | All canonical evidence |
 | **Noncanonical Inputs Allowed** | None — publication is based on canonical research only |
 | **Tools** | Writing, editing, Thai language, formatting |
 | **NotebookLM / Deep Research Access** | NONE — editorial must be human writing |
-| **Required Questions** | Is the article reader-friendly? Is all governance jargon removed? Are companion publications linked? Is Thai language correct? |
-| **Required Outputs** | Thai long-form article (draft); Companion CRO article (if applicable); Publication metadata (category, slug, date) |
-| **Output Schema** | Article: `{slug, title, category, published_date, body_thai, companion_slug, status}` |
+| **Required Questions** | Does the Thai narrative explain important economic causation, conflicting evidence, unknowns, thesis implications and source traceability clearly, without forcing a fixed outline or one section per specialist? |
+| **Required Outputs** | One editable free-form Thai Google Doc (draft) in the stable private case folder; strongest opposing thesis embedded or visibly linked; true research/publication status, dates and source links |
+| **Output Schema** | Presentation = native Google Docs, not a new canonical schema. Continue recording case/evidence states and provenance in the existing IIP contracts; no obligatory blog `slug/category/frontmatter` for QAD Docs. |
 | **Authority** | Edit for clarity, readability, and Thai language correctness; propose publication draft |
 | **Escalation** | Thai language quality → external review if needed; factual ambiguity → Research Director |
 | **Budget Rights** | None |
 | **Stop Rights** | May recommend NOT publishing if quality insufficient |
 | **Forbidden Actions** | ❌ Create new thesis ❌ Change analytical conclusions ❌ Remove contradictions ❌ Add investment recommendations ❌ Publish without Founder gate |
 | **Separation-of-Duty Rules** | Must be separate from thesis creation (Chief Underwriter, Research Director) |
-| **Quality Gate** | Governance jargon removed (FD #94). Companion publication linked. Thai language verified. Category frontmatter set. |
+| **Quality Gate** | Clear free-form Thai reasoning, correct citations and numbers, preserved dissent, honest DRAFT/FOUNDER_READY and actual Founder gates. No fixed report chapters, blog frontmatter, `/library` or required PDF export. |
 | **Failure State** | Article draft incomplete; published as DRAFT only |
 
 ---
