@@ -1,14 +1,15 @@
 """Ingest a specialist result through the existing admission boundary.
 
 A claim with a URL, retrieval timestamp, source date, and publisher may reach
-FACT-01 VERIFIED only when three separate checks all pass.
+FACT-01 VERIFIED only when these checks all pass.
 
-1. The cited passage occurs in bytes on an S5/M6 original-source verification
-   receipt minted by ``verify_and_admit_source`` after an independent HTTP
-   fetch (sha256 of those bytes, retrieval time, fetch reason). A local
-   snapshot is not that receipt. A hand-inserted SRC-01, including one with
-   an arbitrary retriever string and a self-consistent hash, is not that
-   receipt.
+1. The cited passage occurs outside any ``<script>`` element in bytes on an
+   S5/M6 original-source verification receipt minted by
+   ``verify_and_admit_source`` after an independent HTTP fetch (raw sha256 of
+   those bytes, retrieval time, fetch reason). A quotation that occurs only
+   inside a script element does not count. A local snapshot is not that
+   receipt. A hand-inserted SRC-01, including one with an arbitrary retriever
+   string and a self-consistent hash, is not that receipt.
 2. For a FACT, the statement's numbers and core words occur in the passage,
    and the passage does not disagree on negation, direction words, or a
    detectable actor. This is lexical inclusion. It is not semantic entailment.
@@ -16,6 +17,15 @@ FACT-01 VERIFIED only when three separate checks all pass.
 3. An Evidence Lead sign-off can override an unsupported statement only when
    the RC-01 is bound to this case, gap, claim, source, and passage hash, and
    the lead is not the specialist. A generic validated charter does not.
+4. When the claim records ``expected_sha256``, that digest is the Evidence-Lead
+   raw sha256. Promotion also requires cross-retrieval agreement: the
+   content-normalized sha256 of the receipt bytes equals the content-normalized
+   sha256 of those Evidence-Lead bytes. Normalization removes well-formed
+   ``<script>`` elements and nothing else. The raw sha256 remains the pin of
+   the stored ``.bin``. A raw mismatch alone does not quarantine when the
+   normalized hashes agree. A byte change outside a script element does not
+   agree. If those Evidence-Lead bytes are not available, the comparison is
+   the passage-level sha256 and the receipt notes say so.
 
 Quarantine is the S4 / scuttlebutt quality-gate word for "not admitted". It
 is not a new canonical status. The fact status used on that path is the
@@ -59,6 +69,14 @@ from qad.models.family_c import (
     InvestigationReport,
     InvestigationReportDisposition,
     InvestigationReportStop_rule,
+)
+from qad.m6.content_norm import (
+    content_normalized_sha256,
+    default_cross_check_paths,
+    judge_cross_retrieval,
+    load_cross_check_bytes,
+    parse_receipt_notes,
+    strip_script_elements,
 )
 from qad.m6.source_bridge import (
     PASSAGE_ABSENT_REASON,
@@ -111,6 +129,9 @@ STATEMENT_UNSUPPORTED_REASON = (
     "passage; no Evidence Lead sign-off is recorded for this case, gap, claim, "
     "source, and passage"
 )
+SCRIPT_ONLY_PASSAGE_REASON = (
+    "cited passage occurs only inside a <script> element and does not count"
+)
 _NEGATION_RE = re.compile(r"\b(?:no|not|never|none|without|cannot)\b|n't", re.IGNORECASE)
 _DIRECTION_PAIRS: tuple[tuple[frozenset[str], frozenset[str]], ...] = (
     (frozenset({"increase", "increases", "increased", "increasing"}),
@@ -148,6 +169,7 @@ class IngestOutcome:
     stage_state: str = ""
     actor_id: str = ""
     canonical_role: str = ""
+    cross_retrieval: list[dict] = field(default_factory=list)
 
 
 def case_directory(case_id: str) -> Path:
@@ -317,8 +339,15 @@ def _archived_passage(archive, url: str, quotation: str) -> bool:
     return False
 
 
-def _matching_receipt(verifications, url: str, quotation: str):
-    """Minted or persisted fetch receipt whose bytes contain the passage."""
+def _passage_outside_script(quotation: str, raw: bytes | None) -> bool:
+    """True when ``quotation`` occurs after script elements are removed."""
+    if not isinstance(raw, bytes) or not raw:
+        return False
+    return passage_occurs_in_independent_bytes(quotation, strip_script_elements(raw))
+
+
+def _matching_receipt(verifications, url: str):
+    """Minted or persisted fetch receipt for this URL. Passage is checked later."""
     from qad.m6.original_fetch import FETCH_REASON
     from qad.m6.receipt_file import PersistedFetchReceipt
 
@@ -342,8 +371,7 @@ def _matching_receipt(verifications, url: str, quotation: str):
             continue
         if hashlib.sha256(raw).hexdigest() != verification.content_hash:
             continue
-        if passage_occurs_in_independent_bytes(quotation, raw):
-            return verification
+        return verification
     return None
 
 
@@ -555,6 +583,87 @@ def _gap_journal(registry, gap_id: str, journal_status: str) -> dict:
     }
 
 
+def _validation_notes(agreement_detail: str) -> str:
+    notes = (
+        "Passage located in a minted M6 independent-fetch receipt. "
+        "A local snapshot and a hand-inserted archive row were not the receipt. "
+        "The specialist quotation hash was not the source hash."
+    )
+    detail = agreement_detail.strip()
+    if detail:
+        return f"{notes} {detail}"
+    return notes
+
+
+def _expected_digest(source: dict) -> str:
+    return str(source.get("expected_sha256") or "").strip()
+
+
+def _lead_bytes_for_result(
+    result: dict,
+    *,
+    evidence_lead_bytes: dict[str, bytes] | None,
+    cross_check_paths: list[Path] | None,
+    search_defaults: bool,
+) -> dict[str, bytes]:
+    """Map an expected raw sha256 to Evidence-Lead bytes, when those bytes are on disk."""
+    wanted: list[str] = []
+    for claim in result.get("claims") or []:
+        source = claim.get("source") if isinstance(claim, dict) else None
+        if not isinstance(source, dict):
+            continue
+        expected = _expected_digest(source)
+        if expected and expected not in wanted:
+            wanted.append(expected)
+    found: dict[str, bytes] = {}
+    supplied = evidence_lead_bytes or {}
+    for expected in wanted:
+        raw = supplied.get(expected)
+        if isinstance(raw, bytes) and raw and hashlib.sha256(raw).hexdigest() == expected:
+            found[expected] = raw
+    if len(found) == len(wanted):
+        return found
+    paths: list[Path] = list(cross_check_paths or [])
+    if search_defaults:
+        paths.extend(default_cross_check_paths())
+    for expected in wanted:
+        if expected in found:
+            continue
+        loaded = load_cross_check_bytes(expected, paths)
+        if loaded is not None:
+            found[expected] = loaded
+    return found
+
+
+def _agreement_notes_for_receipt(result: dict, verification, lead_bytes_by_hash: dict[str, bytes]) -> str:
+    location = str(getattr(verification, "location", "") or "").strip()
+    raw = getattr(verification, "raw_bytes", None)
+    if not isinstance(raw, bytes) or not raw:
+        return ""
+    expected = ""
+    quotation = ""
+    for claim in result.get("claims") or []:
+        source = claim.get("source") if isinstance(claim, dict) else None
+        if not isinstance(source, dict):
+            continue
+        if str(source.get("url") or "").strip() != location:
+            continue
+        digest = _expected_digest(source)
+        if digest:
+            expected = digest
+            quotation = str(source.get("quotation") or "")
+            break
+    agreement = judge_cross_retrieval(
+        raw,
+        expected_raw_sha256=expected,
+        quotation=quotation,
+        lead_bytes=lead_bytes_by_hash.get(expected) if expected else None,
+        notes="",
+        looked_for_lead=True,
+    )
+    return agreement.notes
+
+
 def _admit_claim(
     bundle,
     result: dict,
@@ -566,6 +675,8 @@ def _admit_claim(
     snapshot_dir: Path | None,
     source_verifications=None,
     fetch_errors: dict[str, str] | None = None,
+    lead_bytes_by_hash: dict[str, bytes] | None = None,
+    looked_for_lead: bool = False,
 ) -> dict:
     """Admit one claim, or return a quarantine/preserved reason.
 
@@ -597,7 +708,7 @@ def _admit_claim(
         independent_snapshots=independent_snapshots,
         snapshot_dir=snapshot_dir,
     )
-    receipt = _matching_receipt(source_verifications, url, quotation)
+    receipt = _matching_receipt(source_verifications, url)
     if receipt is not None and archive.contains("SRC-01", receipt.source_id):
         stored = _hash_checked_blob(archive, receipt.source_id)
         row = archive.load("SRC-01", receipt.source_id)
@@ -606,8 +717,13 @@ def _admit_claim(
         same_url = getattr(row, "url_or_identifier", None) == url
         if not same_bytes or not same_url or (retriever and retriever in blocked):
             receipt = None
-    if receipt is None or not passage_occurs_in_independent_bytes(quotation, receipt.raw_bytes):
-        if _archived_passage(archive, url, quotation):
+    if receipt is None or not _passage_outside_script(quotation, receipt.raw_bytes):
+        if (
+            receipt is not None
+            and passage_occurs_in_independent_bytes(quotation, receipt.raw_bytes)
+        ):
+            reason = SCRIPT_ONLY_PASSAGE_REASON
+        elif _archived_passage(archive, url, quotation):
             reason = HAND_INSERTED_SOURCE_REASON
         elif passage_occurs_in_independent_bytes(quotation, local):
             reason = UNTRUSTED_SNAPSHOT_REASON
@@ -619,13 +735,28 @@ def _admit_claim(
             "reason": reason,
         }
     expected = str(source.get("expected_sha256") or "").strip()
-    if expected and receipt.content_hash != expected:
+    lead_bytes = (lead_bytes_by_hash or {}).get(expected) if expected else None
+    agreement = judge_cross_retrieval(
+        receipt.raw_bytes,
+        expected_raw_sha256=expected,
+        quotation=quotation,
+        lead_bytes=lead_bytes,
+        notes=str(getattr(receipt, "notes", "") or ""),
+        looked_for_lead=looked_for_lead,
+    )
+    if agreement.status == "mismatch":
         return {
             "status": "QUARANTINED",
             "verification_status": "UNVERIFIED",
-            "reason": (
-                f"fetched sha256 {receipt.content_hash} != expected {expected}"
-            ),
+            "reason": agreement.detail,
+            "cross_retrieval": {
+                "agreement": agreement.status,
+                "raw_sha256": agreement.raw_sha256,
+                "normalized_sha256": agreement.normalized_sha256,
+                "evidence_lead_raw_sha256": agreement.evidence_lead_raw_sha256,
+                "evidence_lead_normalized_sha256": agreement.evidence_lead_normalized_sha256,
+                "passage_sha256": agreement.passage_sha256,
+            },
         }
     trusted_bytes = receipt.raw_bytes
     passage_digest = hashlib.sha256(quotation.encode("utf-8")).hexdigest()
@@ -702,11 +833,7 @@ def _admit_claim(
             "and the FACT statement matches that passage or a claim-bound Evidence Lead sign-off is recorded"
         ),
         source_as_of=str(source["source_date"])[:10],
-        validation_notes=(
-            "Passage located in a minted M6 independent-fetch receipt. "
-            "A local snapshot and a hand-inserted archive row were not the receipt. "
-            "The specialist quotation hash was not the source hash."
-        ),
+        validation_notes=_validation_notes(agreement.detail if agreement.status != "not-required" else ""),
     )
     evidence_state = _admit_evidence_preserving(registry, evidence, admission)
     if evidence_state == "preserved":
@@ -774,6 +901,15 @@ def _admit_claim(
         "evidence_id": evidence_id,
         "source_id": source_id,
         "verified_fact_id": verified_fact_id,
+        "cross_retrieval": {
+            "agreement": agreement.status,
+            "raw_sha256": agreement.raw_sha256,
+            "normalized_sha256": agreement.normalized_sha256,
+            "evidence_lead_raw_sha256": agreement.evidence_lead_raw_sha256,
+            "evidence_lead_normalized_sha256": agreement.evidence_lead_normalized_sha256,
+            "passage_sha256": agreement.passage_sha256,
+            "detail": agreement.detail,
+        },
     }
 
 
@@ -791,6 +927,8 @@ def ingest_result(
     source_verifications=None,
     fetch_sources: bool = False,
     receipt_dir: Path | None = None,
+    evidence_lead_bytes: dict[str, bytes] | None = None,
+    cross_check_paths: list[Path] | None = None,
 ) -> IngestOutcome:
     missing = [name for name in RESULT_FIELDS if name not in result]
     if missing:
@@ -840,17 +978,40 @@ def ingest_result(
         canonical_role=str(result["canonical_role"]),
     )
     fetch_errors: dict[str, str] = {}
+    looked_for_lead = bool(
+        fetch_sources or evidence_lead_bytes is not None or cross_check_paths is not None
+    )
     if source_verifications is None and result.get("source_fetch") == "s5-m6-http":
         store = receipt_dir if receipt_dir is not None else case_directory(bundle.case_id) / "receipts"
         if fetch_sources:
             source_verifications, fetch_errors = _fetch_receipts(result)
             from qad.m6.receipt_file import persist_receipts
 
-            persist_receipts(store, source_verifications)
+            lead_for_notes = _lead_bytes_for_result(
+                result,
+                evidence_lead_bytes=evidence_lead_bytes,
+                cross_check_paths=cross_check_paths,
+                search_defaults=True,
+            )
+            notes_by_source = {
+                str(getattr(verification, "source_id", "") or ""): _agreement_notes_for_receipt(
+                    result, verification, lead_for_notes
+                )
+                for verification in source_verifications or []
+            }
+            persist_receipts(store, source_verifications, notes_by_source_id=notes_by_source)
         else:
             from qad.m6.receipt_file import load_persisted_receipts
 
             source_verifications = load_persisted_receipts(store)
+    lead_bytes_by_hash = _lead_bytes_for_result(
+        result,
+        evidence_lead_bytes=evidence_lead_bytes,
+        cross_check_paths=cross_check_paths,
+        search_defaults=bool(fetch_sources),
+    )
+    if lead_bytes_by_hash:
+        looked_for_lead = True
     if snapshot_dir is None:
         candidate = case_directory(bundle.case_id) / "snapshots"
         snapshot_dir = candidate if candidate.is_dir() else None
@@ -904,7 +1065,13 @@ def ingest_result(
             snapshot_dir=snapshot_dir,
             source_verifications=source_verifications,
             fetch_errors=fetch_errors,
+            lead_bytes_by_hash=lead_bytes_by_hash,
+            looked_for_lead=looked_for_lead,
         )
+        if decision.get("cross_retrieval"):
+            outcome.cross_retrieval.append(
+                {"statement": claim["statement"], **decision["cross_retrieval"]}
+            )
         if decision["status"] == "QUARANTINED":
             outcome.quarantined.append(
                 {
@@ -1136,6 +1303,26 @@ def replay_committed_ingests(bundle, *, case_dir: Path | None = None) -> list[In
     return outcomes
 
 
+def _raw_blob(archive, source_id: str) -> bytes | None:
+    try:
+        raw = archive.load_raw_blob(source_id)
+    except Exception:
+        return None
+    return raw if isinstance(raw, bytes) else None
+
+
+def _receipt_notes(case_id: str, source_id: str) -> str:
+    path = case_directory(case_id) / "receipts" / f"{source_id}.json"
+    if not path.is_file():
+        return ""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    notes = payload.get("notes") if isinstance(payload, dict) else ""
+    return notes if isinstance(notes, str) else ""
+
+
 def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
     from qad.specialists.stages import find_stage
 
@@ -1156,6 +1343,7 @@ def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
                 for row in bundle.registry.list_all("FACT-01")
                 if row.evidence_id == evidence_id
             ]
+            fact_id = facts[0].fact_id if facts else None
             claims = [
                 row
                 for row in bundle.registry.list_all("CLM-01")
@@ -1168,6 +1356,11 @@ def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
                 statement = facts[0].statement
             elif claims:
                 statement = claims[0].statement
+            raw_blob = _raw_blob(bundle.archive, source_id)
+            normalized = (
+                content_normalized_sha256(raw_blob) if isinstance(raw_blob, bytes) else ""
+            )
+            recorded = parse_receipt_notes(_receipt_notes(bundle.case_id, source_id))
             accepted.append(
                 {
                     "gap_id": outcome.gap_id,
@@ -1177,8 +1370,16 @@ def _recovery_payload(bundle, outcomes: list[IngestOutcome]) -> dict:
                     "validation_status": _enum(evidence.validation_status),
                     "statement": statement,
                     "verification_status": verification,
+                    "fact_id": fact_id,
                     "source_url": source.url_or_identifier,
                     "content_hash": source.content_hash,
+                    "normalized_sha256": normalized,
+                    "evidence_lead_raw_sha256": recorded.get("evidence_lead_raw_sha256") or "",
+                    "evidence_lead_normalized_sha256": recorded.get(
+                        "evidence_lead_normalized_sha256"
+                    )
+                    or "",
+                    "cross_retrieval_agreement": recorded.get("agreement") or "",
                     "retrieval_method": source.retrieval_method,
                     "retriever": source.retriever,
                     "retrieval_date": source.retrieval_date,

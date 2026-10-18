@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from qad.m6.content_norm import content_normalized_sha256, parse_receipt_notes
 from qad.m6.original_fetch import FETCH_REASON
 
 _KIND = "m6-fetch-receipt"
@@ -33,10 +34,19 @@ class PersistedFetchReceipt:
     source_type: str
     title: str
     publication_date: str | None
+    notes: str = ""
 
 
-def persist_receipts(receipt_dir: Path, verifications) -> list[Path]:
-    """Write one JSON plus the fetched bytes for each minted receipt."""
+def persist_receipts(
+    receipt_dir: Path,
+    verifications,
+    notes_by_source_id: dict[str, str] | None = None,
+) -> list[Path]:
+    """Write one JSON plus the fetched bytes for each minted receipt.
+
+    ``content_hash`` is the raw sha256 of the stored bytes. ``notes`` records
+    the content-normalized sha256 used only for cross-retrieval agreement.
+    """
     written: list[Path] = []
     receipt_dir.mkdir(parents=True, exist_ok=True)
     for verification in verifications or ():
@@ -55,6 +65,14 @@ def persist_receipts(receipt_dir: Path, verifications) -> list[Path]:
         blob_path = (receipt_dir / bytes_name).resolve()
         blob_path.relative_to(receipt_dir.resolve())
         blob_path.write_bytes(raw)
+        notes = ""
+        if notes_by_source_id:
+            notes = str(notes_by_source_id.get(source_id) or "")
+        if not notes:
+            notes = (
+                "content_hash is sha256 of the stored bytes. "
+                f"normalized_sha256={content_normalized_sha256(raw)}"
+            )
         payload = {
             "kind": _KIND,
             "reason": FETCH_REASON,
@@ -67,6 +85,7 @@ def persist_receipts(receipt_dir: Path, verifications) -> list[Path]:
             "source_type": getattr(verification, "source_type", None),
             "title": getattr(verification, "title", None),
             "bytes_name": bytes_name,
+            "notes": notes,
         }
         path = receipt_dir / f"{source_id}.json"
         path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -139,6 +158,11 @@ def _load_one(root: Path, path: Path) -> PersistedFetchReceipt | None:
     raw = blob.read_bytes()
     if hashlib.sha256(raw).hexdigest() != digest:
         return None
+    notes = payload.get("notes")
+    notes_text = notes if isinstance(notes, str) else ""
+    recorded_norm = parse_receipt_notes(notes_text).get("normalized_sha256")
+    if recorded_norm and recorded_norm != content_normalized_sha256(raw):
+        return None
     publication = payload.get("publication_date")
     return PersistedFetchReceipt(
         source_id=source_id,
@@ -151,4 +175,5 @@ def _load_one(root: Path, path: Path) -> PersistedFetchReceipt | None:
         source_type=str(payload.get("source_type") or "SEC_FILING"),
         title=str(payload.get("title") or location)[:240],
         publication_date=str(publication)[:10] if publication else None,
+        notes=notes_text,
     )

@@ -4,21 +4,20 @@
   "investigation_disposition": "PARTIALLY_ANSWERED",
   "ir_disposition": null,
   "investigation_id": null,
-  "admitted_count": 0,
-  "quarantined_count": 1,
-  "verified_fact_count": 0,
-  "verified_fact_ids": [],
-  "preserved": [],
-  "admitted_evidence_ids": [],
-  "admitted_source_ids": [],
-  "quarantined": [
-    {
-      "statement": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026.",
-      "status": "QUARANTINED",
-      "verification_status": "UNVERIFIED",
-      "reason": "fetched sha256 52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97 != expected 6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7"
-    }
+  "admitted_count": 1,
+  "quarantined_count": 0,
+  "verified_fact_count": 1,
+  "verified_fact_ids": [
+    "01a14a2d-3880-744f-a52b-55ca8009751c"
   ],
+  "preserved": [],
+  "admitted_evidence_ids": [
+    "01a14a2d-3880-7c04-b439-988da8c3b4d7"
+  ],
+  "admitted_source_ids": [
+    "01a14a2d-3880-7cf3-8376-90acd6428de7"
+  ],
+  "quarantined": [],
   "gap_status": {
     "written": false,
     "reason": "Transaction validation failed with 1 error(s)",
@@ -127,5 +126,17 @@
     "tool_calls": 1,
     "sources": 1,
     "minutes": 5
-  }
+  },
+  "cross_retrieval": [
+    {
+      "statement": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026.",
+      "agreement": "normalized",
+      "raw_sha256": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97",
+      "normalized_sha256": "9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1",
+      "evidence_lead_raw_sha256": "6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7",
+      "evidence_lead_normalized_sha256": "9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1",
+      "passage_sha256": "60e1bfd32abc0055d7562554272f74da71d45d05cd23ed88a444b5e40f101408",
+      "detail": "Cross-retrieval agreement is content-normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Receipt raw sha256 52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97. Evidence-Lead raw sha256 6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7. Evidence-Lead normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Normalization removes well-formed <script>...</script> elements only."
+    }
+  ]
 }

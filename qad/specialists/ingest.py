@@ -124,6 +124,7 @@ def main(argv: list[str] | None = None) -> int:
         "canonical_role": outcome.canonical_role,
         "stop_rule_triggered": payload.get("stop_rule_triggered"),
         "usage": payload.get("usage"),
+        "cross_retrieval": outcome.cross_retrieval,
     }
     journal_path.write_text(json.dumps(journal, indent=2) + "\n", encoding="utf-8")
     print(

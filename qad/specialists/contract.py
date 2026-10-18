@@ -91,7 +91,13 @@ LIMITATIONS: tuple[str, ...] = (
     "generic RC-01 does not override a mismatch. A sign-off counts only when "
     "it is bound to this case, gap, claim, source, and passage hash. "
     "A case or report read does not fetch. It replays a receipt file written "
-    "by the explicit verify command. That file is not a hand-inserted SRC-01.",
+    "by the explicit verify command. That file is not a hand-inserted SRC-01. "
+    "When a claim records expected_sha256, that value is the Evidence-Lead raw "
+    "sha256. Agreement with a later fetch uses content-normalized sha256: "
+    "well-formed script elements are removed and nothing else, then sha256. "
+    "The receipt content_hash stays the raw sha256 of the stored bytes. "
+    "If the Evidence-Lead bytes are not available, the comparison is the "
+    "passage-level sha256 and the receipt notes say so.",
     "qad.m53.retry_kernel meters canonical stage retries (initial plus 3). "
     "It is not used to retry an external specialist. Those runs are outside "
     "this process, and a self-reported failure is not a kernel retry.",
