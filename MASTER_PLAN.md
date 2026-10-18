@@ -16,6 +16,20 @@
 
 The Founder cannot access the Windows/Hermes computer during an extended holiday and has explicitly directed Grok Bot to **start the next cloud work package without waiting**. This is a scope-limited execution instruction: it authorizes WP1 cloud engineering and safe feature-branch PRs against GitHub-verified code, **not** promotion of missing local evidence, changes to binding QAD policies, an M6.8 live success claim, production deployment, paid overages, activation of scheduled jobs, or edits to the Founder's laptop. The absent local commits remain `DEFERRED_SYNC`; do not treat them as blockers for unrelated cloud-portable work. When source paths conflict, preserve both branches and use a normal merge/cherry-pick workflow after verifying ancestry.
 
+### Founder output correction — 2026-10-18: FREE-FORM GOOGLE DOCS, NOT THE LEGACY REPORT PLATFORM
+
+**EFFECTIVE IMMEDIATELY FOR ALL NEW QAD RESEARCH.** The Founder retired the fixed-pattern IIP website/blog/Research Library as the QAD report product because prescribed categories, article structure and layout constrained analyst freedom. The Founder reaffirmed on 2026-10-18: **the primary human-readable research report is a free-form Google Doc stored in a stable PRIVATE Google Drive case folder**. This supersedes only historical **delivery-channel, template, mandatory PDF and `/library`/blog** directions in Hermes M11 and earlier QAD M3 Publication/Thai Editor contracts. Research hypothesis discipline, source/PIT verification, case records, Red Team/Audit/Underwriter independence, actual stage transitions, and Founder authority stay binding. Do **not** interpret old FD #62/#72/#94/#96 blog implementation approvals as authority to revive a later-cancelled report platform.
+
+**Output and authority split:**
+1. **Canonical research (unchanged):** Structured IIP QAD `CASE-01`, `SRC-01`, `EV-01`, `FACT-01`, claim/audit/underwriting records, states and immutable source provenance remain authoritative. **Google Docs are reading/presentation deliverables, not canonical evidence or verified facts.**
+2. **Main Founder deliverable (NEW M11 interpretation):** `IIP-Thai-Editor` and underwriting team produce a **cohesive, independently synthesized Thai Google Doc**, with free choice of narrative, headings, depth, prose, ordering, causal framing and emphasis. Do not require fixed report categories, article frontmatter, the 42-item *suggested* historical outline, forced checklists, one-section-per-Bot, generic canned language, or an agent-output collage. Depth follows material evidence gaps. Present the core economic argument, credible contradictions, source links, assumptions and uncertainties, plus the strongest opposing thesis within the Doc or linked alongside it. Preserve truthful `DRAFT / NOT FOUNDER_READY` while stages are incomplete; no Founder endorsement without an actual Founder decision. **PDF is OPTIONAL export only upon Founder request or genuine external need.**
+3. **Stable private Drive storage:** Create/reuse the dedicated root **`IIP — QAD Research`** in My Drive (separate from `Fundamental Inflection Research`/FIRF). Keep minimal folders: `00_ACTIVE_CASES/<TICKER>__<CASE_ID>/` for the current free-form main Doc and optional supporting/updates, `01_SHARED_SOURCES/` for reusable source archives, and `99_ARCHIVED_CASES/` when cases conclude. Only create case folders as needed. Associate each existing IIP case ID with a private Google Doc URL and Drive folder pointer (minimal index), without creating a second evidence registry. Private IDs/links, non-public analysis and rights-restricted source documents must **not** go into the PUBLIC GitHub repo. **Do not mass-move or delete any scattered existing Docs** until provenance, ownership and permissions are known.
+4. **No abandoned frontend as report product:** `/library`, `reports/*.md` blog render, `ReportArticlePage.tsx`, Vercel Preview authentication/mobile web article and custom PDF renderer are **not QAD research-output dependencies**. Keep legacy app files for other functions/history without reviving them. iPhone delivery means opening the actual Google Doc from its Drive link, **not** a successful website preview.
+
+**One bounded immediate correction:** Stop dev effort on old IIP report/preview/UI as a QAD deliverable. Retain PR #6 real verification/ingest/recovery code. Create/use `CASE-2026-001` (UNH) private Drive folder and transform the existing B1 18-source draft into **one free-form, carefully sourced Thai Google Doc** labeled DRAFT; preserve the single genuinely verified SEC sentence and label all other still-unverified findings honestly. Give Founder a working private Google Doc link and demonstrate that it opens on mobile; do not pretend the case has cleared Red Team/Audit/Underwriting or is FOUNDER_READY. Then proceed with useful substantive research rather than new documentation or repeat reviews. No cron/routine activation, trading action, schema change, paid overage or production merge.
+
+**Root-cause reconciliation:** Hermes `REVISED-QAD-MASTER-PLAN.md` M11 required PDF; the older QAD M3 Thai Editor + Publication contracts still said `/library`; current Grok `MASTER_PLAN.md` omitted a clear post-cancellation Google Docs delivery direction. Prior ChatGPT review also incorrectly pushed the team to integrate B1 into the old website to make it 'iPhone readable'. This Founder correction is the current authoritative execution instruction for *delivery format/channel only*, without weakening the QAD analytical/evidence rules.
+
 ## A. Product objective and non-negotiable boundaries
 
 IIP is currently a **Quality at Dislocation (QAD) investment intelligence and underwriting research platform**: discover quality businesses, detect dislocation, distinguish temporary impairments from permanent deterioration, build evidence-backed cases, preserve dissent, and return Founder-reviewable research. See `00-FOUNDERS-MANIFESTO.md`, `01-PROJECT-DNA.md`, `02-PROJECT-CONSTITUTION.md`, `operational/PRODUCT-VISION.md`, and the approved QAD domain contracts.
@@ -66,7 +80,9 @@ The Hermes transcript dated 2026-10-14 reports local HEAD `f62ac8f6529f34da12ec8
 | Investment domain and accepted QAD behavior | `01-PROJECT-DNA.md`, approved `project-definition/`, `design/qad-pivot/` canonical specs/contracts where ratified |
 | Agent loading/rules/commands | `AGENTS.md` (make platform-neutral in a separate scoped commit) |
 | Application source/tests | `qad/`, `backend/`, `frontend/`, `tests/` |
-| Exact research inputs, sources, result provenance | structured IIP evidence/ledger and bounded `research/`, `reports/`, `evidence/` artifacts |
+| Exact research inputs, sources, result provenance | structured IIP evidence/ledger and bounded private sources; public GitHub only for public-safe material |
+| Primary Founder-facing QAD research output | **Free-form Thai Google Doc in PRIVATE Google Drive case folder; NOT `/library` or mandatory PDF** |
+| Legacy IIP research blog and `reports/` | Historical files, not QAD publication destination |
 | Prior plans/design decisions | historical references only; never silently rewrite approval records |
 
 ### Agent bootstrap for every Bot and Cloud Agent
@@ -171,7 +187,7 @@ Official Grok Bot documentation reviewed 2026-10-17/18: paid Cursor individual p
 | **IIP-Structural-Red-Team** | Role 9 independent adversarial research | Fresh source-level value-trap/false-quality/structural hypothesis; never self-selects or writes the producer conclusion; dissent preserved |
 | **IIP-Independent-Auditor** | Role 10 independent source/calc/PIT integrity | Verification and material findings; cannot author or certify own research or canonical admission |
 | **IIP-Chief-Underwriter** | Role 8 separate final investment research judgment | Independent synthesis, adjudicates Red Team evidence and verdict; cannot act as selecting agent, portfolio allocator or upstream producer |
-| **IIP-Thai-Editor** | Role 11 Thai Long-Form Research Editor | Faithful Thai report and companion challenge article; no promotion to publication without applicable audit/underwriting/Founder states |
+| **IIP-Thai-Editor** | Role 11 Thai Long-Form Research Editor | Coherent free-form Thai Google Doc in private Drive case folder with opposing thesis retained; applicable audit/underwriting/Founder states remain binding |
 | **IIP-Thesis-Steward** | Role 12 Thesis / Knowledge Steward | Monitor material thesis evidence changes and validation, track lessons; only approved lessons may become knowledge |
 
 **Research Budget Controller (S2), Autonomous Selection Engine (S1), identity resolution (S3), Evidence Registry/Archive (S4/S5), PIT locking (S7), Run Manifest (S6), execution/retry (S8), idempotency (S9), NotebookLM interface (S10), renderer (S11) and evaluation (S12) are policy, deterministic, or infrastructure services: NOT additional discretionary Bots.** Do not invent a Budget Approval Bot that can waive binding limits. Founder's approval remains human.
@@ -220,7 +236,7 @@ The 17 specialists reuse `qad/specialists/configs/dimensions.json` from **PR #6 
 7. **Dislocation/impairment and valuation:** dedicated Core Bots compare peer and sector damage against company-specific damage, normalize earnings, build recovery vs permanent-loss scenarios, and test H5 valuation relevance. No invented precise fair value.
 8. **Independent challenge:** Structural Red Team independently reads original source corpus, generates strong structural/value-trap/false-quality alternative and challenges claims. Analyst replies with evidence, not opinion. Preserve unresolved challenges.
 9. **Independent assurance and adjudication:** Independent Auditor tests original sources/PIT/calc integrity per M3 stage ordering; Chief Underwriter independently adjudicates Red Team and synthesizes permitted underwriting verdict, relying on actual completed outputs. No role can write its own approval or fabricate stage PASS. If audit/underwriting ordering differs within approved contracts, follow the binding M3 workflow, not this shorthand.
-10. **Thai publication + Founder + monitoring:** Thai Editor creates accurate readable draft with separate counter-thesis. Founder alone makes the actual investment decision; approved publication/monitoring starts only under existing gates, and Thesis Steward tracks falsifiers over time.
+10. **Free-form Google Doc + Founder + monitoring:** Thai Editor writes an original narrative Thai Google Doc in the private QAD case folder, with coherent counter-thesis and source refs. Founder alone decides; stage gates and honest DRAFT status remain binding, and Thesis Steward tracks falsifiers.
 
 **Handoff contract for every Bot→Bot task:** `case_id`, `case_version`, `as_of/pit_mode`, `evidence_gap_id`, `assigner_bot`, `assignee_bot`, `canonical_role`, `charter_ref`, `hypothesis_test`, `source_snapshot_refs`, `scope`, `EIV`, `authorized_budget`, `stop_rule`, `deliverable_ref`, `execution_id (if exposed)`, `acknowledged_at`, `disposition`, `next_owner`. Use existing canonical models/ledger where applicable; this is a **handoff envelope/guide, not a new 69th canonical schema**. A bot-to-bot message is the notification; persistent IIP case records and source archive own durable truth. Version new results; never silently overwrite adverse evidence.
 
@@ -284,11 +300,11 @@ Separate genuine Bot collaboration from audit independence: each assurance role 
 
 1. **Create/configure all 26 durable Bot profiles upfront in Section L B0** (retain the existing IIP Lead plus create 25), rather than deferring role creation by research milestones. **Activate only the Director/Evidence/Industry/Customer/Management pilot cohort** for the first Bot-to-Bot demonstration; 26 created does NOT mean 26 simultaneously working.
 2. Reuse the existing UNH R&D case from PRs #3–#6. Demonstrate an actually coordinated Bot handoff on a NEW material Evidence Gap, with original-source validation and independent challenge. Do not repeat already completed UNH specialist work merely to populate Bot histories.
-3. Capture and re-open sources, derive at least one verifiable numeric assertion from source data, and show the user a readable mobile summary with source links and unresolved alternatives.
+3. Capture and re-open sources, derive at least one verifiable assertion from source data, and **deliver one free-form Google Doc in the private Drive case folder** accessible from the Founder's iPhone; do not treat the legacy `/library` frontend as research output.
 4. Persist evidence, claims, challenged assertions, and case/version IDs to IIP's intended structured destination, without overwriting history.
 5. Compare time, cost and quality against the old manual/NotebookLM-assisted workflow.
 
-**Done when:** a real **Bot→Bot** task handoff yields source-checked case evidence and independently challenged findings, and its durable case record can be recovered after a process restart and read through the authenticated IIP path, without any Bot memory.
+**Done when:** a real **Bot→Bot** task yields source-checked, recoverable canonical QAD case evidence and a truthful free-form DRAFT Google Doc accessible to the Founder in its stable Drive case folder. The website `/library`/Vercel preview is not a QAD output gate.
 
 ### WP5 — Selective automation, not blanket 24/7 agent activity
 
@@ -394,7 +410,7 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 **Execution budget:** Research Director selects bots by Evidence Gap and EIV; at most 3 parallel active investigators unless existing policy explicitly permits more. The 17+9 Bots are durable role owners, not a quota of simultaneous LLM contexts. Capture observed per-task time/cost when the platform exposes it; record `NOT_EXPOSED` rather than fake 0. Avoid approving paid overages. Bot names must remain stable; duplicate work prevented by case/gap/version owner and idempotent storage.
 
-**One-case working proof:** IIP Lead (existing) → real Director Bot hands a specific *unresolved* UNH gap to a real specialist Bot → specialist reopens public source and returns falsifiable analysis with original-document anchors → Evidence Lead checks source content and provenance → separate Red Team challenges → proof stored/recovered in IIP Case → Founder reads the report on iPhone. If a step is technically missing, deliver the last verified working step and name the missing component without marking it complete.
+**One-case working proof:** IIP Lead → Research Director delegates an unresolved UNH gap to real specialist → Evidence Lead checks independent original-source provenance → challenge when stage permits → canonical IIP case recovered → **Founder reads a truthful DRAFT free-form Google Doc via private Drive on iPhone**. Never require legacy `/library`. If incomplete, deliver only the last proven stage and identify missing pieces.
 
 **Workflow rules:** No separate persistence or source-of-truth in Bot chat or an old `grok-research-team` repo; no 17 permanent worker polling loops; no confidential thesis in public IIP repository. Treat Bot creation as authorized by this Founder decision but any external service account login, quota overage, secret grant, production release or mandatory policy override still follows its actual applicable approval.
 
@@ -416,7 +432,7 @@ Founder → IIP-Lead (Executive: coordination / engineering)
                     → Equity: Impairment/Recovery → Valuation/Expectations
                     → Independent Assurance: Structural Red Team → Independent Audit
                     → Independent Assurance: Chief Underwriter adjudication
-                    → Editorial & Knowledge: Thai Editor drafts report
+                    → Editorial & Knowledge: Thai Editor writes free-form Google Doc in private IIP/QAD Drive
                     → Founder Review / Decision (human authority)
                     → Thesis Steward monitors approved thesis and new evidence
 ```
