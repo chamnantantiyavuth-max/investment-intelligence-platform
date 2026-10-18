@@ -158,7 +158,7 @@ The full underwriting output includes:
 
 ### 5.1 Mission
 
-Transform the research record into Thai long-form journalism for `/library`.
+Transform the research record into one coherent, **free-form Thai Google Doc**, stored in the case's private IIP/QAD Google Drive folder. **The old `/library`/blog destination is retired for new QAD reports by the Founder's 2026-10-18 instruction.** The Editor chooses narrative arrangement based on evidence; do not mandate a template. This affects the presentation/delivery channel only, not underlying QAD evidence, Red Team, audit, underwriting or Founder decisions.
 
 ### 5.2 Publication States
 
@@ -176,18 +176,17 @@ Transform the research record into Thai long-form journalism for `/library`.
 
 - Thai language (per FD #92 — Thai research content unless Founder specifies English)
 - No internal governance jargon (RM/ORG/FD/spec/§/workspace/audit-status/portfolio-blind) in reader-facing content (FD #94)
-- Companion publication (CRO opposing thesis) nested under main article (FD #96)
-- Category frontmatter field for library organization (FD #96)
-- PDF is publication, not canonical truth
+- The strongest opposing thesis remains equally accessible in the main free-form Doc or a linked companion Google Doc; no forced article slug/category/frontmatter
+- Deliver the Doc in a stable PRIVATE Google Drive case folder, with a private case-to-Doc link
+- PDF is optional export when requested, not canonical truth or a prerequisite to Founder reading
 
 ### 5.4 Companion Publication
 
 For every main QAD thesis, a companion publication should be produced representing the strongest opposing case. The companion should be:
 
-- Labeled as opposing view (slug convention: `<base>-opposing-<date>`)
-- Linked from the main article
-- Published alongside the main thesis
-- Given equal prominence in `/library`
+- Explicitly labeled as the opposing interpretation, with material disagreements fairly retained
+- Included in the primary Google Doc or visibly linked to a companion Doc in the same private case folder
+- Readable alongside the main research argument whenever delivery is authorized; no blog slug or `/library` gate
 
 ---
 
