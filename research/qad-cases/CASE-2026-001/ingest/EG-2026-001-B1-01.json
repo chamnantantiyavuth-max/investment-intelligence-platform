@@ -1,0 +1,142 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "EG-2026-001-B1-01",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": null,
+  "investigation_id": null,
+  "admitted_count": 1,
+  "quarantined_count": 0,
+  "verified_fact_count": 1,
+  "verified_fact_ids": [
+    "01a14a2d-3880-744f-a52b-55ca8009751c"
+  ],
+  "preserved": [],
+  "admitted_evidence_ids": [
+    "01a14a2d-3880-7c04-b439-988da8c3b4d7"
+  ],
+  "admitted_source_ids": [
+    "01a14a2d-3880-7cf3-8376-90acd6428de7"
+  ],
+  "quarantined": [],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "INCOMPLETE",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "industry-economics",
+  "canonical_role": "Business & Industry Analyst",
+  "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+  "usage": {
+    "tool_calls": 1,
+    "sources": 1,
+    "minutes": 5
+  },
+  "cross_retrieval": [
+    {
+      "statement": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026.",
+      "agreement": "normalized",
+      "raw_sha256": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97",
+      "normalized_sha256": "9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1",
+      "evidence_lead_raw_sha256": "6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7",
+      "evidence_lead_normalized_sha256": "9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1",
+      "passage_sha256": "60e1bfd32abc0055d7562554272f74da71d45d05cd23ed88a444b5e40f101408",
+      "detail": "Cross-retrieval agreement is content-normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Receipt raw sha256 52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97. Evidence-Lead raw sha256 6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7. Evidence-Lead normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Normalization removes well-formed <script>...</script> elements only."
+    }
+  ]
+}

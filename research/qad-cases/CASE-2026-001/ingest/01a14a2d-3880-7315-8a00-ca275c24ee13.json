@@ -1,0 +1,221 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-7315-8a00-ca275c24ee13",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": null,
+  "investigation_id": null,
+  "admitted_count": 0,
+  "quarantined_count": 16,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
+  "preserved": [],
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "On May 13, 2025, UnitedHealth Group suspended its 2025 outlook, citing higher-than-anticipated medical expenditures, and said it expected to return to growth in 2026. The retrieved press release states no dollar revenue or earnings-per-share figure for 2025.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On May 13, 2025, Stephen J. Hemsley described a long-term growth objective of 13 to 16 percent. The sentence is not dated to 2025 and is not a full-year 2025 revenue or EPS outlook.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Effective May 12, 2025, Andrew Witty stepped down as chief executive officer and the board appointed Steve Hemsley chief executive officer. Hemsley remained chair. Witty was to serve as a senior advisor.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On May 14, 2025, the board approved Hemsley's CEO pay as a $1,000,000 annual base salary, no annual cash incentive, and a one-time $60,000,000 nonqualified stock-option award with a three-year cliff vest and no additional annual equity awards during the first three years.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth re-established a numeric full-year 2025 outlook: revenue of $445.5 billion to $448.0 billion, net earnings of at least $14.65 per share, and adjusted earnings of at least $16.00 per share. The outlook table shows the same revenue range as $445,500\u2013$448,000 million and the same per-share floors. The company said it expected to return to earnings growth in 2026.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth also set numeric full-year 2025 ratio outlooks: a medical cost ratio of 89.25% plus or minus 25 basis points, and an operating cost ratio of 12.75% plus or minus 25 basis points.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In June 2025 the company increased its quarterly dividend rate by 5% to $2.21 per share and said it returned $4.5 billion to shareholders through dividends and share repurchases in the second quarter.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Cash common-share repurchases were $5,545 million in the six months ended June 30, 2025, compared with $3,072 million in the six months ended June 30, 2024. Dividends paid were $3,912 million and $3,664 million in those respective periods. Cash paid for acquisitions and other transactions, net, was $734 million in the 2025 six-month period.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On October 28, 2025, UnitedHealth raised its full-year 2025 earnings outlook to net earnings of at least $14.90 per share and adjusted net earnings of at least $16.25 per share. The retrieved exhibit's outlook bullets do not restate the July 29 revenue range.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth closed the Amedisys transaction on August 14, 2025. The third-quarter release cites that close as included in the September 30, 2025 debt-to-capital ratio of 44.1%.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Cash common-share repurchases remained $5,545 million for the nine months ended September 30, 2025. Dividends paid were $5,914 million in that period. Cash paid for acquisitions and other transactions, net, was $4,436 million.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "For the year ended December 31, 2025, UnitedHealth reported total revenues of $447,567 million, diluted earnings per share of $13.23, and adjusted earnings per share of $16.35. Diluted weighted-average common shares were 911 million, compared with 929 million in 2024. Column order on that statement is the quarter ended December 31, 2025, the quarter ended December 31, 2024, the year ended December 31, 2025, and the year ended December 31, 2024.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The company described a fourth-quarter 2025 charge of $1.6 billion net of taxes, or $1.78 per share, and said those impacts were excluded from adjusted earnings and adjusted earnings per share.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "Full-year 2025 reported medical care ratio was 89.1% and the adjusted medical care ratio was 88.9%. The reported operating cost ratio was 13.3% and the adjusted operating cost ratio was 12.9%.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "For the year ended December 31, 2025, cash common-share repurchases were $5,545 million, compared with $9,000 million in 2024. Dividends paid were $7,916 million, compared with $7,533 million in 2024. Cash paid for acquisitions and other transactions, net, was $4,509 million, compared with $13,408 million in 2024.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "On January 27, 2026, UnitedHealth's 2026 outlook called for revenue greater than $439.0 billion, which the company described as a 2% year-over-year decline from planned right-sizing, and for earnings from operations greater than $24.0 billion. That revenue sentence is a 2026 outlook, not a revision of the 2025 outlook.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    }
+  ],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "INCOMPLETE",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "grok-desk-management-capital-allocation",
+  "canonical_role": "Financial & Management Analyst",
+  "stop_rule_triggered": "BUDGET_EXHAUSTED",
+  "usage": {
+    "tool_calls": 7,
+    "sources": 5,
+    "minutes": 15
+  }
+}

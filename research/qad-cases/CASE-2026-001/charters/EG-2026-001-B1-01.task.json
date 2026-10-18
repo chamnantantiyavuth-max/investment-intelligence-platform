@@ -1,0 +1,21 @@
+{
+  "allowed_source_classes": [
+    "L1"
+  ],
+  "budget": {
+    "approved_by_budget_controller": false,
+    "charter_string": "max_tool_calls=8;max_sources=6;max_minutes=90",
+    "max_minutes": 90,
+    "max_sources": 6,
+    "max_tool_calls": 8
+  },
+  "canonical_role": "Business & Industry Analyst",
+  "case_id": "CASE-2026-001",
+  "desk_research_only": true,
+  "display_name": "Industry Economics & Capital Cycle",
+  "falsifiable_question": "Confirmed only if that sentence is a contiguous substring of bytes fetched from the publisher. An absent sentence falsifies it.",
+  "gap_id": "EG-2026-001-B1-01",
+  "investigator_charter_id": null,
+  "packet_version": "qad.specialists.task.v1",
+  "specialist_id": "industry_economics_capital_cycle"
+}

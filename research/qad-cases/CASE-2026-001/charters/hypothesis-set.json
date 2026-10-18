@@ -1,0 +1,20 @@
+[
+  {
+    "case_id": "CASE-2026-001",
+    "charter_id": "01a14a2d-3880-7360-9c9d-6ea1a9373d84",
+    "created_at": "2026-10-17T14:04:00Z",
+    "creator": "Research Director",
+    "dominant_hypothesis": null,
+    "hypothesis_ids": [
+      "01a14a2d-3880-7551-80f9-c662240c9355",
+      "01a14a2d-3880-7354-ba5e-f43c237c105f",
+      "01a14a2d-3880-7f85-b305-455fd81b72ef",
+      "01a14a2d-3880-7257-850b-eccac112514a",
+      "01a14a2d-3880-760f-b3a7-302f2ed712d4"
+    ],
+    "hypothesis_set_id": "01a14a2d-3880-7629-bf99-4d1500cd9961",
+    "last_shift_at": null,
+    "schema_id": "HS-01",
+    "shift_history": null
+  }
+]

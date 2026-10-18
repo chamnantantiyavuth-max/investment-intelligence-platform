@@ -1,0 +1,191 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": "PARTIALLY_ANSWERED",
+  "investigation_id": "01a14a2d-3880-7825-a4c2-7eeec1d36d84",
+  "admitted_count": 0,
+  "quarantined_count": 11,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
+  "preserved": [],
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "CMS's 6 April 2026 fact sheet states that the final CY 2027 Rate Announcement policies are projected to increase payments to MA plans by 2.48 percent, or over $13 billion, and that including the estimated MA risk-score trend the increase is 4.98 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The same fact sheet prints the industry year-to-year bridge for the 2027 Rate Announcement as effective growth rate 5.33 percent, rebasing/re-pricing -0.17 percent, change in star ratings -0.03 percent, MA coding pattern adjustment 0 percent, risk model revision and normalization -1.12 percent, sources of diagnoses -1.53 percent, and overall expected average change 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS states that the change-in-star-ratings line reflects the estimated effect of changes in quality bonus payments for the upcoming payment year.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS states that the overall expected average change does not include underlying MA coding trend, and that CMS expects MA risk scores to increase on average by 2.50 percent in CY 2027 because of that trend.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS's 6 April 2026 press release calls the 2.48 percent figure a net average increase for CY 2027 and states that this expected increase includes 2026 Star Ratings for 2027 quality bonus payments.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In the same press release, CMS states that the payment impact of excluding unlinked chart-review diagnoses will be greater for MA organizations that heavily rely on those records. The sentence does not name UnitedHealth and does not state a company rate versus 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The CY 2027 Rate Announcement states that the MA risk-score trend shown in the fact sheet is an industry average and that individual plans' experience will vary. That sentence is about the risk-score trend, not a UnitedHealth star-rating funding gap.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "CMS's 8 October 2026 star-ratings fact sheet states that the 2027 Star Ratings will impact 2028 MA quality bonus payments.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The same star-ratings fact sheet states that about 37 percent of MA-PD contracts (188 contracts) earned four stars or higher for 2027, while about 71 percent of MA-PD enrollees, weighted by enrollment, are in contracts that will have four or more stars in 2027.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth Group's 13 October 2026 earnings release states that the 2027 Medicare Advantage Stars results put at least 69 percent of members in 4+ star plans and that those results were in line with expectations. The release does not state a funding percentage versus the 5.33 percent or 2.48 percent industry bridge.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth's 13 October 2026 prepared remarks call the initial star ratings a payment-year 2028 matter and say the company expects to approach 75 percent of total members in 4-plus star plans, compared with an industry average of 70 percent. That passage does not state a revenue effect worse than 2.48 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    }
+  ],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "IN_PROGRESS",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "IN_PROGRESS",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "grok-bia-industry-economics",
+  "canonical_role": "Business & Industry Analyst",
+  "stop_rule_triggered": "EVIDENCE_SUFFICIENT",
+  "usage": {
+    "tool_calls": 6,
+    "sources": 6,
+    "minutes": 10
+  }
+}

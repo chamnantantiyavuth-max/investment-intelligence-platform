@@ -1,0 +1,18 @@
+[
+  {
+    "case_id": "CASE-2026-001",
+    "created_at": "2026-10-17T14:04:00Z",
+    "created_by": "Research Director",
+    "falsifiable_question": "Falsified if those public documents, read together, state no UnitedHealth-specific funding effect beyond the printed industry rate bridge. Confirmed if an admitted UnitedHealth filing states a funding effect worse than that industry bridge.",
+    "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+    "importance": "HIGH",
+    "investigator_charter_id": null,
+    "operational_status": "UNRESOLVED",
+    "question": "Does the CMS 2027 Medicare Advantage rate announcement, together with UnitedHealth's public star statement that at least 69 percent of plan enrollment sits in plans rated four stars or higher, show a company-specific funding gap versus the industry rate bridge (effective growth 5.33 percent, expected net 2.48 percent)?",
+    "resolution_evidence_id": null,
+    "resolvability_class": "RESOLVABLE_WITH_EXISTING_SOURCES",
+    "resolved_at": null,
+    "resolver": null,
+    "schema_id": "EG-01"
+  }
+]

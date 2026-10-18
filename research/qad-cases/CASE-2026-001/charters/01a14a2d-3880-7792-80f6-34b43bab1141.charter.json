@@ -1,0 +1,27 @@
+{
+  "allowed_source_classes": [
+    "L1",
+    "L3",
+    "L4",
+    "L7"
+  ],
+  "authorizing_role": "Research Director",
+  "budget": "max_tool_calls=8;max_sources=6;max_minutes=90",
+  "budget_controller": null,
+  "completed_at": null,
+  "created_at": "2026-10-17T14:04:00Z",
+  "expected_information_value": "PLAUSIBLE_MEDIUM",
+  "falsifiable_question": "Falsified if those public documents, read together, state no UnitedHealth-specific funding effect beyond the printed industry rate bridge. Confirmed if an admitted UnitedHealth filing states a funding effect worse than that industry bridge.",
+  "gap_id": "01a14a2d-3880-7792-80f6-34b43bab1141",
+  "geography": "United States",
+  "independence_check": "Executor must be a separate agent from Structural Red Team, Independent Research Auditor, Chief Underwriter, and Founder. Research Director authorized the charter and does not execute it.",
+  "investigator_charter_id": "01a14a2d-3880-7726-82dd-4d412bed3502",
+  "investigator_type": "INDUSTRY_SPECIALIST",
+  "output_evidence_ids": null,
+  "population_represented": "Public-record population named in the falsifiable question. Not a surveyed population.",
+  "record_kind": "IC-01",
+  "sampling_limitations": "Desk research only. Public documents. No interviews, surveys, or site visits.",
+  "schema_id": "IC-01",
+  "stop_rule": "EVIDENCE_SUFFICIENT or BUDGET_EXHAUSTED or COUNTER_EVIDENCE_FOUND or TIME_EXPIRED",
+  "time_window": "FY2023 through case as-of 2026-10-17, plus public documents already dated inside that window."
+}

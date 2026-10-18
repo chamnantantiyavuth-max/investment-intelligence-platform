@@ -1,0 +1,14 @@
+{
+  "kind": "m6-fetch-receipt",
+  "reason": "independent HTTP fetch by qad.m6.original_fetch",
+  "source_id": "01a14a2d-3880-7cf3-8376-90acd6428de7",
+  "content_hash": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97",
+  "location": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000127/unh-20260331.htm",
+  "retrieval_date": "2026-10-18T03:21:45Z",
+  "publication_date": "2026-03-31",
+  "source_tier": "L1",
+  "source_type": "SEC_FILING",
+  "title": "UnitedHealth Group Inc. Form 10-Q for the quarterly period ended March 31, 2026",
+  "bytes_name": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97.bin",
+  "notes": "content_hash is sha256 of the stored bytes. normalized_sha256 removes well-formed <script>...</script> elements and nothing else, then sha256. It is used only for cross-retrieval agreement. normalized_sha256=9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1 evidence_lead_raw_sha256=6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7 evidence_lead_normalized_sha256=9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1 passage_sha256=60e1bfd32abc0055d7562554272f74da71d45d05cd23ed88a444b5e40f101408 agreement=normalized Cross-retrieval agreement is content-normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Receipt raw sha256 52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97. Evidence-Lead raw sha256 6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7. Evidence-Lead normalized sha256 9f16515990aa8880e9e0b243192d7f8cafdd891e2ffe3fd8b56d34d07cf5d5d1. Normalization removes well-formed <script>...</script> elements only."
+}

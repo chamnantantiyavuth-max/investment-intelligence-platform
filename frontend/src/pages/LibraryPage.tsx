@@ -181,7 +181,7 @@ export default function LibraryPage() {
   if (error)
     return (
       <div className="flex min-h-screen flex-col bg-bg-page">
-        <div className="mx-auto w-full max-w-[1120px] flex-1 px-6 py-8">
+        <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 py-6 sm:px-6 sm:py-8">
           <p className="text-sm font-medium text-negative">Could not load the research library.</p>
           <button type="button" onClick={() => refetch()} className="mt-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary">
             Retry →
@@ -192,7 +192,7 @@ export default function LibraryPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-page">
-      <div className="mx-auto w-full max-w-[1120px] flex-1 px-6 py-6">
+      <div className="mx-auto w-full max-w-[1120px] flex-1 px-4 py-5 sm:px-6 sm:py-6">
         {/* ── Masthead (single-rule, FD #85/B) ── */}
         <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-ink py-4">
           <span className="font-display text-[clamp(20px,3vw,26px)] font-bold tracking-tight">

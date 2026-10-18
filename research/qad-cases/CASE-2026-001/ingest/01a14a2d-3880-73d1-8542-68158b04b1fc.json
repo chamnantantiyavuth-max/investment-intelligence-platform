@@ -1,0 +1,215 @@
+{
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+  "investigation_disposition": "PARTIALLY_ANSWERED",
+  "ir_disposition": "PARTIALLY_ANSWERED",
+  "investigation_id": "01a14a2d-3880-7706-a0ef-e9df536cb925",
+  "admitted_count": 0,
+  "quarantined_count": 15,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
+  "preserved": [],
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "In the 2025 Form 10-K consolidated results table, whose year columns are 2025, 2024 and 2023, the medical care ratio is 89.1%, 85.5% and 83.2%, and the operating margin is 4.2, 8.1 and 8.7.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In the 2025 Form 10-K segment operating-margin table, columns 2025, 2024 and 2023, UnitedHealthcare is 2.7%, 5.2% and 5.8%, Optum Health is (0.3), 7.4 and 6.9, and the consolidated operating margin is 4.2%, 8.1% and 8.7%.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The 2025 Form 10-K people-served table, in thousands, with columns December 31, 2025, 2024 and 2023, prints Medicare Advantage at 8,445, 7,845 and 7,695, a 2025 versus 2024 change of 600, or 8 percent. The same extract prints commercial risk-based membership at 8,165, 8,845 and 8,115, a change of (680).",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states that UnitedHealthcare served 415,000 more people domestically in 2025, driven by growth in fee-based commercial offerings and Medicare Advantage, partially offset by risk-based commercial offerings.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states that 2025 medical costs increased in part because of growth in people served through Medicare Advantage, and that the medical care ratio increased because of Medicare funding reductions, elevated medical cost trend, the profile of newly added value-based patients, acceleration of certain 2026 Optum Health contract losses, decreased favorable development, the Inflation Reduction Act effect on Medicare Part D, and individual-exchange morbidity, partly offset by 2024 Change Healthcare provider accommodations. The paragraph does not name membership shrinkage.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states that UnitedHealthcare earnings from operations decreased primarily because of Medicare Advantage funding reductions, elevated medical cost trend, 2024 portfolio gains that did not repeat, individual-exchange morbidity, write-offs and settlements, and restructuring, partly offset by the absence of 2024 Change Healthcare provider accommodations.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "In the 2025 Form 10-K, UnitedHealth says continued Medicare Advantage funding pressure produced benefit and pricing actions, and that it expects Medicare Advantage membership to contract in 2026. The sentence places that contraction after the 2025 result and describes it as expected, not as the cause of the 2025 margin break.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The June 30, 2026 Form 10-Q people-served table, in thousands, with columns June 30, 2026 and June 30, 2025, prints Medicare Advantage at 7,565 versus 8,350, a decrease of 785, or 9 percent.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The June 30, 2026 Form 10-Q consolidated results table prints a three-month medical care ratio of 86.7% versus 89.4%, and a three-month operating margin of 7.1 versus 4.6, for the periods ended June 30, 2026 and June 30, 2025.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states in the June 30, 2026 Form 10-Q that the medical care ratio decreased because of favorable prior-period reserve development, affordability and medical cost management initiatives, and pricing trends, partly offset by a medical cost trend that remains above historical levels. That sentence does not name membership shrinkage.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states in the same 10-Q that medical cost dollars decreased primarily because fewer people were served across UnitedHealthcare and Optum Health and because of favorable prior-period reserve development. That sentence is about the dollar cost base, not the medical care ratio.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "UnitedHealth states in the June 30, 2026 Form 10-Q that continued funding pressure led to benefit and pricing actions, causing contraction in Medicare Advantage membership, which it expects to continue throughout 2026.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The July 16, 2026 earnings release, filed as an 8-K exhibit, says the second-quarter medical care ratio fell from 89.4% to 86.7% and that the year-over-year decrease was driven by benefit design and pricing discipline, member mix and medical cost management initiatives, with net medical reserve development of $860 million in the quarter.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The same earnings release says seniors served through Medicare Advantage, including programs serving complex populations included in Medicaid, contracted by 965,000 since year-end 2025.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    },
+    {
+      "statement": "The earnings-release people-served columns are June 30, 2026, March 31, 2026, December 31, 2025 and June 30, 2025. Under that header the Medicare Advantage row is 7,565, 7,555, 8,445 and 8,350, in thousands.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "cited passage was not found in independently loaded original source bytes"
+    }
+  ],
+  "gap_status": {
+    "written": false,
+    "reason": "Transaction validation failed with 1 error(s)",
+    "canonical_status": "UNRESOLVED",
+    "journal_status": "PARTIALLY_CLOSED"
+  },
+  "stage_state": "IN_PROGRESS",
+  "case_state": "CASE_OPEN",
+  "founder_ready": false,
+  "stages": [
+    {
+      "stage_name": "ANALYTICAL_WORK",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "AUDIT",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Independent Research Auditor"
+    },
+    {
+      "stage_name": "CANONICAL_ADMISSION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "CASE_OPEN",
+      "stage_state": "COMPLETE",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "CHARTER",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "DEEP_RESEARCH",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "FOUNDER_REVIEW",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Founder"
+    },
+    {
+      "stage_name": "IMPAIRMENT",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "INITIAL_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "KNOWLEDGE",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "MONITORING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thesis / Knowledge Steward"
+    },
+    {
+      "stage_name": "PUBLICATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Thai Long-Form Research Editor"
+    },
+    {
+      "stage_name": "QUALITY_ANALYSIS",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "RED_TEAM",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Structural Red Team"
+    },
+    {
+      "stage_name": "SCUTTLEBUTT",
+      "stage_state": "IN_PROGRESS",
+      "responsible_role": "Research Director"
+    },
+    {
+      "stage_name": "SOURCE_FOUNDATION",
+      "stage_state": "INCOMPLETE",
+      "responsible_role": "Financial & Management Analyst"
+    },
+    {
+      "stage_name": "UNDERWRITING",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Chief Underwriter"
+    },
+    {
+      "stage_name": "VALUATION",
+      "stage_state": "NOT_STARTED",
+      "responsible_role": "Valuation & Expectations Specialist"
+    }
+  ],
+  "actor_id": "elastic-investigator-customer",
+  "canonical_role": "Elastic Investigator",
+  "stop_rule_triggered": "COUNTER_EVIDENCE_FOUND",
+  "usage": {
+    "tool_calls": 5,
+    "sources": 3,
+    "minutes": 9
+  }
+}

@@ -54,7 +54,7 @@ async def login(body: LoginBody, response: Response):
 async def logout(request: Request, response: Response):
     """Logout requires an authenticated session (server-side revocation, F6)."""
     auth.require_auth(request)
-    auth.logout(response)
+    auth.logout(response, request.cookies.get(auth.SESSION_COOKIE))
     return {"authenticated": False}
 
 

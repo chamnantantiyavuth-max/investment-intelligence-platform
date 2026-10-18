@@ -33,6 +33,15 @@ def _is_https_origin() -> bool:
     legacy = os.environ.get("HTTPS", "").lower()
     return legacy in ("1", "true", "on")
 
+# Serverless (Vercel) mode: api/index.py sets IIP_STATELESS_SESSIONS=1. Each function
+# instance has its own /tmp SQLite, so the active-nonce row written at login is absent
+# on every other instance. In this mode a missing nonce row is not a revocation: the
+# signed token's HMAC + server-side expires_at decide. Logout still clears the cookie
+# and revokes that token's nonce on the instance that served the logout (best effort).
+# Rotating IIP_AUTH_SECRET revokes every session. Local/loopback mode is unchanged.
+STATELESS_SESSIONS = os.environ.get("IIP_STATELESS_SESSIONS", "").lower() in ("1", "true", "on")
+_REVOKED_PREFIX = "revoked:"
+
 USERNAME = os.environ.get("IIP_AUTH_USER", "founder")
 PASSWORD = os.environ.get("IIP_AUTH_PASSWORD", "")
 SECRET = os.environ.get("IIP_AUTH_SECRET", "")
@@ -79,9 +88,15 @@ def _verify_token(token: str) -> dict | None:
     # server-side expiry (F6)
     if int(payload.get("expires_at", 0)) < int(time.time()):
         return None
-    # server-side nonce (revocation on logout)
+    nonce = str(payload.get("nonce", ""))
     active = persistence.get_active_nonce()
-    if active is None or not hmac.compare_digest(str(payload.get("nonce", "")), active):
+    if STATELESS_SESSIONS:
+        # per-instance store: only an explicit logout of this nonce rejects it here
+        if active is not None and hmac.compare_digest(active, _REVOKED_PREFIX + nonce):
+            return None
+        return payload
+    # server-side nonce (revocation on logout)
+    if active is None or not hmac.compare_digest(nonce, active):
         return None
     return payload
 
@@ -104,8 +119,13 @@ def login(username: str, password: str, response: Response) -> bool:
     return True
 
 
-def logout(response: Response) -> None:
-    persistence.set_active_nonce(None)  # revoke server-side — copied tokens die (F6)
+def logout(response: Response, token: str | None = None) -> None:
+    if STATELESS_SESSIONS:
+        payload = _verify_token(token) if token else None
+        nonce = str(payload.get("nonce", "")) if payload else ""
+        persistence.set_active_nonce(_REVOKED_PREFIX + nonce if nonce else None)
+    else:
+        persistence.set_active_nonce(None)  # revoke server-side — copied tokens die (F6)
     response.delete_cookie(SESSION_COOKIE)
 
 

@@ -1,0 +1,81 @@
+{
+  "allowed_source_classes": [
+    "L1",
+    "L3",
+    "L5"
+  ],
+  "budget": {
+    "approved_by_budget_controller": false,
+    "charter_string": "max_tool_calls=8;max_sources=6;max_minutes=90",
+    "max_minutes": 90,
+    "max_sources": 6,
+    "max_tool_calls": 8
+  },
+  "canonical_role": "Elastic Investigator",
+  "case_id": "CASE-2026-001",
+  "desk_research_only": true,
+  "display_name": "Customer / Product Investigator",
+  "domain_instructions": "Domain: end-user experience, product utility, switching costs, satisfaction, and churn drivers. Typical questions in §2: whether the product is differentiated and whether customers have alternatives. Use public filings and already-published reviews. Do not administer a survey or claim a site visit.",
+  "falsifiable_question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+  "forbidden_actions": [
+    "No deception or pretexting (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+    "No solicitation or acceptance of material non-public information (QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §5).",
+    "No confidential or non-public documents.",
+    "No interviews, surveys, or site visits are claimed. desk_research_only is true.",
+    "This config does not override canonical role authority (QAD-M3-ROLE-AND-SERVICE-REGISTRY.md §§3–6)."
+  ],
+  "gap_id": "01a14a2d-3880-73d1-8542-68158b04b1fc",
+  "gap_note": "No IC-01 investigation charter exists.",
+  "independence": "Execute as a separate agent from Structural Red Team, Independent Research Auditor, Chief Underwriter, and Founder for this case.",
+  "investigator_charter_id": "01a14a2d-3880-7e73-b00f-27ebf1084926",
+  "investigator_type": "CUSTOMER",
+  "packet_version": "qad.specialists.task.v1",
+  "preferred_sources": [
+    "Public filings that disclose customers, membership, or product terms (L1)",
+    "Already-published public customer reviews (L5)"
+  ],
+  "protocol_citation": "project-definition/qad/QAD-MODERN-SCUTTLEBUTT-PROTOCOL.md §2 Customer / Product Investigator",
+  "question": "Can a chartered investigator, with one falsifiable question and an allowed source class, test whether Medicare Advantage membership shrinkage is the mechanism of the margin change?",
+  "result_contract": {
+    "dispositions": [
+      "ANSWERED",
+      "NOT_ANSWERED",
+      "PARTIALLY_ANSWERED",
+      "UNRESOLVED"
+    ],
+    "fields": [
+      "contract",
+      "case_id",
+      "gap_id",
+      "investigator_charter_id",
+      "specialist_id",
+      "actor_id",
+      "canonical_role",
+      "desk_research_only",
+      "disposition",
+      "falsifiable_question",
+      "stop_rule_triggered",
+      "usage",
+      "sampling_limitations",
+      "claims",
+      "findings"
+    ],
+    "id": "qad.specialists.result.v1",
+    "source_provenance_fields": [
+      "url",
+      "retrieval_timestamp",
+      "source_date",
+      "publisher"
+    ],
+    "usage_fields": [
+      "tool_calls",
+      "sources",
+      "minutes"
+    ]
+  },
+  "result_path": "research/qad-cases/CASE-2026-001/results/01a14a2d-3880-73d1-8542-68158b04b1fc.json",
+  "specialist_id": "customer_product_investigator",
+  "stop_rule": "EVIDENCE_SUFFICIENT or BUDGET_EXHAUSTED or COUNTER_EVIDENCE_FOUND or TIME_EXPIRED",
+  "summary_language": "th",
+  "summary_path": "research/qad-cases/CASE-2026-001/results/01a14a2d-3880-73d1-8542-68158b04b1fc.md"
+}

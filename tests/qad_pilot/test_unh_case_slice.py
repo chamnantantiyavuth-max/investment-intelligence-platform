@@ -117,10 +117,10 @@ def test_incomplete_stages_cannot_be_reported_founder_ready():
         "AUDIT",
         "PUBLICATION",
         "FOUNDER_REVIEW",
-        "SCUTTLEBUTT",
         "CHARTER",
     ):
         assert by_name[name] == "NOT_STARTED"
+    assert by_name["SCUTTLEBUTT"] == "INCOMPLETE"
     assert by_name["CASE_OPEN"] == "COMPLETE"
     assert by_name["RED_TEAM"] == "INCOMPLETE"
     assert view["case_state"] == "CASE_OPEN"

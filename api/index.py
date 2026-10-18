@@ -16,6 +16,9 @@ if _REPO_ROOT not in sys.path:
 # (lineage survives only within an instance lifetime — documented limitation)
 os.environ.setdefault("IIP_DB_PATH", "/tmp/iip.db")
 os.environ.setdefault("IIP_ARTIFACT_BASE", "/tmp/artifacts")
+# /tmp is per instance, so the login nonce row is not shared across invocations:
+# validate sessions by HMAC + server-side expiry (see backend/auth.py)
+os.environ.setdefault("IIP_STATELESS_SESSIONS", "1")
 
 # CORS: allow the deployed frontend origin (same-origin /api rewrites are the
 # primary path; this covers cross-origin tooling)

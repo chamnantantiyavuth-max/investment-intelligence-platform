@@ -1,0 +1,263 @@
+{
+  "contract": "qad.specialists.result.v1",
+  "case_id": "CASE-2026-001",
+  "gap_id": "01a14a2d-3880-7315-8a00-ca275c24ee13",
+  "investigator_charter_id": null,
+  "specialist_id": "management_capital_allocation",
+  "actor_id": "grok-desk-management-capital-allocation",
+  "canonical_role": "Financial & Management Analyst",
+  "desk_research_only": true,
+  "disposition": "PARTIALLY_ANSWERED",
+  "falsifiable_question": "Did UnitedHealth publish a numeric 2025 outlook between the May 2025 withdrawal and year-end, and was that outlook missed?",
+  "stop_rule_triggered": "BUDGET_EXHAUSTED",
+  "usage": {
+    "tool_calls": 7,
+    "sources": 5,
+    "minutes": 15
+  },
+  "sampling_limitations": "Desk research only. No interviews, surveys, or site visits. Usage.tool_calls counts seven research commands that contacted EDGAR, not every HTTP GET inside a command. Those commands issued 15 GETs: four complete-submission URLs were rejected by SEC.gov as an undeclared automated tool; eleven GETs returned the company submissions index, the May 14, 2025 Form 8-K, four filing indexes used only as locators, and the five documents cited below. Sources cited: 5, under the cap of 6. After the Q2, Q3, and full-year earnings exhibits were in hand, this desk stopped and did not open other 2025 Form 8-Ks. In particular, Item 7.01 filings dated 2025-08-20 (0000731766-25-000239), 2025-09-08 (0000731766-25-000245), 2025-09-09 (0000731766-25-000247), and 2025-11-07 (0000731766-25-000308), and Item 8.01 filings dated 2025-06-20 and 2025-07-24, were identified on the submissions index and not read. A numeric 2025 outlook in one of those unread filings is not ruled out. The April 17, 2025 pre-withdrawal outlook, the 2025 Form 10-K, and the 2026 proxy were not retrieved. No repurchase-price series was retrieved, so buyback timing versus price is not assessed. The Amedisys cash consideration is not stated in the quoted exhibits. This desk did not re-audit the committed case cache. Minutes are wall-clock time for this assignment through the result file, about 15 minutes.",
+  "claims": [
+    {
+      "statement": "On May 13, 2025, UnitedHealth Group suspended its 2025 outlook, citing higher-than-anticipated medical expenditures, and said it expected to return to growth in 2026. The retrieved press release states no dollar revenue or earnings-per-share figure for 2025.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000134/exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:40:48Z",
+        "source_date": "2025-05-13",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Announces Leadership Transition, Exhibit 99.1 to Form 8-K",
+        "quotation": "Additionally, the company suspended its 2025 outlook as care activity continued to accelerate while also broadening to more types of benefit offerings than seen in the first quarter, and the medical costs of many Medicare Advantage beneficiaries new to UnitedHealthcare remained higher than expected. \nThe company expects to return to growth in 2026."
+      }
+    },
+    {
+      "statement": "On May 13, 2025, Stephen J. Hemsley described a long-term growth objective of 13 to 16 percent. The sentence is not dated to 2025 and is not a full-year 2025 revenue or EPS outlook.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000134/exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:40:48Z",
+        "source_date": "2025-05-13",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Announces Leadership Transition, Exhibit 99.1 to Form 8-K",
+        "quotation": "UnitedHealth Group has tremendous opportunities to grow as we continue to help improve health care and to perform to our potential — and, in so doing, return to our long-term growth objective of 13 to 16 percent,”"
+      }
+    },
+    {
+      "statement": "Effective May 12, 2025, Andrew Witty stepped down as chief executive officer and the board appointed Steve Hemsley chief executive officer. Hemsley remained chair. Witty was to serve as a senior advisor.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000134/unh-20250512.htm",
+        "retrieval_timestamp": "2026-10-17T16:40:26Z",
+        "source_date": "2025-05-14",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 8-K, date of report May 12, 2025",
+        "quotation": "On May 12, 2025, Andrew Witty, Chief Executive Officer of UnitedHealth Group Incorporated (the “Company”), notified the Company of his decision to step down from his position, effective May 12, 2025 (the “Effective Date”). Mr. Witty will continue as a senior advisor to the new Chief Executive Officer of the Company. \nOn May 12, 2025, the Board of Directors of the Company (the “Board”) appointed Steve Hemsley as the Chief Executive Officer of the Company, beginning on the Effective Date. Mr. Hemsley will continue to serve as the Chair of the Board and will cease receiving compensation as a director as of the Effective Date."
+      }
+    },
+    {
+      "statement": "On May 14, 2025, the board approved Hemsley's CEO pay as a $1,000,000 annual base salary, no annual cash incentive, and a one-time $60,000,000 nonqualified stock-option award with a three-year cliff vest and no additional annual equity awards during the first three years.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000134/unh-20250512.htm",
+        "retrieval_timestamp": "2026-10-17T16:40:26Z",
+        "source_date": "2025-05-14",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Incorporated Form 8-K, date of report May 12, 2025",
+        "quotation": "On May 14, 2025, the Board and the Compensation and Human Resources Committee of the Board (the “Committee”), after considering market data, advice from the Committee’s independent compensation consultant, and other factors, approved the following compensation arrangements for Mr. Hemsley: \n• An annual base salary of $1,000,000 \n• No annual cash incentive award \n• One time $60,000,000 equity award in nonqualified stock options with cliff vesting after three years; no additional annual equity awards during the first three years of Mr. Hemsley’s employment"
+      }
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth re-established a numeric full-year 2025 outlook: revenue of $445.5 billion to $448.0 billion, net earnings of at least $14.65 per share, and adjusted earnings of at least $16.00 per share. The outlook table shows the same revenue range as $445,500–$448,000 million and the same per-share floors. The company said it expected to return to earnings growth in 2026.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000228/a2025q2exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:01Z",
+        "source_date": "2025-07-29",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Re-Establishes Full Year Outlook and Reports Second Quarter 2025 Results, Exhibit 99.1",
+        "quotation": "On May 13, 2025, UnitedHealth Group suspended its 2025 outlook. Today, UnitedHealth Group is updating its 2025 outlook, including revenues of $445.5 billion to $448.0 billion, net earnings of at least $14.65 per share and adjusted earnings of at least $16.00 per share. The new outlook reflects first half 2025 performance and expectations for the remainder of the year, including higher realized and anticipated care trends. The company expects to return to earnings growth in 2026. \nOutlook components include: \nUnitedHealth Group 2025 Outlook ( $ in millions, except per share data ) \nRevenue Operating Earnings \nOptum $266,000 - $267,500 $12,550 - $12,850 \nUnitedHealthcare $344,000 - $345,500 $9,000 - $9,300 \nEliminations ($164,500) - ($165,000) — \nTotal UnitedHealth Group $445,500 - $448,000 $21,550 - $22,150 \nDiluted Adjusted (a) \nNet Earnings per Share At least $14.65 At least $16.00"
+      }
+    },
+    {
+      "statement": "On July 29, 2025, UnitedHealth also set numeric full-year 2025 ratio outlooks: a medical cost ratio of 89.25% plus or minus 25 basis points, and an operating cost ratio of 12.75% plus or minus 25 basis points.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000228/a2025q2exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:01Z",
+        "source_date": "2025-07-29",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Re-Establishes Full Year Outlook and Reports Second Quarter 2025 Results, Exhibit 99.1",
+        "quotation": "The full year 2025 medical cost ratio is now expected to be 89.25% +/- 25 basis points. \n• Days claims payable of 44.5 compared to 45.5 in the first quarter 2025 and 45.2 in second quarter 2024. The decline was driven by the Medicare Part D program changes. Days sales outstanding declined 1.6 days year-over-year and 2.4 days sequentially on customer payment timing. \n• The second quarter 2025 operating cost ratio of 12.3% compared to 13.3% in the year ago quarter reflecting business mix, inclusive of the Part D program changes, reduced impacts from last year’s Change Healthcare cyberattack and cost management activities. The full year 2025 operating cost ratio is now expected to be 12.75% +/- 25 basis points."
+      }
+    },
+    {
+      "statement": "In June 2025 the company increased its quarterly dividend rate by 5% to $2.21 per share and said it returned $4.5 billion to shareholders through dividends and share repurchases in the second quarter.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000228/a2025q2exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:01Z",
+        "source_date": "2025-07-29",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Re-Establishes Full Year Outlook and Reports Second Quarter 2025 Results, Exhibit 99.1",
+        "quotation": "In June, the company increased its quarterly dividend rate by 5% to $2.21 and returned $4.5 billion to shareholders through dividends and share repurchases in the second quarter."
+      }
+    },
+    {
+      "statement": "Cash common-share repurchases were $5,545 million in the six months ended June 30, 2025, compared with $3,072 million in the six months ended June 30, 2024. Dividends paid were $3,912 million and $3,664 million in those respective periods. Cash paid for acquisitions and other transactions, net, was $734 million in the 2025 six-month period.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000228/a2025q2exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:01Z",
+        "source_date": "2025-07-29",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Re-Establishes Full Year Outlook and Reports Second Quarter 2025 Results, Exhibit 99.1",
+        "quotation": "CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS \n(in millions; unaudited) \nSix Months Ended \nJune 30, \n2025 2024 \nOperating Activities \nNet earnings $10,046 $3,200 \nNoncash items: \nDepreciation and amortization 2,145 2,017 \nDeferred income taxes and other 40 101 \nShare-based compensation 572 594 \nLoss on sale of subsidiary and subsidiaries held for sale 56 8,311 \nNet changes in operating assets and liabilities (215) (6,333) \nCash flows from operating activities 12,644 7,890 \nInvesting Activities \nSales and maturities of investments, net of purchases (purchases of investments, net of sales and maturities) 1,327 (221) \nPurchases of property, equipment and capitalized software (1,784) (1,596) \nCash paid for acquisitions and other transactions, net (734) (3,031) \nLoans to care providers - cyberattack — (8,100) \nRepayments of care provider loans - cyberattack 1,293 604 \nOther, net (1,618) (1,413) \nCash flows used for investing activities (1,516) (13,757) \nFinancing Activities \nCommon share repurchases (5,545) (3,072) \nDividends paid (3,912) (3,664)"
+      }
+    },
+    {
+      "statement": "On October 28, 2025, UnitedHealth raised its full-year 2025 earnings outlook to net earnings of at least $14.90 per share and adjusted net earnings of at least $16.25 per share. The retrieved exhibit's outlook bullets do not restate the July 29 revenue range.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000301/a2025q3exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:02Z",
+        "source_date": "2025-10-28",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports Third Quarter 2025 Results and Raises Full Year 2025 Earnings Outlook, Exhibit 99.1",
+        "quotation": "UnitedHealth Group raised its 2025 earnings outlook to reflect net earnings of at least $14.90 per share and adjusted net earnings of at least $16.25 per share."
+      }
+    },
+    {
+      "statement": "UnitedHealth closed the Amedisys transaction on August 14, 2025. The third-quarter release cites that close as included in the September 30, 2025 debt-to-capital ratio of 44.1%.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000301/a2025q3exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:02Z",
+        "source_date": "2025-10-28",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports Third Quarter 2025 Results and Raises Full Year 2025 Earnings Outlook, Exhibit 99.1",
+        "quotation": "September 30, 2025, debt-to-capital ratio of 44.1% unchanged from the second quarter 2025 and inclusive of the impact of closing the Amedisys transaction on August 14, 2025."
+      }
+    },
+    {
+      "statement": "Cash common-share repurchases remained $5,545 million for the nine months ended September 30, 2025. Dividends paid were $5,914 million in that period. Cash paid for acquisitions and other transactions, net, was $4,436 million.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000301/a2025q3exhibit991.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:02Z",
+        "source_date": "2025-10-28",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports Third Quarter 2025 Results and Raises Full Year 2025 Earnings Outlook, Exhibit 99.1",
+        "quotation": "CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS \n(in millions; unaudited) \nNine Months Ended \nSeptember 30, \n2025 2024 \nOperating Activities \nNet earnings $12,589 $9,458 \nNoncash items: \nDepreciation and amortization 3,244 3,058 \nDeferred income taxes and other (955) (844) \nShare-based compensation 795 831 \nLoss on sale of subsidiary and subsidiaries held for sale 139 8,331 \nNet changes in operating assets and liabilities 2,777 1,001 \nCash flows from operating activities 18,589 21,835 \nInvesting Activities \nSales and maturities of investments, net of purchases 1,657 1,852 \nPurchases of property, equipment and capitalized software (2,674) (2,587) \nCash paid for acquisitions and other transactions, net (4,436) (11,674) \nLoans to care providers - cyberattack — (8,904) \nRepayments of care provider loans - cyberattack 1,543 3,189 \nOther, net (2,164) (1,284) \nCash flows used for investing activities (6,074) (19,408) \nFinancing Activities \nCommon share repurchases (5,545) (4,028) \nDividends paid (5,914) (5,601)"
+      }
+    },
+    {
+      "statement": "For the year ended December 31, 2025, UnitedHealth reported total revenues of $447,567 million, diluted earnings per share of $13.23, and adjusted earnings per share of $16.35. Diluted weighted-average common shares were 911 million, compared with 929 million in 2024. Column order on that statement is the quarter ended December 31, 2025, the quarter ended December 31, 2024, the year ended December 31, 2025, and the year ended December 31, 2024.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000025/a991unherq42025.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:03Z",
+        "source_date": "2026-01-27",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports 2025 Results and Issues 2026 Outlook, Exhibit 99.1",
+        "quotation": "Three Months Ended December 31, Year Ended December 31, 2025 2024 2025 2024 Revenues Premiums........................................................................................................................... $88,811 $76,483 $352,229 $308,810 Products ............................................................................................................................. 13,484 13,475 53,380 50,226 Services ............................................................................................................................. 10,273 9,298 38,038 36,040 Investment and other income ......................................................................................... 647 1,551 3,920 5,202 Total revenues ............................................................................................................. 113,215 100,807 447,567 400,278 Operating costs Medical costs .................................................................................................................... 82,041 67,035 313,995 264,185 Operating costs................................................................................................................. 16,997 12,494 59,592 53,013 Cost of products sold ....................................................................................................... 12,680 12,464 50,655 46,694 Depreciation and amortization ....................................................................................... 1,117 1,041 4,361 4,099 Total operating costs .................................................................................................. 112,835 93,034 428,603 367,991 Earnings from operations ............................................................................................ 380 7,773 18,964 32,287 Interest expense ............................................................................................................... (974) (1,003) (4,002) (3,906) (Loss) gain on sale of subsidiary and subsidiaries held for sale .............................. (126) 21 (265) (8,310) Earnings before income taxes .................................................................................... (720) 6,791 14,697 20,071 Provision for income taxes .............................................................................................. 938 (1,007) (1,890) (4,829) Net earnings ................................................................................................................... 218 5,784 12,807 15,242 Earnings attributable to noncontrolling interests ......................................................... (208) (241) (751) (837) Net earnings attributable to UnitedHealth Group common shareholders ...... $10 $5,543 $12,056 $14,405 Diluted earnings per share attributable to UnitedHealth Group common shareholders ........................................................................................................... $0.01 $5.98 $13.23 $15.51 Adjusted earnings per share attributable to UnitedHealth Group common shareholders (a) ...................................................................................................... $2.11 $6.81 $16.35 $27.66 Diluted weighted-average common shares outstanding ............................................ 910 927 911 929"
+      }
+    },
+    {
+      "statement": "The company described a fourth-quarter 2025 charge of $1.6 billion net of taxes, or $1.78 per share, and said those impacts were excluded from adjusted earnings and adjusted earnings per share.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000025/a991unherq42025.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:03Z",
+        "source_date": "2026-01-27",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports 2025 Results and Issues 2026 Outlook, Exhibit 99.1",
+        "quotation": "The company completed wide-ranging actions that were included in a fourth quarter charge of $1.6 billion net of taxes, or $1.78 per share. The impacts were largely non-cash and were excluded from adjusted earnings and adjusted earnings per share. The charge consisted of the following: ($ in millions, except per share data) Impact to 2025 Net Earnings Final Cyberattack Costs $(799) Net Portfolio Divestitures $442 Restructuring and Other $(2,521) Total Impact to Earnings before Income Taxes $(2,878) Income Taxes $1,256 Total Impact to Net Earnings $(1,622) Impact to Diluted Earnings per Share $1.78"
+      }
+    },
+    {
+      "statement": "Full-year 2025 reported medical care ratio was 89.1% and the adjusted medical care ratio was 88.9%. The reported operating cost ratio was 13.3% and the adjusted operating cost ratio was 12.9%.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000025/a991unherq42025.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:03Z",
+        "source_date": "2026-01-27",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports 2025 Results and Issues 2026 Outlook, Exhibit 99.1",
+        "quotation": "The reported medical care ratio of 89.1% included a 20 basis point negative impact from loss contracts included in the charge, resulting in an adjusted medical care ratio of 88.9%, or an increase of 340 basis points year-over-year. • The operating cost ratio of 13.3% included a negative 40 basis points impact from the one-time charge, resulting in an adjusted operating cost ratio of 12.9%, which was flat year-over-year."
+      }
+    },
+    {
+      "statement": "For the year ended December 31, 2025, cash common-share repurchases were $5,545 million, compared with $9,000 million in 2024. Dividends paid were $7,916 million, compared with $7,533 million in 2024. Cash paid for acquisitions and other transactions, net, was $4,509 million, compared with $13,408 million in 2024.",
+      "evidence_type": "FACT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000025/a991unherq42025.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:03Z",
+        "source_date": "2026-01-27",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports 2025 Results and Issues 2026 Outlook, Exhibit 99.1",
+        "quotation": "CONDENSED CONSOLIDATED STATEMENTS OF CASH FLOWS (in millions; unaudited) Year Ended December 31, 2025 2024 Operating Activities Net earnings ......................................................................................................................................................................................... $12,807 $15,242 Noncash items: Depreciation and amortization ....................................................................................................................................................... 4,361 4,099 Deferred income taxes and other .................................................................................................................................................. (989) (3,657) Share-based compensation ........................................................................................................................................................... 971 1,018 Loss on sale of subsidiary and subsidiaries held for sale .......................................................................................................... 265 8,310 Net changes in operating assets and liabilities ............................................................................................................................... 2,282 (808) Cash flows from operating activities .......................................................................................................................................... 19,697 24,204 Investing Activities Sales and maturities of investments, net of purchases ................................................................................................................. 361 525 Purchases of property, equipment and capitalized software ........................................................................................................ (3,622) (3,499) Cash paid for acquisitions and other transactions, net .................................................................................................................. (4,509) (13,408) Loans to care providers - cyberattack .............................................................................................................................................. — (9,033) Repayment of care provider loans - cyberattack ............................................................................................................................ 1,680 4,514 Other, net .............................................................................................................................................................................................. (2,595) 374 Cash flows used for investing activities .................................................................................................................................... (8,685) (20,527) Financing Activities Common share repurchases .............................................................................................................................................................. (5,545) (9,000) Dividends paid ...................................................................................................................................................................................... (7,916) (7,533)"
+      }
+    },
+    {
+      "statement": "On January 27, 2026, UnitedHealth's 2026 outlook called for revenue greater than $439.0 billion, which the company described as a 2% year-over-year decline from planned right-sizing, and for earnings from operations greater than $24.0 billion. That revenue sentence is a 2026 outlook, not a revision of the 2025 outlook.",
+      "evidence_type": "CLAIM",
+      "claimant": "MANAGEMENT",
+      "source": {
+        "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000025/a991unherq42025.htm",
+        "retrieval_timestamp": "2026-10-17T16:41:03Z",
+        "source_date": "2026-01-27",
+        "publisher": "UnitedHealth Group Incorporated",
+        "source_tier": "L1",
+        "source_type": "SEC_FILING",
+        "title": "UnitedHealth Group Reports 2025 Results and Issues 2026 Outlook, Exhibit 99.1",
+        "quotation": "2026 revenues are projected to exceed $439.0 billion, a 2% year-over-year decline reflecting planned right-sizing across the enterprise. • Earnings from operations greater than $24.0 billion and a net margin of ~3.6%, improving from 2025 net margin of 2.7%."
+      }
+    }
+  ],
+  "findings": [
+    "UnitedHealth did publish numeric full-year 2025 outlooks after the May 13, 2025 suspension and before year-end 2025. The July 29, 2025 earnings exhibit re-established revenue of $445.5–$448.0 billion, net earnings of at least $14.65 per share, and adjusted earnings of at least $16.00 per share. The October 28, 2025 earnings exhibit raised the earnings floors to at least $14.90 and at least $16.25 per share and did not, in the outlook language retrieved, restate the revenue range.",
+    "The May 13, 2025 press release suspended the 2025 outlook and contained no dollar 2025 revenue or EPS figure. Stephen J. Hemsley's 13 to 16 percent remark in that release is a long-term growth objective, not a 2025 year outlook.",
+    "Compared with the outlooks that were read, full-year 2025 revenue of $447,567 million, or $447.567 billion, sits inside the July 29 range of $445.5–$448.0 billion. GAAP diluted EPS of $13.23 is below both the July 29 floor of $14.65 and the October 28 floor of $14.90, a shortfall of $1.67 versus the later floor. Adjusted diluted EPS of $16.35 is above both the July 29 floor of $16.00 and the October 28 floor of $16.25, by $0.10 versus the later floor. Arithmetic uses only those quoted figures.",
+    "The GAAP miss and the adjusted beat are not the same result. The January 27, 2026 release attributes $1.78 per share to a fourth-quarter charge excluded from adjusted EPS. Adding that disclosed $1.78 to GAAP EPS of $13.23 equals $15.01, which is above the October GAAP floor of $14.90, but that sum is not a measure the company presented, and adjusted EPS of $16.35 also reflects other add-backs shown in the reconciliation. This desk does not collapse GAAP and adjusted into one 'missed' or 'beat' label.",
+    "The July 29 medical-cost-ratio band of 89.25% +/- 25 basis points is 89.00% to 89.50%. The reported 2025 medical care ratio of 89.1% is inside that band. The adjusted medical care ratio of 88.9% is 10 basis points below it. The July 29 operating-cost-ratio band of 12.75% +/- 25 basis points is 12.50% to 13.00%. The reported 2025 operating cost ratio of 13.3% is above that band. The adjusted operating cost ratio of 12.9% is inside it. The July sentences do not say whether those bands referred to reported or adjusted ratios.",
+    "Claim ledger, public statements versus later reported figures: (1) May 13, 2025, suspend 2025 outlook and expect to return to growth in 2026 — numeric 2025 outlooks were then published on July 29 and October 28; the 2026 revenue outlook issued January 27, 2026 is a 2% decline, while 2026 operating earnings are guided above 2025 operating earnings of $18,964 million, to greater than $24.0 billion. July 29 had already narrowed the growth phrase to earnings growth. (2) July 29 and October 28 EPS and revenue floors — outcome in findings above. (3) Hemsley, May 13, long-term 13–16% growth objective — the 2026 revenue outlook is a decline, so that one year does not display 13–16% revenue growth. The May sentence was not a 2026 target.",
+    "Capital allocation from the cash-flow lines read: common-share repurchase cash was $5,545 million at June 30, 2025, still $5,545 million at September 30, 2025, and still $5,545 million for the year ended December 31, 2025, versus $9,000 million in 2024. At the million-dollar unit of those statements, no further repurchase cash was recorded after June 30, 2025. Dividends paid were $7,916 million in 2025 versus $7,533 million in 2024, after a June 2025 increase in the quarterly dividend rate to $2.21. Diluted weighted-average shares were 911 million in 2025 versus 929 million in 2024. These exhibits do not isolate how much of that share-count change came from repurchases, so no per-share accretion figure is stated. Cash paid for acquisitions and other transactions, net, was $734 million in the first half, $4,436 million for the nine months ended September 30, and $4,509 million for the full year. Amedisys closed on August 14, 2025. The acquisition line is not identified as Amedisys alone.",
+    "Leadership: Andrew Witty stepped down as CEO effective May 12, 2025, and Stephen J. Hemsley, who remained chair, became CEO. The May 14, 2025 Form 8-K sets his pay at a $1 million salary, no annual cash bonus, and a one-time $60 million option award cliff-vesting after three years, with no additional annual equity in the first three years. That is the incentive structure on the filing. It is not a performance score.",
+    "H1–H5 are Director-drafted and not Founder-approved. This desk does not assign a diagnosis, a valuation, or a recommendation. H1 is not confirmed: adjusted EPS cleared the raised floor and 2026 operating earnings are guided higher, while GAAP EPS missed the raised floor and 2026 revenue is guided down. H2 is not established by these filings: they do not show a permanent funding or model break, and they also do not clear one. H3 remains a live description of the split between GAAP and adjusted results and between 2026 earnings and revenue, not a conclusion. H4 is not tested; the dividend increase and the smaller 2025 buyback do not decide whether the business was never high quality. H5 is untouched: no price and no valuation.",
+    "Unresolved: whether an unread 2025 Form 8-K, especially the Item 7.01 reports of August 20, September 8, September 9, and November 7, 2025, published a later numeric 2025 outlook that superseded the October 28 floors before year-end. The comparison above is to the July 29 and October 28 outlooks only."
+  ]
+}

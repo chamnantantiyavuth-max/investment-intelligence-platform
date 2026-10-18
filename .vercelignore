@@ -8,10 +8,17 @@ backend/data/*.db
 backend/data/*.db-*
 data/cache
 evidence
-research
+# research/ and scripts/ stay out of the bundle except the read-only UNH
+# case slice the authenticated Case API imports (backend/api/qad_case_routes.py)
+research/*
+!research/qad_pilot
+!research/qad-cases
+research/qad-cases/*
+!research/qad-cases/CASE-2026-001
 design
 docs
-scripts
+scripts/*
+!scripts/qad_pilot
 tests
 ChatGPT
 .github
