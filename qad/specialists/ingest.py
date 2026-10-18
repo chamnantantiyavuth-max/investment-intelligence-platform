@@ -32,6 +32,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--case", required=True)
     parser.add_argument("--result", required=True)
     parser.add_argument("--charters", default=None)
+    parser.add_argument(
+        "--verify-sources",
+        action="store_true",
+        help="Fetch https sources and write M6 receipt files. Case reads do not fetch.",
+    )
     args = parser.parse_args(argv)
     result_path = Path(args.result)
     payload = json.loads(result_path.read_text(encoding="utf-8"))
@@ -69,7 +74,14 @@ def main(argv: list[str] | None = None) -> int:
         ledger,
         issued_ids=issued,
         reported_ids=reported,
+        fetch_sources=bool(args.verify_sources),
+        receipt_dir=result_path.parents[1] / "receipts",
     )
+    deduped: list[tuple[str, str]] = []
+    for pair in ledger:
+        if pair not in deduped:
+            deduped.append(pair)
+    ledger = deduped
     reported.add(outcome.gap_id)
     ledger_path.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
     reported_path.write_text(json.dumps(sorted(reported), indent=2) + "\n", encoding="utf-8")

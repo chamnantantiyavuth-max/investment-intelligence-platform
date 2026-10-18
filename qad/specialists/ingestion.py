@@ -318,15 +318,20 @@ def _archived_passage(archive, url: str, quotation: str) -> bool:
 
 
 def _matching_receipt(verifications, url: str, quotation: str):
-    """Minted fetch receipt whose bytes contain the passage and name this URL."""
+    """Minted or persisted fetch receipt whose bytes contain the passage."""
     from qad.m6.original_fetch import FETCH_REASON
+    from qad.m6.receipt_file import PersistedFetchReceipt
 
     for verification in verifications or ():
-        if not isinstance(verification, OriginalSourceVerification):
+        minted = isinstance(verification, OriginalSourceVerification)
+        persisted = isinstance(verification, PersistedFetchReceipt)
+        if not minted and not persisted:
             continue
         if verification.reason != FETCH_REASON:
             continue
-        if not verification.is_verified_verdict_for(source_id=verification.source_id or ""):
+        if minted and not verification.is_verified_verdict_for(
+            source_id=verification.source_id or ""
+        ):
             continue
         location = str(verification.location or "").strip()
         observed = str(verification.retrieval_date or "").strip()
@@ -784,6 +789,8 @@ def ingest_result(
     independent_snapshots: dict[str, bytes] | None = None,
     snapshot_dir: Path | None = None,
     source_verifications=None,
+    fetch_sources: bool = False,
+    receipt_dir: Path | None = None,
 ) -> IngestOutcome:
     missing = [name for name in RESULT_FIELDS if name not in result]
     if missing:
@@ -834,7 +841,16 @@ def ingest_result(
     )
     fetch_errors: dict[str, str] = {}
     if source_verifications is None and result.get("source_fetch") == "s5-m6-http":
-        source_verifications, fetch_errors = _fetch_receipts(result)
+        store = receipt_dir if receipt_dir is not None else case_directory(bundle.case_id) / "receipts"
+        if fetch_sources:
+            source_verifications, fetch_errors = _fetch_receipts(result)
+            from qad.m6.receipt_file import persist_receipts
+
+            persist_receipts(store, source_verifications)
+        else:
+            from qad.m6.receipt_file import load_persisted_receipts
+
+            source_verifications = load_persisted_receipts(store)
     if snapshot_dir is None:
         candidate = case_directory(bundle.case_id) / "snapshots"
         snapshot_dir = candidate if candidate.is_dir() else None
@@ -1008,10 +1024,6 @@ def _fetch_receipts(result: dict) -> tuple[list, dict[str, str]]:
         if verification is None:
             errors[url] = error or "S5/M6 independent fetch did not mint a receipt"
             continue
-        expected = str(source.get("expected_sha256") or "").strip()
-        if expected and verification.content_hash != expected:
-            errors[url] = f"fetched sha256 {verification.content_hash} != expected {expected}"
-            continue
         receipts.append(verification)
     return receipts, errors
 
@@ -1115,6 +1127,8 @@ def replay_committed_ingests(bundle, *, case_dir: Path | None = None) -> list[In
             issued_ids=issued,
             reported_ids=reported,
             snapshot_dir=snapshot_dir if snapshot_dir.is_dir() else None,
+            fetch_sources=False,
+            receipt_dir=case_dir / "receipts",
         )
         reported.add(outcome.gap_id)
         outcomes.append(outcome)

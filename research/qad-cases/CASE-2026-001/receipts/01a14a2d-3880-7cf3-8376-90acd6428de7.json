@@ -1,0 +1,13 @@
+{
+  "kind": "m6-fetch-receipt",
+  "reason": "independent HTTP fetch by qad.m6.original_fetch",
+  "source_id": "01a14a2d-3880-7cf3-8376-90acd6428de7",
+  "content_hash": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97",
+  "location": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000127/unh-20260331.htm",
+  "retrieval_date": "2026-10-18T03:02:19Z",
+  "publication_date": "2026-03-31",
+  "source_tier": "L1",
+  "source_type": "SEC_FILING",
+  "title": "UnitedHealth Group Inc. Form 10-Q for the quarterly period ended March 31, 2026",
+  "bytes_name": "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97.bin"
+}

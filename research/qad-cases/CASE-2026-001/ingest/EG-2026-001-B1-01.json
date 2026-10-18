@@ -4,20 +4,21 @@
   "investigation_disposition": "PARTIALLY_ANSWERED",
   "ir_disposition": null,
   "investigation_id": null,
-  "admitted_count": 1,
-  "quarantined_count": 0,
-  "verified_fact_count": 1,
-  "verified_fact_ids": [
-    "01a14a2d-3880-77ed-8709-44708065d557"
-  ],
+  "admitted_count": 0,
+  "quarantined_count": 1,
+  "verified_fact_count": 0,
+  "verified_fact_ids": [],
   "preserved": [],
-  "admitted_evidence_ids": [
-    "01a14a2d-3880-731b-be0e-2fceef6c1b0b"
+  "admitted_evidence_ids": [],
+  "admitted_source_ids": [],
+  "quarantined": [
+    {
+      "statement": "Continued funding pressures have resulted in benefit and pricing actions, causing contraction in our Medicare Advantage membership in the first quarter, which we expect to continue throughout 2026.",
+      "status": "QUARANTINED",
+      "verification_status": "UNVERIFIED",
+      "reason": "fetched sha256 52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97 != expected 6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7"
+    }
   ],
-  "admitted_source_ids": [
-    "01a14a2d-3880-79f6-9a22-b890021e85e2"
-  ],
-  "quarantined": [],
   "gap_status": {
     "written": false,
     "reason": "Transaction validation failed with 1 error(s)",

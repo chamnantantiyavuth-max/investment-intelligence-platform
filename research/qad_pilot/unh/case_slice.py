@@ -86,6 +86,7 @@ AS_OF_DATE = "2026-10-17"
 OPENED_AT = "2026-10-17T14:04:00Z"
 REPORT_SLUG = "unh-qad-pilot-2026-10-17"
 REPORT_PATH = "reports/unh-qad-pilot-2026-10-17.md"
+B1_REPORT_SLUG = "unh-b1-medicare-advantage-2026-10-18"
 ANCHOR_TS_MS = int(datetime(2026, 10, 17, 14, 4, tzinfo=timezone.utc).timestamp() * 1000)
 
 RESEARCH_DIRECTOR = "Research Director"
@@ -961,9 +962,10 @@ def recover_case(case_id: str = CASE_ID, *, replay: bool = True) -> UnhCaseBundl
     """Rebuild the case from the committed cache and load it by case id.
 
     ``replay=True`` re-admits committed specialist ingest journals into a new
-    in-memory bundle. That is file replay for this pilot case. It is not a
-    hosted durable database and it is not, by itself, process-restart proof.
-    The CLI passes ``replay=False`` and writes the journal after its own ingest.
+    in-memory bundle from repo files, including a persisted M6 receipt when
+    one was written by the verify command. Replay does not fetch. It is not a
+    hosted durable database. The CLI passes ``replay=False`` and writes the
+    journal after its own ingest. ``--verify-sources`` is the fetch path.
     """
     bundle = build_unh_case()
     if case_id != bundle.case_id:
@@ -1117,6 +1119,8 @@ def _specialist_recovery(bundle: UnhCaseBundle, stages: list[dict]) -> dict:
 
 
 def case_view_for_slug(slug: str) -> dict:
-    if slug != REPORT_SLUG:
+    if slug not in {REPORT_SLUG, B1_REPORT_SLUG}:
         raise KeyError(slug)
-    return case_view(recover_case(CASE_ID))
+    view = case_view(recover_case(CASE_ID))
+    view["report_slug"] = slug
+    return view

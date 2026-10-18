@@ -154,7 +154,7 @@ export default function ReportArticlePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-page">
-      <div className="mx-auto w-full max-w-[820px] flex-1 px-6 py-6">
+      <div className="mx-auto w-full max-w-[820px] flex-1 px-4 py-5 sm:px-6 sm:py-6">
       <Link to="/library" className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Library
       </Link>

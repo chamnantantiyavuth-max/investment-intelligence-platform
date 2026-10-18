@@ -1,8 +1,8 @@
 """Fresh process reads the B1 finding back through the Case API.
 
-The child process is a new interpreter. It recovers CASE-2026-001 by
-replaying committed journals, which mints the S5/M6 receipt by fetching
-the filing again. This is not a hosted database.
+The child process is a new interpreter. It recovers CASE-2026-001 from
+committed journals and the persisted M6 receipt. urlopen and
+create_connection raise, so a read that fetches fails the test.
 """
 
 from __future__ import annotations
@@ -24,20 +24,33 @@ STATEMENT = (
 
 def test_fresh_process_recovers_b1_receipt_and_blocks_founder_ready():
     script = """
-import json, os
+import json, os, socket, urllib.request
 os.environ["IIP_AUTH_USER"] = "founder"
 os.environ["IIP_AUTH_PASSWORD"] = "test-password-123"
 os.environ["IIP_AUTH_SECRET"] = "y" * 40
 from fastapi.testclient import TestClient
 from backend.main import app
 
+def _blocked(*args, **kwargs):
+    raise RuntimeError("outbound HTTP is not allowed on a case or report read")
+
+urllib.request.urlopen = _blocked
+socket.create_connection = _blocked
 client = TestClient(app)
 login = client.post(
     "/api/auth/login",
     json={"username": "founder", "password": "test-password-123"},
 )
 assert login.status_code == 200, login.text
+report = client.get("/api/reports/unh-b1-medicare-advantage-2026-10-18")
+assert report.status_code == 200, report.text
+article = report.json()["report"]
+assert article["status"] == "draft"
+assert "UNVERIFIED" in article["content"]
+assert "6953bf0e9f2cbb3ccec3849321f14663012329d50a7c596c593956ced7a65ed7" in article["content"]
 body = client.get("/api/qad/cases/CASE-2026-001").json()
+by_report = client.get("/api/qad/cases/by-report/unh-b1-medicare-advantage-2026-10-18")
+assert by_report.status_code == 200, by_report.text
 blocked = client.post(
     "/api/qad/cases/CASE-2026-001/state",
     json={"case_state": "FOUNDER_READY"},
@@ -47,15 +60,22 @@ rows = [
     row for row in recovery["accepted_evidence"]
     if row.get("gap_id") == "EG-2026-001-B1-01"
 ]
+held = [
+    row for row in recovery["quarantined"]
+    if "Continued funding pressures have resulted" in str(row.get("statement") or "")
+]
 stages = {row["stage_name"]: row["stage_state"] for row in body["stages"]}
 print(json.dumps({
     "case_state": body["case_state"],
+    "report_status": article["status"],
+    "by_report_status": by_report.status_code,
     "founder_ready_status": blocked.status_code,
     "founder_ready_rejected": blocked.json()["detail"]["rejected"],
     "stages": stages,
     "scuttlebutt_stage_state": recovery["scuttlebutt_stage_state"],
     "verified_fact_count": recovery["verified_fact_count"],
     "finding": rows[0] if rows else None,
+    "quarantine": held[0] if held else None,
     "quarantined_count": len(recovery["quarantined"]),
 }))
 """
@@ -79,12 +99,12 @@ print(json.dumps({
     assert stages["SCUTTLEBUTT"] == "INCOMPLETE"
     assert stages["AUDIT"] == "NOT_STARTED"
     assert stages["UNDERWRITING"] == "NOT_STARTED"
-    finding = payload["finding"]
+    assert payload["verified_fact_count"] == 0
+    assert payload["finding"] is None
+    finding = payload["quarantine"]
     assert finding is not None
-    assert finding["verification_status"] == "VERIFIED"
+    assert finding["verification_status"] == "UNVERIFIED"
     assert finding["statement"] == STATEMENT
-    assert finding["content_hash"] == EXPECTED_SHA256
-    assert finding["source_id"]
-    assert finding["retriever"] == "qad.m6.source_bridge"
-    assert finding["retrieval_method"] == "M6 original-source verification receipt"
-    assert finding["gap_id"] == GAP_ID
+    assert EXPECTED_SHA256 in finding["reason"]
+    assert "52fd7cb8572f32efc71f6dcceeb837decf91e801f055c88fb595810c6b43ea97" in finding["reason"]
+    assert payload["report_status"] == "draft"

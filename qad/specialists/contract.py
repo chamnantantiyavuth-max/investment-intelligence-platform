@@ -89,7 +89,9 @@ LIMITATIONS: tuple[str, ...] = (
     "numbers, negation, direction words, and detectable actors match that "
     "passage. That match is lexical inclusion, not semantic entailment. A "
     "generic RC-01 does not override a mismatch. A sign-off counts only when "
-    "it is bound to this case, gap, claim, source, and passage hash.",
+    "it is bound to this case, gap, claim, source, and passage hash. "
+    "A case or report read does not fetch. It replays a receipt file written "
+    "by the explicit verify command. That file is not a hand-inserted SRC-01.",
     "qad.m53.retry_kernel meters canonical stage retries (initial plus 3). "
     "It is not used to retry an external specialist. Those runs are outside "
     "this process, and a self-reported failure is not a kernel retry.",
