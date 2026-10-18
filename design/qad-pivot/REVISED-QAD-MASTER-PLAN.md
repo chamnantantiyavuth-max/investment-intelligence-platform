@@ -127,13 +127,13 @@
 - Independent Research Auditor (source exists, citation supports claim, PIT, calculation reproducible)
 - Audit failure blocks Founder-ready publication
 
-### QAD-M11 — Thai PDF Publication
-- Chief Underwriter Synthesis (single coherent narrative voice)
-- Thai Long-Form Editorial Pass
-- Citation Pass
-- Deterministic Numeric Pass
-- PDF Renderer (selected via comparative benchmark: HTML/CSS→PDF, Playwright/Chromium, WeasyPrint, or other)
-- Visual QA
+### QAD-M11 — Free-Form Thai Google Docs Founder Deliverable (Founder correction 2026-10-18)
+**Delivery-only amendment to the historical Hermes milestone:** M11 originally specified a Thai PDF. The **current IIP `MASTER_PLAN.md`** supersedes this *format/destination only*: primary report = one freely structured, coherent Thai **Google Doc in the private `IIP — QAD Research/00_ACTIVE_CASES/<TICKER>__<CASE_ID>/` folder**; **PDF export optional** at Founder's request. Do not require a blog, `/library`, fixed 42-chapter outline, prescribed frontmatter, PDF renderer or visual PDF QA to deliver a QAD report. Other M0–M15 research, independent assurance, source and Founder gates are unchanged.
+- Chief Underwriter synthesis — independent, cohesive causal argument and genuine opposing thesis
+- Thai long-form editorial synthesis — free order, depth, headings and prose driven by decision-relevant evidence
+- Original-source and citation pass; deterministic numeric pass through the existing canonical evidence/contracts
+- Native Google Doc saved under its dedicated private Drive case folder, linked privately to Founder, honestly marked DRAFT until stages pass
+- Optional PDF export/QA **only** when requested; the Doc is noncanonical presentation, not evidence truth
 
 ### QAD-M12 — Thesis Monitoring
 - Thesis-aware monitoring (not generic news feed)
