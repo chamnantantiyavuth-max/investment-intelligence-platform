@@ -46,7 +46,7 @@ Failure State            (what happens when the role cannot complete its work)
 | **Noncanonical Inputs Allowed** | NotebookLM/Deep Research synthesis (must be validated against original source before canonical admission) |
 | **Tools** | Research orchestration, document management, case management, Evidence Registry access |
 | **NotebookLM / Deep Research Access** | Full access for evidence-gap exploration; all material findings must be validated against original source |
-| **Required Questions** | What is the research scope? Are H1–H5 complete? What evidence gaps exist? Is the budget appropriate? |
+| **Required Questions** | What is the research scope? Are H1–H5 complete? What evidence gaps exist? Is the budget appropriate? **For a substantive company case, do researchers have enough sourced business/industry context for a first-time reader to understand the thesis without inventing facts?** |
 | **Required Outputs** | Research Charter (H1–H5, key questions, scope, budget); case orchestration decisions; stage transition records |
 | **Output Schema** | Research Charter: `{case_id, entity_id, h1-h5_statements, key_questions, evidence_gap_map, budget_estimate, timeline}` |
 | **Authority** | Open research case; assign stages; manage evidence gaps; recommend budget to Research Budget Controller |
@@ -121,7 +121,7 @@ Failure State            (what happens when the role cannot complete its work)
 | **Noncanonical Inputs Allowed** | Industry reports, trade data, NotebookLM industry synthesis (for orientation) |
 | **Tools** | Financial analysis, industry data, moat framework, competitor analysis |
 | **NotebookLM / Deep Research Access** | Allowed for industry context and competitor landscape; material findings validated |
-| **Required Questions** | Is this a high-quality business? What is the moat mechanism? How durable? Is the moat strengthening or weakening? What is the industry structure? |
+| **Required Questions** | Is this a high-quality business? What is the moat mechanism? How durable? Is the moat strengthening or weakening? What is the industry structure? **How does the company actually earn economic profit, what does the customer buy, and which firm/segment/industry mechanics must the reader understand to evaluate the thesis?** |
 | **Required Outputs** | Quality Assessment (VERIFIED/PROBABLE/UNRESOLVED/FAILED); Industry Economics Analysis; Moat Analysis (type, width, depth, trend, durability) |
 | **Output Schema** | Quality Assessment: `{case_id, quality_state, moat_type, moat_width, moat_depth, moat_trend, moat_durability, false_quality_test, evidence_ids}` |
 | **Authority** | Assign quality state; recommend moat classification |
@@ -296,16 +296,16 @@ Failure State            (what happens when the role cannot complete its work)
 | **Noncanonical Inputs Allowed** | None — publication is based on canonical research only |
 | **Tools** | Writing, editing, Thai language, formatting |
 | **NotebookLM / Deep Research Access** | NONE — editorial must be human writing |
-| **Required Questions** | Can an intelligent Thai reader follow the economic argument without decoding translated jargon or machine-style status markers? Are causal mechanisms, essential numbers, contradictions, limitations and citations explained naturally, without forced sections? |
-| **Required Outputs** | One editable free-form Thai Google Doc (draft) in the stable private case folder; strongest opposing thesis embedded or visibly linked; true research/publication status, dates and source links |
+| **Required Questions** | Can an intelligent investor **unfamiliar with this company and its industry** explain its business/economic model, moat, dislocation, sustainable earnings and price-risk tradeoff after reading? Are causal mechanisms, essential numbers, counterevidence and source limitations explained in natural Thai **without a fixed outline**? Is the main narrative current rather than contradicted by appended research updates? |
+| **Required Outputs** | One **reader-comprehensible, current** free-form Thai Google Doc (draft) in the stable private case folder; strongest opposing thesis embedded or visibly linked; true research/publication status, as-of dates and source links; case history preserved separately when material revisions supersede earlier interpretation |
 | **Output Schema** | Presentation = native Google Docs, not a new canonical schema. Continue recording case/evidence states and provenance in the existing IIP contracts; no obligatory blog `slug/category/frontmatter` for QAD Docs. |
-| **Authority** | Independently shape the Thai narrative: re-order explanations, simplify literal translations, improve transitions, move excess data to notes, choose an appropriate voice and propose a free-form Doc; **must not change source facts, calculation assumptions, verified status, investment conclusions or dissent** |
+| **Authority** | Independently shape the Thai narrative: establish proportionate company orientation, re-order explanations, simplify literal translations, improve transitions, replace stale explanatory passages when new verified or clearly qualified research supersedes them, move excess data to notes and propose a free-form Doc; **must not invent missing company facts, change source facts, assumptions, verification states, judgments or dissent** |
 | **Escalation** | Thai language quality → external review if needed; factual ambiguity → Research Director |
 | **Budget Rights** | None |
 | **Stop Rights** | May recommend NOT publishing if quality insufficient |
 | **Forbidden Actions** | ❌ Create new thesis ❌ Change analytical conclusions ❌ Remove contradictions ❌ Add investment recommendations ❌ Publish without Founder gate |
 | **Separation-of-Duty Rules** | Must be separate from thesis creation (Chief Underwriter, Research Director) |
-| **Quality Gate** | Apply standing writing standard §5.3.1 by a **single lightweight editorial self-check**, not a separate approval layer: idiomatic connected Thai; explain the 'why' and the significance of numbers; restrained technical terms/labels; source precision and uncertainty preserved. No fixed sections, arbitrary word counts, QA score thresholds, blog frontmatter, `/library` or PDF requirement. |
+| **Quality Gate** | Apply standing §5.3.1 **Reader Understanding Contract** inside the existing **single lightweight editorial self-check**, not another approval layer: a first-time reader can follow the company economics and investment argument; new findings are integrated into the current main narrative, not merely appended; idiomatic Thai, precise sources, caveats and material dissent. Proportionate to rapid scan versus full research. **No fixed sections, minimum length, scoring, extra review, `/library` or PDF requirement.** |
 | **Failure State** | If material editorial work remains, retain DRAFT and revise narrative once within the authorized task; do not escalate into repeated stylistic gates or misstate research readiness |
 
 ---
