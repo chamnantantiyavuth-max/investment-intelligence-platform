@@ -1,0 +1,10 @@
+Local API verification 2026-10-17
+GET /api/health -> 200
+POST /api/auth/login -> 200 (cookie redacted)
+GET /api/reports?status=draft -> 200
+draft slugs: unh-qad-pilot-2026-10-17 [draft]
+GET /api/reports?status=published excludes unh-qad-pilot-2026-10-17
+GET /api/reports/unh-qad-pilot-2026-10-17 -> 200 status=draft content_chars=23493
+skeptic placeholder present: True
+title: UNH: มาร์จิ้นจากการดำเนินงานปี 2025 เหลือ 4.2% จาก 8.7% — ปี 2026 ซ่อมได้บางส่วน แต่ยังไม่กลับฐานเดิม
+Vite proxy http://127.0.0.1:5173/api/reports/unh-qad-pilot-2026-10-17 -> 200
