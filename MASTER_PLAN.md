@@ -379,35 +379,37 @@ Use limited GitHub access and safe branches; store provider credentials only in 
 
 **Trigger:** Founder sends the first Bot-provisioning instruction to IIP-Lead. **Due target:** all 26 distinct Bot identities within **48 hours from prompt receipt**; if account/UI limitations block progress, promptly return a complete blocked roster and the action needed rather than silently delaying B0. Do not infer actual creation from a report, group-chat role, subagent file, shared computer folder or `actor_id`. The roster is a deployment index only; IIP analytical records remain authoritative for research. GitHub cannot itself create personal Grok Bots.
 
-| # | Bot name | Department | Org group | Verified state at plan update | Actual Bot link / ID |
-|---:|---|---|---|---|
-| 1 | `IIP-Lead` | Executive & Research Management | Control | EXISTING — link to verify | — |
-| 2 | `IIP-Discovery-Scout` | Data & Discovery | Control | UNVERIFIED | — |
-| 3 | `IIP-Research-Director` | Executive & Research Management | Control | UNVERIFIED | — |
-| 4 | `IIP-Evidence-Lead` | Data & Discovery | Assurance | UNVERIFIED | — |
-| 5 | `IIP-Structural-Red-Team` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
-| 6 | `IIP-Independent-Auditor` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
-| 7 | `IIP-Chief-Underwriter` | Independent Assurance & Underwriting | Assurance | UNVERIFIED | — |
-| 8 | `IIP-Thai-Editor` | Editorial & Knowledge | Publication | UNVERIFIED | — |
-| 9 | `IIP-Thesis-Steward` | Editorial & Knowledge | Monitoring | UNVERIFIED | — |
-| 10 | `IIP-Business-Moat` | Equity & Valuation Research | Core | UNVERIFIED | — |
-| 11 | `IIP-Industry-Economics` | Industry & Competitive Intelligence | Core | UNVERIFIED | — |
-| 12 | `IIP-Financial-Accounting` | Equity & Valuation Research | Core | UNVERIFIED | — |
-| 13 | `IIP-Management-Allocation` | Equity & Valuation Research | Core | UNVERIFIED | — |
-| 14 | `IIP-Impairment-Recovery` | Equity & Valuation Research | Core | UNVERIFIED | — |
-| 15 | `IIP-Valuation-Expectations` | Equity & Valuation Research | Core | UNVERIFIED | — |
-| 16 | `IIP-Customer-Product` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 17 | `IIP-Competitor` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
-| 18 | `IIP-Supplier` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
-| 19 | `IIP-Channel-Distribution` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
-| 20 | `IIP-Employee-Organization` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 21 | `IIP-Digital-Social` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 22 | `IIP-Regulatory` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 23 | `IIP-Technology-IP` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 24 | `IIP-Scientific-Clinical` | Customer & Specialized Intelligence | Investigator | UNVERIFIED | — |
-| 25 | `IIP-Geographic` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
-| 26 | `IIP-Industry-Specialist` | Industry & Competitive Intelligence | Investigator | UNVERIFIED | — |
- 
+| # | Bot name | Department | Org group | Verified state at plan update | Masked Bot ref (full IDs/links in Founder private Grok workspace) |
+|---:|---|---|---|---|---|
+| 1 | `IIP-Lead` | Executive & Research Management | Control | EXISTING — RETAINED. Pre-existing Grok Bot displayed as 'Chief of Staff' (also serves FIRO). Sidebar placement into Section 01 is a pending Founder UI move (the platform cannot move an existing Bot programmatically). | `bot:7753efeb…` |
+| 2 | `IIP-Discovery-Scout` | Data & Discovery | Control | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 02 · Data & Discovery at creation | `bot:55a065b1…` |
+| 3 | `IIP-Research-Director` | Executive & Research Management | Control | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 01 · Executive & Research Management at creation | `bot:f1fe1c5c…` |
+| 4 | `IIP-Evidence-Lead` | Data & Discovery | Assurance | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 02 · Data & Discovery at creation | `bot:0af68352…` |
+| 5 | `IIP-Structural-Red-Team` | Independent Assurance & Underwriting | Assurance | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 06 · Independent Assurance & Underwriting at creation | `bot:a08416f3…` |
+| 6 | `IIP-Independent-Auditor` | Independent Assurance & Underwriting | Assurance | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 06 · Independent Assurance & Underwriting at creation | `bot:30beb3fb…` |
+| 7 | `IIP-Chief-Underwriter` | Independent Assurance & Underwriting | Assurance | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 06 · Independent Assurance & Underwriting at creation | `bot:129eafa8…` |
+| 8 | `IIP-Thai-Editor` | Editorial & Knowledge | Publication | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 07 · Editorial & Knowledge at creation | `bot:9d3bc2cd…` |
+| 9 | `IIP-Thesis-Steward` | Editorial & Knowledge | Monitoring | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 07 · Editorial & Knowledge at creation | `bot:b742ead7…` |
+| 10 | `IIP-Business-Moat` | Equity & Valuation Research | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 03 · Equity & Valuation Research at creation | `bot:8a41c0f5…` |
+| 11 | `IIP-Industry-Economics` | Industry & Competitive Intelligence | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:4a7371fd…` |
+| 12 | `IIP-Financial-Accounting` | Equity & Valuation Research | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 03 · Equity & Valuation Research at creation | `bot:e2cb429d…` |
+| 13 | `IIP-Management-Allocation` | Equity & Valuation Research | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 03 · Equity & Valuation Research at creation | `bot:3b3c66e6…` |
+| 14 | `IIP-Impairment-Recovery` | Equity & Valuation Research | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 03 · Equity & Valuation Research at creation | `bot:22df022f…` |
+| 15 | `IIP-Valuation-Expectations` | Equity & Valuation Research | Core | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 03 · Equity & Valuation Research at creation | `bot:a04ba0e5…` |
+| 16 | `IIP-Customer-Product` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:81cf1153…` |
+| 17 | `IIP-Competitor` | Industry & Competitive Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:7fc146d5…` |
+| 18 | `IIP-Supplier` | Industry & Competitive Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:b3402e4d…` |
+| 19 | `IIP-Channel-Distribution` | Industry & Competitive Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:f1139488…` |
+| 20 | `IIP-Employee-Organization` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:b6b810d0…` |
+| 21 | `IIP-Digital-Social` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:253af373…` |
+| 22 | `IIP-Regulatory` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:60cbd996…` |
+| 23 | `IIP-Technology-IP` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:79d6aeb0…` |
+| 24 | `IIP-Scientific-Clinical` | Customer & Specialized Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 05 · Customer & Specialized Intelligence at creation | `bot:5466c8da…` |
+| 25 | `IIP-Geographic` | Industry & Competitive Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:7e3fb1a6…` |
+| 26 | `IIP-Industry-Specialist` | Industry & Competitive Intelligence | Investigator | CREATED + PROFILE_CONFIGURED (standby); placed in F0 Section 04 · Industry & Competitive Intelligence at creation | `bot:26955084…` |
+
+Verified 2026-10-18 01:20 Asia/Bangkok by IIP-Lead directly from the Grok Bot platform: each Bot was returned by the platform's agent-creation call and each has its own persisted profile with its role instructions; sidebar Sections were created by the Founder. Seven sidebar Sections exist with exactly the F0 names (01 · Executive & Research Management … 07 · Editorial & Knowledge). B0 status 2026-10-18: created 25/25 new + 1 retained = 26/26 exist; configured 26/26 (25 new role profiles + existing Lead); handoff-tested 0/26; active-on-demand 0/26; duplicates 0; missing 0; routines 0 (none created); 5 IIP cron jobs remain PAUSED. Platform limits: Bots cannot create or reorder sidebar Sections (Founder created them); an existing Bot cannot be moved between Sections programmatically; usage/cost per Bot NOT_EXPOSED. Each Bot's role instructions derive from Sections F0-F5/M of this plan; Bot profiles are not canonical IIP records.
+
 **Public-repository safety:** This GitHub repository is public. Track non-sensitive Bot names, provisioned counts and masked/opaque references here. Do **not** publish private conversation deep links, invite/share tokens, credentials, or secret-bearing identifiers in this tracker. Keep full private Bot links and verification screenshots in the Founder's private Grok Bot workspace, with an unambiguous private-registry pointer here. An accessible personal Bot link for the Founder may be returned in the private IIP Lead chat instead of being committed to GitHub. Genuine proof remains required; public-safe redaction is not proof of non-existence.
 
 **Bot creation status must not be conflated with use:** `CREATED` = real separate Bot exists; `PROFILE_CONFIGURED` = role and bounded permissions configured; `HANDOFF_TESTED` = actual Bot-to-Bot message with acknowledgment; `ACTIVE_ON_DEMAND` = first substantive scoped result. All 26 are created/configured up front; only a small working subset needs a live handoff in B1. Do not schedule regular tasks for dormant profiles. Update the 26 rows in **one batch commit** when possible to avoid 26 documentation-only PRs.
